@@ -25,3 +25,49 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: DGNN NAS
+      description: 分布式GNN训练系统与GNN NAS检索
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: communication-efficient training
+          keyword_cn: 通信高效训练
+          query: communication-efficient training
+        - keyword: graph partitioning
+          keyword_cn: 图划分
+          query: graph partitioning strategies for distributed GNN
+        - keyword: graph neural architecture search
+          keyword_cn: 图神经网络架构搜索
+          query: graph neural architecture search
+        - keyword: distributed GNN training
+          keyword_cn: 分布式GNN训练
+          query: distributed training systems for graph neural networks
+      intent_queries:
+        - query: find papers on communication efficient graph learning systems
+          query_cn: 查找通信高效图学习系统论文
+          enabled: true
+          source: manual
+          note: ''
+        - query: find papers on distributed GNN training systems with data parallel or asynchronous execution
+          query_cn: 查找比较数据并行与异步执行的分布式 GNN 训练系统论文
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-04-12T10:32:30.253Z'
+source_backends:
+  arxiv:
+    papers_table: arxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_arxiv_papers
+    vector_rpc_exact: match_arxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_arxiv_papers_bm25
+    sync_table: arxiv_sync_status
+    sync_success_value: success
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
