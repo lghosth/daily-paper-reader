@@ -7,12 +7,13 @@
     root.DPRLLMConfigUtils = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  const DEFAULT_PLATO_BASE_URL = 'https://api.bltcy.ai/v1';
+  const DEFAULT_PLATO_BASE_URL = 'https://api.minimaxi.com/v1';
   const DEFAULT_PLATO_CHAT_MODELS = [
     'gemini-3-flash-preview-thinking-1000',
     'deepseek-v3.2',
     'gpt-5-chat',
     'gemini-3-pro-preview',
+    'MiniMax-M2.7',
   ];
   const OPENAI_COMPATIBLE_PRESETS = Object.freeze({
     deepseek: Object.freeze({
