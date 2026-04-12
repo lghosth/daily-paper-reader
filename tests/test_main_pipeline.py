@@ -21,6 +21,24 @@ def _load_module():
     return module
 
 
+RERANK_ENV_VARS = (
+    "DPR_SKIP_RERANK",
+    "LLM_PRIMARY_BASE_URL",
+    "BLT_PRIMARY_BASE_URL",
+    "GPTBEST_BASE_URL",
+    "BLT_API_BASE",
+    "RERANKER_BASE_URL",
+    "Reranker_LLM_BASE_URL",
+    "RERANKER_MODEL",
+    "Reranker_LLM_MODEL",
+)
+
+
+def _clear_rerank_env(monkeypatch):
+    for name in RERANK_ENV_VARS:
+        monkeypatch.delenv(name, raising=False)
+
+
 class MainPipelineTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -150,6 +168,47 @@ class MainPipelineTest(unittest.TestCase):
 
             labels = [item[0] for item in calls]
             self.assertIn("Step 3 - Rerank", labels)
+
+
+def test_should_skip_rerank_no_env(monkeypatch):
+    _clear_rerank_env(monkeypatch)
+    mod = _load_module()
+
+    assert mod.should_skip_rerank() == (True, "")
+
+
+def test_should_skip_rerank_dpr_flag_true(monkeypatch):
+    _clear_rerank_env(monkeypatch)
+    monkeypatch.setenv("DPR_SKIP_RERANK", "true")
+    monkeypatch.setenv("BLT_PRIMARY_BASE_URL", "https://api.bltcy.ai/v1")
+    mod = _load_module()
+
+    assert mod.should_skip_rerank() == (True, "https://api.bltcy.ai/v1")
+
+
+def test_should_skip_rerank_legacy_blt_preserved(monkeypatch):
+    _clear_rerank_env(monkeypatch)
+    monkeypatch.setenv("BLT_PRIMARY_BASE_URL", "https://api.bltcy.ai/v1")
+    mod = _load_module()
+
+    assert mod.should_skip_rerank() == (False, "https://api.bltcy.ai/v1")
+
+
+def test_should_skip_rerank_deepseek_without_rerank(monkeypatch):
+    _clear_rerank_env(monkeypatch)
+    monkeypatch.setenv("BLT_PRIMARY_BASE_URL", "https://api.deepseek.com")
+    mod = _load_module()
+
+    assert mod.should_skip_rerank() == (True, "https://api.deepseek.com")
+
+
+def test_should_skip_rerank_explicit_rerank_config(monkeypatch):
+    _clear_rerank_env(monkeypatch)
+    monkeypatch.setenv("RERANKER_BASE_URL", "https://api.bltcy.ai/v1")
+    monkeypatch.setenv("RERANKER_MODEL", "qwen3-reranker-4b")
+    mod = _load_module()
+
+    assert mod.should_skip_rerank() == (False, "https://api.bltcy.ai/v1")
 
 
 if __name__ == "__main__":

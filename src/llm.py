@@ -750,11 +750,21 @@ class ClientFactory:
         if provider == 'ollama':
             base_url = base_url or "http://localhost:11111/v1"
             return OllamaClient(api_key=api_key or '', model=model, base_url=base_url)
-        if provider in ('blt', 'bltcy', 'plato'):
-            return BltClient(api_key=api_key or os.getenv('BLT_API_KEY', ''), model=model, base_url=base_url or os.getenv('BLT_API_BASE', 'https://api.bltcy.ai/v1'))
+        if provider in ('blt', 'bltcy', 'plato', 'openai', 'openai-compatible', 'generic'):
+            resolved_api_key = api_key or os.getenv('BLT_API_KEY', '') or os.getenv('LLM_API_KEY', '')
+            resolved_base_url = (
+                base_url
+                or os.getenv('BLT_API_BASE', '')
+                or os.getenv('LLM_BASE_URL', '')
+                or 'https://api.bltcy.ai/v1'
+            )
+            return BltClient(api_key=resolved_api_key, model=model, base_url=resolved_base_url)
         if provider in ('cstcloud', 'cst', 'cst-cloud', 'keji', 'keji-yun'):
             return CSTCloudClient(api_key=api_key or os.getenv('CSTCLOUD_API_KEY', ''), model=model, base_url=base_url or 'https://uni-api.cstcloud.cn/v1')
-        raise ValueError(f"不支持的提供商: {provider}，请使用 'deepseek'、'siliconflow'、'blt'、'cstcloud' 或 'ollama'")
+        raise ValueError(
+            f"不支持的提供商: {provider}，请使用 'deepseek'、'siliconflow'、'blt'、"
+            "'openai-compatible'、'generic'、'cstcloud' 或 'ollama'"
+        )
 
     @staticmethod
     def from_config(_config: dict | None = None):

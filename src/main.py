@@ -200,11 +200,25 @@ def should_skip_rerank() -> tuple[bool, str]:
         "GPTBEST_BASE_URL",
         "BLT_API_BASE",
     )
-    if not primary_base:
-        return False, ""
-    if _looks_like_blt_base(primary_base):
-        return False, primary_base
-    return True, primary_base
+
+    skip_flag = str(os.getenv("DPR_SKIP_RERANK") or "").strip().lower()
+    if skip_flag in ("1", "true", "yes", "on"):
+        return True, primary_base
+
+    rerank_base = _read_env_text(
+        "RERANKER_BASE_URL",
+        "Reranker_LLM_BASE_URL",
+    )
+    rerank_model = _read_env_text(
+        "RERANKER_MODEL",
+        "Reranker_LLM_MODEL",
+    )
+    if not rerank_base or not rerank_model:
+        if primary_base and _looks_like_blt_base(primary_base):
+            return False, primary_base
+        return True, primary_base
+
+    return False, rerank_base
 
 
 def score_to_stars(score: float) -> int:
@@ -696,8 +710,8 @@ def main() -> None:
     skip_rerank, rerank_base = should_skip_rerank()
     if skip_rerank:
         print(
-            f"[INFO] Step 3 - Rerank 已跳过：当前主 LLM base 不属于柏拉图/BLT，"
-            f"缺少稳定 /rerank 能力。base={rerank_base}",
+            f"[INFO] Step 3 - Rerank 已跳过：已显式关闭，或未配置可用的 reranker。"
+            f"base={rerank_base}",
             flush=True,
         )
         prepare_rerank_fallback(rrf_path, rerank_path)
