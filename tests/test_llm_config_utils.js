@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 
 const {
+  OPENAI_COMPATIBLE_PRESETS,
   normalizeBaseUrlForStorage,
   buildChatCompletionsEndpoint,
   sanitizeModelList,
@@ -95,57 +96,110 @@ function testInferProviderType() {
 }
 
 function testGetOpenAICompatiblePreset() {
-  assert.deepEqual(
-    getOpenAICompatiblePreset('deepseek'),
+  const cases = [
     {
       key: 'deepseek',
-      label: 'DeepSeek 官方',
-      baseUrl: 'https://api.deepseek.com',
-      models: ['deepseek-chat', 'deepseek-reasoner'],
+      expected: {
+        key: 'deepseek',
+        label: 'DeepSeek 官方',
+        baseUrl: 'https://api.deepseek.com',
+        models: ['deepseek-chat', 'deepseek-reasoner'],
+        profile: 'deepseek',
+        supportsReranker: false,
+        rerankerModel: '',
+      },
     },
-  );
-  assert.deepEqual(
-    getOpenAICompatiblePreset('glm'),
     {
       key: 'glm',
-      label: 'GLM Coding Plan',
-      baseUrl: 'https://open.bigmodel.cn/api/coding/paas/v4',
-      models: ['GLM-4.7', 'GLM-5', 'GLM-4.6'],
+      expected: {
+        key: 'glm',
+        label: 'GLM Coding Plan',
+        baseUrl: 'https://open.bigmodel.cn/api/coding/paas/v4',
+        models: ['GLM-4.7', 'GLM-5', 'GLM-4.6'],
+        profile: 'generic-openai',
+        supportsReranker: false,
+        rerankerModel: '',
+      },
     },
-  );
-  assert.deepEqual(
-    getOpenAICompatiblePreset('minimax'),
     {
       key: 'minimax',
-      label: 'MiniMax Coding Plan',
-      baseUrl: 'https://api.minimaxi.com/v1',
-      models: ['MiniMax-M2.5', 'MiniMax-M2.7', 'MiniMax-M2.1'],
+      expected: {
+        key: 'minimax',
+        label: 'MiniMax Coding Plan',
+        baseUrl: 'https://api.minimaxi.com/v1',
+        models: ['MiniMax-M2.5', 'MiniMax-M2.7', 'MiniMax-M2.1'],
+        profile: 'generic-openai',
+        supportsReranker: false,
+        rerankerModel: '',
+      },
     },
-  );
-  assert.deepEqual(
-    getOpenAICompatiblePreset('kimi'),
     {
       key: 'kimi',
-      label: 'Kimi 编程预设',
-      baseUrl: 'https://api.moonshot.ai/v1',
-      models: ['kimi-k2.5', 'kimi-k2-turbo-preview', 'kimi-k2-thinking'],
+      expected: {
+        key: 'kimi',
+        label: 'Kimi 编程预设',
+        baseUrl: 'https://api.moonshot.ai/v1',
+        models: ['kimi-k2.5', 'kimi-k2-turbo-preview', 'kimi-k2-thinking'],
+        profile: 'generic-openai',
+        supportsReranker: false,
+        rerankerModel: '',
+      },
     },
-  );
+    {
+      key: 'openai',
+      expected: {
+        key: 'openai',
+        label: 'OpenAI 官方',
+        baseUrl: 'https://api.openai.com/v1',
+        models: ['gpt-4.1-mini', 'gpt-4.1'],
+        profile: 'generic-openai',
+        supportsReranker: false,
+        rerankerModel: '',
+      },
+    },
+    {
+      key: 'blt',
+      expected: {
+        key: 'blt',
+        label: '柏拉图 BLTCY',
+        baseUrl: 'https://api.bltcy.ai/v1',
+        models: [
+          'gemini-3-flash-preview-thinking-1000',
+          'deepseek-v3.2',
+          'gpt-5-chat',
+          'gemini-3-pro-preview',
+        ],
+        profile: 'plato',
+        supportsReranker: true,
+        rerankerModel: 'qwen3-reranker-4b',
+      },
+    },
+  ];
+
+  cases.forEach(({ key, expected }) => {
+    assert.deepEqual(getOpenAICompatiblePreset(key), expected);
+    assert.equal(
+      inferChatApiProfile(expected.baseUrl, expected.models[0]),
+      expected.profile,
+    );
+  });
 }
 
 function testInferChatApiProfile() {
   assert.equal(
-    inferChatApiProfile('https://api.deepseek.com', 'deepseek-chat'),
-    'deepseek',
-  );
-  assert.equal(
-    inferChatApiProfile('https://api.bltcy.ai/v1', 'gpt-5-chat'),
-    'plato',
-  );
-  assert.equal(
     inferChatApiProfile('https://api.openai.com/v1', 'gpt-4.1-mini'),
     'generic-openai',
   );
+  assert.equal(
+    inferChatApiProfile('https://api.unknown-provider.example/v1', 'deepseek-chat'),
+    'deepseek',
+  );
+}
+
+function testBltPresetMetadata() {
+  assert.ok(OPENAI_COMPATIBLE_PRESETS.blt);
+  assert.equal(OPENAI_COMPATIBLE_PRESETS.blt.profile, 'plato');
+  assert.equal(OPENAI_COMPATIBLE_PRESETS.blt.supportsReranker, true);
 }
 
 function testShouldUseXApiKeyHeader() {
@@ -269,6 +323,7 @@ testResolveChatModelsAndSummary();
 testInferProviderType();
 testGetOpenAICompatiblePreset();
 testInferChatApiProfile();
+testBltPresetMetadata();
 testShouldUseXApiKeyHeader();
 testBuildStreamingChatPayload();
 testBuildConnectivityTestPayload();

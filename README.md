@@ -35,6 +35,7 @@
 
 ## 📰 News
 
+- **2026-04-12** 🔓 后端已解绑 BLT 白名单并支持任意 OpenAI-compatible 供应商；前端配置向导新增 Provider 预设选择器，`reranker` 改为可选，DeepSeek / MiniMax / Kimi / GLM / OpenAI / 柏拉图 BLTCY 均可直接接入工作流。
 - **2026-04-08** 🏷️ 推荐状态改为按 tag 独立维护：`carryover` 时间与历史 `seen_ids` 不再跨词条互相污染，单词条 `10 天` / `30 天` 抓取、回补与复跑更稳定。
 - **2026-04-08** 🧩 对齐密钥配置向导并暂时禁用 OpenAI-compatible 入口：保留更稳定的 BLT 默认链路，避免设置面板与 workflow 之间出现不兼容配置。
 - **2026-03-28** 🧬 补齐多源论文维护链路：新增并打通 `bioRxiv`、`medRxiv`、`ChemRxiv` 以及多类会议论文的抓取、向量编码、Supabase 同步与检索 SQL，支持将多源论文纳入统一推荐与阅读流。
@@ -102,11 +103,13 @@
 
 ### 1) 🔑 准备大模型 API Key
 
-当前 README 默认以 **柏拉图 API 平台** 为示例，建议先按默认配置跑通。
+当前 README 默认以 **DeepSeek 官方平台** 为示例：稳定、全球可访问、价格低，最适合第一次跑通完整流程。
 
-- 🌐 打开 [柏拉图 API 平台](https://api.bltcy.ai/)
+- 🌐 打开 [DeepSeek Platform](https://platform.deepseek.com/)
 - 📝 完成注册 / 登录
 - 🔐 充值并创建密钥
+
+也可以改用 **MiniMax / Kimi / GLM / OpenAI / 柏拉图 BLTCY**。新版向导会直接提供这些预设，按需选择即可。
 
 ### 2) 🪪 准备 GitHub PAT
 

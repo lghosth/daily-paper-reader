@@ -7,13 +7,12 @@
     root.DPRLLMConfigUtils = api;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  const DEFAULT_PLATO_BASE_URL = 'https://api.minimaxi.com/v1';
+  const DEFAULT_PLATO_BASE_URL = 'https://api.bltcy.ai/v1';
   const DEFAULT_PLATO_CHAT_MODELS = [
     'gemini-3-flash-preview-thinking-1000',
     'deepseek-v3.2',
     'gpt-5-chat',
     'gemini-3-pro-preview',
-    'MiniMax-M2.7',
   ];
   const OPENAI_COMPATIBLE_PRESETS = Object.freeze({
     deepseek: Object.freeze({
@@ -21,30 +20,54 @@
       label: 'DeepSeek 官方',
       baseUrl: 'https://api.deepseek.com',
       models: Object.freeze(['deepseek-chat', 'deepseek-reasoner']),
+      profile: 'deepseek',
+      supportsReranker: false,
     }),
     glm: Object.freeze({
       key: 'glm',
       label: 'GLM Coding Plan',
       baseUrl: 'https://open.bigmodel.cn/api/coding/paas/v4',
       models: Object.freeze(['GLM-4.7', 'GLM-5', 'GLM-4.6']),
+      profile: 'generic-openai',
+      supportsReranker: false,
     }),
     minimax: Object.freeze({
       key: 'minimax',
       label: 'MiniMax Coding Plan',
       baseUrl: 'https://api.minimaxi.com/v1',
       models: Object.freeze(['MiniMax-M2.5', 'MiniMax-M2.7', 'MiniMax-M2.1']),
+      profile: 'generic-openai',
+      supportsReranker: false,
     }),
     kimi: Object.freeze({
       key: 'kimi',
       label: 'Kimi 编程预设',
       baseUrl: 'https://api.moonshot.ai/v1',
       models: Object.freeze(['kimi-k2.5', 'kimi-k2-turbo-preview', 'kimi-k2-thinking']),
+      profile: 'generic-openai',
+      supportsReranker: false,
     }),
     openai: Object.freeze({
       key: 'openai',
       label: 'OpenAI 官方',
       baseUrl: 'https://api.openai.com/v1',
       models: Object.freeze(['gpt-4.1-mini', 'gpt-4.1']),
+      profile: 'generic-openai',
+      supportsReranker: false,
+    }),
+    blt: Object.freeze({
+      key: 'blt',
+      label: '柏拉图 BLTCY',
+      baseUrl: 'https://api.bltcy.ai/v1',
+      models: Object.freeze([
+        'gemini-3-flash-preview-thinking-1000',
+        'deepseek-v3.2',
+        'gpt-5-chat',
+        'gemini-3-pro-preview',
+      ]),
+      profile: 'plato',
+      supportsReranker: true,
+      rerankerModel: 'qwen3-reranker-4b',
     }),
   });
 
@@ -159,12 +182,21 @@
       label: preset.label,
       baseUrl: preset.baseUrl,
       models: [...preset.models],
+      profile: preset.profile,
+      supportsReranker: !!preset.supportsReranker,
+      rerankerModel: preset.rerankerModel || '',
     };
   };
 
   const inferChatApiProfile = (baseUrl, model) => {
     const normalizedBaseUrl = normalizeBaseUrlForStorage(baseUrl || '').toLowerCase();
     const normalizedModel = normalizeText(model || '').toLowerCase();
+    const preset = Object.values(OPENAI_COMPATIBLE_PRESETS).find(
+      (item) => normalizeBaseUrlForStorage(item.baseUrl || '').toLowerCase() === normalizedBaseUrl,
+    );
+    if (preset && preset.profile) {
+      return preset.profile;
+    }
     if (
       /(^|\/\/)(api\.)?deepseek\.com(?:$|\/)/i.test(normalizedBaseUrl)
       || normalizedModel.startsWith('deepseek-')

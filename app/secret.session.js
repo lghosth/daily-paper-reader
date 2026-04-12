@@ -215,6 +215,19 @@
     }
     return null;
   };
+  const WORKFLOW_PRESET_KEYS = ['deepseek', 'minimax', 'kimi', 'glm', 'openai', 'blt'];
+  const findOpenAICompatiblePresetByBaseUrl = (baseUrl) => {
+    const normalizedBaseUrl = normalizeBaseUrlForStorage(baseUrl || '').toLowerCase();
+    if (!normalizedBaseUrl) return null;
+    for (let i = 0; i < WORKFLOW_PRESET_KEYS.length; i += 1) {
+      const preset = getOpenAICompatiblePreset(WORKFLOW_PRESET_KEYS[i]);
+      if (!preset) continue;
+      if (normalizeBaseUrlForStorage(preset.baseUrl || '').toLowerCase() === normalizedBaseUrl) {
+        return preset;
+      }
+    }
+    return null;
+  };
   const buildConnectivityTestPayload = (baseUrl, model) => {
     const utils = getLLMUtils();
     if (typeof utils.buildConnectivityTestPayload === 'function') {
@@ -884,7 +897,7 @@
       }, 100);
     };
 
-    // 初始化向导：第 2 步（支持 柏拉图 / OpenAI-compatible 两种模式）
+    // 初始化向导：第 2 步（工作流主模型 + 聊天区模型来源）
     const renderInitStep2 = (password) => {
       setStep2Modal(true);
       const currentSecret =
@@ -898,24 +911,27 @@
           ? currentSecret.chatLLMs[0] || {}
           : {};
       const defaultPlatoModels = getDefaultPlatoChatModels();
-      const platoSummaryModels = [
-        {
-          value: 'gpt-5-chat',
-          label: 'GPT-5 Chat · 通用高质量对话',
-        },
-        {
-          value: 'gemini-3-flash-preview-thinking-1000',
-          label: 'Gemini 3 Flash（思考版，推荐）',
-        },
-        {
-          value: 'deepseek-v3.2',
-          label: 'DeepSeek V3.2 · 深度思考',
-        },
-        {
-          value: 'gemini-3-pro-preview',
-          label: 'Gemini 3 Pro（更强思考能力）',
-        },
-      ];
+      const buildSummaryModelOptions = (presetKey) => {
+        const preset = getOpenAICompatiblePreset(presetKey);
+        if (!preset || !Array.isArray(preset.models)) return [];
+        return preset.models.map((m) => ({ value: m, label: m }));
+      };
+      const resolveWorkflowPreset = (presetKey) => {
+        return getOpenAICompatiblePreset(presetKey) || getOpenAICompatiblePreset('blt');
+      };
+      const savedWorkflowPresetKey = normalizeText(
+        currentSecret.llmProvider && currentSecret.llmProvider.workflowPreset,
+      ).toLowerCase();
+      const matchedSummaryPreset = findOpenAICompatiblePresetByBaseUrl(currentSummaryLLM.baseUrl || '');
+      const initialWorkflowPresetKey =
+        (savedWorkflowPresetKey && getOpenAICompatiblePreset(savedWorkflowPresetKey)
+          ? savedWorkflowPresetKey
+          : '')
+        || (
+          currentProviderType === 'openai-compatible' && matchedSummaryPreset
+            ? matchedSummaryPreset.key
+            : 'blt'
+        );
 
       const initialGithubToken = normalizeText(
         currentSecret.github && currentSecret.github.token,
@@ -925,6 +941,8 @@
       const initialCustomBaseUrl = normalizeBaseUrlForStorage(
         currentChatEntry.baseUrl || '',
       );
+      const initialWorkflowPreset = resolveWorkflowPreset(initialWorkflowPresetKey);
+      const initialSummaryModelOptions = buildSummaryModelOptions(initialWorkflowPresetKey);
       const initialPlatoModel =
         normalizeText(currentSummaryLLM.model || '') || 'gpt-5-chat';
       const initialCustomModels = sanitizeModelList(
@@ -961,16 +979,21 @@
             </div>
 
             <div id="secret-setup-plato-section" class="secret-setup-step2-block">
-              <div class="secret-setup-step2-title">工作流 / Reranker 专用 BLT（必填）</div>
+              <div class="secret-setup-step2-title">工作流主模型（必填）</div>
               <p class="secret-setup-step2-note">
-                BLT 用于 query enrich、LLM refine、总结与 reranker，是工作流硬依赖。
+                这里决定工作流总结 / 过滤 / 重写所使用的主模型供应商；仅柏拉图 BLTCY 预设会启用内置 reranker。
               </p>
+              <div style="font-weight:500; margin-bottom:4px;">工作流主模型供应商</div>
+              <div id="secret-setup-workflow-preset-wrap" style="margin-bottom:8px;">
+                <select id="secret-setup-workflow-preset" class="secret-setup-select"></select>
+              </div>
+              <div id="secret-setup-workflow-base-url" style="min-height:18px; font-size:12px; color:#666; margin-bottom:8px;"></div>
               <div class="secret-setup-input-row multi-actions">
                 <input
                   id="secret-setup-plato"
                   type="password"
                   autocomplete="off"
-                  placeholder="BLT API Key，例如：sk-xxxx"
+                  placeholder="工作流主模型 API Key，例如：sk-xxxx"
                   style="width:100%; box-sizing:border-box; padding:6px 8px; font-size:13px;"
                 />
                 <button id="secret-setup-plato-verify" type="button" class="secret-gate-btn secondary">
@@ -983,6 +1006,7 @@
               <div id="secret-setup-plato-status" style="min-height:18px; font-size:12px; color:#999; margin-bottom:8px;">
                 将通过 <code>/v1/token/quota</code> 和一次 <code>hello world</code> 请求检查配置可用性。
               </div>
+              <div id="secret-setup-reranker-section" style="min-height:18px; font-size:12px; color:#666; margin-bottom:8px;"></div>
 
               <div style="font-weight:500; margin-bottom:4px; display:flex; align-items:center; gap:4px;">
                 用于工作流总结 / 过滤的大模型
@@ -1011,15 +1035,15 @@
             <div class="secret-setup-step2-block">
               <div class="secret-setup-step2-title">聊天模型来源</div>
               <p class="secret-setup-step2-note">
-                BLT 是工作流必填项；OpenAI-compatible 入口已重新开放，但仍属于实验性能力，仅作为聊天区模型来源。
+                默认沿用工作流主模型；如有需要，也可以单独为聊天区配置 OpenAI-compatible 模型。
               </p>
               <label class="secret-setup-provider-choice">
                 <input type="radio" name="secret-setup-provider" value="plato" />
-                <span><strong>聊天区也使用 BLT</strong>工作流总结、过滤、reranker 与聊天区统一使用柏拉图（BLTCY）模型。</span>
+                <span><strong>聊天区沿用工作流主模型</strong>聊天区直接复用当前工作流主模型的 API Key、Base URL 与模型组。</span>
               </label>
               <label class="secret-setup-provider-choice">
                 <input type="radio" name="secret-setup-provider" value="openai-compatible" />
-                <span><strong>聊天区使用 OpenAI-compatible（实验性）</strong>工作流总结与 reranker 仍强制使用 BLT，最多 3 个自定义模型仅用于聊天区。</span>
+                <span><strong>聊天区使用单独的 OpenAI-compatible 配置</strong>工作流继续使用上方主模型供应商，最多 3 个自定义模型仅用于聊天区。</span>
               </label>
             </div>
 
@@ -1118,6 +1142,9 @@
       const platoVerifyBtn = document.getElementById('secret-setup-plato-verify');
       const platoTestBtn = document.getElementById('secret-setup-plato-test');
       const platoStatusEl = document.getElementById('secret-setup-plato-status');
+      const workflowPresetSelect = document.getElementById('secret-setup-workflow-preset');
+      const workflowBaseUrlEl = document.getElementById('secret-setup-workflow-base-url');
+      const rerankerSectionEl = document.getElementById('secret-setup-reranker-section');
       const platoModelsWrap = document.getElementById('secret-setup-plato-models');
       const customApiKeyInput = document.getElementById('secret-setup-custom-api-key');
       const customBaseUrlInput = document.getElementById('secret-setup-custom-base-url');
@@ -1148,6 +1175,9 @@
         !platoVerifyBtn ||
         !platoTestBtn ||
         !platoStatusEl ||
+        !workflowPresetSelect ||
+        !workflowBaseUrlEl ||
+        !rerankerSectionEl ||
         !platoModelsWrap ||
         !platoModelSelect ||
         !customApiKeyInput ||
@@ -1170,10 +1200,6 @@
         return;
       }
 
-      platoModelSelect.innerHTML = platoSummaryModels
-        .map((item) => `<option value="${item.value}">${item.label}</option>`)
-        .join('');
-
       githubInput.value = initialGithubToken;
       platoInput.value = initialApiKey;
       customApiKeyInput.value =
@@ -1189,9 +1215,19 @@
       providerInputs.forEach((input) => {
         input.checked = input.value === currentProviderType;
       });
-      platoModelSelect.value = initialPlatoModel || 'gpt-5-chat';
-      if (!platoModelSelect.value) {
-        platoModelSelect.value = 'gpt-5-chat';
+      workflowPresetSelect.innerHTML = WORKFLOW_PRESET_KEYS
+        .map((key) => {
+          const preset = getOpenAICompatiblePreset(key);
+          if (!preset) return '';
+          return `<option value="${preset.key}">${preset.label}</option>`;
+        })
+        .filter(Boolean)
+        .join('');
+      workflowPresetSelect.value = initialWorkflowPreset && initialWorkflowPreset.key
+        ? initialWorkflowPreset.key
+        : 'blt';
+      if (!workflowPresetSelect.value) {
+        workflowPresetSelect.value = 'blt';
       }
 
       let githubOk = !!initialGithubToken;
@@ -1217,6 +1253,21 @@
         return normalizeText(platoModelSelect.value || '');
       };
 
+      const selectedWorkflowPresetKey = () => {
+        return normalizeText(workflowPresetSelect.value || 'blt').toLowerCase() || 'blt';
+      };
+
+      const selectedWorkflowPreset = () => {
+        return resolveWorkflowPreset(selectedWorkflowPresetKey());
+      };
+
+      const selectedWorkflowBaseUrl = () => {
+        const preset = selectedWorkflowPreset();
+        if (!preset) return getDefaultPlatoBaseUrl();
+        if (preset.key === 'blt') return getDefaultPlatoBaseUrl();
+        return normalizeBaseUrlForStorage(preset.baseUrl || '');
+      };
+
       const syncProviderSections = () => {
         const provider = selectedProvider();
         platoSection.style.display = 'block';
@@ -1231,9 +1282,15 @@
       };
 
       const resetPlatoStatus = () => {
+        const preset = selectedWorkflowPreset();
         platoOk = false;
-        platoStatusEl.innerHTML =
-          '将通过 <code>/v1/token/quota</code> 和一次 <code>hello world</code> 请求检查配置可用性。';
+        if (preset && preset.supportsReranker) {
+          platoStatusEl.innerHTML =
+            '将通过 <code>/v1/token/quota</code> 和一次 <code>hello world</code> 请求检查配置可用性。';
+        } else {
+          platoStatusEl.innerHTML =
+            '将通过一次 <code>hello world</code> 请求检查配置可用性；该供应商未配置内置 reranker，保存时会自动写入 <code>DPR_SKIP_RERANK=true</code>。';
+        }
         platoStatusEl.style.color = '#999';
       };
 
@@ -1242,6 +1299,36 @@
         customStatusEl.innerHTML =
           '将依次用已填写模型发送 <code>hello world</code>，检查接口与模型是否可用。';
         customStatusEl.style.color = '#999';
+      };
+
+      const renderWorkflowModelOptions = (presetKey, preferredModel) => {
+        const options = buildSummaryModelOptions(presetKey);
+        platoModelSelect.innerHTML = options
+          .map((item) => `<option value="${item.value}">${item.label}</option>`)
+          .join('');
+        const fallbackValue = options.length ? options[0].value : '';
+        const nextValue = normalizeText(preferredModel || '');
+        platoModelSelect.value = nextValue || fallbackValue;
+        if (!platoModelSelect.value) {
+          platoModelSelect.value = fallbackValue;
+        }
+      };
+
+      const syncWorkflowPresetUi = (preferredModel) => {
+        const preset = selectedWorkflowPreset();
+        const baseUrl = selectedWorkflowBaseUrl();
+        renderWorkflowModelOptions(preset && preset.key ? preset.key : 'blt', preferredModel);
+        workflowBaseUrlEl.innerHTML = `将写入的 Base URL：<code>${baseUrl || '未配置'}</code>`;
+        if (preset && preset.supportsReranker) {
+          rerankerSectionEl.style.display = 'block';
+          rerankerSectionEl.innerHTML =
+            `Reranker：启用（同 API Key / Base URL，模型 <code>${normalizeText(preset.rerankerModel || '')}</code>）`;
+          platoVerifyBtn.disabled = false;
+        } else {
+          rerankerSectionEl.style.display = 'none';
+          rerankerSectionEl.innerHTML = '';
+          platoVerifyBtn.disabled = true;
+        }
       };
 
       const applyOpenAICompatiblePreset = (presetKey) => {
@@ -1297,10 +1384,28 @@
 
       const collectProviderDraft = () => {
         const provider = selectedProvider();
+        const workflowPreset = selectedWorkflowPreset();
         const apiKey = normalizeText(platoInput.value);
         const model = selectedPlatoModel();
+        const summaryBaseUrl = selectedWorkflowBaseUrl();
+        const workflowChatModels =
+          workflowPreset && workflowPreset.key === 'blt'
+            ? defaultPlatoModels
+            : sanitizeModelList(workflowPreset && workflowPreset.models ? workflowPreset.models : [], 99);
+        const supportsReranker = !!(workflowPreset && workflowPreset.supportsReranker);
+        const rerankerModel = normalizeText(
+          (workflowPreset && workflowPreset.rerankerModel) || '',
+        );
+        const rewriteModel =
+          workflowPreset && workflowPreset.key === 'blt'
+            ? 'gemini-3-flash-preview'
+            : model;
+        const filterModel =
+          workflowPreset && workflowPreset.key === 'blt'
+            ? 'gemini-3-flash-preview-nothinking'
+            : model;
         if (!apiKey) {
-          throw new Error('请先输入 BLT API Key。');
+          throw new Error('请先输入工作流主模型 API Key。');
         }
         if (!model) {
           throw new Error('请选择用于工作流总结的大模型。');
@@ -1308,58 +1413,71 @@
         if (provider === 'plato') {
           return {
             providerType: 'plato',
+            workflowPresetKey: workflowPreset && workflowPreset.key ? workflowPreset.key : 'blt',
             summaryApiKey: apiKey,
-            summaryBaseUrl: getDefaultPlatoBaseUrl(),
+            summaryBaseUrl,
             summaryModel: model,
-            chatModels: defaultPlatoModels,
-            rewriteModel: 'gemini-3-flash-preview',
-            filterModel: 'gemini-3-flash-preview-nothinking',
-            skipRerank: false,
-            reranker: {
-              apiKey,
-              baseUrl: getDefaultPlatoBaseUrl(),
-              model: 'qwen3-reranker-4b',
-            },
+            chatModels: workflowChatModels.length ? workflowChatModels : [model],
+            rewriteModel,
+            filterModel,
+            skipRerank: !supportsReranker,
+            reranker: supportsReranker
+              ? {
+                  apiKey,
+                  baseUrl: summaryBaseUrl,
+                  model: rerankerModel,
+                }
+              : {
+                  apiKey: '',
+                  baseUrl: '',
+                  model: '',
+                },
           };
         }
 
         const customDraft = validateCustomDraft();
         return {
           providerType: 'openai-compatible',
+          workflowPresetKey: workflowPreset && workflowPreset.key ? workflowPreset.key : 'blt',
           summaryApiKey: apiKey,
-          summaryBaseUrl: getDefaultPlatoBaseUrl(),
+          summaryBaseUrl,
           summaryModel: model,
           chatModels: customDraft.models,
           chatApiKey: customDraft.apiKey,
           chatBaseUrl: customDraft.baseUrl,
-          rewriteModel: 'gemini-3-flash-preview',
-          filterModel: 'gemini-3-flash-preview-nothinking',
-          skipRerank: false,
-          reranker: {
-            apiKey,
-            baseUrl: getDefaultPlatoBaseUrl(),
-            model: 'qwen3-reranker-4b',
-          },
+          rewriteModel,
+          filterModel,
+          skipRerank: !supportsReranker,
+          reranker: supportsReranker
+            ? {
+                apiKey,
+                baseUrl: summaryBaseUrl,
+                model: rerankerModel,
+              }
+            : {
+                apiKey: '',
+                baseUrl: '',
+                model: '',
+              },
         };
       };
 
-      const buildPingEntries = () => {
-        const provider = selectedProvider();
-        if (provider === 'plato') {
-          const apiKey = normalizeText(platoInput.value);
-          const model = selectedPlatoModel();
-          if (!apiKey || !model) {
-            throw new Error('请先填写柏拉图 API Key 并选择总结模型。');
-          }
-          return [
-            {
-              apiKey,
-              baseUrl: getDefaultPlatoBaseUrl(),
-              model,
-            },
-          ];
+      const buildWorkflowPingEntries = () => {
+        const apiKey = normalizeText(platoInput.value);
+        const model = selectedPlatoModel();
+        if (!apiKey || !model) {
+          throw new Error('请先填写工作流主模型 API Key 并选择总结模型。');
         }
+        return [
+          {
+            apiKey,
+            baseUrl: selectedWorkflowBaseUrl(),
+            model,
+          },
+        ];
+      };
 
+      const buildCustomPingEntries = () => {
         const customDraft = validateCustomDraft();
         return customDraft.models.map((model) => ({
           apiKey: customDraft.apiKey,
@@ -1380,8 +1498,11 @@
         githubStatusEl.textContent = '已载入当前加密配置；如更换 GitHub Token，保存前请重新验证。';
         githubStatusEl.style.color = '#666';
       }
+      syncWorkflowPresetUi(initialPlatoModel || initialSummaryModelOptions[0] && initialSummaryModelOptions[0].value);
       if (initialApiKey) {
-        platoStatusEl.textContent = '已载入当前加密配置；如更换 API Key 或模型，建议重新验证或点击测试按钮。';
+        platoStatusEl.textContent = selectedWorkflowPreset() && selectedWorkflowPreset().supportsReranker
+          ? '已载入当前加密配置；如更换 API Key 或模型，建议重新验证或点击测试按钮。'
+          : '已载入当前加密配置；如更换 API Key 或模型，建议重新点击测试按钮。';
         platoStatusEl.style.color = '#666';
       }
       if (currentProviderType === 'openai-compatible' && initialCustomApiKey && initialCustomBaseUrl) {
@@ -1397,6 +1518,14 @@
         [customApiKeyInput, customBaseUrlInput, customModel1Input, customModel2Input, customModel3Input],
         resetCustomStatus,
       );
+      workflowPresetSelect.addEventListener('change', () => {
+        syncWorkflowPresetUi();
+        resetPlatoStatus();
+        setErrorText(
+          '工作流主模型供应商已切换；如已修改 API Key 或模型，请重新点击“测试当前配置”。',
+          '#666',
+        );
+      });
       providerInputs.forEach((input) => {
         input.addEventListener('change', () => {
           syncProviderSections();
@@ -1477,15 +1606,32 @@
       });
 
       platoVerifyBtn.addEventListener('click', async () => {
+        const workflowPreset = selectedWorkflowPreset();
         const key = normalizeText(platoInput.value);
         if (!key) {
-          platoStatusEl.textContent = '请先输入柏拉图 API Key。';
+          platoStatusEl.textContent = '请先输入工作流主模型 API Key。';
           platoStatusEl.style.color = '#c00';
           platoOk = false;
           return;
         }
+        if (!workflowPreset || !workflowPreset.supportsReranker) {
+          platoVerifyBtn.disabled = true;
+          try {
+            const models = await pingChatModels(buildWorkflowPingEntries(), platoStatusEl);
+            platoStatusEl.textContent = `✅ 配置可用：${models.join(', ')}`;
+            platoStatusEl.style.color = '#28a745';
+            platoOk = true;
+          } catch (e) {
+            platoStatusEl.textContent = `❌ 测试失败：${e.message || e}`;
+            platoStatusEl.style.color = '#c00';
+            platoOk = false;
+          } finally {
+            platoVerifyBtn.disabled = false;
+          }
+          return;
+        }
         platoVerifyBtn.disabled = true;
-        platoStatusEl.textContent = '正在验证柏拉图 API Key...';
+        platoStatusEl.textContent = `正在验证 ${workflowPreset.label} API Key...`;
         platoStatusEl.style.color = '#666';
         try {
           const resp = await fetch('https://api.bltcy.ai/v1/token/quota', {
@@ -1516,7 +1662,7 @@
         platoTestBtn.disabled = true;
         platoVerifyBtn.disabled = true;
         try {
-          const models = await pingChatModels(buildPingEntries(), platoStatusEl);
+          const models = await pingChatModels(buildWorkflowPingEntries(), platoStatusEl);
           platoStatusEl.textContent = `✅ 配置可用：${models.join(', ')}`;
           platoStatusEl.style.color = '#28a745';
           platoOk = true;
@@ -1533,7 +1679,7 @@
       customTestBtn.addEventListener('click', async () => {
         customTestBtn.disabled = true;
         try {
-          const models = await pingChatModels(buildPingEntries(), customStatusEl);
+          const models = await pingChatModels(buildCustomPingEntries(), customStatusEl);
           customStatusEl.textContent = `✅ 配置可用：${models.join(', ')}`;
           customStatusEl.style.color = '#28a745';
           customOk = true;
@@ -1562,11 +1708,11 @@
         }
 
         if (providerDraft.providerType === 'plato' && !platoOk) {
-          setErrorText('请先验证柏拉图 API Key，或点击“测试当前配置”。', '#c00');
+          setErrorText('请先验证工作流主模型 API Key，或点击“测试当前配置”。', '#c00');
           return;
         }
         if (providerDraft.providerType === 'openai-compatible' && !platoOk) {
-          setErrorText('请先验证 BLT API Key，工作流总结与 reranker 必须使用 BLT。', '#c00');
+          setErrorText('请先验证工作流主模型配置，工作流总结与过滤依赖上方主模型供应商。', '#c00');
           return;
         }
         if (providerDraft.providerType === 'openai-compatible' && !customOk) {
@@ -1583,6 +1729,7 @@
           },
           llmProvider: {
             type: providerDraft.providerType,
+            workflowPreset: providerDraft.workflowPresetKey,
             skipRerank: providerDraft.skipRerank,
           },
           summarizedLLM: {
