@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-04-12 <!--dpr-date:20260412-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202604/12/2604.08368v1-solar-communication-efficient-model-adaptation-via-subspace-oriented-latent-adapter-reparametrization" data-sidebar-item="{&quot;title&quot;: &quot;SOLAR: Communication-Efficient Model Adaptation via Subspace-Oriented Latent Adapter Reparametrization&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2604.08368v1-solar-communication-efficient-model-adaptation-via-subspace-oriented-latent-adapter-reparametrization&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;通过减少PEFT适配器通信成本实现通信高效模型适应&quot;}">SOLAR: Communication-Efficient Model Adaptation via Subspace-Oriented Latent Adapter Reparametrization</a>
   * 2026-03-14 ~ 2026-04-12 <!--dpr-date:20260314-20260412-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/20260314-20260412/2604.01000v1-embedpart-embedding-driven-graph-partitioning-for-scalable-graph-neural-network-training" data-sidebar-item="{&quot;title&quot;: &quot;EmbedPart: Embedding-Driven Graph Partitioning for Scalable Graph Neural Network Training&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2604.01000v1-embedpart-embedding-driven-graph-partitioning-for-scalable-graph-neural-network-training&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;用于可扩展分布式GNN训练的图划分&quot;}">EmbedPart: Embedding-Driven Graph Partitioning for Scalable Graph Neural Network Training</a>
