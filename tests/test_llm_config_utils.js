@@ -115,7 +115,16 @@ function testGetOpenAICompatiblePreset() {
         key: 'glm',
         label: 'GLM Coding Plan',
         baseUrl: 'https://open.bigmodel.cn/api/coding/paas/v4',
-        models: ['GLM-4.7', 'GLM-5', 'GLM-4.6'],
+        models: [
+          'glm-5.1',
+          'glm-5',
+          'glm-4.7-flash',
+          'glm-4.7-flashx',
+          'glm-4.6',
+          'glm-4.5-air',
+          'glm-4.5-airx',
+          'glm-4.5-flash',
+        ],
         profile: 'generic-openai',
         supportsReranker: false,
         rerankerModel: '',
@@ -276,8 +285,8 @@ function testBuildConnectivityTestPayload() {
         { role: 'user', content: 'hello world' },
       ],
       temperature: 0,
-      max_tokens: 256,
-      max_completion_tokens: 256,
+      max_tokens: 2048,
+      max_completion_tokens: 2048,
       thinking: { type: 'disabled' },
     },
   );
@@ -294,24 +303,25 @@ function testBuildConnectivityTestPayload() {
         { role: 'user', content: 'hello world' },
       ],
       temperature: 0,
-      max_tokens: 256,
+      max_tokens: 2048,
     },
   );
 
   assert.deepEqual(
     buildConnectivityTestPayload({
       baseUrl: 'https://open.bigmodel.cn/api/coding/paas/v4',
-      model: 'GLM-4.7',
+      model: 'glm-5.1',
     }),
     {
-      model: 'GLM-4.7',
+      model: 'glm-5.1',
       messages: [
         { role: 'system', content: 'Reply with exactly: hello world' },
         { role: 'user', content: 'hello world' },
       ],
       temperature: 0,
-      max_tokens: 256,
-      max_completion_tokens: 256,
+      max_tokens: 2048,
+      max_completion_tokens: 2048,
+      thinking: { type: 'disabled' },
     },
   );
 }

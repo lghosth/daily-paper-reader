@@ -27,7 +27,16 @@
       key: 'glm',
       label: 'GLM Coding Plan',
       baseUrl: 'https://open.bigmodel.cn/api/coding/paas/v4',
-      models: Object.freeze(['GLM-4.7', 'GLM-5', 'GLM-4.6']),
+      models: Object.freeze([
+        'glm-5.1',
+        'glm-5',
+        'glm-4.7-flash',
+        'glm-4.7-flashx',
+        'glm-4.6',
+        'glm-4.5-air',
+        'glm-4.5-airx',
+        'glm-4.5-flash',
+      ]),
       profile: 'generic-openai',
       supportsReranker: false,
     }),
@@ -260,13 +269,18 @@
         },
       ],
       temperature: 0,
-      max_tokens: 256,
+      max_tokens: 2048,
     };
     if (wantsMaxCompletionTokens) {
-      payload.max_completion_tokens = 256;
+      payload.max_completion_tokens = 2048;
     }
     const profile = inferChatApiProfile(baseUrl, model);
     if (profile === 'deepseek' && normalizedModel.toLowerCase() === 'deepseek-reasoner') {
+      payload.thinking = { type: 'disabled' };
+    }
+    // GLM Coding Plan / 智谱 BigModel：连通性测试不需要思考，显式关闭
+    // 避免 reasoning token 占满 max_tokens 后 content 返回空串。
+    if (/open\.bigmodel\.cn/.test(normalizedBaseUrl) || /^glm-/i.test(normalizedModel)) {
       payload.thinking = { type: 'disabled' };
     }
     return payload;
