@@ -6,62 +6,38 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-12
-- 运行时间：2026-04-12 19:24:35 UTC
+- 最新运行日期：2026-04-13
+- 运行时间：2026-04-13 20:06:34 UTC
 - 运行状态：成功
-- 本次总论文数：1
-- 精读区：1
-- 速读区：0
+- 本次总论文数：5
+- 精读区：0
+- 速读区：5
 
 ### 今日简报（AI）
-<think>
-用户需要我作为日报编辑，输出3句以内的中文总结，基于给定的推荐数据。
-
-给定的数据：
-- 日期：2026-04-12
-- 状态：成功
-- 总数：1篇
-- 精读：1篇
-- 速读：0篇
-- 精读论文：《SOLAR: Communication-Efficient Model Adaptation via Subspace-Oriented Latent Adapter Reparametrization》（8.0/10）
-
-我需要输出3行文本：
-1. 一句概括今天做了什么，适合标题感官
-2. 一句给出最值得看的1~2个方向/结论
-3. 一句给出下步建议（面向普通读者）
-
-要点：
-- 不要编造论文信息
-- 基于给定的推荐数据
-- 简洁但具体
-- 吸引人
-
-关于论文《SOLAR: Communication-Efficient Model Adaptation via Subspace-Oriented Latent Adapter Reparametrization》：
-- 这是关于通信高效的模型适应方法
-- 使用子空间导向的潜在适配器重参数化
-- 分数8.0/10，属于较高质量的论文
-
-现在我来构思三句话：
-
-1. 标题感概括：今天是关于通信高效模型适应的一天，完成了1篇高质量论文精读。
-2. 核心方向/结论：SOLAR方法通过子空间重参数化实现通信效率与适配性能的平衡，是分布式/联邦学习场景下的重要技术。
-3. 下步建议：建议关注该方法在隐私敏感场景的实际应用，或进一步探索其在不同模态模型中的泛化性。
-</think>
-
-今日聚焦通信高效模型适应，精读高分论文SOLAR，深度解析子空间重参数化技术。
-
-SOLAR通过潜在适配器重参数化兼顾通信效率与适配性能，为分布式/联邦学习提供新思路。
-
-建议后续尝试将SOLAR思想迁移至视觉模型或垂直领域，探索跨模态泛化能力。
-- 详情：[/202604/12/README](/202604/12/README)
+1) 今日速读 5 篇前沿论文，聚焦去中心化优化、分布式图嵌入与联邦学习控制三大核心领域。
+2) 最值得关注的是解决偏置梯度收敛问题的去中心化优化方案，以及处理海量分布式图嵌入的 NOMAD 系统。
+3) 建议重点关注分布式网络与图学习技术的结合，探索其在复杂系统架构中的实际落地潜力。
+- 详情：[/202604/13/README](/202604/13/README)
 
 ### 精读区论文标签
-1. [SOLAR: Communication-Efficient Model Adaptation via Subspace-Oriented Latent Adapter Reparametrization](/202604/12/2604.08368v1-solar-communication-efficient-model-adaptation-via-subspace-oriented-latent-adapter-reparametrization)  
-   标签：评分：8.0/10、query:dgnn-nas
-   evidence：通过减少PEFT适配器通信成本实现通信高效模型适应
+- 本次无精读推荐。
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [Improved Convergence for Decentralized Stochastic Optimization with Biased Gradients](/202604/13/2604.08236v1-improved-convergence-for-decentralized-stochastic-optimization-with-biased-gradients)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：带通信压缩和有偏梯度的去中心化优化
+2. [NOMAD: Generating Embeddings for Massive Distributed Graphs](/202604/13/2604.09419v1-nomad-generating-embeddings-for-massive-distributed-graphs)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：面向大规模图的基于MPI的分布式内存图嵌入框架
+3. [Scalar Federated Learning for Linear Quadratic Regulator](/202604/13/2604.05088v1-scalar-federated-learning-for-linear-quadratic-regulator)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：通信高效联邦学习，将每智能体上行通信降至O(1)
+4. [NestPipe: Large-Scale Recommendation Training on 1,500+ Accelerators via Nested Pipelining](/202604/13/2604.06956v1-nestpipe-large-scale-recommendation-training-on-1500-accelerators-via-nested-pipelining)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：1500+加速器上基于嵌套流水线的通信高效大规模分布式训练
+5. [SL-FAC: A Communication-Efficient Split Learning Framework with Frequency-Aware Compression](/202604/13/2604.07316v1-sl-fac-a-communication-efficient-split-learning-framework-with-frequency-aware-compression)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：具有频率感知压缩的通信高效分割学习框架
 
 
 <div class="dpr-home-promo-card">
