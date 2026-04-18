@@ -6,47 +6,41 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-17
-- 运行时间：2026-04-17 19:39:36 UTC
+- 最新运行日期：2026-04-18
+- 运行时间：2026-04-18 20:04:14 UTC
 - 运行状态：成功
-- 本次总论文数：8
+- 本次总论文数：6
 - 精读区：0
-- 速读区：8
+- 速读区：6
 
 ### 今日简报（AI）
-1) 今日速读 8 篇论文，聚焦分布式图计算与低带宽通信的高效训练方案。
-2) 最值得关注的是超大规模分布式图嵌入生成框架 NOMAD，以及旨在降低联邦学习与流水线并行通信开销的 Gluon 和 ResBM 机制。
-3) 建议后续挑选 NOMAD 进行精读，深入探究其处理海量图数据的底层架构与工程细节。
-- 详情：[/202604/17/README](/202604/17/README)
+1) 今日速读6篇前沿论文，聚焦通信受限环境下的去中心化与绿色联邦学习技术。
+2) 最值得关注的方向是结合自适应梯度与压缩通信的本地训练框架，这为低带宽场景提供了高效的解决方案。
+3) 普通读者可进一步关注这些“数据压缩与通信优化”技术，了解它们如何在实际中降低智能设备的网络延迟与能耗。
+- 详情：[/202604/18/README](/202604/18/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [NOMAD: Generating Embeddings for Massive Distributed Graphs](/202604/17/2604.09419v1-nomad-generating-embeddings-for-massive-distributed-graphs)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：基于MPI的分布式图嵌入框架
-2. [Communication-Efficient Gluon in Federated Learning](/202604/17/2604.10689v1-communication-efficient-gluon-in-federated-learning)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：带梯度压缩的通信高效分布式训练
-3. [ResBM: Residual Bottleneck Models for Low-Bandwidth Pipeline Parallelism](/202604/17/2604.11947v1-resbm-residual-bottleneck-models-for-low-bandwidth-pipeline-parallelism)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：低带宽去中心化流水线并行训练架构
-4. [Improved Convergence for Decentralized Stochastic Optimization with Biased Gradients](/202604/17/2604.08236v1-improved-convergence-for-decentralized-stochastic-optimization-with-biased-gradients)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：带通信压缩的去中心化优化
-5. [LoDAdaC: a unified local training-based decentralized framework with adaptive gradients and compressed communication](/202604/17/2604.09970v1-lodadac-a-unified-local-training-based-decentralized-framework-with-adaptive-gradients-and-compressed-communication)  
+1. [LoDAdaC: a unified local training-based decentralized framework with adaptive gradients and compressed communication](/202604/18/2604.09970v1-lodadac-a-unified-local-training-based-decentralized-framework-with-adaptive-gradients-and-compressed-communication)  
    标签：评分：6.0/10、query:dgnn-nas
    evidence：带压缩通信的去中心化分布式学习
-6. [A Full Compression Pipeline for Green Federated Learning in Communication-Constrained Environments](/202604/17/2604.11146v2-a-full-compression-pipeline-for-green-federated-learning-in-communication-constrained-environments)  
+2. [A Full Compression Pipeline for Green Federated Learning in Communication-Constrained Environments](/202604/18/2604.11146v1-a-full-compression-pipeline-for-green-federated-learning-in-communication-constrained-environments)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：减少分布式训练中通信开销的压缩流水线
+3. [A Full Compression Pipeline for Green Federated Learning in Communication-Constrained Environments](/202604/18/2604.11146v2-a-full-compression-pipeline-for-green-federated-learning-in-communication-constrained-environments)  
    标签：评分：6.0/10、query:dgnn-nas
    evidence：面向通信高效分布式训练的压缩流水线
-7. [Asynchronous Probability Ensembling for Federated Disaster Detection](/202604/17/2604.14450v1-asynchronous-probability-ensembling-for-federated-disaster-detection)  
+4. [ResBM: Residual Bottleneck Models for Low-Bandwidth Pipeline Parallelism](/202604/18/2604.11947v1-resbm-residual-bottleneck-models-for-low-bandwidth-pipeline-parallelism)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：异步去中心化集成降低通信成本
-8. [Affine-coupled Distributed Optimization via Distributed Proximal Jacobian ADMM with Quantized Communication](/202604/17/2604.14861v1-affine-coupled-distributed-optimization-via-distributed-proximal-jacobian-admm-with-quantized-communication)  
+   evidence：通过激活压缩实现低带宽流水线并行
+5. [Decentralized Learning via Random Walk with Jumps](/202604/18/2604.12260v1-decentralized-learning-via-random-walk-with-jumps)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：图上量化通信的分布式优化
+   evidence：低通信开销的去中心化学习
+6. [Three Birds, One Stone: Solving the Communication-Memory-Privacy Trilemma in LLM Fine-tuning Over Wireless Networks with Zeroth-Order Optimization](/202604/18/2604.12401v1-three-birds-one-stone-solving-the-communication-memory-privacy-trilemma-in-llm-fine-tuning-over-wireless-networks-with-zeroth-order-optimization)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：通过零阶优化实现通信高效的分布式训练
 
 
 <div class="dpr-home-promo-card">
