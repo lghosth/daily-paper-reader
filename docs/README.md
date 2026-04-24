@@ -6,31 +6,28 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-23
-- 运行时间：2026-04-23 20:06:30 UTC
+- 最新运行日期：2026-04-24
+- 运行时间：2026-04-24 19:32:19 UTC
 - 运行状态：成功
-- 本次总论文数：3
+- 本次总论文数：2
 - 精读区：1
-- 速读区：2
+- 速读区：1
 
 ### 今日简报（AI）
-1) 今日聚焦图计算与分布式训练，精读高分图Transformer并行架构，速读图稀疏化与去中心化优化算法。
-2) 最值得关注的是大规模图Transformer的自适应并行训练方案，以及利用岭谱稀疏化提升大规模图学习效率的新思路。
-3) 建议重点关注图Transformer的并行策略，思考如何将其应用于解决超大规模图数据的计算瓶颈。
-- 详情：[/202604/23/README](/202604/23/README)
+1) 今日图学习前沿速递：精读高分图Transformer并行训练，速读大规模图谱稀疏化新法。
+2) 最值得关注的是如何在大规模图上实现可扩展且自适应的图Transformer并行训练，以及利用岭谱稀疏化技术提升图学习效率。
+3) 建议关注大模型底座的读者重点研读图Transformer的并行策略，以应对未来超大规模图数据的计算挑战。
+- 详情：[/202604/24/README](/202604/24/README)
 
 ### 精读区论文标签
-1. [Scalable and Adaptive Parallel Training of Graph Transformer on Large Graphs](/202604/23/2604.16715v1-scalable-and-adaptive-parallel-training-of-graph-transformer-on-large-graphs)  
+1. [Scalable and Adaptive Parallel Training of Graph Transformer on Large Graphs](/202604/24/2604.16715v1-scalable-and-adaptive-parallel-training-of-graph-transformer-on-large-graphs)  
    标签：评分：9.0/10、query:dgnn-nas
    evidence：图Transformer分布式训练框架及自适应并行策略
 
 ### 速读区论文标签
-1. [Improved large-scale graph learning through ridge spectral sparsification](/202604/23/2604.20078v1-improved-large-scale-graph-learning-through-ridge-spectral-sparsification)  
+1. [Improved large-scale graph learning through ridge spectral sparsification](/202604/24/2604.20078v1-improved-large-scale-graph-learning-through-ridge-spectral-sparsification)  
    标签：评分：7.0/10、query:dgnn-nas
-   evidence：基于谱稀疏化的分布式流式图学习
-2. [Optimizing Stochastic Gradient Push under Broadcast Communications](/202604/23/2604.15549v1-optimizing-stochastic-gradient-push-under-broadcast-communications)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：优化去中心化联邦学习中的通信开销
+   evidence：通过拉普拉斯稀疏化进行分布式流式图学习
 
 
 <div class="dpr-home-promo-card">
