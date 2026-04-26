@@ -6,8 +6,8 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-25
-- 运行时间：2026-04-25 19:59:17 UTC
+- 最新运行日期：2026-04-26
+- 运行时间：2026-04-26 20:12:50 UTC
 - 运行状态：成功
 - 本次总论文数：4
 - 精读区：1
@@ -15,25 +15,25 @@
 
 ### 今日简报（AI）
 1) 今日速读3篇并精读1篇高分论文，聚焦大规模图计算与分布式训练的前沿优化。
-2) 最值得关注的是图Transformer的可扩展自适应并行训练，以及利用岭谱稀疏化提升大规模图学习的技术。
-3) 建议重点关注图Transformer架构的工程落地细节，并探索分布式通信优化在当前大模型训练中的实际应用。
-- 详情：[/202604/25/README](/202604/25/README)
+2) 最值得关注的是自适应并行图Transformer架构，以及利用岭谱稀疏化改进大规模图学习的新思路。
+3) 建议重点关注图模型并行训练的落地进展，并思考如何利用硬件特性（如复制引擎）降低分布式通信开销。
+- 详情：[/202604/26/README](/202604/26/README)
 
 ### 精读区论文标签
-1. [Scalable and Adaptive Parallel Training of Graph Transformer on Large Graphs](/202604/25/2604.16715v1-scalable-and-adaptive-parallel-training-of-graph-transformer-on-large-graphs)  
+1. [Scalable and Adaptive Parallel Training of Graph Transformer on Large Graphs](/202604/26/2604.16715v1-scalable-and-adaptive-parallel-training-of-graph-transformer-on-large-graphs)  
    标签：评分：9.0/10、query:dgnn-nas
-   evidence：图Transformer分布式训练框架，自适应并行策略
+   evidence：图Transformer分布式训练框架与自适应并行策略
 
 ### 速读区论文标签
-1. [Improved large-scale graph learning through ridge spectral sparsification](/202604/25/2604.20078v1-improved-large-scale-graph-learning-through-ridge-spectral-sparsification)  
+1. [Improved large-scale graph learning through ridge spectral sparsification](/202604/26/2604.20078v1-improved-large-scale-graph-learning-through-ridge-spectral-sparsification)  
    标签：评分：7.0/10、query:dgnn-nas
-   evidence：分布式流式图学习与拉普拉斯稀疏化
-2. [Optimizing Stochastic Gradient Push under Broadcast Communications](/202604/25/2604.15549v1-optimizing-stochastic-gradient-push-under-broadcast-communications)  
+   evidence：通过对拉普拉斯矩阵进行谱稀疏化实现分布式流式图学习
+2. [Nesterov Accelerated Distributed Optimization with Efficient Quantized Communication](/202604/26/2604.16906v1-nesterov-accelerated-distributed-optimization-with-efficient-quantized-communication)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：通过混合矩阵优化实现通信高效的去中心化联邦学习
-3. [Decoupled DiLoCo for Resilient Distributed Pre-training](/202604/25/2604.21428v1-decoupled-diloco-for-resilient-distributed-pre-training)  
+   evidence：带宽受限信道下的量化通信分布式优化
+3. [FEPLB: Exploiting Copy Engines for Nearly Free MoE Load Balancing in Distributed Training](/202604/26/2604.19654v1-feplb-exploiting-copy-engines-for-nearly-free-moe-load-balancing-in-distributed-training)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：Decoupled DiLoCo减少通信带宽并实现异步分布式训练
+   evidence：通过硬件拷贝引擎减少分布式训练中的通信开销
 
 
 <div class="dpr-home-promo-card">
