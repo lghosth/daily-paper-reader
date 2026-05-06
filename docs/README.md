@@ -6,56 +6,47 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-05-05
-- 运行时间：2026-05-05 20:06:53 UTC
+- 最新运行日期：2026-05-06
+- 运行时间：2026-05-06 20:35:03 UTC
 - 运行状态：成功
-- 本次总论文数：11
+- 本次总论文数：8
 - 精读区：0
-- 速读区：11
+- 速读区：8
 
 ### 今日简报（AI）
-1) 5月5日共速读11篇AI论文，聚焦联邦学习、神经网络架构搜索与LLM训练加速等前沿技术。
-2) 最值得关注的是无需训练即可寻找极简神经网络的《Random Cloud》，以及能显著降低大模型训练通信开销的《ZipCCL》。
-3) 建议读者重点关注上述两项无训练与通信压缩技术，探索它们在降低AI算力成本方面的实际应用潜力。
-- 详情：[/202605/05/README](/202605/05/README)
+1) 5月6日共速读8篇前沿论文，高效聚焦图计算、异步优化与联邦学习三大核心领域。
+2) 其中探讨图划分与调度复制机制的论文，以及解决异步SGD数据依赖延迟的研究最具参考价值。
+3) 建议读者重点关注分布式训练的优化策略，评估其在实际大规模系统中的应用潜力。
+- 详情：[/202605/06/README](/202605/06/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [FedSLoP: Memory-Efficient Federated Learning with Low-Rank Gradient Projection](/202605/05/2604.24012v1-fedslop-memory-efficient-federated-learning-with-low-rank-gradient-projection)  
+1. [Replication in Graph Partitioning and Scheduling Problems](/202605/06/2605.00209v1-replication-in-graph-partitioning-and-scheduling-problems)  
    标签：评分：7.0/10、query:dgnn-nas
-   evidence：通过低秩梯度投影实现通信高效的分布式训练
-2. [Random Cloud: Finding Minimal Neural Architectures Without Training](/202605/05/2604.26830v1-random-cloud-finding-minimal-neural-architectures-without-training)  
+   evidence：用于平衡负载和最小化并行执行中通信的图划分
+2. [Bringing Order to Asynchronous SGD: Towards Optimality under Data-Dependent Delays with Momentum](/202605/06/2605.02043v1-bringing-order-to-asynchronous-sgd-towards-optimality-under-data-dependent-delays-with-momentum)  
    标签：评分：7.0/10、query:dgnn-nas
+   evidence：基于动量的异步SGD框架，用于可扩展分布式训练并缓解梯度延迟
+3. [Application-Aware Twin-in-the-Loop Planning for Federated Split Learning over Wireless Edge Networks](/202605/06/2604.26105v1-application-aware-twin-in-the-loop-planning-for-federated-split-learning-over-wireless-edge-networks)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：通过联邦分割学习与压缩实现通信高效的分布式训练
+4. [Random Cloud: Finding Minimal Neural Architectures Without Training](/202605/06/2604.26830v1-random-cloud-finding-minimal-neural-architectures-without-training)  
+   标签：评分：6.0/10、query:dgnn-nas
    evidence：免训练的神经架构搜索方法
-3. [ZipCCL: Efficient Lossless Data Compression of Communication Collectives for Accelerating LLM Training](/202605/05/2604.27844v1-zipccl-efficient-lossless-data-compression-of-communication-collectives-for-accelerating-llm-training)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：分布式训练中通信集合的无损压缩
-4. [Replication in Graph Partitioning and Scheduling Problems](/202605/05/2605.00209v1-replication-in-graph-partitioning-and-scheduling-problems)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：通过复制节点减少通信的图划分方法
-5. [FedSLoP: Memory-Efficient Federated Learning with Low-Rank Gradient Projection](/202605/05/2604.24012v2-fedslop-memory-efficient-federated-learning-with-low-rank-gradient-projection)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：通过低秩梯度投影降低联邦学习通信成本
-6. [CommFuse: Hiding Tail Latency via Communication Decomposition and Fusion for Distributed LLM Training](/202605/05/2604.24013v2-commfuse-hiding-tail-latency-via-communication-decomposition-and-fusion-for-distributed-llm-training)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：通过分解与融合实现通信高效的分布式训练
-7. [Scalable Hyperparameter-Divergent Ensemble Training with Automatic Learning Rate Exploration for Large Models](/202605/05/2604.24708v1-scalable-hyperparameter-divergent-ensemble-training-with-automatic-learning-rate-exploration-for-large-models)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：具有可忽略通信开销的数据并行SGD
-8. [Subspace Optimization for Efficient Federated Learning under Heterogeneous Data](/202605/05/2604.25467v1-subspace-optimization-for-efficient-federated-learning-under-heterogeneous-data)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：面向通信高效联邦学习的子空间优化
-9. [Spectral Graph Sparsification Preserves Representation Geometry in Graph Neural Networks](/202605/05/2605.01136v1-spectral-graph-sparsification-preserves-representation-geometry-in-graph-neural-networks)  
+5. [Spectral Graph Sparsification Preserves Representation Geometry in Graph Neural Networks](/202605/06/2605.01136v1-spectral-graph-sparsification-preserves-representation-geometry-in-graph-neural-networks)  
    标签：评分：6.0/10、query:dgnn-nas
    evidence：用于高效GNN计算的光谱图稀疏化
-10. [Bringing Order to Asynchronous SGD: Towards Optimality under Data-Dependent Delays with Momentum](/202605/05/2605.02043v1-bringing-order-to-asynchronous-sgd-towards-optimality-under-data-dependent-delays-with-momentum)  
+6. [DBLP: Phase-Aware Bounded-Loss Transport for Burst-Resilient Distributed ML Training](/202605/06/2605.01989v1-dblp-phase-aware-bounded-loss-transport-for-burst-resilient-distributed-ml-training)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：基于动量的异步SGD分布式训练
-11. [FedPLT: Scalable, Resource-Efficient, and Heterogeneity-Aware Federated Learning via Partial Layer Training](/202605/05/2605.02337v1-fedplt-scalable-resource-efficient-and-heterogeneity-aware-federated-learning-via-partial-layer-training)  
+   evidence：通过阶段感知传输协议实现通信高效的分布式机器学习训练
+7. [FedQueue: Queue-Aware Federated Learning for Cross-Facility HPC Training](/202605/06/2605.02125v1-fedqueue-queue-aware-federated-learning-for-cross-facility-hpc-training)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：通过部分层更新实现通信高效的分布式训练
+   evidence：具有延迟感知聚合的异步分布式训练
+8. [FedPLT: Scalable, Resource-Efficient, and Heterogeneity-Aware Federated Learning via Partial Layer Training](/202605/06/2605.02337v1-fedplt-scalable-resource-efficient-and-heterogeneity-aware-federated-learning-via-partial-layer-training)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：通过部分层训练实现通信高效的分布式学习
 
 
 <div class="dpr-home-promo-card">
