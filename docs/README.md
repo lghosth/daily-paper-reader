@@ -6,37 +6,35 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-05-20
-- 运行时间：2026-05-20 21:20:45 UTC
+- 最新运行日期：2026-05-21
+- 运行时间：2026-05-21 20:52:25 UTC
 - 运行状态：成功
-- 本次总论文数：5
-- 精读区：1
+- 本次总论文数：4
+- 精读区：0
 - 速读区：4
 
 ### 今日简报（AI）
-1) 今日速读5篇分布式与图学习前沿，精读高分论文打破全图GNN训练的内存墙。
-2) 最值得关注的是通过存储卸载（Offloading）大幅提升GNN训练效率，以及多模态联邦图学习中的语义漂移应对策略。
-3) 建议重点关注如何利用底层系统优化解决复杂模型训练时的硬件瓶颈问题。
-- 详情：[/202605/20/README](/202605/20/README)
+1) 今日速读 4 篇分布式学习论文，聚焦异构系统下的通信与计算优化。
+2) 最值得关注的是“近似梯度编码”与“通信计算重叠”方向，它们能有效缓解异构环境下的通信瓶颈。
+3) 建议关注如何将这些异步与稀疏化策略应用于实际的大模型训练中。
+- 详情：[/202605/21/README](/202605/21/README)
 
 ### 精读区论文标签
-1. [GriNNder: Breaking the Memory Capacity Wall in Full-Graph GNN Training with Storage Offloading](/202605/20/2605.11517v1-grinnder-breaking-the-memory-capacity-wall-in-full-graph-gnn-training-with-storage-offloading)  
-   标签：评分：8.0/10、query:dgnn-nas
-   evidence：通过存储卸载降低多设备间通信开销的全图GNN训练系统
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [STAGE: Tackling Semantic Drift in Multimodal Federated Graph Learning](/202605/20/2605.11919v1-stage-tackling-semantic-drift-in-multimodal-federated-graph-learning)  
+1. [Communication-Efficient Approximate Gradient Coding for Distributed Learning in Heterogeneous Systems](/202605/21/2605.15890v1-communication-efficient-approximate-gradient-coding-for-distributed-learning-in-heterogeneous-systems)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：面向分布式学习的通信高效梯度编码
+2. [LOSCAR-SGD: Local SGD with Communication-Computation Overlap and Delay-Corrected Sparse Model Averaging](/202605/21/2605.20866v1-loscar-sgd-local-sgd-with-communication-computation-overlap-and-delay-corrected-sparse-model-averaging)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：通过局部SGD、压缩与重叠实现通信高效的分布式训练
+3. [Rescaled Asynchronous SGD: Optimal Distributed Optimization under Data and System Heterogeneity](/202605/21/2605.13434v1-rescaled-asynchronous-sgd-optimal-distributed-optimization-under-data-and-system-heterogeneity)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：联邦图学习中的通信挑战
-2. [Rescaled Asynchronous SGD: Optimal Distributed Optimization under Data and System Heterogeneity](/202605/20/2605.13434v1-rescaled-asynchronous-sgd-optimal-distributed-optimization-under-data-and-system-heterogeneity)  
+   evidence：异构环境下分布式优化的重缩放异步SGD
+4. [Optimized Federated Knowledge Distillation with Distributed Neural Architecture Search](/202605/21/2605.21322v1-optimized-federated-knowledge-distillation-with-distributed-neural-architecture-search)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：异步SGD用于异构分布式优化
-3. [Communication-Efficient Approximate Gradient Coding for Distributed Learning in Heterogeneous Systems](/202605/20/2605.15890v1-communication-efficient-approximate-gradient-coding-for-distributed-learning-in-heterogeneous-systems)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：用于分布式学习的通信高效梯度编码
-4. [Modeling the Impact of Fiber Latency on Compute-Communication Overlap in Geo-Distributed Multi-Datacenter AI Training](/202605/20/2605.19169v1-modeling-the-impact-of-fiber-latency-on-compute-communication-overlap-in-geo-distributed-multi-datacenter-ai-training)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：地理分布式AI训练中的数据并行与计算通信重叠
+   evidence：将分布式神经架构搜索与通信高效联邦学习相结合
 
 
 <div class="dpr-home-promo-card">
