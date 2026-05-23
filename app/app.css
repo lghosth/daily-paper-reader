@@ -4865,6 +4865,125 @@ article.markdown-section {
   min-width: 0;
 }
 
+.dpr-pdf-preview-toggle {
+  flex: 0 0 auto;
+  border: 1px solid rgba(231, 76, 60, 0.22);
+  border-radius: 999px;
+  background: #fff5f3;
+  color: #c0392b;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 5px 10px;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.dpr-pdf-preview-toggle:hover {
+  background: #ffe9e5;
+  border-color: rgba(231, 76, 60, 0.38);
+  color: #a93226;
+}
+
+.dpr-pdf-preview-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(50vw, 760px);
+  min-width: 420px;
+  background: #fff;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: -18px 0 44px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(100%, 0, 0);
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.2, 1), opacity 0.22s ease;
+  z-index: 90;
+}
+
+body.dpr-pdf-preview-open .dpr-pdf-preview-panel {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate3d(0, 0, 0);
+}
+
+body.dpr-paper-page.dpr-pdf-preview-open article.markdown-section {
+  transform: translate3d(calc(-1 * min(24vw, 360px)), 0, 0);
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.dpr-pdf-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fafafa;
+}
+
+.dpr-pdf-preview-title {
+  color: #2c3e50;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.dpr-pdf-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.markdown-section .dpr-pdf-preview-open-link,
+.markdown-section .dpr-pdf-preview-open-link:link,
+.markdown-section .dpr-pdf-preview-open-link:visited,
+.dpr-pdf-preview-open-link,
+.dpr-pdf-preview-open-link:link,
+.dpr-pdf-preview-open-link:visited {
+  color: #c0392b !important;
+  font-size: 12px;
+  font-weight: 600 !important;
+  text-decoration: none;
+}
+
+.dpr-pdf-preview-close {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  color: #333;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.dpr-pdf-preview-close:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.dpr-pdf-preview-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #f5f5f5;
+}
+
+@media (max-width: 1180px) {
+  body.dpr-paper-page.dpr-pdf-preview-open article.markdown-section {
+    transform: none;
+  }
+
+  .dpr-pdf-preview-panel {
+    width: min(92vw, 760px);
+    min-width: 0;
+  }
+}
+
 /* 论文元信息区域的链接使用正文颜色（覆盖全局红色链接样式） */
 .markdown-section .paper-meta-row .paper-meta-left a,
 .markdown-section .paper-meta-row .paper-meta-left a:link,

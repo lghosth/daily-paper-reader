@@ -3929,6 +3929,60 @@ window.$docsify = {
         });
       };
 
+      const closePdfPreview = () => {
+        document.body.classList.remove('dpr-pdf-preview-open');
+        document.querySelectorAll('[data-pdf-preview-toggle]').forEach((btn) => {
+          btn.setAttribute('aria-expanded', 'false');
+          btn.textContent = '预览 PDF';
+        });
+      };
+
+      const ensurePdfPreviewPanel = () => {
+        let panel = document.getElementById('dpr-pdf-preview-panel');
+        if (panel) return panel;
+        panel = document.createElement('aside');
+        panel.id = 'dpr-pdf-preview-panel';
+        panel.className = 'dpr-pdf-preview-panel';
+        panel.setAttribute('aria-label', 'PDF 预览');
+        panel.innerHTML = [
+          '<div class="dpr-pdf-preview-header">',
+          '<div class="dpr-pdf-preview-title">PDF 预览</div>',
+          '<div class="dpr-pdf-preview-actions">',
+          '<a class="dpr-pdf-preview-open-link" href="#" target="_blank" rel="noopener">新窗口打开</a>',
+          '<button class="dpr-pdf-preview-close" type="button" aria-label="关闭 PDF 预览">×</button>',
+          '</div>',
+          '</div>',
+          '<iframe class="dpr-pdf-preview-frame" title="PDF 预览"></iframe>',
+        ].join('');
+        document.body.appendChild(panel);
+        panel.querySelector('.dpr-pdf-preview-close')?.addEventListener('click', closePdfPreview);
+        return panel;
+      };
+
+      const bindPdfPreviewToggle = () => {
+        document.querySelectorAll('[data-pdf-preview-toggle]').forEach((btn) => {
+          if (btn.dataset.bound === '1') return;
+          btn.dataset.bound = '1';
+          btn.addEventListener('click', () => {
+            const url = String(btn.getAttribute('data-pdf-url') || '').trim();
+            if (!url) return;
+            const panel = ensurePdfPreviewPanel();
+            const frame = panel.querySelector('.dpr-pdf-preview-frame');
+            const openLink = panel.querySelector('.dpr-pdf-preview-open-link');
+            if (frame && frame.getAttribute('src') !== url) {
+              frame.setAttribute('src', url);
+            }
+            if (openLink) {
+              openLink.setAttribute('href', url);
+            }
+            const nextOpen = !document.body.classList.contains('dpr-pdf-preview-open');
+            document.body.classList.toggle('dpr-pdf-preview-open', nextOpen);
+            btn.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+            btn.textContent = nextOpen ? '关闭预览' : '预览 PDF';
+          });
+        });
+      };
+
       // 根据 front matter 生成论文页面 HTML
       const renderPaperFromMeta = (meta) => {
         if (!meta) return '';
@@ -4002,7 +4056,7 @@ window.$docsify = {
         lines.push(`<p><strong>Date</strong>: ${escapeHtml(meta.date || 'Unknown')}</p>`);
         if (meta.pdf) {
           lines.push(
-            `<p class="paper-meta-link-row"><span class="paper-meta-link-label"><strong>PDF</strong>:</span> <a class="paper-meta-link" href="${escapeHtml(meta.pdf)}" target="_blank">${escapeHtml(meta.pdf)}</a></p>`
+            `<p class="paper-meta-link-row"><span class="paper-meta-link-label"><strong>PDF</strong>:</span> <a class="paper-meta-link" href="${escapeHtml(meta.pdf)}" target="_blank">${escapeHtml(meta.pdf)}</a> <button class="dpr-pdf-preview-toggle" type="button" data-pdf-preview-toggle data-pdf-url="${escapeHtml(meta.pdf)}" aria-expanded="false">预览 PDF</button></p>`
           );
         }
         if (meta.tags && meta.tags.length) {
@@ -4109,6 +4163,7 @@ window.$docsify = {
         const isPaperPage = isPaperRouteFile(file);
         const isLandingLikePage = isHomePage || isReportPage;
         syncPageTypeClasses({ isHomePage, isReportPage, isPaperPage });
+        closePdfPreview();
 
         // A. 对正文区域进行一次全局公式渲染（支持 $...$ / $$...$$）
         const mainContent = document.querySelector('.markdown-section');
@@ -4120,6 +4175,7 @@ window.$docsify = {
 
         // 论文页标题条排版（只对 docs/YYYYMM/DD/*.md 生效）
         applyPaperTitleBar();
+        bindPdfPreviewToggle();
 
         // 论文页左右切换：更新导航列表并绑定事件（只绑定一次）
         updateNavState();
