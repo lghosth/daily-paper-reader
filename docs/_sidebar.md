@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-06-17 <!--dpr-date:20260617-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/17/2606.11339v1-quantized-stochastic-primal-dual-methods-for-distributed-optimization-under-relaxed-global-geometry" data-sidebar-item="{&quot;title&quot;: &quot;Quantized Stochastic Primal-Dual Methods for Distributed Optimization under Relaxed Global Geometry&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.11339v1-quantized-stochastic-primal-dual-methods-for-distributed-optimization-under-relaxed-global-geometry&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;有限比特通信的分布式优化量化随机原始-对偶方法&quot;}">Quantized Stochastic Primal-Dual Methods for Distributed Optimization under Relaxed Global Geometry</a>
   * 2026-06-16 <!--dpr-date:20260616-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/16/2606.11081v1-unifying-local-communications-and-local-updates-for-llm-pretraining" data-sidebar-item="{&quot;title&quot;: &quot;Unifying Local Communications and Local Updates for LLM Pretraining&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.11081v1-unifying-local-communications-and-local-updates-for-llm-pretraining&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;通信高效的分布式训练&quot;}">Unifying Local Communications and Local Updates for LLM Pretraining</a>
