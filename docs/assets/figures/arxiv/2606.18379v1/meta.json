@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2606.18379v1/fig-001.webp",
+      "caption": "Figure 1 Lifecycle co-design in RankGraph-2. Serving and training impose requirements (dashed red, left) on upstream stages. Each requirement is resolved by a codesigned solution (solid blue, right), creating mutual dependencies across the pipeline.",
+      "page": 2,
+      "index": 1,
+      "width": 436,
+      "height": 329
+    },
+    {
+      "url": "assets/figures/arxiv/2606.18379v1/fig-002.webp",
+      "caption": "Table 1 Cross-stage design coupling in billion-scale recommendation systems. For competing systems, “Cross-stage gaps” highlights dependencies left unaddressed. For RankGraph-2, the same column shows the co-design couplings that close these gaps.",
+      "page": 4,
+      "index": 2,
+      "width": 968,
+      "height": 297
+    },
+    {
+      "url": "assets/figures/arxiv/2606.18379v1/fig-003.webp",
+      "caption": "Table 4 Learned index with vs without the regularization module for code imbalance",
+      "page": 9,
+      "index": 3,
+      "width": 478,
+      "height": 366
+    },
+    {
+      "url": "assets/figures/arxiv/2606.18379v1/fig-004.webp",
+      "caption": "Figure 2 The RankGraph-2 system architecture for billion-node graph learning and retrieval. (A) Graph Construction transforms raw user-item interaction logs into a tractable, heterogeneous graph via popularity bias correction, edge subsampling, and Personalized PageRank (PPR) multi-hop neighbor pre-computation. (B) Model Training leverages multi-head type-aware feature encoders and a heterogeneous aggregator to optimize node representations using a contrastive link prediction objective. (C) Index Co-Learning utilizes residual quantization to jointly train a regularized cluster index, preventing codebook collapse and enabling KNN-free U2U2I retrieval that reduces serving cost by 83%.",
+      "page": 5,
+      "index": 4,
+      "width": 972,
+      "height": 537
+    }
+  ]
+}
