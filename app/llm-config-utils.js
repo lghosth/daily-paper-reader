@@ -28,6 +28,7 @@
       label: 'GLM Coding Plan',
       baseUrl: 'https://open.bigmodel.cn/api/coding/paas/v4',
       models: Object.freeze([
+        'glm-5.2',
         'glm-5.1',
         'glm-5',
         'glm-4.7',
