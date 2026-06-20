@@ -147,7 +147,10 @@
 
   <script>
     (function () {
-      var DEFAULT_CDN_BASE = 'https://cdn.zwwen.online';
+      // 本 fork 已本地化全部静态资源并定制前端（GLM/OpenAI-compatible 预设向导、glm-5.2 等），
+      // 必须禁用上游作者 CDN（cdn.zwwen.online），否则页面会加载上游未定制版本，导致
+      // 配置向导退化为 DeepSeek-only、GLM 预设与 glm-5.2 不生效。
+      var DEFAULT_CDN_BASE = '';
       var ASSET_TIMEOUT_MS = 6000;
       var explicitBase = String(window.DPR_CDN_BASE || '').replace(/\/$/, '');
       var disabled = String(window.DPR_DISABLE_CDN || '').toLowerCase() === '1';
