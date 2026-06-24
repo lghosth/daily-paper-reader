@@ -686,6 +686,7 @@ def main() -> None:
     run_step(
         "Step 4 - LLM refine",
         [python, os.path.join(SRC_DIR, "4.llm_refine_papers.py")],
+        env=resolve_summary_step_env(),
     )
     if trace_ids:
         print_trace_llm("LLM", llm_path, trace_ids)
