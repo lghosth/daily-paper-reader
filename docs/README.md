@@ -6,29 +6,29 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-26
-- 运行时间：2026-06-26 21:01:09 UTC
+- 最新运行日期：2026-06-27
+- 运行时间：2026-06-27 21:13:27 UTC
 - 运行状态：成功
 - 本次总论文数：2
 - 精读区：0
 - 速读区：2
 
 ### 今日简报（AI）
-今日速读两篇联邦学习论文，分别解决重尾噪声下的方差缩减算法和Flower框架的半异步扩展。  
-推荐关注：处理重尾梯度与通信噪声的鲁棒算法，以及半异步联邦学习的工程实现。  
-若偏实用可深入Flower扩展代码，若偏理论可研究方差缩减对噪声的收敛性提升。
-- 详情：[/202606/26/README](/202606/26/README)
+今日速读两篇论文：联邦长尾图学习与随机迹估计图三角计数。  
+值得关注联邦长尾图学习中的能量引导双重解耦方法，以及随机迹估计加速三角形计数的思路。  
+建议优先精读第一篇，探索图神经网络处理长尾分布的实际应用；第二篇适合对图算法效率感兴趣的读者。
+- 详情：[/202606/27/README](/202606/27/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Federated learning with heavy-tailed gradient noise and communication noise: a variance-reduction based algorithm](/202606/26/2606.22466v1-federated-learning-with-heavy-tailed-gradient-noise-and-communication-noise-a-variance-reduction-based-algorithm)  
+1. [Towards Federated Long-Tailed Graph Learning: An Energy-Guided Dual Decoupling Approach](/202606/27/2606.24237v1-towards-federated-long-tailed-graph-learning-an-energy-guided-dual-decoupling-approach)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：联邦图学习作为分布式训练系统
+2. [Counting Triangles of Graphs via Randomized Trace Estimation with Incomplete Matrix-Vector Products](/202606/27/2606.22629v1-counting-triangles-of-graphs-via-randomized-trace-estimation-with-incomplete-matrix-vector-products)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：针对通信噪声的联邦学习方差缩减算法
-2. [Semi-asynchronous Federated Learning in Flower: Framework Extension and Performance Assessment](/202606/26/2606.24230v1-semi-asynchronous-federated-learning-in-flower-framework-extension-and-performance-assessment)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：半异步联邦学习处理客户端异构和掉队者
+   evidence：针对分布式图三角形计数的通信高效方法
 
 
 <div class="dpr-home-promo-card">
