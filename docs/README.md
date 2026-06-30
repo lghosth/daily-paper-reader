@@ -6,30 +6,28 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-29
-- 运行时间：2026-06-29 21:02:39 UTC
+- 最新运行日期：2026-06-30
+- 运行时间：2026-06-30 21:55:47 UTC
 - 运行状态：成功
-- 本次总论文数：3
-- 精读区：0
-- 速读区：3
+- 本次总论文数：2
+- 精读区：1
+- 速读区：1
 
 ### 今日简报（AI）
-今日速读3篇论文，聚焦知识蒸馏与联邦学习在分布式系统中的优化。最值得关注的方向是《Optimizing Teacher-Student Partitioning》中HPC系统下的可扩展知识蒸馏，以及《Nautilus》中车-边-云场景的可验证分层联邦学习框架。建议重点关注这些方法在资源受限或可信性要求高场景中的实际部署潜力。
-- 详情：[/202606/29/README](/202606/29/README)
+今日精读《Lossy Compression for Sparse Aggregation》（8.0分），速读《A Spectral Theory of Normalized Corrected GNN Propagation》（6.0分），聚焦稀疏聚合压缩与GNN传播理论。  
+最值得关注的是精读论文提出的有损压缩方法，为解决稀疏聚合中的存储和通信瓶颈提供了新思路。  
+建议优先精读这篇高分压缩方法论文，再配合谱理论论文深化对GNN传播归一化修正的理解。
+- 详情：[/202606/30/README](/202606/30/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [Lossy Compression for Sparse Aggregation](/202606/30/2606.30425v1-lossy-compression-for-sparse-aggregation)  
+   标签：评分：8.0/10、query:dgnn-nas
+   evidence：通信高效的稀疏聚合压缩
 
 ### 速读区论文标签
-1. [Optimizing Teacher-Student Partitioning for Scalable Knowledge Distillation on HPC Systems](/202606/29/2606.27797v1-optimizing-teacher-student-partitioning-for-scalable-knowledge-distillation-on-hpc-systems)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：优化师生模型划分以减少通信开销，适用于HPC知识蒸馏
-2. [Nautilus: A Verifiable Hierarchical Federated Learning Framework for Vehicular-Edge-Cloud Systems](/202606/29/2606.23017v1-nautilus-a-verifiable-hierarchical-federated-learning-framework-for-vehicular-edge-cloud-systems)  
+1. [A Spectral Theory of Normalized Corrected GNN Propagation](/202606/30/2606.23572v1-a-spectral-theory-of-normalized-corrected-gnn-propagation)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：联邦学习中的通信高效压缩调度
-3. [Nautilus: A Verifiable Hierarchical Federated Learning Framework for Vehicular-Edge-Cloud Systems](/202606/29/2606.23017v2-nautilus-a-verifiable-hierarchical-federated-learning-framework-for-vehicular-edge-cloud-systems)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：通过动态分配压缩比的资源感知调度提升联邦学习通信效率
+   evidence：GNN传播的谱理论，对分布式训练设计有参考价值
 
 
 <div class="dpr-home-promo-card">

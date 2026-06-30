@@ -1,6 +1,11 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-06-30 <!--dpr-date:20260630-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/30/2606.30425v1-lossy-compression-for-sparse-aggregation" data-sidebar-item="{&quot;title&quot;: &quot;Lossy Compression for Sparse Aggregation&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.30425v1-lossy-compression-for-sparse-aggregation&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;通信高效的稀疏聚合压缩&quot;}">Lossy Compression for Sparse Aggregation</a>
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/30/2606.23572v1-a-spectral-theory-of-normalized-corrected-gnn-propagation" data-sidebar-item="{&quot;title&quot;: &quot;A Spectral Theory of Normalized Corrected GNN Propagation&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.23572v1-a-spectral-theory-of-normalized-corrected-gnn-propagation&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;GNN传播的谱理论，对分布式训练设计有参考价值&quot;}">A Spectral Theory of Normalized Corrected GNN Propagation</a>
   * 2026-06-29 <!--dpr-date:20260629-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/29/2606.27797v1-optimizing-teacher-student-partitioning-for-scalable-knowledge-distillation-on-hpc-systems" data-sidebar-item="{&quot;title&quot;: &quot;Optimizing Teacher-Student Partitioning for Scalable Knowledge Distillation on HPC Systems&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.27797v1-optimizing-teacher-student-partitioning-for-scalable-knowledge-distillation-on-hpc-systems&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;优化师生模型划分以减少通信开销，适用于HPC知识蒸馏&quot;}">Optimizing Teacher-Student Partitioning for Scalable Knowledge Distillation on HPC Systems</a>
