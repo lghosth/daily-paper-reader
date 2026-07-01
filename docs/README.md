@@ -6,28 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-30
-- 运行时间：2026-06-30 21:55:47 UTC
+- 最新运行日期：2026-07-01
+- 运行时间：2026-07-01 20:55:27 UTC
 - 运行状态：成功
 - 本次总论文数：2
 - 精读区：1
 - 速读区：1
 
 ### 今日简报（AI）
-今日精读《Lossy Compression for Sparse Aggregation》（8.0分），速读《A Spectral Theory of Normalized Corrected GNN Propagation》（6.0分），聚焦稀疏聚合压缩与GNN传播理论。  
-最值得关注的是精读论文提出的有损压缩方法，为解决稀疏聚合中的存储和通信瓶颈提供了新思路。  
-建议优先精读这篇高分压缩方法论文，再配合谱理论论文深化对GNN传播归一化修正的理解。
-- 详情：[/202606/30/README](/202606/30/README)
+今日精读一篇高分论文《AC²P²SL》，探讨边缘网络中自适应通信-计算流水线并行分裂学习；速读一篇能量基结构化概率推理的联邦学习工作。最值得关注的是分裂学习在边缘场景下的通信与计算平衡优化方案。建议后续重点跟踪边缘计算中通信效率提升与模型隐私保护结合的研究。
+- 详情：[/202607/01/README](/202607/01/README)
 
 ### 精读区论文标签
-1. [Lossy Compression for Sparse Aggregation](/202606/30/2606.30425v1-lossy-compression-for-sparse-aggregation)  
-   标签：评分：8.0/10、query:dgnn-nas
-   evidence：通信高效的稀疏聚合压缩
+1. [AC$^2$P$^2$SL: Adaptive Communication-Computation Pipeline Parallel Split Learning over Edge Networks](/202607/01/2606.31276v1-ac2p2sl-adaptive-communication-computation-pipeline-parallel-split-learning-over-edge-networks)  
+   标签：评分：9.0/10、query:dgnn-nas
+   evidence：自适应通信计算流水线并行可有效减少训练时间
 
 ### 速读区论文标签
-1. [A Spectral Theory of Normalized Corrected GNN Propagation](/202606/30/2606.23572v1-a-spectral-theory-of-normalized-corrected-gnn-propagation)  
+1. [Federated Learning with Energy-Based Structured Probabilistic Inference](/202607/01/2606.30161v1-federated-learning-with-energy-based-structured-probabilistic-inference)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：GNN传播的谱理论，对分布式训练设计有参考价值
+   evidence：联邦学习中结构化聚合权重优化，提升通信效率
 
 
 <div class="dpr-home-promo-card">
