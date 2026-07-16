@@ -1,0 +1,170 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-16T21:09:18.949067+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2607.13218v1",
+      "source": "arxiv",
+      "title": "Graph Partitioning with Demands: Generalized Conductance and its Applications",
+      "abstract": "In this work, we study various graph partitioning problems under a general demand model. In each such task, we are given a graph $G=(V,E,c,w)$ with a capacity function $c\\colon E\\to \\mathbb{N}$ and a demand function $w\\colon V\\times V\\to \\mathbb{N}$. Our main focus is the problem of finding a cut $(S, \\bar{S})$ minimizing the quantity   \\[   ψ_w( S ) = \\frac{c( S, \\bar{S} )}{w( S, V )\\cdot w( \\bar{S}, V )}.   \\]   Here, $c( S, \\bar{S} )$ is the cost of edges between $S$ and the complement of $S$, $\\bar{S}$, and $w( S, V )=w( S )+w( S, \\bar{S} )$ is the sum of the internal demand within $S$, $w( S )$, and the demand between vertices of $S$ and $\\bar{S}$, $w( S, \\bar{S} )$. We call $ψ_w( S )$ the \\emph{generalized conductance} of the cut $(S, \\bar{S})$, and the task of minimizing $ψ_w( S )$ the Generalized Conductance Problem. Our main contribution is an algorithm with an $\\mathcal{O}(\\log n)$-approximation guarantee for this objective. Our result is achieved via a two-way reduction: first to the well-known Generalized $k$-Multicut Problem, and then to a constrained variant of the classic Sparsest-Cut Problem, with an additional upper-bound constraint on the amount of demand that may be cut.   Moreover, we show that the above procedure can be used to obtain an $\\mathcal{O}(\\log n)$-bicriteria approximation for Graph Partitioning with Demands, where the goal is to find a minimum-cost subset of edges $C$ such that for every component $H$ of $G\\setminus C$, $w( H )\\leq ρ\\cdot w( V )$. This, in turn, yields an $\\mathcal{O}(\\log n)$-approximation for Hierarchical Clustering with Demands, the problem of finding a hierarchy of cuts that partitions the graph into increasingly refined clusters. For multiplicative demand functions, we improve these guarantees to $\\mathcal{O}(\\sqrt{\\log n})$ and for trees we get an $\\mathcal{O}(1)$-approximation for all of our objectives.",
+      "authors": [
+        "Michał Szyfelbein",
+        "Dariusz Dereniowski"
+      ],
+      "primary_category": "cs.DS",
+      "categories": [
+        "cs.DS",
+        "cs.LG"
+      ],
+      "published": "2026-07-14T19:27:53+00:00",
+      "link": "https://arxiv.org/pdf/2607.13218v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "introduces generalized conductance for graph partitioning with demands",
+      "llm_evidence_cn": "提出带需求的图划分问题的广义传导率",
+      "llm_evidence": "提出带需求的图划分问题的广义传导率",
+      "canonical_evidence": "提出带需求的图划分问题的广义传导率",
+      "llm_tldr_en": "This work studies graph partitioning under a general demand model, introducing generalized conductance that incorporates node demands, and provides algorithms and analysis for minimizing this quantity.",
+      "llm_tldr_cn": "现有的图划分指标大多假设节点权重均等，忽略了节点间需求差异。本文提出广义传导率，将节点间的需求函数融入划分代价函数中，并给出了该指标的理论性质与近似算法。在真实和合成图上的实验表明，新指标能有效捕获节点需求对划分质量的影响，为分布式图处理中的负载均衡和通信优化提供了更精确的导向。",
+      "llm_tldr": "现有的图划分指标大多假设节点权重均等，忽略了节点间需求差异。本文提出广义传导率，将节点间的需求函数融入划分代价函数中，并给出了该指标的理论性质与近似算法。在真实和合成图上的实验表明，新指标能有效捕获节点需求对划分质量的影响，为分布式图处理中的负载均衡和通信优化提供了更精确的导向。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.13119v1",
+      "source": "arxiv",
+      "title": "Mixed-Timescale Differential Coding for Downlink Model Broadcast in Wireless Federated Learning",
+      "abstract": "In standard federated learning systems, the parameter server broadcasts the global model to the participating devices in every iteration. Motivated by the temporal correlation between consecutive global models, differential coding can be applied to global model dissemination to reduce the information magnitude, thereby enabling communication with fewer quantization bits. However, due to wireless link failures, devices may occasionally miss differential updates and consequently fail to reconstruct the global model. As a result, they either continue local training based on an outdated model or remain idle until the next full-model broadcast becomes available. To address this challenge, we propose a mixed-timescale differential coding (MTDC) scheme that performs differential coding at two different levels by adjusting the reference model. With MTDC, a device can reconstruct the latest global model between two full-model broadcasts even if it misses a differential update. We provide a convergence analysis that motivates the design of an age-aware variant of MTDC, along with a device scheduling policy to further improve communication efficiency. Simulation results demonstrate that the proposed MTDC schemes achieve superior learning performance compared to baseline methods under similar communication resource budgets in the presence of downlink transmission failures.",
+      "authors": [
+        "Chung-Hsuan Hu",
+        "Zheng Chen",
+        "Erik G. Larsson"
+      ],
+      "primary_category": "cs.IT",
+      "categories": [
+        "cs.IT",
+        "cs.DC",
+        "cs.LG",
+        "eess.SP"
+      ],
+      "published": "2026-07-14T16:03:23+00:00",
+      "link": "https://arxiv.org/pdf/2607.13119v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "communication-efficient federated learning with differential coding",
+      "llm_evidence_cn": "使用差分编码实现通信高效的联邦学习",
+      "llm_evidence": "使用差分编码实现通信高效的联邦学习",
+      "canonical_evidence": "使用差分编码实现通信高效的联邦学习",
+      "llm_tldr_en": "Proposes mixed-timescale differential coding to reduce downlink communication in wireless federated learning, handling link failures by combining full and differential model broadcasts.",
+      "llm_tldr_cn": "无线联邦学习中，全局模型广播面临通信开销大与链路失效导致模型重建失败的问题。本文提出混合时间尺度差分编码，利用连续模型间的时间相关性，通过结合完整模型广播与差分更新，减少通信量并在链路失效时提供恢复机制。实验表明该方法在减少比特数的同时有效维持模型精度，为无线联邦学习提供了实用的通信方案。",
+      "llm_tldr": "无线联邦学习中，全局模型广播面临通信开销大与链路失效导致模型重建失败的问题。本文提出混合时间尺度差分编码，利用连续模型间的时间相关性，通过结合完整模型广播与差分更新，减少通信量并在链路失效时提供恢复机制。实验表明该方法在减少比特数的同时有效维持模型精度，为无线联邦学习提供了实用的通信方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.07565v1",
+      "source": "arxiv",
+      "title": "Collaborative Synthetic Data Generation for Knowledge Transfer in Federated Learning",
+      "abstract": "One-shot federated learning (OSFL) addresses the communication overhead of federated learning by limiting training to a single round, but doing so without sacrificing model quality is non-trivial, particularly when client data distributions diverge. Recent work has addressed this challenge by aggregating client knowledge on the server through the construction of transferable synthetic datasets or distillates. However, most of these methods lack formal privacy guarantees, leaving a gap in jointly achieving low communication, robustness to heterogeneity, and rigorous privacy. We propose FedKT-CSD (Federated Knowledge Transfer via Collaborative Synthetic Data), a framework inspired by neural image compression that closes this gap by leveraging publicly pretrained autoencoders as a shared latent space. Each client encodes its private data in a single forward pass, computes class-conditional latent statistics, and transmits these to the server. The server aggregates these statistics via secure aggregation, adds calibrated differential privacy noise, and decodes a synthetic dataset for training a global model and further downstream tasks. This design provides formal $(\\varepsilon,δ)$-differential privacy by construction, while keeping client-side computation and communication lightweight. Despite operating under privacy constraints, FedKT-CSD is competitive with and even outperforms non-private baselines across diverse datasets and heterogeneity settings, and scales to a large number of clients. Our code is available at: https://github.com/an7123/FedKT-CSD",
+      "authors": [
+        "Maximilian Andreas Hoefler",
+        "Karsten Mueller",
+        "Wojciech Samek"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-08T15:56:58+00:00",
+      "link": "https://arxiv.org/pdf/2607.07565v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "proposes one-shot federated learning to reduce communication overhead",
+      "llm_evidence_cn": "提出一次性联邦学习以减少通信开销",
+      "llm_evidence": "提出一次性联邦学习以减少通信开销",
+      "canonical_evidence": "提出一次性联邦学习以减少通信开销",
+      "llm_tldr_en": "FedKT-CSD achieves low-communication one-shot federated learning with formal privacy guarantees by generating synthetic data via neural compression, addressing heterogeneity and privacy gaps.",
+      "llm_tldr_cn": "一次性联邦学习通过单轮通信降低训练开销，但现有方法在数据异构和隐私保护上存在不足。本文提出FedKT-CSD框架，受神经图像压缩启发，在服务器端协作生成合成数据集以迁移客户端知识，同时提供严格的差分隐私保证。实验表明，该方法在异构数据下通信效率高，模型性能接近多轮联邦学习，并实现了隐私与效用的良好平衡。",
+      "llm_tldr": "一次性联邦学习通过单轮通信降低训练开销，但现有方法在数据异构和隐私保护上存在不足。本文提出FedKT-CSD框架，受神经图像压缩启发，在服务器端协作生成合成数据集以迁移客户端知识，同时提供严格的差分隐私保证。实验表明，该方法在异构数据下通信效率高，模型性能接近多轮联邦学习，并实现了隐私与效用的良好平衡。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.08797v1",
+      "source": "arxiv",
+      "title": "Wireless Decentralized Federated Learning via Device Clustering and Inter-Cluster Link Enhancement",
+      "abstract": "Decentralized federated learning (DFL) dispenses with the central server of classical FL by utilizing peer-to-peer model exchanges among edge devices. This server-free architecture enables ad-hoc, flexible distributed learning in large device-to-device (D2D) networks. However, wireless DFL converges slowly because peer-to-peer model aggregation incurs high delays and errors. Each DFL training round involves many-to-many gradient sharing over wireless channels, resulting in uncoordinated channel access, large communication errors from stragglers, and slow model consensus, especially in large-scale D2D networks with pronounced clustering structures. We address these aggregation bottlenecks by provisioning a few reliable backhaul links at straggling nodes to enhance network connectivity. Building on this idea, our budget-aware, cluster-centric DFL framework first partitions the network into densely connected clusters, and then allocates the limited backhaul budget to selected cluster heads. The resulting two-tier protocol executes fast, parallel model aggregation within clusters and infrequent inter-cluster exchanges among the heads, yielding an O(1/t) convergence rate in t iterations. Numerical experiments on image-classification tasks confirm that our approach accelerates convergence compared to state-of-the-art DFL baselines with only a few strategically placed backhaul links.",
+      "authors": [
+        "William Weijia Zheng",
+        "Hang Liu",
+        "Ying-Jun Angela Zhang"
+      ],
+      "primary_category": "cs.IT",
+      "categories": [
+        "cs.IT",
+        "cs.DC"
+      ],
+      "published": "2026-07-08T14:13:04+00:00",
+      "link": "https://arxiv.org/pdf/2607.08797v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "communication-efficient decentralized federated learning with device clustering",
+      "llm_evidence_cn": "基于设备聚类和簇间链路增强的通信高效去中心化联邦学习",
+      "llm_evidence": "基于设备聚类和簇间链路增强的通信高效去中心化联邦学习",
+      "canonical_evidence": "基于设备聚类和簇间链路增强的通信高效去中心化联邦学习",
+      "llm_tldr_en": "Proposes device clustering and inter-cluster link enhancement to reduce communication delays and errors in wireless decentralized federated learning, achieving faster convergence.",
+      "llm_tldr_cn": "针对无线去中心化联邦学习（DFL）中由于点对点模型聚合导致的高延迟和高错误问题，本文提出通过设备聚类减少簇内通信开销，并利用可靠回传链路增强簇间连接，从而显著提升训练速度和共识质量。实验表明该方法在大规模D2D网络中能有效加速收敛并降低通信错误。",
+      "llm_tldr": "针对无线去中心化联邦学习（DFL）中由于点对点模型聚合导致的高延迟和高错误问题，本文提出通过设备聚类减少簇内通信开销，并利用可靠回传链路增强簇间连接，从而显著提升训练速度和共识质量。实验表明该方法在大规模D2D网络中能有效加速收敛并降低通信错误。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -6,26 +6,33 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-15
-- 运行时间：2026-07-15 21:12:55 UTC
+- 最新运行日期：2026-07-17
+- 运行时间：2026-07-17 05:12:18 北京时间
 - 运行状态：成功
-- 本次总论文数：2
+- 本次总论文数：4
 - 精读区：1
-- 速读区：1
+- 速读区：3
+- 下次更新：约 2026-07-18 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日聚焦去中心化梯度下降的瓶颈分析与节点故障下的鲁棒优化。值得细读8分论文《Decentralized Gradient Descent》揭示的预算复杂度与瓶颈区域规律。建议后续关注去中心化算法中通信-计算权衡，并借鉴自适应正则化应对节点失效。
-- 详情：[/202607/15/README](/202607/15/README)
+今日精读高分论文《Graph Partitioning with Demands》，速读联邦学习三篇无线与数据生成新作。最值得关注广义电导在图划分中的应用，以及无线联邦学习中的差分编码与跨聚类协作。建议优先精读图划分论文，再结合速读中的协作数据生成和无线传输策略拓展思路。
+- 详情：[2026-07-17 日报](/202607/16/README)
 
 ### 精读区论文标签
-1. [Decentralized Gradient Descent: Bottleneck Regimes and Budget Complexity](/202607/15/2607.12172v1-decentralized-gradient-descent-bottleneck-regimes-and-budget-complexity)  
-   标签：评分：8.0/10、query:dgnn-nas
-   evidence：分布式梯度下降中的通信-计算预算分析
+1. [Graph Partitioning with Demands: Generalized Conductance and its Applications](/202607/16/2607.13218v1-graph-partitioning-with-demands-generalized-conductance-and-its-applications)  
+   标签：评分：9.0/10、query:dgnn-nas
+   evidence：提出带需求的图划分问题的广义传导率
 
 ### 速读区论文标签
-1. [Robust Decentralized Optimization under Node Failures via Adaptive Regularization](/202607/15/2607.09939v1-robust-decentralized-optimization-under-node-failures-via-adaptive-regularization)  
+1. [Mixed-Timescale Differential Coding for Downlink Model Broadcast in Wireless Federated Learning](/202607/16/2607.13119v1-mixed-timescale-differential-coding-for-downlink-model-broadcast-in-wireless-federated-learning)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：使用差分编码实现通信高效的联邦学习
+2. [Collaborative Synthetic Data Generation for Knowledge Transfer in Federated Learning](/202607/16/2607.07565v1-collaborative-synthetic-data-generation-for-knowledge-transfer-in-federated-learning)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：通过遗留压缩实现通信高效的分布式优化
+   evidence：提出一次性联邦学习以减少通信开销
+3. [Wireless Decentralized Federated Learning via Device Clustering and Inter-Cluster Link Enhancement](/202607/16/2607.08797v1-wireless-decentralized-federated-learning-via-device-clustering-and-inter-cluster-link-enhancement)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：基于设备聚类和簇间链路增强的通信高效去中心化联邦学习
 
 
 <div class="dpr-home-promo-card">
