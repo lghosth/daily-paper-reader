@@ -1,0 +1,54 @@
+{
+  "label": "2026-07-18",
+  "date": "2026-07-17",
+  "generated_at": "2026-07-17T19:57:35",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202607/17/2607.08013v1-collate-collaborative-neural-network-learning-for-latency-critical-edge-systems",
+      "section": "quick",
+      "title_en": "Collate: Collaborative Neural Network Learning for Latency-Critical Edge Systems",
+      "authors": "Shuo Huai, Di Liu, Hao Kong, Xiangzhong Luo, Weichen Liu, Ravi Subramaniam, Christian Makaya, Qian Lin",
+      "date": "2026-07-09",
+      "pdf": "https://arxiv.org/pdf/2607.08013v1",
+      "score": "7.0",
+      "evidence": "联邦学习框架，优化边缘系统的通信效率",
+      "tldr": "联邦学习在实时边缘系统中面临设备异构性导致的推理延迟问题。现有方法仅优化训练效率，未考虑延迟约束下的推理加速。本文提出Collate，通过动态零化恢复调整本地模型架构，并设计原型校正聚合方案，仅一次训练即可同时满足多个异构系统的延迟约束。实验表明，在几乎无额外开销下，扩展模型平均提升精度1.96%，收缩模型提升3.09%。为延迟关键型边缘系统提供了高效的异构联邦学习方案。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated Learning (FL) empowers multiple clients to collaboratively learn a model, enlarging the training data of each client for high accuracy while protecting data privacy. However, when deploying FL in real-time edge systems, the heterogeneity of devices among systems has a severe impact on the performance of the inferred model. Existing optimizations on FL focus on improving the training efficiency but fail to speed up inference, especially when there is a latency constraint. In this work, we propose Collate, a novel training framework that collaboratively learns heterogeneous models to meet the latency constraints of multiple edge systems simultaneously. We design a dynamic zeroizing-recovering method to adjust each local model architecture for high accuracy under its latency constraint. A proto-corrected federated aggregation scheme is also introduced to aggregate all heterogeneous local models, satisfying the latency constraint of different systems with only one training process and maintaining high accuracy. Extensive experiments indicate that, compared to state-of-the-art methods and under a latency constraint, our extended models can improve the accuracy by 1.96% on average, and our shrunk models can also obtain a 3.09% accuracy improvement on average, with almost no extra training overhead. The related codes and data will be available at https://github.com/ntuliuteam/Collate",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/17/2607.08368v1-fedopal-one-shot-federated-learning-via-analytic-visual-prompt-tuning",
+      "section": "quick",
+      "title_en": "FedOPAL: One-Shot Federated Learning via Analytic Visual Prompt Tuning",
+      "authors": "Lingyu Qiu, Daniela Annunziata, Stefano Izzo, Fabio Giampaolo, Francesco Piccialli",
+      "date": "2026-07-09",
+      "pdf": "https://arxiv.org/pdf/2607.08368v1",
+      "score": "6.0",
+      "evidence": "一次性联邦学习减少通信轮次",
+      "tldr": "联邦学习面临通信带宽瓶颈。一次性联邦学习减少通信轮次，但现有方法存在服务器计算成本高、超参数敏感等问题。分析联邦学习虽能无梯度高效聚合，却因非独立同分布数据导致特征流形错位。本文提出FedOPAL框架，利用视觉提示作为特征校正器，通过局部近端约束将异质数据特征分布校正至线性可分离空间，满足分析联邦学习假设。实验表明，FedOPAL显著优于原始分析方法，并达到与最先进迭代法相当的精度，同时保持零服务器训练成本，为边缘端大模型高效协作提供新范式。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "With the widespread deployment of basic models in edge intelligence, communication bandwidth has become a core bottleneck restricting the scalability of federated learning. Although one-shot federated learning alleviates this problem by minimizing communication rounds, existing iterative fine-tuning or knowledge distillation methods still face challenges such as high server-side computational costs and hyperparameter sensitivity. Analytical federated learning achieves efficient gradientfree aggregation using least-squares closed-form solutions, but in environments with non-independent and identically distributed data, its static feature assumptions fail, leading to feature manifold misalignment and severely impairing model performance. To address this contradiction, this paper proposes the FedOPAL framework. This framework adapts the visual prompts as feature rectifiers, actively correcting the feature distribution of heterogeneous data to a linearly separable space by applying local proximal constraints, thereby satisfying the theoretical assumptions of analytical federated learning. Experimental results show that FedOPAL not only significantly outperforms the original analytical methods on several benchmarks, but also achieves accuracy comparable to state-of-the-art iterative methods while maintaining zero server-side training costs, providing a new engineering paradigm for efficient collaboration of large models on the edge.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/17/2607.12111v1-pfadapter-hierarchical-lora-decomposition-for-personalized-federated-mllms",
+      "section": "quick",
+      "title_en": "PFAdapter: Hierarchical LoRA Decomposition for Personalized Federated MLLMs",
+      "authors": "Jing Liu, Kun Yang, Yan Wang, Dingkang Yang, Xiaoshuai Hao, Wei Zhang, Yang Liu, Wei Zhou",
+      "date": "2026-07-13",
+      "pdf": "https://arxiv.org/pdf/2607.12111v1",
+      "score": "6.0",
+      "evidence": "联邦微调中减少通信开销",
+      "tldr": "联邦微调多模态大模型面临全局知识聚合与局部自适应的矛盾以及通信开销大。本文提出PFAdapter，通过分层LoRA分解将参数分为全局共享和局部私有，仅同步全局部分并施加正交正则化。在VQA-RAD等数据集上准确率提升2.4%-4.8%，通信成本降低约50%。为资源受限网络中智能体AI部署提供了高效方案。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Agentic AI systems are reshaping communications and networking by deploying autonomous intelligent agents capable of collaborative learning while maintaining data privacy at network edges. Within distributed network environments, Multimodal Large Language Models (MLLMs) serve as cognitive engines for edge devices, yet federated fine-tuning faces substantial challenges in balancing global knowledge aggregation with local adaptation under heterogeneous network conditions. Conventional federated protocols typically rely on uniform parameter aggregation, which conflates domain-invariant features with client-specific nuances, thereby resulting in suboptimal personalization and excessive communication overhead. To address these challenges, we propose PFAdapter, a communication-efficient framework introducing hierarchical LoRA decomposition to explicitly separate adapter parameters into global-shared and local-private components. Query and key projections are assigned to global synchronization for capturing universal multimodal semantics across the network, while value and output projections remain localized for edge-specific adaptation. Additionally, orthogonality regularization based on the Frobenius norm enforces strict separation between these components, preventing redundant feature learning. Selective aggregation protocols synchronize only global-shared components across the federated network, preserving local expertise and reducing communication costs by nearly 50%. Extensive experiments on VQA-RAD, SLAKE, Hateful Memes, and CrisisMMD datasets demonstrate that PFAdapter consistently outperforms state-of-the-art baselines, achieving accuracy improvements ranging from 2.4% to 4.8% across diverse edge intelligence tasks. Consequently, our framework establishes an efficient solution for agentic AI deployment in resource-constrained communication networks.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
