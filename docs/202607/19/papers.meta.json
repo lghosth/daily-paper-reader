@@ -1,0 +1,24 @@
+{
+  "label": "2026-07-20",
+  "date": "2026-07-19",
+  "generated_at": "2026-07-19T19:46:31",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202607/19/2607.11746v1-hifi-llp-high-fidelity-low-cost-latency-predictors-with-confidence-for-robust-hw-nas",
+      "section": "quick",
+      "title_en": "HiFi-LLP: High-Fidelity, Low-Cost Latency Predictors with Confidence for Robust HW-NAS",
+      "authors": "Shambhavi Balamuthu Sampath, Behzad Shomali, Nael Fasfous, Moritz Thoma, Judeson Anthony Fernando, Lukas Frickenstein, Pierpaolo Mori, Manoj Rohit Vemparala, Alexander Frickenstein, Walter Stechele",
+      "date": "2026-07-13",
+      "pdf": "https://arxiv.org/pdf/2607.11746v1",
+      "score": "6.0",
+      "evidence": "硬件感知神经架构搜索方法，与图神经架构搜索有概念重叠",
+      "tldr": "硬件感知神经架构搜索依赖硬件在环延迟测量，但时序测量成为瓶颈。现有延迟预测器需大量样本且不准，误导搜索。本文提出HiFi-LLP，基于图注意力网络并融入置信度度量，在LatBench六个设备上达到0.996 Spearman相关系数，比之前方法提升9个百分点。进一步设计混合NAS框架，将低置信预测路由至硬件在环，实现最高8.6倍加速，同时保持竞争性Pareto前沿。该工作提供低成本高保真延迟预测，显著提升硬件感知NAS效率。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "With deep neural networks (DNNs) increasingly deployed on edge devices, hardware (HW)-aware optimization techniques--such as HW-aware compression and HW-aware neural architecture search (HW-NAS)--have become essential. These methods rely on real feedback from the target hardware to tailor DNN architectures for efficient deployment. While the search can be parallelized, latency measurements via hardware-in-the-loop (HIL) remain a bottleneck due to their sequential nature. Recent approaches use latency predictors to replace costly HIL feedback, but challenges persist: (1) platform-specific predictors often require tens of thousands of samples, and (2) inaccurate predictions can mislead the NAS process. To address this, we introduce HiFi-LLP, a high-fidelity, low-cost latency predictor based on graph attention networks, augmented with a confidence metric. HiFi-LLP outperforms prior platform-specific predictors by up to 9 percentage points (p.p.) in the 10% accuracy bound and achieves a Spearman's rank correlation of up to 0.996 across six devices in the LatBench dataset. We further propose a hybrid NAS framework that routes low-confidence predictions to HIL, achieving up to 8.6$\\times$ speedup compared to typical NAS while maintaining a competitive Pareto front.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

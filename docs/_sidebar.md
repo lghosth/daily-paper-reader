@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-07-20 <!--dpr-date:20260719-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/19/2607.11746v1-hifi-llp-high-fidelity-low-cost-latency-predictors-with-confidence-for-robust-hw-nas" data-sidebar-item="{&quot;title&quot;: &quot;HiFi-LLP: High-Fidelity, Low-Cost Latency Predictors with Confidence for Robust HW-NAS&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.11746v1-hifi-llp-high-fidelity-low-cost-latency-predictors-with-confidence-for-robust-hw-nas&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;硬件感知神经架构搜索方法，与图神经架构搜索有概念重叠&quot;}">HiFi-LLP: High-Fidelity, Low-Cost Latency Predictors with Confidence for Robust HW-NAS</a>
   * 2026-07-18 <!--dpr-date:20260717-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/17/2607.08013v1-collate-collaborative-neural-network-learning-for-latency-critical-edge-systems" data-sidebar-item="{&quot;title&quot;: &quot;Collate: Collaborative Neural Network Learning for Latency-Critical Edge Systems&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.08013v1-collate-collaborative-neural-network-learning-for-latency-critical-edge-systems&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;联邦学习框架，优化边缘系统的通信效率&quot;}">Collate: Collaborative Neural Network Learning for Latency-Critical Edge Systems</a>

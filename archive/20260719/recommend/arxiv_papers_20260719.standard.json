@@ -1,0 +1,62 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-19T19:45:55.854733+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.11746v1",
+      "source": "arxiv",
+      "title": "HiFi-LLP: High-Fidelity, Low-Cost Latency Predictors with Confidence for Robust HW-NAS",
+      "abstract": "With deep neural networks (DNNs) increasingly deployed on edge devices, hardware (HW)-aware optimization techniques--such as HW-aware compression and HW-aware neural architecture search (HW-NAS)--have become essential. These methods rely on real feedback from the target hardware to tailor DNN architectures for efficient deployment. While the search can be parallelized, latency measurements via hardware-in-the-loop (HIL) remain a bottleneck due to their sequential nature. Recent approaches use latency predictors to replace costly HIL feedback, but challenges persist: (1) platform-specific predictors often require tens of thousands of samples, and (2) inaccurate predictions can mislead the NAS process. To address this, we introduce HiFi-LLP, a high-fidelity, low-cost latency predictor based on graph attention networks, augmented with a confidence metric. HiFi-LLP outperforms prior platform-specific predictors by up to 9 percentage points (p.p.) in the 10% accuracy bound and achieves a Spearman's rank correlation of up to 0.996 across six devices in the LatBench dataset. We further propose a hybrid NAS framework that routes low-confidence predictions to HIL, achieving up to 8.6$\\times$ speedup compared to typical NAS while maintaining a competitive Pareto front.",
+      "authors": [
+        "Shambhavi Balamuthu Sampath",
+        "Behzad Shomali",
+        "Nael Fasfous",
+        "Moritz Thoma",
+        "Judeson Anthony Fernando",
+        "Lukas Frickenstein",
+        "Pierpaolo Mori",
+        "Manoj Rohit Vemparala",
+        "Alexander Frickenstein",
+        "Walter Stechele"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AR"
+      ],
+      "published": "2026-07-13T16:05:16+00:00",
+      "link": "https://arxiv.org/pdf/2607.11746v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Hardware-aware neural architecture search method with latency predictors, conceptually overlaps with graph neural architecture search",
+      "llm_evidence_cn": "硬件感知神经架构搜索方法，与图神经架构搜索有概念重叠",
+      "llm_evidence": "硬件感知神经架构搜索方法，与图神经架构搜索有概念重叠",
+      "canonical_evidence": "硬件感知神经架构搜索方法，与图神经架构搜索有概念重叠",
+      "llm_tldr_en": "Proposes HiFi-LLP, high-fidelity latency predictors to replace costly hardware-in-the-loop feedback for HW-NAS, achieving robust search with low cost.",
+      "llm_tldr_cn": "硬件感知神经架构搜索（HW-NAS）依赖硬件延迟反馈，但实测耗时且顺序执行。本文提出HiFi-LLP，一种高保真低成本延迟预测器，通过置信度校准替代实际测量，避免误导搜索。实验表明，HiFi-LLP在多种平台上均能提供高精度预测，显著提升NAS搜索效率与鲁棒性。该方法可推广至图神经架构搜索等场景。",
+      "llm_tldr": "硬件感知神经架构搜索（HW-NAS）依赖硬件延迟反馈，但实测耗时且顺序执行。本文提出HiFi-LLP，一种高保真低成本延迟预测器，通过置信度校准替代实际测量，避免误导搜索。实验表明，HiFi-LLP在多种平台上均能提供高精度预测，显著提升NAS搜索效率与鲁棒性。该方法可推广至图神经架构搜索等场景。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
