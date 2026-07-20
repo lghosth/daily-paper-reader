@@ -21,6 +21,49 @@ window.PrivateDiscussionChat = (function () {
     input.style.overflowY = input.scrollHeight > maxHeight ? 'auto' : 'hidden';
   };
 
+  // 底部固定对话框遮罩高度：滚动时预留这段，避免末尾文字被输入框挡住
+  const getChatDockClearance = () => {
+    try {
+      const styles = window.getComputedStyle
+        ? window.getComputedStyle(document.documentElement)
+        : null;
+      if (!styles) return 220;
+      const padding = parseFloat(styles.getPropertyValue('--dpr-chat-dock-padding') || '');
+      if (Number.isFinite(padding) && padding > 0) return padding;
+      const mask = parseFloat(styles.getPropertyValue('--dpr-chat-dock-mask-height') || '') || 135;
+      const fade = parseFloat(styles.getPropertyValue('--dpr-chat-dock-fade-height') || '') || 40;
+      return mask + fade + 24;
+    } catch {
+      return 220;
+    }
+  };
+
+  const getDocumentScrollBottom = () => {
+    const doc = document.documentElement;
+    const body = document.body;
+    return Math.max(
+      doc ? doc.scrollHeight : 0,
+      body ? body.scrollHeight : 0,
+    );
+  };
+
+  const isNearPageBottom = (threshold = 50) => {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+    const windowHeight = window.innerHeight || 0;
+    const docHeight = getDocumentScrollBottom();
+    const clearance = getChatDockClearance();
+    // 用户只要还在“可见底部”（扣掉对话框遮罩）附近，就继续跟随滚动
+    return docHeight - scrollTop - windowHeight - clearance <= threshold;
+  };
+
+  const scrollPageToChatBottom = (behavior = 'smooth') => {
+    const clearance = getChatDockClearance();
+    const windowHeight = window.innerHeight || 0;
+    const docHeight = getDocumentScrollBottom();
+    const top = Math.max(0, docHeight - windowHeight - clearance);
+    window.scrollTo({ top, behavior });
+  };
+
   // 读取用户偏好的 Chat 模型名称（跨页面生效）
   const loadPreferredModelName = () => {
     try {
@@ -944,15 +987,9 @@ window.PrivateDiscussionChat = (function () {
     `;
     historyDiv.appendChild(aiItem);
 
-    // 判断用户是否在页面底部（允许 50px 误差）
+    // 判断用户是否在“可见底部”（扣掉固定对话框遮罩）
     let userAtBottom = true;
-    const checkIfAtBottom = () => {
-      const threshold = 50;
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const windowHeight = window.innerHeight;
-      const docHeight = document.documentElement.scrollHeight;
-      return docHeight - scrollTop - windowHeight <= threshold;
-    };
+    const checkIfAtBottom = () => isNearPageBottom(50);
     userAtBottom = checkIfAtBottom();
 
     // 监听用户滚动，更新 userAtBottom 状态
@@ -961,21 +998,15 @@ window.PrivateDiscussionChat = (function () {
     };
     window.addEventListener('scroll', onUserScroll);
 
-    // 自动滚动到底部（仅当用户本来就在底部时）
+    // 自动滚动到可见底部（仅当用户本来就在底部时）
     const scrollToBottomIfNeeded = () => {
       if (userAtBottom) {
-        window.scrollTo({
-          top: document.documentElement.scrollHeight,
-          behavior: 'smooth'
-        });
+        scrollPageToChatBottom('smooth');
       }
     };
 
-    // 发送消息后立即滚动到底部
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth'
-    });
+    // 发送消息后立即滚动到可见底部，避免末尾被固定对话框挡住
+    scrollPageToChatBottom('smooth');
 
     const thinkingContainer = aiItem.querySelector('.thinking-container');
     const thinkingContent = aiItem.querySelector('.thinking-content');
@@ -1367,6 +1398,10 @@ window.PrivateDiscussionChat = (function () {
       if (responseHeader) {
         responseHeader.remove();
       }
+
+      // 最终再渲染一次并滚到可见底部，避免流式结束后的 Markdown/公式回流把末尾顶进遮罩
+      applyAnswerView();
+      scrollToBottomIfNeeded();
 
       const nowStrAnswer = new Date().toLocaleString();
       const updated = await loadChatHistory(paperId);

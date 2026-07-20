@@ -6,6 +6,10 @@
   --dpr-paper-content-max-width: 780px;
   --dpr-paper-content-gap-desktop: 120px;
   --dpr-paper-content-gap-mobile: 36px;
+  /* 论文页底部固定对话框：白底遮罩 + 渐变 + 输入框的可视高度 */
+  --dpr-chat-dock-mask-height: 135px;
+  --dpr-chat-dock-fade-height: 40px;
+  --dpr-chat-dock-padding: 220px;
 }
 
 /* 全局缩放重置为1 */
@@ -596,7 +600,8 @@ html {
 #paper-chat-container {
   position: relative;
   background: transparent; /* 聊天区背景透明，融入页面 */
-  padding-bottom: 120px; /* 为浮动输入框预留空间 */
+  /* 预留高度必须盖住固定输入框 + 白底/渐变遮罩，避免末尾回复被挡住 */
+  padding-bottom: var(--dpr-chat-dock-padding);
 }
 
 /* 纯白遮罩：从输入框顶部到页面底部 */
@@ -606,7 +611,7 @@ html {
   left: var(--sidebar-width, 260px);
   right: 0;
   bottom: 0;
-  height: 135px; /* 覆盖输入框及其下方区域 */
+  height: var(--dpr-chat-dock-mask-height); /* 覆盖输入框及其下方区域 */
   background: #ffffff;
   z-index: 1498;
   pointer-events: none;
@@ -614,14 +619,14 @@ html {
   transition: left 0.25s ease-out;
 }
 
-/* 渐变遮罩：在输入框上方向上延展40px */
+/* 渐变遮罩：在输入框上方向上延展 */
 #paper-chat-container::after {
   content: '';
   position: fixed;
   left: var(--sidebar-width, 260px);
   right: 0;
-  bottom: 135px; /* 从纯白遮罩顶部开始 */
-  height: 40px;
+  bottom: var(--dpr-chat-dock-mask-height); /* 从纯白遮罩顶部开始 */
+  height: var(--dpr-chat-dock-fade-height);
   pointer-events: none;
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 100%);
   z-index: 1498;
@@ -2341,18 +2346,23 @@ article.markdown-section {
     -webkit-overflow-scrolling: touch;
   }
 
+  :root {
+    --dpr-chat-dock-mask-height: 120px;
+    --dpr-chat-dock-padding: 240px;
+  }
+
   #paper-chat-container {
-    padding-bottom: 140px;
+    padding-bottom: var(--dpr-chat-dock-padding);
   }
 
   #paper-chat-container::before {
     left: 0;
-    height: 120px;
+    height: var(--dpr-chat-dock-mask-height);
   }
 
   #paper-chat-container::after {
     left: 0;
-    bottom: 120px;
+    bottom: var(--dpr-chat-dock-mask-height);
   }
 
   #paper-chat-container .input-area {
