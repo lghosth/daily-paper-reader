@@ -18,23 +18,33 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-21
-- 运行时间：2026-07-21 04:54:56 北京时间
+- 最新运行日期：2026-07-22
+- 运行时间：2026-07-22 05:12:42 北京时间
 - 运行状态：成功
-- 本次总论文数：0
+- 本次总论文数：3
 - 精读区：0
-- 速读区：0
-- 下次更新：约 2026-07-22 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 速读区：3
+- 下次更新：约 2026-07-23 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-> 今日无新推荐，系统未产出可展示论文。
-- 详情：[2026-07-21 日报](/202607/20/README)
+今日聚焦图论并行算法、压缩分割学习与RIS联邦学习三篇速读论文，均为6-7分水平。  
+其中最值得关注的两篇7分工作：并行进化算法框架用于图k-割问题，以及自动编码器压缩的并行分割学习用于预训练模型微调。  
+建议优先阅读前两篇，了解如何将进化计算与并行策略结合解决组合优化，以及通过压缩降低分割学习中的通信开销。
+- 详情：[2026-07-22 日报](/202607/21/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [A Parallel Evolutionary Algorithm Framework for Graph $k$-CUT Problems](/202607/21/2607.17158v1-a-parallel-evolutionary-algorithm-framework-for-graph-k-cut-problems)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：针对图k割问题的并行进化算法框架，可直接用于分布式GNN的图划分策略
+2. [AutoEncoder-Compressed Parallel Split Learning for Pre-trained Model Fine-Tuning](/202607/21/2607.17913v1-autoencoder-compressed-parallel-split-learning-for-pre-trained-model-fine-tuning)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：利用自动编码器压缩并行分割学习中的通信量，降低分布式微调通信开销，适用于通信高效训练
+3. [Joint Channel Estimation and Dynamics-Aware Grouping for Time-Varying RIS-Assisted OTA Federated Learning](/202607/21/2607.17169v1-joint-channel-estimation-and-dynamics-aware-grouping-for-time-varying-ris-assisted-ota-federated-learning)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：针对RIS辅助空中联邦学习，提出联合信道估计与动态感知分组，提升分布式学习的通信效率
 
 
 <div class="dpr-home-promo-card dpr-home-panel">

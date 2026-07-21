@@ -1,0 +1,54 @@
+{
+  "label": "2026-07-22",
+  "date": "2026-07-21",
+  "generated_at": "2026-07-21T21:12:49",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202607/21/2607.17158v1-a-parallel-evolutionary-algorithm-framework-for-graph-k-cut-problems",
+      "section": "quick",
+      "title_en": "A Parallel Evolutionary Algorithm Framework for Graph $k$-CUT Problems",
+      "authors": "Sihong Shao, Chuan Yang",
+      "date": "2026-07-19",
+      "pdf": "https://arxiv.org/pdf/2607.17158v1",
+      "score": "7.0",
+      "evidence": "针对图k割问题的并行进化算法框架，可直接用于分布式GNN的图划分策略",
+      "tldr": "图k-CUT问题包含多种变体，现有算法缺乏通用性。本文将其分为MaxGCP和MinGCP两类，提出并行进化算法框架PEAF，结合结构继承交叉算子、基于多变异启发式和辅助割变异启发式的层次变异机制，以及多样性保持选择策略。在G-set（k=2-5）上，PEAF-ACMH在9个代表性问题上一致优于Gurobi，改进了最大k-割的若干最优解，并揭示了明智k-划分、反Cheeger割等模型的结构关系。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Graph k-CUT problems include many important variants whose objectives combine cut value, volume, and cardinality terms in different ways. Most existing algorithms are designed for individual formulations, which limits their transferability across related models. In this paper, we organize a broad family of graph partitioning problems into two classes, MaxGCP and MinGCP, according to their optimization orientation and balance-related structure. Based on this classification, we propose a unified Parallel Evolutionary Algorithm Framework (PEAF). This framework combines structure-inheriting crossover operators, a hierarchical mutation mechanism based on the Multiple Mutation Heuristic (MMH) and the Auxiliary Cut Mutation Heuristic (ACMH), and a diversity-preserving selection strategy. Extensive experiments on G-set with k \\in\\{2, 3, 4, 5\\} show that PEAF-ACMH consistently outperforms Gurobi on nine representative k-CUT problems. For MaxGCP, PEAF-ACMH improves several best-known solutions for Max-k-Cut with k \\geq 3, and through numerical bounds derived from its relation to Max-k-Cut, verifies the high quality of the obtained solutions for Judicious-k-Partition and AntiCheeger-k-Cut. The results further indicate that Judicious-k-Partition usually yields more balanced partitions than AntiCheeger-k-Cut. For MinGCP, theoretical and computational comparisons show that Cheeger-k-Cut and Sparsest-k-Cut produce more balanced partitions than Normalized-k-Cut and Ratio-k-Cut, respectively. PEAF-ACMH also obtains highly similar partitions for Min-k-Cut and MinMax-k-Cut within short running times, providing numerical evidence for their structural affinity. These results demonstrate that PEAF is both an effective unified solver and a useful tool for revealing structural properties of graph k-CUT models.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/21/2607.17913v1-autoencoder-compressed-parallel-split-learning-for-pre-trained-model-fine-tuning",
+      "section": "quick",
+      "title_en": "AutoEncoder-Compressed Parallel Split Learning for Pre-trained Model Fine-Tuning",
+      "authors": "Bas Meuwissen, Vasileios Tsouvalas, Nirvana Meratnia",
+      "date": "2026-07-20",
+      "pdf": "https://arxiv.org/pdf/2607.17913v1",
+      "score": "7.0",
+      "evidence": "利用自动编码器压缩并行分割学习中的通信量，降低分布式微调通信开销，适用于通信高效训练",
+      "tldr": "针对资源受限边缘设备上分布式微调大规模基础模型的计算和通信瓶颈，提出AE-PSL框架。该框架在并行分割学习的分割层嵌入轻量自编码器压缩中间激活与梯度，并设计两阶段对齐机制适配预训练模型特征分布，避免特征错位。实验表明，AE-PSL显著降低通信成本而不牺牲微调精度，为预训练模型高效分布式微调提供了可行方案。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Distributed Fine-Tuning (DFT) of large-scale Foundation Models (FMs) on resource-constrained edge devices is limited by local compute constraints and communication overhead. Parallel Split Learning (PSL) reduces client-side computation by keeping few model layers on each client and offloading the remaining computation to the server; however, clients must exchange intermediate activations and gradients with the server at every training step. Existing SL communication-compression methods mainly rely on task-agnostic heuristics, such as sparsification and quantization. While learnable SL compressors can better adapt to intermediate representations, they require co-training with the target model. Therefore, directly inserting them into off-the-shelf FMs introduces feature-distribution misalignment and degrades DFT performance. To address this, we propose AE-PSL, a communication-efficient PSL framework that compresses intermediate activations and gradients using a lightweight AutoEncoder (AE) placed at the split layer. To ensure compatibility of AE compression with pre-trained FMs, AE-PSL introduces a novel two-stage alignment mechanism, which adapts the AE to the pre-trained model's feature manifold and client-specific feature distributions before DFT.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/21/2607.17169v1-joint-channel-estimation-and-dynamics-aware-grouping-for-time-varying-ris-assisted-ota-federated-learning",
+      "section": "quick",
+      "title_en": "Joint Channel Estimation and Dynamics-Aware Grouping for Time-Varying RIS-Assisted OTA Federated Learning",
+      "authors": "Ziqi Li, Shuangzhi Li, Uchechukwu Awada, Jiankang Zhang",
+      "date": "2026-07-19",
+      "pdf": "https://arxiv.org/pdf/2607.17169v1",
+      "score": "6.0",
+      "evidence": "针对RIS辅助空中联邦学习，提出联合信道估计与动态感知分组，提升分布式学习的通信效率",
+      "tldr": "针对RIS辅助OTA联邦学习中时变信道、不完美CSI和用户异质性导致聚合精度下降的问题，提出联合信道估计与动态感知分组的统一框架。利用GRU建模信道时间演化，结合OTA聚合与RIS物理层优化，设计基于长期路损和短期信道动态的分组策略以减少用户冲突。在低导频和高移动场景下显著提升CSI估计精度和聚合性能，加快收敛并增强鲁棒性。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Reconfigurable intelligent surface (RIS)-assisted over-the-air federated learning (OTA-FL) enables efficient distributed intelligence but suffers from time-varying channels, imperfect channel state information (CSI), and strong user heterogeneity, which jointly degrade aggregation accuracy and cause severe model update cancellation. To address these issues, we propose a unified framework for joint channel estimation and dynamics-aware user grouping in RIS-assisted OTA-FL systems, enabling reliable learning under imperfect CSI and heterogeneous dynamics. The framework integrates gated recurrent unit (GRU) for temporal modeling to capture time-varying CSI evolution, OTA-based federated aggregation with personalization, and RIS-aware physical-layer optimization in a closed loop. In addition, we design a dynamics-aware grouping strategy based on long-term path-loss and short-term channel dynamics to reduce inter-user conflicts under heterogeneous conditions. Simulation results show that the proposed method achieves substantial gains in CSI estimation accuracy and OTA aggregation performance in low-pilot and high-mobility regimes, while improving convergence speed and robustness under strong user heterogeneity.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
