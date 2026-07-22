@@ -18,33 +18,39 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-22
-- 运行时间：2026-07-22 05:12:42 北京时间
+- 最新运行日期：2026-07-23
+- 运行时间：2026-07-23 03:54:55 北京时间
 - 运行状态：成功
-- 本次总论文数：3
+- 本次总论文数：5
 - 精读区：0
-- 速读区：3
-- 下次更新：约 2026-07-23 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 速读区：5
+- 下次更新：约 2026-07-24 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日聚焦图论并行算法、压缩分割学习与RIS联邦学习三篇速读论文，均为6-7分水平。  
-其中最值得关注的两篇7分工作：并行进化算法框架用于图k-割问题，以及自动编码器压缩的并行分割学习用于预训练模型微调。  
-建议优先阅读前两篇，了解如何将进化计算与并行策略结合解决组合优化，以及通过压缩降低分割学习中的通信开销。
-- 详情：[2026-07-22 日报](/202607/21/README)
+今天我们速读了3篇联邦学习与并行计算方向的论文，均获6分，重点关注LoRA干扰缓解与多模态对齐问题。
+最值得关注的方向是联邦学习中的LoRA干扰抑制（Dysco）以及MLA序列并行性的通信优化（LAGA），这两项工作分别针对模型微调与训练效率提出了实用改进。
+建议优先阅读Dysco中动态子空间增强的具体实现，并关注LAGA如何在不破坏吸收机制的前提下优化通信，这有助于理解当前联邦学习与大规模并行训练的瓶颈与解法。
+- 详情：[2026-07-23 日报](/202607/22/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [A Parallel Evolutionary Algorithm Framework for Graph $k$-CUT Problems](/202607/21/2607.17158v1-a-parallel-evolutionary-algorithm-framework-for-graph-k-cut-problems)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：针对图k割问题的并行进化算法框架，可直接用于分布式GNN的图划分策略
-2. [AutoEncoder-Compressed Parallel Split Learning for Pre-trained Model Fine-Tuning](/202607/21/2607.17913v1-autoencoder-compressed-parallel-split-learning-for-pre-trained-model-fine-tuning)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：利用自动编码器压缩并行分割学习中的通信量，降低分布式微调通信开销，适用于通信高效训练
-3. [Joint Channel Estimation and Dynamics-Aware Grouping for Time-Varying RIS-Assisted OTA Federated Learning](/202607/21/2607.17169v1-joint-channel-estimation-and-dynamics-aware-grouping-for-time-varying-ris-assisted-ota-federated-learning)  
+1. [Dysco: Dynamic Subspace Boosting to Mitigate LoRA Interference in Federated Learning](/202607/22/2607.14367v1-dysco-dynamic-subspace-boosting-to-mitigate-lora-interference-in-federated-learning)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：针对RIS辅助空中联邦学习，提出联合信道估计与动态感知分组，提升分布式学习的通信效率
+   evidence：通过LoRA子空间分配实现通信高效的联邦微调
+2. [Toward Federated Multimodal Graph Foundation Models: A Topology-Aware Multimodal Alignment Framework](/202607/22/2607.15687v1-toward-federated-multimodal-graph-foundation-models-a-topology-aware-multimodal-alignment-framework)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：针对多模态图的联邦学习，跨隔离数据源的分布式训练
+3. [A Training-Memory Regression in MLA Sequence Parallelism: Why Megatron-Core Forbids Absorption, and LAGA -- a Communication-Efficient Fix](/202607/22/2607.17644v1-a-training-memory-regression-in-mla-sequence-parallelism-why-megatron-core-forbids-absorption-and-laga----a-communication-efficient-fix)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：针对Megatron-Core中训练并行性的通信高效修复
+4. [Sobek: Streaming Equivariant Tensor Product Convolutions](/202607/22/2607.18074v1-sobek-streaming-equivariant-tensor-product-convolutions)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：流式执行减少了等变GNN卷积的内存流量，支持更大规模图在GPU上训练
+5. [Federated Lightweight Fine-Tuning](/202607/22/2607.18343v1-federated-lightweight-fine-tuning)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：通过低秩潜在空间映射实现通信高效的联邦微调
 
 
 <div class="dpr-home-promo-card dpr-home-panel">
