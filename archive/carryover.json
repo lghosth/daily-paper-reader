@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-23T21:06:07.082028+00:00",
-  "updated_date": "20260723",
+  "generated_at": "2026-07-24T21:15:32.213247+00:00",
+  "updated_date": "20260724",
   "carryover_days": 9,
   "tag_states": {
     "DGNN NAS": {
@@ -9,7 +9,7 @@
       "items": []
     },
     "DGNN-NAS": {
-      "updated_date": "20260723",
+      "updated_date": "20260724",
       "carryover_days": 9,
       "items": []
     }

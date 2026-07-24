@@ -1,0 +1,1944 @@
+Title: FedLSG: LLM-Enhanced Semantic Calibration for Federated Graph Backdoor Defense
+
+URL Source: https://arxiv.org/pdf/2607.19674v1
+
+Published Time: Thu, 23 Jul 2026 00:24:06 GMT
+
+Number of Pages: 23
+
+Markdown Content:
+# FED LSG: LLM-E NHANCED SEMANTIC CALIBRATION FOR 
+
+# FEDERATED GRAPH BACKDOOR DEFENSE 
+
+Chenyu Zhou 
+
+Southeast University Purple Mountain Laboratories 
+
+zhouchenyu@seu.edu.cn 
+
+Yabin Peng 
+
+Southeast University Purple Mountain Laboratories 
+
+yabinpeng@seu.edu.cn 
+
+Wei Huang 
+
+Institute of AI for Industries Chinese Academy of Sciences 
+
+whuang@iaii.ac.cn 
+
+Kunlin Li 
+
+Southeast University Purple Mountain Laboratories 
+
+230259669@seu.edu.cn 
+
+Shuaishuai Zhang 
+
+Purple Mountain Laboratories 
+
+zhangshuaishuai@pmlabs.com.cn 
+
+Xinyuan Miao 
+
+Purple Mountain Laboratories 
+
+miaoxinyuan@pmlabs.com.cn 
+
+ABSTRACT 
+
+Federated Graph Neural Networks (FedGNNs) are highly vulnerable to backdoor poisoning, yet existing defenses typically rely on rule-based approaches that lack semantic understanding, making them vulnerable to stealthy triggers and harmful to benign structures. To solve this, we present FedLSG, the first framework that integrates large language models (LLMs) into federated graph backdoor defense. FedLSG introduces a graph and behavior to text grounding scheme that trans-forms local graph structures and client update behaviors into semantically rich natural language representations. The framework further adopts a lightweight student–teacher architecture. On the server side, a full scale LLM serves as a teacher, providing global contextual guidance and evaluating client updates during aggregation to identify potentially malicious participants. On the client side, a LoRA-based student is maintained to perform semantic reasoning, to suppress the influence of edges associated with backdoor triggers. By enabling semantic interpretation of both graph patterns and client behaviors, the framework adaptively incorporates rule-based signals into message passing and client aggregation for defense. Experiments demonstrate that FedLSG significantly improves resistance to backdoor attacks without compromising graph integrity. 
+
+Keywords Federated Graph Neural Networks · Backdoor Defense · Large Language Models 
+
+1 Introduction 
+
+Graph Neural Networks (GNNs), designed for learning from graph-structured data, have achieved widespread success in applications ranging from recommender systems [ 1] to social networks [ 2] and node classification [ 3]. However, centralized GNN training raises significant privacy concerns, motivating the development of Federated Graph Neural Networks (FedGNNs) that enable privacy-preserving distributed training. Despite their privacy advantages, recent studies [ 4 , 5] reveal that FedGNNs are highly vulnerable to data-poisoning-based backdoor attacks. Attacks such as SBA [ 6], UGBA [ 7], and DPGBA [ 8] inject imperceptible trigger subgraphs into local training data of compromised clients. Through federated aggregation, these poisoned local models contaminate the global model, which subse-quently propagates backdoor information to all participating clients in future rounds, creating a cascading failure that compromises the entire federation [9, 10, 11]. Defending against this threat is substantially harder than defending centralized GNNs. Existing rule-based defenses largely rely on pruning suspicious edges or perturbing graph structure [ 7, 12 , 13 ]. While effective in some centralized settings, they are difficult to deploy in FedGNNs because the server cannot identify which clients are compromised. Applying aggressive filtering to every client often removes useful benign structure and harms clean accuracy, whereas conservative filtering frequently fails to eliminate stealthy triggers [ 14 ]. Aggregation-based defenses [ 15 , 16 ] attempt to arXiv:2607.19674v1 [cs.CR] 22 Jul 2026 Running Title for Header suppress malicious clients during model fusion by setting some rules, but they do not fully solve the problem either: poisoned information that survives aggregation can still be absorbed by benign clients from the global model and accumulate over rounds [ 9, 10 , 11 ]. Therefore, robust defense in FedGNNs requires a joint treatment of local suspicious structures, client-global interaction, and server-side aggregation. These limitations expose three tightly coupled challenges. First, trigger-related edges are highly similar to normal graph connections, rendering anomaly-based pruning unreliable, as it may either remove benign structures and harm clean accuracy or fail to eliminate stealthy triggers. Second, rule structural judgments of edge reliability are inherently limited, as they rely solely on topology signals without incorporating semantic context from the graph, which can lead to unreliable assessment of edge authenticity. Third, once misclassified updates participate in federated aggregation, the resulting poisoned knowledge can be incorporated into the global model and repeatedly propagated to benign clients. Therefore, a robust defense should not rely solely on rule-based structural signals, but should integrate them into semantic-aware signals that support reliable discrimination between benign patterns and backdoor behaviors. This observation highlights the potential of incorporating LLMs into FedGNNs, as their semantic reasoning capability can complement structural learning and provide global context for edge reliability and backdoor detection. Crucially, LLM-based semantic signals can also guide the aggregation process by offering semantic consistency cues for evaluating client updates, thereby helping to mitigate the propagation of poisoned information across the federation. However, several challenges remain. First, it is non-trivial to transform graph structures and client behaviors into textual representations that are suitable for LLM reasoning. Second, relying solely on either semantic reasoning or rule-based judgments is insufficient in practice, and a principled integration of both is required. Third, deploying full-scale LLMs on every client is often computationally prohibitive in realistic federated settings. Based on this insight, this paper proposes FedLSG, which integrates LLM-guided semantic reasoning into FedGNNs. Specifically, FedLSG converts graph structures, including neighborhood dependencies, anomalous structural patterns, and connectivity irregularities, into textual descriptions, enabling the LLM to assess whether edges are potentially abnormal. Furthermore, FedLSG transforms client training dynamics, such as model update magnitudes, gradient variation trends, and deviations from the global model, into textual descriptions, allowing the LLM to reason about whether a client behaves anomalously. Moreover, to reduce complexity, FedLSG introduces a lightweight student–teacher architecture. It builds on a GAT-based structural backbone, which performs adaptive edge-weighted message passing under the guidance of LLM, to distinguish normal connections from trigger-related ones. The server maintains a global GAT and a full LLM as the teacher, while each client employs a GAT with a lightweight LoRA-based student to learn knowledge distilled from the server-side LLM. At the server side, a semantic teacher leverages full-scale LLM reasoning to provide global contextual guidance and shared semantic priors across clients. In addition, the LLM is further used to analyze client model updates at the behavioral level, such as whether updates are consistent with global semantic patterns or exhibit abnormal clustering or deviation trends. By adaptively combining semantic reasoning with rule-based judgments, the server performs trust evaluation during aggregation, allowing it to detect malicious clients and suppress their impact to the global model. At the client side, a lightweight LoRA-based student is used to model local graph semantics by distilling global semantic priors from the LLM teacher. It assesses whether edges are semantically aligned with the local structural context, e.g., whether connected nodes are consistent in semantic roles, functional properties, or structural contexts. The resulting semantic signal is combined with rule-based signals, and injected into GAT to dynamically adjust edge weights. This allows potential backdoor edges to be down-weighted during message passing instead of being removed, ensuring robust propagation while preserving graph structure. We conduct extensive experiments on four benchmark datasets under three state-of-the-art attacks. Results demonstrate that FedLSG achieves the lowest attack success rate across all configurations while maintaining competitive clean accuracy. We further validate FedLSG’s robustness under adaptive white-box attacks, varying numbers of malicious clients, LLM backbone selection, large-scale client settings, heterogeneous graphs, and IID data partitions. 
+
+2 Related Work 
+
+Backdoor Attacks & Defenses in FedGNNs. Recent studies have shown that GNNs are highly vulnerable to backdoor attacks. SBA [ 6] injects subgraph triggers into training graphs without requiring knowledge of model structure. UGBA [ 7] generates adaptive triggers that closely resemble target nodes under a limited budget. DPGBA [ 8] further improves stealthiness via intra-distributed trigger design. Bkd-FedGNN [ 4 ] presents a backdoor attack benchmark for FedGNNs, integrating above backdoor attacks into a unified framework. In response, several defense methods have been proposed. Prune [ 7 ] disables subgraph triggers by pruning edges between low-similarity nodes. 2Running Title for Header RIGBD [ 13 ] introduces randomized edge-dropping and robust training to reduce trigger damage. FedTGE [ 16 ] employs an energy-aware mechanism to identify clean and attacked samples, and accordingly distinguishes clients during the aggregation phase. 
+
+LLM in FedGNNs. Recent studies explore integrating LLM into FedGNNs to enhance structural and semantic reasoning. LLM4FGL [ 17 ] generates node textual descriptions and infers missing edges between nodes to mitigate data heterogeneity. LG-DUMAP [ 18 ] further incorporates instruction-tuned encoders and in-context examples for node classification and link prediction. However, these methods require deploying full LLMs on all clients, incurring high computational and communication costs. To address this issue, pFedLoRA [ 19 ] combines FL with LoRA-based efficient tuning for lightweight client-side adaptation. And FedAMoLE [ 20 ] personalizes client based on local data, FedEx-LoRA [21] improves aggregation with residual errors, and FedALT [22] integrates shared knowledge via independent LoRA without aggregated initialization. 
+
+3 Preliminaries 
+
+Training of FedGNN. Consider a FedGNN system comprising Nc clients and a central server, where each participant maintains a local GNN model. Privacy constraints necessitate partitioning the original graph G into multiple subgraphs 
+
+{Gi}Nc 
+
+> i=1
+
+distributed across clients, precluding centralized training [ 23 ]. The FedGNN training protocol proceeds iteratively. At iteration t, the following steps are executed [4]: 
+
+(1) Model Distribution: The server broadcasts the global model parameters θt to all participating clients. 
+
+(2) Local Update: Each client i performs local optimization on its private subgraph Gi by minimizing the loss function 
+
+L with learning rate η:
+
+θti = θt − η∇θ L(Gi; θt). (1) 
+
+(3) Model Aggregation: The server aggregates the received local models using a predefined strategy to update the global model: 
+
+θt+1 = 1
+
+NcNcX
+
+> i=1
+
+θti . (2) 
+
+Backdoor Attacks in FedGNNs. In backdoor attacks against federated graph learning, an adversary compromises client i by injecting a trigger subgraph G′ 
+
+> i
+
+into the local graph Gi [ 4]. Training on this poisoned data produces a backdoored local model ˜θti that contaminates the global model θt+1 during aggregation, subsequently propagating the backdoor to benign clients in future rounds. The threat model assumes the adversary can only manipulate local data of compromised clients without interfering with other clients’ training or the server’s aggregation process. Additionally, the adversary may dynamically select which clients to compromise across different rounds, and the server cannot distinguish between benign and compromised clients, making the attack both flexible and stealthy. 
+
+4 Method 
+
+We propose FedLSG, a training-time defense framework for mitigating backdoor attacks in FedGNNs. Moreover, the complexity analysis in Appendix 1 proves its efficiency. 
+
+4.1 Backbone framework 
+
+In FedGNN, some clients may be compromised by backdoor attacks, motivating the need to mitigate their effects and provide an implicit measure of client behavior, we design a simple yet robust graph attention model (SRGAT). Since backdoor triggers often inject task-specific edges that are difficult to distinguish from benign ones[ 24 , 13 , 25 ], SRGAT applies a soft reweighting scheme that assigns attention scores to suppress suspicious connections. Let Hu denote the feature of node u, N (u) its neighbor set. For heterogeneous graphs, we use graphlet degree vectors instead of node features, following [ 26 ]. We build on GAT [ 27 ] with attention weights that integrate structural and semantic signals using rules and LLM respectively, as follows: 
+
+˜suv = suv · (Rule _score + LLM _score ). (3) 
+
+suv = exp( σ(aT [W H u∥W H v ])) 
+
+P  
+
+> k∈N (u)
+
+exp( σ(aT [W H u∥W H k])) , (4) 3Running Title for Header Semantic Grounding   
+
+> Local Graph Branch
+> Structure
+> Extraction
+> Graph-to-Text
+> Client Behavior Branch
+> Client Behavior
+> Behavior
+> Summary
+> Behavior-to-Text
+> LoRA
+> Student LLM
+> Guidance
+> Rule
+> Evidence
+> Semantic
+> Evidence
+> ⊗
+> Adaptive
+> Edge Weight
+> Client 1
+> SRAGT
+> Model
+> Update
+> Client 2
+> ⋮
+> ⋮
+> Client N
+> Full LLM
+> Parameter Distribution
+> ⊗
+> Rule
+> Evidence
+> Semantic
+> Evidence
+> …
+> Aggregation
+> Behavioral
+> Prompt
+> Graph
+> Prompt
+> Local
+> Graph
+> Behavioral
+> Prompt
+> Graph
+> Prompt
+> Adaptive
+> Client Weight
+> Low-rank
+> LoRA
+> Parameter
+> Distillation
+
+LLM-based Edge 
+
+Modeling on Client 
+
+LLM-based Client Behavior 
+
+Modeling on Server 
+
+Figure 1: FedLSG where σ is the LeakyReLU activation, a is a learnable parameter vector, W is a weight matrix for node features, and ∥
+
+denotes concatenation. The attention weights suv serve as an implicit indicator of edge reliability. The updated node representation is then computed as attention-weighted aggregation of neighbor features: 
+
+H′ 
+
+> u
+
+= σ
+
+ X 
+
+> v∈N (u)
+
+˜suv W H v
+
+ . (5) By integrating rule and LLM-derived scores into the attention mechanism, SRGAT adaptively downweights edges that are potentially associated with backdoor triggers, while preserving the original graph. We further decompose the framework into a server-side teacher and multiple client-side students, as follows: 
+
+Global Model: The server consists of SRGAT and a full LLM, where SRGAT encodes graph structure, and the LLM provides semantic trust reasoning as the teacher. 
+
+Client Model: Each client adopts SRGAT with a LoRA-based compensation, which distills knowledge from the teacher while preserving efficient local adaptation. 
+
+4.2 LLM-based Edge Modeling on Client 
+
+Each client in FedLSG maintains an SRGAT and a LoRA-based module to produce semantic evidence over structurally selected candidate edges. The resulting semantic signals is combined with the rule signal into SRGAT, to compute edge-level trust scores, which are used to suppress potentially backdoor edges during message passing rather than hard removal. 
+
+Rule-based edge scoring. For each edge (u, v ) on client i, we first compute a structural anomaly score rrule  
+
+> uv
+
+(detailed in Appendix 2). This score is derived from local topology cues, including homophily, cross-community connectivity, neighborhood overlap, clustering consistency, and statistical anomaly indicators. Importantly, these signals are not interpreted as semantic judgments; instead, they serve as a coarse filtering mechanism to identify candidate edges that require deeper semantic inspection. 
+
+LLM-based edge scoring. To obtain semantic evaluations, FedLSG first constructs a graph-to-text reasoning pipeline with constrained neighborhood sampling, ensuring that identical graph structures always yield consistent textual evidence across clients. 4Running Title for Header We first define a instruction Sdet . It specifies a fixed reasoning protocol: the model should interpret structural evidence around an edge and output a scalar suspiciousness score in a predefined format. Thus, Sdet determines how each edge is semantically analyzed in a consistent manner. Given an edge (u, v ), we construct a prompt set Uedge  
+
+> uv
+
+, where each prompt contains the same edge-level structural description together with sampled neighbor context. The edge is first serialized into text, e.g.: 
+
+“Edge (u, v): node u and node v share common neighbor; their community labels are different; local clustering around u is high while v shows weak connectivity; this edge connects two weakly related regions of the graph.” 
+
+To avoid overloading the semantic model with full neighborhood information, we adopt a constrained neighbor querying strategy, where each prompt selectively samples high-degree neighbors and describes them, e.g.: 
+
+“Neighbor w: high-degree node with strong intra-community connectivity.” 
+
+Thus, each element of Uedge  
+
+> uv
+
+integrates edge-level structure with partial neighborhood context, forming a multi-view yet bounded semantic representation. Finally, a graph-derived semantic information is incorporated into the textual prompt representation as an auxiliary signal, and the final semantic score is computed from the combined input, as follows: 
+
+rllm  
+
+> uv
+
+= Fedge LLM 
+
+ Sdet , Uedge  
+
+> uv
+
+, ∆LoRA 
+
+> i
+
+ , (6) 
+
+∆LoRA  
+
+> i
+
+= AiBi, (7) where Fedge LLM (·, ·, ·) aggregates the nuv query scores by arithmetic mean. Ai and Bi are the client-specific LoRA adaptation matrices that parameterize the low-rank update. 
+
+Score fusion. We then combine the rule score and the LLM score to form a unified edge risk estimate in SRGAT, as shown in Eq. 9, which serves to suppress potentially malicious edges. 
+
+˜ruv = aedge  
+
+> 1
+
+rrule  
+
+> uv
+
++ aedge  
+
+> 2
+
+rllm  
+
+> uv
+
+, (8) 
+
+˜suv = suv (1 − κe ˜ruv ). (9) 
+
+4.3 Teacher–Student Knowledge Distillation 
+
+To enable effective local optimization under limited client capacity, the client-side student is trained under supervision from the server-side teacher. The server broadcasts the current global SRGAT parameters θt together with the low-rank prior (At, B t), which jointly serve as shared structural and semantic references for all clients, as follows: 
+
+Lalign = Ai − At 2 
+
+> F
+
++ Bi − Bt 2 
+
+> F
+
+, (10) which encourages alignment between local and global low-rank updates. In addition, we impose a low-rank regularizer as: 
+
+LLoRA = ∥Ai∥F + ∥Bi∥F . (11) Beyond parameter-level alignment, we further transfer semantic and structural knowledge from the teacher to the student. Specifically, we perform distillation at three complementary levels: node-level representations, graph-level global semantics, and edge-level relational patterns: 
+
+Ldistill = Zstu  
+
+> i
+
+− Ztea  
+
+> i
+> 22
+
++ ¯Zstu  
+
+> i
+
+− ¯Ztea 
+
+> i
+> 22
+
++ X
+
+> (u,v )∈Ei
+
+zstu  
+
+> uv
+
+− ztea  
+
+> uv
+> 22
+
+, (12) where Zi denotes the representation obtained by student or teacher, ¯Zi denotes the graph-level mean representation, and 
+
+zuv is the edge representation. Combining the cross-entropy loss LCE with the above losses, the following total loss can be obtained: 
+
+L = LCE + λ1Lalign + λ2LLoRA + λ3Ldistill . (13) This objective ensures that the client-side student remains lightweight while preserving alignment with the server-side teacher. 5Running Title for Header 
+
+4.4 LLM-based Client Behavior Modeling on Server 
+
+The server-side LLM not only provides global semantic priors to guide the client-side student, but also performs semantic reasoning over client behavioral signals during the aggregation stage, enabling the identification of potentially malicious clients and the adaptive down-weighting of their contributions. 
+
+Rule-based client scoring. We construct a client-level rule trust score τ rule  
+
+> i, client
+
+based on structural summary statistics, including homophily deviation, anomaly indicators, and attention-derived structural cues, detailed in Appendix 2. 
+
+LLM-based client scoring. We define a fixed instruction template Sclient , which guides the semantic student to interpret client behavior under a unified reasoning protocol and output a scalar behavioral trust score. This ensures that all clients are assessed under consistent semantic criteria. Meanwhile, Uclient is the client-level semantic input, to represent multi-view client behavior, consisting of: (i) structural behavioral summaries capturing graph-level interaction patterns and anomaly tendencies; (ii) cohort-normalized behavioral statistics reflecting deviations from benign population behavior; (iii) student embeddings that encode behavior-aware semantic representations distilled from the server-side teacher, including how the client reacts to global knowledge. To illustrate the construction process, a prompt instance is formed by instantiating client behaviors, for example: 
+
+"Evaluate client trustworthiness using its structural summary, cohort-normalized statistics, and student embedding, where the client shows moderate homophily deviation and anomaly signals relative to cohort baselines; output a scalar score indicating whether it is benign or abnormal." 
+
+Then, these prompts are uesd to produce the behavioral semantic trust score τ llm 
+
+> i, client
+
+, as follows: 
+
+τ llm  
+
+> i, client
+
+= Fclient llm 
+
+ Sclient , Uclient , i  , (14) where Fclient llm (·) produces a scalar client behavioral trust score under LLM reasoning. 
+
+Aggregation weight. We then combine behavioral rule trust and semantic trust to obtain a unified estimate: 
+
+˜τi, client = aclient 1 τ rule  
+
+> i, client
+
++ aclient 2 τ llm  
+
+> i, client
+
+(15) The final aggregation weight is: 
+
+wti = 1 − κa(1 − ˜τi, client )ωt. (16) Here κa ∈ (0 , 1] controls the maximum trust-based aggregation correction and wti ∈ [1 − κa, 1] is the unnormalized aggregation weight assigned to client i at round t.For FedAvg-style aggregation, the server updates: 
+
+θt+1 =
+
+> Nc
+
+X
+
+> i=1
+
+¯wti θti ,
+
+¯wti = wti
+
+PNc 
+
+> j=1
+
+wtj
+
+.
+
+(17) where ¯wti is the normalized aggregation coefficient and satisfies PNc 
+
+> i=1
+
+¯wti = 1 . This behavioral trust mechanism prevents clients exhibiting abnormal training or semantic behaviors from dominating the global model, even if partial poisoned signals survive local filtering. Since full semantic reasoning is not deployed on clients, only SRGAT parameters and low-rank behavioral adaptation parameters (Ati, B ti ) are communicated to the server. The server aggregates these parameters as: 
+
+At+1 =
+
+> Nc
+
+X
+
+> i=1
+
+¯wti Ati,Bt+1 =
+
+> Nc
+
+X
+
+> i=1
+
+¯wti Bti .
+
+(18) The aggregated (At+1 , B t+1 ) define the next-round global low-rank prior, which is redistributed to clients together with the global SRGAT parameters θt+1 . In this way, aggregation remains unchanged in form, while being guided by client behavioral semantics learned from both rule-based and LLM-based evidence. 6Running Title for Header 
+
+4.5 Rule-LLM Trust Estimation 
+
+Although rule structural indicators efficiently detect suspicious patterns, they are sensitive to benign non-IID variations and may misclassify normal deviations. Split-semantic reasoning provides higher-level context but is limited by truncated semantic depth. Thus, neither is fully reliable in isolation. FedLSG introduces an adaptive mechanism that balances both evidence sources for trust estimation. Specifically, trust is evaluated from two evidences: rule evidence and LLM evidence, computed from Eq. 8 and 15, respectively. For each evidence q, the rule module outputs τ rule q and the LLM module outputs τ llm q . And a disagreement factor Dq measures their inconsistency, where larger values indicate stronger divergence. Based on Dq , two utility functions M1 and M2 are defined to quantify the confidence of rule and LLM evidence, respectively. 
+
+M q 
+
+> 1
+
+(rule, llm ) = σs
+
+ τ rule q · (1 − Dq ) ,M q 
+
+> 2
+
+(rule, llm ) = σs
+
+ τ llm q · (1 − Dq ) , (19) 
+
+Dq = max  |τ rule q − τ llm q |, ϵ  (20) where σs(·) denotes the sigmoid function and ϵ is a small constant for numerical stability. When the rule and LLM assessments are highly consistent, Dqtrust becomes small, leading to larger confidence values. Conversely, strong disagreement reduces both utilities and discourages over-reliance on potentially unreliable evidence. Motivated by prior adaptive interaction modeling [ 28 , 29 ], FedLSG formulates their interaction as a optimization problem: 
+
+min f =
+
+> Q
+
+X
+
+> q=1
+> P
+
+X
+
+> p=1
+
+apM qp (rule, llm )
+
+!
+
+− M qp (rule, llm )
+
+s.t. a1, a 2 > 0; λP
+
+> P
+
+X
+
+> p=1
+
+a2
+
+> p
+
+!
+
+= γ, 
+
+(21) where ( a1) and a2 denote the adaptive weights assigned to rule and LLM evidence, respectively.And γ is a constraint coefficient controlling the solution space. P = 2 denotes the two competing objectives, i.e., rule and LLM assessment. 
+
+Q represents the number of evidences, corresponding to edge-level and client-level evidence. In our framework, Q
+
+is stage-dependent: edge-level estimation (Eq. 8) uses Q = 1 , while client-level estimation (Eq. 15) incorporates cross-client evidence with Q = 2 .Solving Eq. 21 yields the optimal contribution of each evidence source: 
+
+ap =
+
+√γP · PQq=1 M qp (rule, llm )
+
+rPPp=1 
+
+PQq=1 M qp (rule, llm )
+
+2 , (22) where larger utility values naturally result in greater influence on the final trust estimation. The calibrated client trust score is subsequently used to guide trust-aware aggregation and suppress the backdoor patterns. 
+
+5 Experiment 
+
+We conduct a series of experiments to evaluate the effectiveness of FedLSG. Additional results, including LLM backbone selection, ablation studies, parameter analysis, heterogeneous graphs, varying numbers of attacks and clients, and IID settings, are provided in Appendix 6-12. Table 1: Data statistics Datasets Nodes Edges Classes Features Citeseer 3327 9104 6 3703 Pubmed 19717 44338 3 500 Flickr 89250 899756 7 500 Ogb-arxiv 169343 1166243 40 128 7Running Title for Header 
+
+Datasets: We test the effectiveness of FedLSG on several publicly available datasets, including Citeseer [ 30 ], Pubmed [30 ], Flickr [ 31 ], Ogb-arxiv [ 32 ]. Among these, Citeseer and Pubmed are small datasets, While Flickr and Ogb-arxiv are large-scale datasets [ 7]. The statistics are provided in Table 1. We follow the setup of [ 4 ], use the non-identically distributed Louvain (Non-IID-Louvain) data partition setting. 
+
+Attacks: We adopt the state-of-the-art graph backdoor attacks DPGBA [ 8], UGBA [ 7 ], and SBA [ 6], to test the defense of FedLSG. For each attack, we use the attack parameters suggested by the authors. Furthermore, we follow the setup of [ 4 ] to adapt the above attacks to the graph federation system. We randomly attack 60 percent of clients. We run 200 rounds, performing attacks in each rounds. 
+
+Baselines: We test state-of-the-art defense methods including Prune [ 7], PruneLD [ 7 ], OD [ 8 ], RLR [ 15 ], NoisyGCN [ 12 ], FedTGE [ 16 ], RIGBD [ 13 ], and the no-defense GCN (None). These methods are described in Appendix 5. And we evaluate the attack success rate (ASR) when backdoor attacks target the above methods, as well as their classification accuracy (ACC) on clean data. A lower ASR and a higher ACC reflect better defense performance. 
+
+Parameters: FedLSG is trained with 20 clients, hidden dimensions to {128 , 256 }, learning rate to 0.005, weight decay to {0, 5 × 10 −4}, dropout rate to {0.1, 0.5}, and γ = 1 . Adam is the optimization, with Gemma-4-12B as the LLM backbone [ 33 ]. Experiments are conducted on four NVIDIA RTX 4090 GPUs. Detailed settings and LLM comparisons are reported in Appendix 6 and 7. 
+
+5.1 Defense Effectiveness Evaluation 
+
+In this section, we compare the defensive efficacy of FedLSG and baselines in defending against DPGBA, UGBA, and SBA on Citeseer, Pubmed, Flickr, and Ogb-arxiv. Initially, we report the results as shown in Table 2. The lowest ASR values are highlighted in bold. Table 2: The results (ASR and ACC) between FedLSG and baselines                                                                                                                                                                                                                                    
+
+> Citeseer Pubmed Flickr Ogb-arxiv Defenses ASR ↓ACC ↑ASR ↓ACC ↑ASR ↓ACC ↑ASR ↓ACC ↑
+> None 92.37 ±0.95 74.76 ±1.15 93.46 ±0.86 85.72 ±0.95 87.19 ±1.42 46.80 ±1.15 95.35 ±1.27 65.67 ±0.27 Prune 82.58 ±3.16 72.90 ±0.35 46.33 ±0.99 81.74 ±1.12 54.35 ±1.08 46.39 ±0.68 60.07 ±4.24 62.36 ±0.42 PruneLD 82.28 ±3.20 72.66 ±1.91 45.47 ±0.96 81.13 ±0.68 54.08 ±1.26 46.45 ±1.05 56.79 ±5.34 62.39 ±1.04 OD 91.85 ±0.36 74.08 ±1.74 41.95 ±0.81 83.54 ±0.99 38.21 ±1.93 46.34 ±0.56 47.63 ±2.26 61.51 ±1.07 RLR 63.02 ±2.55 72.29 ±1.02 40.51 ±1.31 85.53 ±1.22 36.55 ±2.60 46.01 ±0.91 42.32 ±1.01 66.30 ±0.98 NoisyGCN 54.54 ±1.17 73.12 ±1.91 25.08 ±0.99 82.12 ±0.88 35.02 ±2.40 45.71 ±1.76 40.75 ±3.19 65.31 ±0.87 FedTGE 35.47 ±2.76 74.51 ±0.61 21.23 ±1.70 84.87 ±1.24 28.34 ±1.28 44.87 ±0.47 46.32 ±2.97 65.11 ±0.50 RIGBD 21.52 ±1.89 70.78 ±0.90 20.97 ±0.20 81.08 ±1.71 26.25 ±0.87 44.26 ±1.37 42.79 ±2.73 61.98 ±0.99 DPGBA
+> FedLSG 5.58 ±0.82 74.85 ±0.59 7.61 ±0.66 86.14 ±0.31 4.52 ±0.55 45.70 ±0.58 30.21 ±0.68 66.22 ±0.78
+> None 99.67 ±1.37 74.60 ±0.56 94.19 ±0.33 84.81 ±0.71 83.26 ±1.71 45.10 ±1.05 99.54 ±0.96 65.79 ±0.98 Prune 55.86 ±1.48 72.50 ±0.40 89.80 ±4.06 83.03 ±0.64 54.84 ±4.18 45.26 ±1.06 89.00 ±3.36 62.16 ±1.11 PruneLD 54.05 ±1.50 71.87 ±1.05 88.34 ±4.04 83.23 ±0.46 56.59 ±3.22 45.42 ±0.81 86.25 ±2.03 62.40 ±1.16 OD 40.57 ±0.28 75.34 ±0.88 80.71 ±3.15 84.55 ±0.08 0.00 ±0.00 45.26 ±2.21 73.47 ±4.15 65.45 ±0.93 RLR 97.58 ±1.12 73.60 ±1.13 78.75 ±1.06 85.29 ±0.38 78.57 ±2.39 45.71 ±1.18 1.78 ±0.47 65.89 ±0.79 NoisyGCN 62.49 ±0.76 55.21 ±1.46 64.13 ±1.99 78.53 ±0.29 0.00 ±0.00 45.80 ±1.22 1.22 ±0.38 61.74 ±1.05 FedTGE 19.67 ±1.80 73.59 ±1.13 77.39 ±2.31 85.08 ±0.93 69.79 ±3.12 44.86 ±0.37 72.09 ±3.98 62.57 ±0.46 RIGBD 15.68 ±3.92 70.58 ±0.89 59.36 ±0.27 81.04 ±0.79 0.00 ±0.00 42.50 ±0.89 7.58 ±0.92 63.14 ±0.73 UGBA
+> FedLSG 2.75 ±0.56 75.45 ±0.42 32.30 ±0.78 85.13 ±0.43 0.00 ±0.00 46.29 ±0.53 0.36 ±0.21 65.50 ±0.61
+> None 47.82 ±1.21 73.49 ±1.07 50.97 ±1.15 85.13 ±0.84 0.00 ±0.00 45.39 ±1.31 0.00 ±0.00 64.44 ±1.82 Prune 9.31 ±1.19 70.73 ±1.21 19.47 ±6.14 81.47 ±0.92 0.00 ±0.00 44.55 ±0.89 0.00 ±0.00 64.33 ±1.13 PruneLD 8.41 ±1.50 70.52 ±0.27 18.81 ±5.01 81.76 ±0.90 0.00 ±0.00 44.35 ±1.47 0.00 ±0.00 64.60 ±0.74 OD 17.42 ±1.99 71.49 ±1.79 21.04 ±5.76 83.39 ±0.42 0.00 ±0.00 45.71 ±0.66 0.00 ±0.00 64.57 ±0.69 RLR 15.31 ±2.65 73.72 ±0.97 20.79 ±3.47 84.71 ±0.11 0.00 ±0.00 45.48 ±1.04 0.00 ±0.00 64.03 ±1.69 NoisyGCN 7.60 ±0.53 66.82 ±0.93 11.95 ±1.29 81.44 ±0.09 0.00 ±0.00 44.59 ±1.08 0.00 ±0.00 64.42 ±1.70 FedTGE 12.58 ±2.68 73.59 ±0.52 18.78 ±2.25 84.90 ±0.70 0.00 ±0.00 44.03 ±0.81 0.00 ±0.00 64.36 ±1.04 RIGBD 4.70 ±0.65 70.18 ±0.71 10.24 ±4.47 81.33 ±0.95 0.00 ±0.00 44.91 ±0.53 0.00 ±0.00 63.81 ±0.74 SBA
+> FedLSG 0.00 ±0.00 74.97 ±0.49 0.13 ±0.39 85.45 ±0.58 0.00 ±0.00 46.25 ±0.37 0.00 ±0.00 64.90 ±0.51
+
+Experimental results show that FedLSG achieves the lowest ASR across all datasets and all settings, while preserving clean-data performance. DPGBA and UGBA are very strong attacks, maintaining high ASRs in the undefended case, while SBA is weaker, with ASRs consistently at 0 in the extra-large datasets Flickr and Ogb-arxiv, even when the attack strength is increased. This phenomenon is not due to reporting errors, but rather stems from the limited capability of SBA in large-scale graph settings. Specifically, SBA relies on injecting relatively simple and localized backdoor triggers, which become less effective when the graph size increases significantly. In large graphs such as Flickr and Ogb-arxiv, the influence of a small number of poisoned nodes is diluted during message passing and aggregation, preventing the backdoor from significantly influencing model outputs. Moreover, UGBA achieves remarkable attack performance on Pubmed, leading to an attack success rate even higher than that on larger datasets. This may be because 8Running Title for Header Pubmed exhibits stronger class homophily and semantic consistency, allowing the injected backdoor patterns to align more easily with the target class, thereby improving both the stealthiness and effectiveness of the attack. Regarding the defense methods, Prune, PruneLD, OD hard to defend against DPGBA, which generates intra-distribution triggers [ 13 ]. RLR and FedTGE are used to defend in the client aggregation phase, but lack the ability to protect clean clients. NoisyGCN and RIGBD provide stronger defenses but sacrifice too much clean ACC. Additionally, all the above baselines share a common issue: in federated systems, it is unknown which clients are attacked or when. As a result, these baselines must be applied to each client, which inevitably reduces the clean accuracy, especially when the percentage of pruned edges is high. Furthermore, no defense can completely eliminate backdoors, as a few poisoned target nodes may behave similarly to clean nodes [ 13 ], inevitably remaining in the graph and disrupting the client model. This can affect the central model during aggregation, which, in turn, impacts other clean clients in the next round, leading to a cascading failure [ 11 , 9 , 10 ]. In contrast, FedLSG adaptively adjusts the heterogeneity between clients, to mitigate the impact of backdoors to the central model, thereby providing effective defense. 
+
+5.2 Defense in white-box adaptive attack scenarios 
+
+We evaluate the defense of FedLSG in a white-box setting where the attacker has full knowledge of the LLM, SRGAT and adaptive mechanism. The adaptive attacks DPGBA and UGBA are adapted to optimize perturbations with respect to the entire FedLSG framework, rather than treating the defense as a fixed preprocessing step. Concretely, FedLSG is used as the surrogate model, enabling gradient-based attacks to explicitly target the LLM, SRGAT and adaptive mechanism. This adaptive white-box setting reflects a worst-case threat model. The results in Figure 2 demonstrate that FedLSG provides strong defense against both centralized and distributed adaptive white-box attacks, despite a slight increase in ASR. Notably, FedLSG under adaptive white-box attacks even outperforms most baseline methods evaluated in non-white-box settings. ASR ACC     
+
+> Citeseer
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Rate (%)
+> 8.95
+> 74.39
+> 11.67
+> 74.71
+> ASR ACC
+> Pubmed
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 15.16
+> 84.67
+> 44.53
+> 84.69
+> ASR ACC
+> Flickr
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Rate (%)
+> 10.84
+> 45.21
+> 8.39
+> 45.48
+> ASR ACC
+> Ogb-arxiv
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 47.57
+> 65.87
+> 11.43
+> 65.80
+> DPGBA UGBA
+
+Figure 2: Defense in white-box adaptive attack scenarios 
+
+5.3 Impact of the number of attacks 
+
+We explore the impact of the number of attacked clients on FedLSG, as presented in Figure 3. Specifically, we vary the number of attacked clients from 10 to 50, with a total of 50 clients. We compare the No-defense and FedLSG against SBA and DPGBA attacks on Pubmed and Ogb-arxiv datasets. As shown in Figure 3, the ASR generally increases with the number of compromised clients in No-defense condition, which is consistent with the intuitive expectation that more malicious participants introduce stronger interference into the global model. For comparison, FedLSG exhibits a remarkably stable and low ASR across all levels of attack intensity, indicating its strong resistance to severe attacks. 9Running Title for Header 10 20 30 40 50 010 20 30 40 50 60 Number of attacks  None (ASR) FedGDF (ASR) None (ACC) FedGDF (ACC) ASR (b) DPGBA (Ogb-arxiv) 60 64 68 72 76 80 84 88 92  ACC 10 20 30 40 50 020 40 60 80 100 ASR Number of attacks 54 56 58 60 62 64 66 68 70  ACC (a) SBA (Pubmed) 
+
+Figure 3: Impact of the number of attacks 
+
+Acknowledgments 
+
+We sincerely thank all anonymous reviewers for their valuable efforts. 
+
+References 
+
+[1] Mingyang Lv, Xiangfeng Liu, and Yuanbo Xu. Dynamic multi-interest graph neural network for session-based recommendation. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 39, pages 12328– 12336, 2025. [2] Junwei Li, Le Wu, Yulu Du, Richang Hong, and Weisheng Li. Dual graph neural networks for dynamic users’ behavior prediction on social networking services. IEEE Transactions on Computational Social Systems ,11(5):7020–7031, 2024. [3] Shuman Zhuang, Zhihao Wu, Zhaoliang Chen, Hong-Ning Dai, and Ximeng Liu. Refine then classify: Robust graph neural networks with reliable neighborhood contrastive refinement. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 39, pages 13473–13482, 2025. [4] Fan Liu, Siqi Lai, Yansong Ning, and Hao Liu. Bkd-fedgnn: A benchmark for classification backdoor attacks on federated graph neural network. arXiv preprint arXiv:2306.10351 , 2023. [5] Jing Xu, Rui Wang, Stefanos Koffas, Kaitai Liang, and Stjepan Picek. More is better (mostly): On the backdoor attacks in federated graph neural networks. In Proceedings of the Annual Computer Security Applications Conference , page 684–698, 2022. [6] Zaixi Zhang, Jinyuan Jia, Binghui Wang, and Neil Zhenqiang Gong. Backdoor attacks to graph neural networks. In Proceedings of the ACM Symposium on Access Control Models and Technologies , pages 15–26, 2021. [7] Enyan Dai, Minhua Lin, Xiang Zhang, and Suhang Wang. Unnoticeable backdoor attacks on graph neural networks. In Proceedings of the ACM Web Conference , pages 2263–2273, 2023. [8] Zhiwei Zhang, Minhua Lin, Enyan Dai, and Suhang Wang. Rethinking graph backdoor attacks: A distribution-preserving perspective. In Proceedings of the ACM SIGKDD Conference on Knowledge Discovery and Data Mining , page 4386–4397, 2024. [9] Hongyun Cai, Jiahao Wang, Lijing Gao, and Fengyu Li. Flmaacbd: Defending against backdoors in federated learning via model anomalous activation behavior detection. Knowledge-Based Systems , 289:111511, 2024. [10] Thuy Dung Nguyen, Tuan Nguyen, Phi Le Nguyen, Hieu H. Pham, Khoa D. Doan, and Kok-Seng Wong. Backdoor attacks and defenses in federated learning: Survey, challenges and future research directions. Engineering Applications of Artificial Intelligence , 127:107166, 2024. [11] Zhengming Zhang, Ashwinee Panda, Linyue Song, Yaoqing Yang, Michael Mahoney, Prateek Mittal, Ramchan-dran Kannan, and Joseph Gonzalez. Neurotoxin: Durable backdoors in federated learning. In Proceedings of the International Conference on Machine Learning , volume 162, pages 26429–26446, 2022. [12] Sofiane Ennadir, Yassine Abbahaddou, Johannes F Lutzeyer, Michalis Vazirgiannis, and Henrik Boström. A simple and yet fairly effective defense for graph neural networks. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 21063–21071, 2024. [13] Zhiwei Zhang, Minhua Lin, Junjie Xu, Zongyu Wu, Enyan Dai, and Suhang Wang. Robustness inspired graph backdoor defense. In Proceedings of the International Conference on Learning Representations , 2025. 10 Running Title for Header [14] Zhixiang Shen, Shuo Wang, and Zhao Kang. Beyond redundancy: Information-aware unsupervised multiplex graph structure learning. In Proceedings of the Advances in Neural Information Processing Systems , volume 37, pages 31629–31658, 2024. [15] Mustafa Safa Ozdayi, Kantarcioglu Murat, and Yulia R Gel. Defending against backdoors in federated learning with robust learning rate. In Proceedings of the AAAI conference on artificial intelligence , volume 35, pages 9268–9276, 2021. [16] Guancheng Wan, Zitong Shi, Wenke Huang, Guibin Zhang, Dacheng Tao, and Mang Ye. Energy-based back-door defense against federated graph learning. In Proceedings of the International Conference on Learning Representations , 2025. [17] Bo Yan, Zhongjian Zhang, Huabin Sun, Mengmei Zhang, Yang Cao, and Chuan Shi. Data-centric federated graph learning with large language models. arXiv preprint arXiv:2503.19455 , 2025. [18] Sai Puppala, Ismail Hossain, Md Jahangir Alam, Tanzim Ahad, and Sajedul Talukder. Llm-guided dynamic-umap for personalized federated graph learning. arXiv preprint arXiv:2511.09438 , 2025. [19] Liping Yi, Han Yu, Gang Wang, Xiaoguang Liu, and Xiaoxiao Li. pfedlora: Model-heterogeneous personalized federated learning with lora tuning. arXiv preprint arXiv:2310.13283 , 2023. [20] Yicheng Zhang, Zhen Qin, Zhaomin Wu, Jian Hou, and Shuiguang Deng. Personalized federated fine-tuning for llms via data-driven heterogeneous model architectures. In Proceedings of the ACM Web Conference , pages 5099–5110, 2026. [21] Raghav Singhal, Kaustubh Ponkshe, and Praneeth Vepakomma. Fedex-lora: Exact aggregation for federated and efficient fine-tuning of large language models. In Proceedings of the Annual Meeting of the Association for Computational Linguistics , pages 1316–1336, 2025. [22] Jieming Bian, Lei Wang, Letian Zhang, and Jie Xu. Fedalt: Federated fine-tuning through adaptive local training with rest-of-world lora. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 19728–19736, 2026. [23] Zhen Wang, Weirui Kuang, Yuexiang Xie, Liuyi Yao, Yaliang Li, Bolin Ding, and Jingren Zhou. Federatedscope-gnn: Towards a unified, comprehensive and efficient package for federated graph learning. In Proceedings of the ACM SIGKDD Conference on Knowledge Discovery and Data Mining , page 4110–4120, 2022. [24] Dingqiang Yuan, Xiaohua Xu, Lei Yu, Tongchang Han, Rongchang Li, and Meng Han. E-sage: Explainability-based defense against backdoor attacks on graph neural networks. In Proceedings of the International Conference on Wireless Artificial Intelligent Computing Systems and Applications , pages 402–414, 2024. [25] Hao Yu, Chuan Ma, Xinhang Wan, Jun Wang, Tao Xiang, Meng Shen, and Xinwang Liu. Dshield: Defending against backdoor attacks on graph neural networks via discrepancy learning. In Proceedings of the Network and Distributed System Security Symposium, NDSS , 2025. [26] Xiang Zhang and Marinka Zitnik. Gnnguard: Defending graph neural networks against adversarial attacks. In 
+
+Proceedings of the Advances in Neural Information Processing Systems , volume 33, pages 9263–9275, 2020. [27] Velickovic Petar, Cucurull Guillem, Casanova Arantxa, Romero Adriana, Liò Pietro, and Bengio Yoshua. Graph attention networks. In Proceedings of the International Conference on Learning Representations , 2018. [28] Lu Dan, Xu Changqing, Zhang Linjuan, Wang Lili, and Sun Yanying. Comprehensive risk assessment method of power grid based on grey relational weight game theory. IOP Conference Series: Earth and Environmental Science , 453(1):12068, 2020. [29] Tianyu Liu, Yong Deng, and Felix T S Chan. Evidential supplier selection based on DEMATEL and game theory. 
+
+International Journal of Fuzzy Systems , 20(4):1321–1333, 2018. [30] Prithviraj Sen, Galileo Namata, Mustafa Bilgic, Lise Getoor, Brian Gallagher, and Tina Eliassi-Rad. Collective classification in network data. AI Magazine , 29(3):93–106, 2008. [31] Hanqing Zeng, Hongkuan Zhou, Ajitesh Srivastava, Rajgopal Kannan, and Viktor Prasanna. Graphsaint: Graph sampling based inductive learning method. In Proceedings of the International Conference on Learning Represen-tations , 2020. [32] Weihua Hu, Matthias Fey, Marinka Zitnik, Yuxiao Dong, Hongyu Ren, Bowen Liu, Michele Catasta, and Jure Leskovec. Open graph benchmark: Datasets for machine learning on graphs. In Proceedings of the Advances in Neural Information Processing Systems , volume 33, pages 22118–22133, 2020. [33] Aaron Grattafiori, Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Alex Vaughan, et al. The llama 3 herd of models. arXiv preprint arXiv:2407.21783 , 2024. 11 Running Title for Header [34] Chenhui Deng, Xiuyu Li, Zhuo Feng, and Zhiru Zhang. Garnet: Reduced-rank topology learning for robust and scalable graph neural networks. In Proceedings of the Machine Learning Research , volume 198, pages 3:1—-3:23, 2022. [35] Daniel Zügner and Stephan Günnemann. Adversarial attacks on graph neural networks via meta learning. In 
+
+Proceedings of the International Conference on Learning Representations , 2019. 
+
+A Appendix 
+
+A.1 Algorithm 
+
+Here we summarize one communication round of FedLSG in algorithmic form. 
+
+Algorithm 1 FedLSG: One-Round Training and Aggregation 
+
+Input: Participating clients {Gi}Nc
+
+> i=1
+
+, global backbone parameters θt, global LoRA prior (At, B t), suspicious-edge budget K, client learning rate η
+
+Output: Updated global parameters θt+1 and updated global LoRA prior (At+1 , B t+1 ) 
+
+> 1:
+
+Server broadcasts θt and (At, B t) to all clients.  
+
+> 2:
+
+for each client i ∈ { 1, . . . , N c} in parallel do  
+
+> 3:
+
+Initialize local backbone θti ← θt and local LoRA factors (Ati, B ti ) ← (At, B t). 
+
+> 4:
+
+Compute SRGAT attention and local node representations by Eqs. 4–5.  
+
+> 5:
+
+Compute rule edge anomaly scores rrule  
+
+> uv
+
+for all (u, v ) ∈ Ei. 
+
+> 6:
+
+Select top-K suspicious edges Esel  
+
+> i
+
+according to rrule  
+
+> uv
+
+. 
+
+> 7:
+
+Run the client-side graph-attentive semantic student and LoRA compensator by Eqs. 47–48.  
+
+> 8:
+
+for each (u, v ) ∈ E sel  
+
+> i
+
+do  
+
+> 9:
+
+Build sampled neighborhood query set Uedge  
+
+> uv
+
+by Eqs. 55–56.  
+
+> 10:
+
+Compute split semantic edge score rllm  
+
+> uv
+
+by Eq. 57.  
+
+> 11:
+
+Fuse rule and semantic risks to obtain ˜ruv by Eq. 8.  
+
+> 12:
+
+Update edge attention ˜suv by Eq. 9.  
+
+> 13:
+
+end for  
+
+> 14:
+
+Build the client-level structural summary and rule trust τ rule 
+
+> i, client
+
+. 
+
+> 15:
+
+Build the cohort-aware semantic input and compute τ llm  
+
+> i, client
+
+by Eq. 67.  
+
+> 16:
+
+Solve for adaptive fusion weights a1, a 2 by Eq. 22, and obtain fused trust ˜τi, client by Eq. 15.  
+
+> 17:
+
+Receive detached teacher targets from the server and compute Lalign , LLoRA , and Ldistill by Eqs. 10–12.  
+
+> 18:
+
+Update (θti , A ti, B ti ) using the total objective in Eq. 13.  
+
+> 19:
+
+Compute trust-aware aggregation weight wti by Eq. 16.  
+
+> 20:
+
+Upload θti , (Ati, B ti ), and wti to the server.  
+
+> 21:
+
+end for  
+
+> 22:
+
+Server normalizes {wti }Nc 
+
+> i=1
+
+to obtain { ¯wti }Nc 
+
+> i=1
+
+by Eq. 17.  
+
+> 23:
+
+Aggregate backbone parameters: θt+1 ← PNc 
+
+> i=1
+
+¯wti θti . 
+
+> 24:
+
+Aggregate low-rank parameters (At+1 , B t+1 ) by Eq. 18.  
+
+> 25:
+
+return θt+1 , (At+1 , B t+1 )
+
+A.2 Complexity decomposition 
+
+We first state the main conclusion. The overall complexity of FedLSG is of the same order as a FedLoRA+GAT -style design: the client side is still dominated by the GAT/SRGAT backbone, while only lightweight low-rank semantic adaptation is synchronized. Compared with traditional FedGNNs, the main extra burden is one centralized server-side semantic teacher together with a bounded client-side student/LoRA branch. This is still far cheaper than LLM4FGL and LG-DUMAP, which replicate the full LLM stack on all clients. We now rewrite the complexity according to the actual pipeline in the main text and Appendix 2. Let Nn be the number of nodes on a client, E the number of edges, D the feature dimension, C the number of classes, H the hidden size, 
+
+Ke = |E sel  
+
+> i
+
+| the number of selected suspicious edges on client i, Nc the number of participating clients, L the total semantic depth, k the number of client-resident student blocks, r the LoRA rank, and |Θ| the number of trainable backbone parameters. Since each selected edge (u, v ) is queried nuv times under the one-neighbor-per-query strategy, 12 Running Title for Header we further define the total local edge-query budget 
+
+Nq = X
+
+> (u,v )∈E sel
+> i
+
+nuv . (23) We use CGAT to denote the baseline cost of one local training pass of the original graph backbone. 
+
+1) Structural backbone. FedLSG preserves the original FedGNN training loop, so the dominant local cost is still the SRGAT backbone. Relative to the base GAT, the additional structural operation is the similarity-aware edge scoring in Eq. 4, which requires one pass over local edges and node features. The local classification loss adds the usual O(NnC)
+
+term. Hence the per-client structural cost is 
+
+Cstruct = CGAT + O(ED ) + O(NnC). (24) Thus, before any semantic reasoning is invoked, FedLSG already has the same leading profile as a standard FedGNN with a similarity-aware GAT backbone. 
+
+2) rule suspicious-edge selection and client summary construction. The rule branch computes rrule  
+
+> uv
+
+from local homophily, community crossing, overlap, clustering support, and anomaly statistics. These quantities are all obtained from local neighborhoods and edge statistics, so the full edge scan costs 
+
+Crule = O(ED + E + Nn). (25) Selecting the top-Ke suspicious edges can be implemented by partial sorting or a heap, costing at most 
+
+CtopK = O(E log Ke). (26) In addition, the client-level structural summary in Eq. 58 traverses local graph statistics, semantic-risk summaries, and one copy of the parameter divergence term, which gives 
+
+Csummary = O(Nn + E + |Θ|). (27) 
+
+3) Client-side graph-student and LoRA adaptation. After suspicious edges are selected, each client runs only a lightweight graph-attentive semantic student with k blocks, rather than the full semantic stack. From Eqs. 47–48, the student first computes one semantic embedding and then performs k local attention passes on the private graph, followed by a rank-r LoRA correction over node states. Therefore, the client semantic encoding cost is upper bounded by 
+
+Cstu = O k(EH + NnH2) + O(NnrH ). (28) This is the core reason why FedLSG stays close to FedLoRA+GAT: only a shallow student and low-rank correction run on each client. 
+
+4) Edge-level split semantic scoring. For each selected suspicious edge, FedLSG builds a deterministic structural text and then issues nuv short neighborhood queries, as described in Eqs. 56–57. Because the prompt format is fixed and each query appends only one sampled neighbor plus the local edge state zstu  
+
+> uv
+
+, the total local edge-level semantic scoring cost is linear in the query budget: 
+
+Cedge -sem = O(Nq H). (29) The averaging step in Eq. 57 adds only O(Nq ) and does not change the asymptotic order. Since Nq = P nuv is controlled by the prompt budget and only applies to the top-Ke suspicious edges, this term is explicitly bounded. 
+
+5) Client-level split trust scoring. For trust-aware aggregation, FedLSG additionally serializes one compact behav-ioral summary per client and evaluates the client-level split trust in Eq. 67. The local serialization cost is linear in the number of summarized statistics, while the cohort concatenation scales linearly with the number of participating clients. Hence the semantic trust-calibration overhead is 
+
+Cclient -sem = O(NcH) + O(Nc). (30) The adaptive fusion in Eqs. 8, 15, and 22 uses only two evidence sources and at most two views, so it contributes only constant-time arithmetic per edge or client and is negligible compared with graph propagation and semantic encoding. 13 Running Title for Header 
+
+6) Server-side teacher and distillation. The heavy semantic depth never appears on clients. Instead, the server keeps the remaining L − k semantic blocks and provides detached teacher targets for distillation. Since the teacher is used only for semantic supervision and trust calibration rather than for client-side deployment, its per-round server cost is 
+
+Cteacher = O (Nq + Nc)( L − k)H2 . (31) After teacher targets are obtained, the client-side alignment and distillation terms in Eqs. 10–12 require only vector comparisons between student outputs and detached targets. Their extra optimization cost is 
+
+Cdistill = O(NnH + KeH + rH ). (32) Therefore, the expensive semantic depth is paid once on the server, not Nc times on the clients. 
+
+7) Trust-aware aggregation and communication. FedLSG aggregates the backbone parameters exactly as in weighted FedAvg and additionally aggregates only the low-rank factors (Ai, B i). Therefore the server-side aggregation and communication cost remains linear: 
+
+Cagg = O(Nc(|Θ| + rH )) . (33) The O(Nc|Θ|) term is the standard backbone aggregation cost, and the additional O(NcrH ) term comes only from synchronizing the low-rank factors. 
+
+Comparison with traditional FedGNNs and full-client LLM methods. If we denote the complexity of a conven-tional FedGNN client by 
+
+CFedGNN = CGAT + O(ED ) + O(NnC), (34) then FedLSG mainly adds the bounded rule-selection, shallow-student, query-budgeted semantic scoring, and low-rank synchronization terms in Eqs. 25–33, plus one centralized teacher term in Eq. 31. By contrast, if the full semantic depth were deployed on every client as in LLM4FGL or LG-DUMAP, the semantic cost would scale as 
+
+Cfull -client -LLM = O Nc(Nq + Nn)LH 2 , (35) ignoring additional prompt-engineering and in-context-example overhead. FedLSG avoids this Nc-fold replication by keeping only k ≪ L lightweight blocks on each client and centralizing the remaining L − k blocks on the server. 
+
+Overall complexity. Combining the above terms, one communication round of FedLSG is upper bounded by 
+
+CFedLSG = CGAT + O(ED + NnC) + O(ED + E + Nn) + O(E log Ke)+ O(Nn + E + |Θ|) + O k(EH + NnH2) + O(NnrH ) + O(Nq H)+ O(NcH + Nc) + O (Nq + Nc)( L − k)H2 + O(NnH + KeH + rH )+ O(Nc(|Θ| + rH )) .
+
+(36) Since k and r are small constants, Ke ≪ E by construction, and Nq is explicitly controlled by the prompt budget, the client-side leading term remains the original graph backbone plus a shallow LoRA-enhanced student. In short, the complexity of FedLSG is essentially “FedLoRA+GAT + one server-side LLM teacher,” which is slightly heavier than traditional FedGNNs but still much lighter than LLM4FGL and LG-DUMAP. 
+
+A.3 Implementation Details for Semantic Calibration and Trust Estimation 
+
+This appendix details how FedLSG converts structural evidence into bounded semantic signals. The design follows a simple progression. We first derive cheap structural anomaly scores to identify where semantic reasoning is needed. We then run a lightweight graph-attentive student on each client to produce how those suspicious structures should be interpreted. Finally, we serialize client behavior into compact cohort-level summaries so that trust-aware aggregation can compare clients without exposing raw private graphs. Throughout this appendix, the key principle is that all structure-to-text mappings are deterministic, while trainable semantic adaptation appears only through the client-side graph-student and its low-rank LoRA factors. 
+
+Step 1: rule edge scoring for candidate selection. For each edge (u, v ) on client i, FedLSG first computes a lightweight structural anomaly score 
+
+rrule  
+
+> uv
+
+= λr 
+
+> 1
+
+rsim  
+
+> uv
+
++ λr 
+
+> 2
+
+rcross  
+
+> uv
+
++ λr 
+
+> 3
+
+rhom  
+
+> uv
+
++ λr 
+
+> 4
+
+rcomm  
+
+> uv
+
++ λr 
+
+> 5
+
+rnbr  
+
+> uv
+
+, (37) where 
+
+rsim  
+
+> uv
+
+= 1 − max  0, cos( Hu, H v ), rcross  
+
+> uv
+
+= I[gu̸ = gv ], (38) 14 Running Title for Header 
+
+rhom  
+
+> uv
+
+= 1 − huv , rcomm  
+
+> uv
+
+= min 
+
+
+
+1, max( cu, c v )4
+
+
+
+, rnbr  
+
+> uv
+
+= 1 − min( ηuv + juv , 1) . (39) Here gu is the structural community ID of node u, huv is the mean same-class neighbor ratio around the two endpoints, 
+
+cu is the number of distinct neighboring communities around node u, ηuv is a local clustering-support ratio, and juv is the Jaccard overlap between endpoint neighborhoods. The resulting rrule  
+
+> uv
+
+∈ [0 , 1] is not yet a semantic judgment. It is only a cheap structural filter used to rank edges and select the candidate set Esel  
+
+> i
+
+for further reasoning. 
+
+Step 2: Local statistics for rule client trust. FedLSG also extracts a client-level structural summary that will later serve as the non-semantic part of trust estimation. For client i, we compute 
+
+Hlabel  
+
+> i
+
+= −
+
+P 
+
+> c
+
+pic log( pic + ϵ)log C , Hatt  
+
+> i
+
+= −
+
+P 
+
+> e∈Ei
+
+qie log( qie + ϵ)log |Ei| , (40) 
+
+¯ri = 1
+
+|Ei|
+
+X
+
+> (u,v )∈Ei
+
+˜ruv , ψi = 1
+
+|Ei|
+
+X
+
+> (u,v )∈Ei
+
+I[˜ ruv > 0.6] , (41) 
+
+∆i = 1
+
+|Θ|
+
+X
+
+> ℓ∈Θ
+
+ 1 − cos( θℓi , θ ℓg )  , ξi = |2S1 − 1|, (42) where pic is the local label histogram, qie is the normalized attention mass, Θ is the set of trainable parameter tensors, and S1 is the proportion of nearly unchanged client-global parameters. We additionally summarize the local graph by average degree ¯di, density δi, homophily ϕi, cross-community ratio χi, and structural anomaly ωi, and define the motif anomaly mi = min(1 , 0.5¯ ri + 0 .5ψi).These statistics are combined into a local anomaly score 
+
+Alocal  
+
+> i
+
+= λl
+
+> 1
+
+∆i + λl 
+
+> 2
+
+¯ri + λl
+
+> 3
+
+ψi + λl
+
+> 4
+
+(1 − Hlabel  
+
+> i
+
+) + λl
+
+> 5
+
+mi + λl
+
+> 6
+
+ξi + λl
+
+> 7
+
+(1 − ϕi) + λl
+
+> 8
+
+χi + λl
+
+> 9
+
+ωi, (43) which yields a local rule trust value 
+
+τ rule  
+
+> i
+
+= 1 − ρ1Alocal  
+
+> i
+
+. (44) This score captures whether a client looks unusual in isolation. However, because benign non-IID clients may also deviate from the average, aggregation ultimately requires a cohort-normalized version. We therefore define 
+
+Acohort  
+
+> i
+
+= λc
+
+> 1
+
+[z(∆ i)] + + λc
+
+> 2
+
+[z(¯ ri)] + + λc
+
+> 3
+
+[z(ψi)] + + λc
+
+> 4
+
+[z(1 − Hlabel  
+
+> i
+
+)] +, (45) where [x]+ = max(0 , x ) and z(·) is a robust client-normalized z-score. The corresponding rule trust for aggregation is 
+
+τ rule  
+
+> i, client
+
+= 1 − ρ2Acohort  
+
+> i
+
+. (46) 
+
+Step 3: Client-side graph-student semantic encoding. After selecting Esel  
+
+> i
+
+, the client runs a lightweight graph-attentive semantic student on its private graph. The student first computes 
+
+H(0)  
+
+> i
+
+= WeXi, H(ℓ+1)  
+
+> i
+
+= SRGAT 
+
+
+
+H(ℓ) 
+
+> i
+
+, E i
+
+
+
+, ℓ = 0 , . . . , k − 1, (47) where We is the semantic embedding layer and only k lightweight attention blocks are retained on the client. A low-rank compensator then refines the student representation: 
+
+∆LoRA  
+
+> i
+
+= AiBi, Zstu  
+
+> i
+
+= H(k) 
+
+> i
+
++ ∆ LoRA  
+
+> i
+
+H(k) 
+
+> i
+
+. (48) For each selected edge (u, v ) ∈ E sel  
+
+> i
+
+, we form the local semantic edge state 
+
+zstu  
+
+> uv
+
+= 12
+
+ Zstu  
+
+> i,u
+
++ Zstu 
+
+> i,v
+
+ . (49) This representation is the only trainable semantic signal injected into edge-level prompting on the client. 
+
+Step 4: Deterministic structural serialization for edge-level semantic scoring. FedLSG does not feed raw subgraphs to the split semantic branch. Instead, it converts each suspicious edge into a short deterministic structural record 
+
+T edge  
+
+> uv
+
+= Φ edge (u, v, d u, d v , h uv , χ uv , ω uv , c uv , j uv , η uv ) , (50) where Φedge (·) denotes a deterministic structural record constructor that packages edge-centered graph statistics into a fixed tuple, huv denotes local homophily, χuv indicates whether the edge crosses communities, ωuv is the edge anomaly 15 Running Title for Header score, cuv is the number of common neighbors, juv is the Jaccard overlap, and ηuv is the local clustering-support ratio. The purpose of this step is to bridge the gap between graph statistics and semantic scoring. Up to this point, FedLSG has identified suspicious edges through structural rules and has computed a local student representation zstu  
+
+> uv
+
+, but these numerical quantities are still heterogeneous in scale and format. Before the split semantic branch can reason over them, they must be converted into a stable textual interface that is consistent across clients and rounds. We therefore use a deterministic serializer that maps the structural record T edge  
+
+> uv
+
+into short security-oriented clauses. To keep this mapping reproducible and robust to small numerical fluctuations, each scalar is first bucketized into a small number of qualitative levels: 
+
+lvl( x; α, β ) = 
+
+
+
+low , x ≤ α, 
+
+moderate , α < x < β, 
+
+high , x ≥ β, 
+
+(51) with (α, β ) = (0 .25 , 0.75) by default. This bucketization prevents the prompt from overfitting to insignificant numeric noise while preserving the coarse anomaly pattern that is most useful for semantic discrimination. The edge serializer then verbalizes the bucketized statistics into short clauses, for example: 
+
+huv 7 → “Only 100 huv % of nearby neighbors share the same class signal.” ,χuv = 1 7 → “This connection crosses community boundaries.” ,χuv = 0 7 → “This connection stays within the same community.” ,ηuv ≥ 0.45 7 → “The target edge lies inside a tightly connected local cluster.” ,ηuv < 0.45 7 → “The target edge is weakly supported by the local neighborhood.” ,ωuv 7 → “Structural anomaly score = ωuv .” .
+
+(52) The neighborhood-overlap evidence is verbalized separately as 
+
+(cuv , j uv ) 7 → “Neighbor overlap remains limited with Jaccard similarity juv 
+
+and cuv common neighbors.” . (53) As a result, Ψedge (T edge  
+
+> uv
+
+) becomes a fixed serializer from structural statistics to short natural-language evidence, where 
+
+Ψedge (·) denotes the deterministic map from a structured edge record to its textual description. This output is not the final semantic score yet. Rather, it serves as the textual anchor of the next step: each serialized center edge will be combined with one sampled 1-hop neighbor description and the learned student state zstu  
+
+> uv
+
+to form the bounded prompt set used by the split semantic scorer. 
+
+Step 5: Sampled neighborhood prompting and edge-level split semantic score. For one suspicious edge, directly concatenating the full neighborhood would be noisy and token-inefficient. FedLSG therefore follows a one-neighbor-per-query design. Let 
+
+C1-hop  
+
+> uv
+
+= N (u) ∪ N (v) \ { u, v }, (54) and sample 
+
+wm ∼ Sample  C1-hop 
+
+> uv
+
+ , m = 1 , . . . , n uv , (55) where nuv is the prompt budget of edge (u, v ). Here each sampled wm is a concrete 1-hop neighbor node used to instantiate a neighbor-side structural record T nbr  
+
+> wm
+
+and its textual description Ψnbr (T nbr  
+
+> wm
+
+). In other words, wm is not passed directly to the semantic scorer; it first determines which local neighbor evidence is extracted around the suspicious center edge. We then build the sampled query set 
+
+Uedge  
+
+> uv
+
+= {U edge 
+
+> uv,m
+
+}nuv 
+
+> m=1
+
+, Uedge  
+
+> uv,m
+
+= Ψ edge (T edge  
+
+> uv
+
+) ⊕ Ψnbr (T nbr  
+
+> wm
+
+) ⊕ zstu  
+
+> uv
+
+, (56) so each query contains the center-edge summary, the description induced by the sampled neighbor wm, and the local graph-student state. The final split semantic score is 
+
+rllm  
+
+> uv
+
+= Fedge LLM 
+
+ Sdet , Uedge  
+
+> uv
+
+, ∆LoRA 
+
+> i
+
+ = 1
+
+nuv nuv X
+
+> m=1
+
+score  Sdet , Uedge 
+
+> uv,m
+
+, ∆LoRA 
+
+> i
+
+ , (57) where Sdet is the same shared deterministic system-level instruction defined in the main text, and Fedge LLM (·, ·, ·) is the local split-semantic scorer induced by the client-side student and LoRA compensation. Averaging across sampled neighbor contexts makes the score less sensitive to any single noisy neighbor. 16 Running Title for Header 
+
+Step 6: Client-level structural summary for semantic trust calibration. Edge-level semantic scores are sufficient for refining suspicious links, but aggregation requires judging whether an entire client behaves abnormally relative to the cohort. We therefore serialize each client into a compact behavioral record 
+
+T client  
+
+> i
+
+= Φ client 
+
+  ¯di, δ i, ϕ i, χ i, ω i, H label  
+
+> i
+
+, ¯ri, ψ i, ∆i, S 1, m i
+
+ , (58) and map it into a deterministic summary 
+
+Sclient  
+
+> i
+
+= Ψ client 
+
+ T client 
+
+> i
+
+ . (59) Here Φclient (·) denotes the client-level analogue of Φedge (·), namely a deterministic constructor that packages round-wise client statistics into a fixed structured record, and Ψclient (·) denotes the corresponding deterministic text serializer. The same bucketization rule in Eq. 51 is reused here, but the focus shifts from one edge to the full round-wise client behavior. Typical mappings include 
+
+δi 7 → “The local graph contains lvl( δi; 0 .2, 0.6) ly connected nodes.” ,ϕi 7 → “Homophily = ϕi.” ,χi 7 → “Cross-community ratio = χi.” ,ωi 7 → “Structural anomaly score = ωi.” ,Hlabel  
+
+> i
+
+7 → “Label entropy = Hlabel  
+
+> i
+
+.” ,
+
+∆i 7 → “Parameter divergence = ∆i.” .
+
+(60) We further append deterministic conclusion clauses when unusually risky patterns are present: 
+
+ϕi < 0.3 ⇒ “Only a small fraction of local connections stay within the same class signal.” ,χi > 0.6 ⇒ “Connections frequently cross community boundaries.” ,ωi > 0.7 ⇒ “The graph exhibits unusual structural behavior compared with benign clients.” .
+
+(61) 
+
+Step 7: Cohort-level semantic trust for aggregation. To compare clients within one round, we concatenate all client summaries into a cohort prompt: 
+
+Pcohort = ClientSummaryInstruction ⊕
+
+> Nc
+
+[
+
+> i=1
+
+ClientCohortLine i, (62) ClientCohortLine i = Ψ client 
+
+  ¯di, δ i, ϕ i, χ i, ω i, H label  
+
+> i
+
+, ∆i, τ rule 
+
+> i, client
+
+ , (63) 
+
+> Nc
+
+[
+
+> i=1
+
+ClientCohortLine i = Ψ cohort 
+
+
+
+{summary i}Nc
+
+> i=1
+
+
+
+, (64) where S denotes string concatenation rather than numerical summation. We also summarize the client-side semantic response by the mean split semantic score on selected suspicious edges: 
+
+Uclient = Pcohort ⊕ νLoRA  
+
+> i
+
+, (65) 
+
+νLoRA  
+
+> i
+
+= 1
+
+|E sel  
+
+> i
+
+|
+
+X
+
+> (u,v )∈E sel
+> i
+
+rllm  
+
+> uv
+
+. (66) Finally, the client-level split semantic trust is 
+
+τ llm  
+
+> i, client
+
+= Fclient llm 
+
+ “client-normalized client behavior summary.” , Uclient , i  , (67) where Fclient llm (·, ·, i ) scores client i relative to the cohort rather than in isolation. This distinction is important: a client may look unusual locally yet still be consistent with benign non-IID heterogeneity, which is exactly why semantic trust is computed at the cohort level before aggregation. 
+
+Algorithmic view of deterministic serialization. Algorithm 2 summarizes the deterministic structure-to-text conver-sion used above. Its role is not to replace the graph-student, but to ensure that the semantic branch receives compact, reproducible, security-oriented descriptions instead of raw graph objects. Algorithm 2 clarifies the logic of Appendix 2. First, structure is compressed into deterministic textual evidence. Second, the graph-student contributes only compact local semantic states and low-rank compensation. Third, the final semantic trust signal is produced only after the client is positioned relative to its cohort. This design makes the semantic branch interpretable, bounded, and compatible with privacy-preserving federated training. 17 Running Title for Header 
+
+Algorithm 2 Structure-to-Text Serializer 
+
+Require: Structural record R, stage type z ∈ { edge , local-client , cohort }, rule library Ψz
+
+Ensure: Natural-language structural summary Sz
+
+1: Initialize an empty sentence list L ← [ ] 
+
+2: for each scalar field x in R do 
+
+3: Bucketize x by Eq. 51 when x is not emitted as an exact percentage or score 
+
+4: end for 
+
+5: if z = edge then 
+
+6: Append cluster-support sentence from ηuv 
+
+7: Append homophily sentence from huv 
+
+8: Append community-boundary sentence from χuv 
+
+9: Append overlap sentence from (cuv , j uv )
+
+10: Append anomaly sentence from ωuv 
+
+11: else if z = local-client then 
+
+12: Append density/connectivity sentence from δi
+
+13: Append scalar-report sentences for ( ¯di, ϕ i, χ i, ω i, H label  
+
+> i
+
+, ∆i)
+
+14: Append conclusion clauses triggered by Eq. 61 
+
+15: else if z = cohort then 
+
+16: for each client record Ri in the cohort do 
+
+17: Serialize Ri with Ψclient 
+
+18: Append the rule cohort-trust line from τ rule 
+
+> i, client
+
+19: end for 
+
+20: end if 
+
+21: Concatenate all sentences in L with fixed ordering and line breaks 
+
+22: return Sz
+
+A.4 Derivation of the Adjustment Mechanism 
+
+We solve Eq. 21 by applying the augmented lagrangian function: 
+
+f =
+
+> Q
+
+X
+
+> q=1
+> P
+
+X
+
+> p=1
+
+apM qp (rule, llm )
+
+!
+
+− M qp (rule, llm ) + λP
+
+> P
+
+X
+
+> p=1
+
+a2 
+
+> p
+
+− γ
+
+!
+
+. (68) Then, we take the derivative of Eq. 68, yielding: 
+
+
+
+∂f ∂a p
+
+=
+
+> Q
+
+X
+
+> q=1
+
+(±)M qp (rule, llm ) + 2λP ap = 0 ,∂f ∂λ = 1
+
+P
+
+> P
+
+X
+
+> p=1
+
+a2 
+
+> p
+
+− γ = 0 .
+
+(69) 
+
+
+
+(±) PQq=1 M q 
+
+> 1
+
+(rule, llm )
+
+−a1
+
+= 2λP ,
+
+(±) PQq=1 M q 
+
+> 2
+
+(rule, llm )
+
+−a2
+
+= 2λP ,a21 + a22 − γP = 0 .
+
+(70) 
+
+
+
+± QP
+
+> q=1
+
+M q 
+
+> 1
+
+(rule, llm )
+
+−a1
+
+=
+
+± QP
+
+> q=1
+
+M q 
+
+> 2
+
+(rule, llm )
+
+−a2
+
+,a21 + a22 − γP = 0 .
+
+(71) Squaring both sides of the first term in the above equation gives: 18 Running Title for Header 
+
+
+
+> Q
+
+P
+
+> q=1
+
+M q 
+
+> 1
+
+(rule, llm )
+
+!2
+
+a21
+
+=
+
+> Q
+
+P
+
+> q=1
+
+M q 
+
+> 2
+
+(rule, llm )
+
+!2
+
+a22
+
+,a22 = γP − a21.
+
+(72) By combining the two terms in the above equation and obtain: 
+
+> Q
+
+P
+
+> q=1
+
+M q 
+
+> 1
+
+(rule, llm )
+
+!2
+
+a21
+
+=
+
+> Q
+
+P
+
+> q=1
+
+M q 
+
+> 2
+
+(rule, llm )
+
+!2
+
+γP − a21
+
+. (73) 
+
+(γP − a21)
+
+> Q
+
+X
+
+> q=1
+
+M q 
+
+> 1
+
+(rule, llm )
+
+!2
+
+= a21
+
+> Q
+
+X
+
+> q=1
+
+M q 
+
+> 2
+
+(rule, llm )
+
+!2
+
+. (74) 
+
+α = a1 =
+
+√γP · PQq=1 M q 
+
+> 1
+
+(rule, llm )
+
+rPPp=1 
+
+PQq=1 M qp (rule, llm )
+
+2 . (75) In the same way, we have: 
+
+β = a2 =
+
+√γP · PQq=1 M q 
+
+> 2
+
+(rule, llm )
+
+rPPp=1 
+
+PQq=1 M qp (rule, llm )
+
+2 . (76) Prove completion. 
+
+A.5 Baselines 
+
+1. SBA demonstrates that poisoning training graphs with predefined subgraph triggers can effectively implant backdoors into GNN models. 2. UGBA introduces an adaptive trigger generation strategy that produces triggers closely resembling target nodes, thereby improving attack effectiveness while reducing detectability. 3. DPGBA enhances stealthiness by generating triggers that preserve the original graph distribution, ensuring that the injected patterns remain statistically consistent with the underlying data. In FL scenarios, the attack surface becomes even broader. 4. Some works explore both centralized and distributed backdoor attack strategies that exploit the aggregation mechanism in federated GNNs. They establish a comprehensive benchmark that systematically evaluates backdoor attacks in federated graph learning, facilitating more standardized comparisons across methods. 5. Prune and its variant PruneLD eliminate edges between dissimilar nodes based on feature inconsistency, aiming to filter out potential trigger connections. 6. OD adopts a different perspective by leveraging autoencoder reconstruction errors to detect anomalous patterns introduced by backdoor attacks. 7. NoisyGCN injects controlled noise into the graph structure to expose unstable or poisoned edges, thereby improving detection capability. 8. RIGBD integrates randomized edge dropping with robust training strategies to mitigate the impact of backdoor triggers. 9. FedTGE adopts an energy-based formulation to reweight client updates, assigning lower importance to anomalous contributions. 19 Running Title for Header 
+
+A.6 Parameter Settings 
+
+We summarize the parameter settings used for Citeseer, Pubmed, Flickr, and Ogb-arxiv according to the released implementation. Unless otherwise stated, all datasets share the same optimization backbone: Adam is used as the optimizer, the local learning rate is set to 0.005 , and the SRGAT backbone uses two attention-bearing layers. The hidden dimension is selected from {128 , 256 } according to the dataset scale. For the server-side full LLM , we use the same bounded semantic configuration on all four datasets so that semantic guidance remains auxiliary rather than dominant: the maximum number of refined suspicious edges is 256 , the number of exposed salient feature indices is 
+
+6, the trust floor is 0.1, the heuristic–semantic mixing weight is 0.1, the constraint term is fixed to γ = 1 , the global semantic effect scale is 0.05 , the edge-level semantic influence is 0.03 , the local trade-off reallocation strength is 0.03 ,the aggregation-level trust influence is 0.08 , and the warm-up period is 2 rounds. For the client-side LoRA branch , the hidden dimension is 128 , the total semantic depth is 4, the number of client-resident semantic blocks is 2, the LoRA rank is 8, the semantic dropout is 0.1, the trust-fusion hidden dimension is 128 , the alignment weight is 0.1, the LoRA regularization weight is 10 −4, the distillation weight is 0.05 , and the peer-trust consistency weight is 0.25 .For Citeseer , we use a relatively lightweight configuration because the graph is small and sparse. The hidden dimension is set to 128 , the dropout rate is set to 0.1, and the weight decay is set to 5 × 10 −4. In the released training notes, Citeseer is treated as the default small-scale setting, so this dataset follows the standard optimization configuration without extra regularization or scaling adjustments. For Pubmed , the backbone width is also fixed to 128 , while the number of attention heads is set to 4. The weight decay remains 5 × 10 −4, but the dropout rate is adjusted according to the attack scenario: it is set to 0.2 for SBA, 0.3 for DPGBA, and 0.1 or 0.5 for UGBA. For Flickr , which is substantially larger and denser than Citeseer and Pubmed, we keep the hidden dimension at 128 and use 4 attention heads, but remove explicit regularization by setting the dropout rate to 0 and the weight decay to 0. For Ogb-arxiv , we use the largest backbone among the four datasets: the hidden dimension is increased to 256 , the number of attention heads is reduced to 1, the dropout rate is set to 0.3, the weight decay is set to 0, and the number of local training epochs is increased to 200 . This configuration is explicitly marked in the implementation notes as the one that gives the strongest clean accuracy on Ogb-arxiv, making it the default large-scale setting for our reported experiments. 
+
+A.7 Impact of LLM Selection 
+
+Since FedLSG relies on LLM-based semantic reasoning to provide edge-level and client-level trust estimation, the choice of LLM may influence the final defense performance. To investigate this effect, we evaluate four representative instruction-tuned LLMs with different model sizes and architectures, including Qwen2.5-0.5B-Instruct, Llama-3.1-8B-Instruct, Gemma-3-12B-IT, and Qwen-3-14B. All models are integrated into FedLSG as the semantic teacher while keeping other experimental settings unchanged. We evaluate these LLMs under the DPGBA attack on two representative datasets, Pubmed and Ogb-arxiv. The attack success rate (ASR) and clean classification accuracy (ACC) are reported in Table 3. A lower ASR indicates stronger backdoor resistance, while a higher ACC reflects better preservation of benign graph information. The results show that different LLMs achieve comparable performance in reducing ASR, indicating that FedLSG is relatively insensitive to the specific choice of semantic model for backdoor suppression. Even the lightweight Qwen2.5-0.5B-Instruct achieves competitive defense performance, demonstrating that semantic guidance rather than model scale itself plays the dominant role in identifying suspicious graph patterns. However, larger LLMs consistently provide improvements in clean accuracy. Specifically, Qwen-3-14B and Gemma-3-12B-IT achieve higher ACC compared with smaller models on both datasets. This suggests that larger models possess stronger semantic understanding capabilities, enabling more accurate preservation of benign structural information while suppressing malicious patterns. Therefore, increasing LLM capacity mainly benefits the accuracy-defense trade-off rather than further reducing ASR. Considering both effectiveness and computational cost, FedLSG can flexibly adopt different LLM backbones according to deployment requirements. Table 3: Impact of different LLMs under DPGBA attack.                      
+
+> LLM Pubmed Ogb-arxiv ASR ↓ACC ↑ASR ↓ACC ↑
+> Qwen2.5-0.5B-Instruct 8.24 ±0.71 85.92 ±0.46 32.85 ±0.82 65.88 ±0.67 Llama-3.1-8B-Instruct 7.61 ±0.66 86.14 ±0.31 30.21 ±0.68 66.22 ±0.78 Gemma-3-12B-IT 7.53 ±0.65 87.37 ±0.42 30.94 ±0.76 66.91 ±0.59 Qwen-3-14B 7.25 ±0.58 88.42 ±0.29 29.87 ±0.63 67.47 ±0.72
+
+20 Running Title for Header 
+
+A.8 Ablation study 0 20 40 60 80 100         
+
+> Rate (%)
+> No LLM
+> on Client
+> No LLM
+> on Aggregation
+> No SRGAT
+> Fixed a1,a2
+> FedLSG
+> Setup
+> 90.26
+> 86.77
+> 55.70
+> 50.42
+> 40.19
+> 84.25
+> 84.48
+> 84.43
+> 84.38
+> 84.77
+> UGBA-Pubmed
+> 020 40 60 80 100
+> Rate (%)
+> 53.40
+> 45.26
+> 40.35
+> 38.16
+> 30.26
+> 64.09
+> 65.15
+> 65.62
+> 65.06
+> 65.11
+> DPGBA-Ogb-arxiv
+> ASR ACC
+
+Figure 4: Ablation study To further investigate the contribution of each component in FedLSG, we conduct ablation experiments on Pubmed under UGBA and on Ogb-arxiv under DPGBA. The results are reported in Figure 4. The ablation settings are designed to evaluate the effectiveness of the graph backbone, the semantic reasoning branch, and the adaptive fusion mechanism. Specifically, four variants are considered: (1) No LLM on Client , where the client-side trust estimation is removed, and only the SRGAT backbone with LoRA-based adaptation is retained; (2) No LLM on Aggregation , where the server-side trust estimation is removed during aggregation, and client updates are aggregated using only structural information; (3) 
+
+No SRGAT , where the similarity-aware attention mechanism is replaced with a standard GAT, removing edge-level similarity modeling; and (4) Fixed a1, a 2, where the adaptive weighting mechanism for rule and semantic evidence is disabled and replaced with fixed fusion coefficients ( a1 = a2 = 0 .5). The results in Figure 4 lead to the following observations. First, removing the client-side trust estimation leads to a substantial increase in ASR, indicating that local graph-attentive semantic reasoning plays a critical role in identifying suspicious structures that cannot be captured by purely rule signals. Second, removing the server-side trust estimation also degrades performance, demonstrating that semantic guidance is essential for distinguishing benign non-IID heterogeneity from malicious updates during global model fusion. Third, replacing SRGAT with a standard GAT causes a clear performance drop under both attacks. This confirms that similarity-aware attention is effective in suppressing potential trigger edges and provides a strong structural foundation for downstream semantic calibration. Finally, using fixed fusion weights significantly weakens defense performance compared with the adaptive strategy, showing that static combination of rule and semantic evidence cannot properly handle varying attack strengths and distribution shifts across clients. Overall, the full FedLSG model consistently achieves the best trade-off between attack mitigation and clean accuracy, validating the necessity of jointly modeling similarity-aware structure learning, graph-attentive semantic reasoning, and adaptive trust calibration. 
+
+A.9 Hyperparameter Sensitivity Analysis 
+
+This subsection evaluates the sensitivity of the main coefficients in Eq. 13, Eq. 37, Eq. 43, and Eq. 45 under UGBA on Citeseer and SBA on Pubmed. Multiple coefficient settings are tested for each equation, while all other experimental configurations remain unchanged. The goal is to examine the robustness of the proposed method to coefficient variations and identify the best-performing configuration. As shown in Figure 5, the setting S11, S21, S31, and S41 consistently achieve the best overall trade-off between ASR and ACC, and are therefore selected as the default hyperparameters. Deviations from these configurations generally lead to higher ASR together with slightly higher ACC, which is mainly because the model becomes less regularized under imbalanced coefficient allocations. In such cases, certain components dominate the optimization process, improving task-specific fitting and thus marginally boosting ACC, but at the same time weakening the suppression of backdoor-related signals, which results in increased ASR. Overall, the results demonstrate that the model maintains strong robustness under both UGBA and SBA attacks, and the selected SX1 configurations provide a reliable and effective balance between attack resistance and classification performance. 21 Running Title for Header S11 S12 S13 S14 S15 
+
+> Setting
+> 0
+> 5
+> 10
+> 15
+> ASR (%)
+
+Eq. (10) Citeseer     
+
+> S11 S12 S13 S14 S15
+> Setting
+
+Eq. (10) Pubmed     
+
+> S21 S22 S23 S24 S25
+> Setting
+
+Eq. (12) Citeseer     
+
+> S21 S22 S23 S24 S25
+> Setting
+
+Eq. (12) Pubmed     
+
+> S31 S32 S33 S34 S35
+> Setting
+> 0
+> 5
+> 10
+> 15
+> ASR (%)
+
+Eq. (14) Citeseer     
+
+> S31 S32 S33 S34 S35
+> Setting
+
+Eq. (14) Pubmed     
+
+> S41 S42 S43 S44 S45
+> Setting
+
+Eq. (16) Citeseer     
+
+> S41 S42 S43 S44 S45
+> Setting
+
+Eq. (16) Pubmed  
+
+> 70
+> 80
+> 90
+> ACC (%)
+> 70
+> 80
+> 90
+> ACC (%)
+> Eq. (10): S11: {0.35, 0.35, 0.30}, S12: {0.38, 0.37, 0.25}, S13: {0.40, 0.34, 0.26}, S14: {0.41, 0.35, 0.24}, S15: {0.39, 0.36, 0.25}
+> Eq. (12): S21: {0.30, 0.25, 0.20, 0.15, 0.10}, S22: {0.27, 0.23, 0.20, 0.18, 0.12}, S23: {0.29, 0.22, 0.19, 0.17, 0.13}, S24: {0.28, 0.24, 0.18, 0.18, 0.12}, S25: {0.26, 0.22, 0.21, 0.19, 0.12}
+> Eq. (14): S31: {0.18, 0.16, 0.12, 0.10, 0.09, 0.08, 0.10, 0.09, 0.08}, S32: {0.17, 0.15, 0.13, 0.10, 0.09, 0.08, 0.11, 0.09, 0.08}, S33: {0.19, 0.15, 0.12, 0.10, 0.08, 0.08, 0.10, 0.09, 0.09}
+> S34: {0.18, 0.14, 0.13, 0.11, 0.09, 0.08, 0.10, 0.09, 0.08}, S35: {0.16, 0.16, 0.13, 0.10, 0.09, 0.09, 0.10, 0.09, 0.08}
+> Eq. (16): S41: {0.35, 0.30, 0.20, 0.15}, S42: {0.32, 0.30, 0.20, 0.18}, S43: {0.36, 0.26, 0.20, 0.18}, S44: {0.33, 0.29, 0.21, 0.17}, S45: {0.35, 0.27, 0.19, 0.19}
+> ASR ACC
+
+Figure 5: Hyperparameter Sensitivity Analysis 
+
+A.10 Impact of Client Scale 50 100 
+
+Clients 
+
+0
+
+20 
+
+40 
+
+60 
+
+80 
+
+100 
+
+87.19 
+
+5.28 
+
+91.54 
+
+6.14 
+
+Flickr ASR  
+
+> -81.91 -85.40
+
+50 100 
+
+Clients 
+
+46.0 
+
+46.5 
+
+47.0 
+
+46.86 
+
+46.70 46.63 
+
+46.55 
+
+Flickr ACC 
+
+> -0.16
+> -0.08
+
+50 100 
+
+Clients 
+
+0
+
+20 
+
+40 
+
+60 
+
+80 
+
+100 95.35 
+
+36.71 
+
+98.05 
+
+40.22 
+
+Ogb-arxiv ASR  
+
+> -58.64 -57.83
+
+50 100 
+
+Clients 
+
+65 
+
+66 
+
+67 
+
+65.67 
+
+66.22 
+
+65.34 
+
+66.75 
+
+Ogb-arxiv ACC  
+
+> +0.55 +1.41
+
+None FedLSG 
+
+Figure 6: Impact of Client Scale on Backdoor Defense Effectiveness We further examine the impact of scaling up the number of clients. Specifically, the client population is increased from 20 to 50 and 100. Experiments are conducted on Flickr and Ogb-arxiv under DPGBA attack, while keeping the proportion of malicious clients fixed at 60%. The results in Figure 6 show that ASR increases as the client population grows for both FedLSG and the no-defense baseline. This phenomenon can be attributed to the fact that larger-scale participation leads to more diverse local optimization trajectories, which makes poisoned updates less distinguishable from benign ones in the aggregation space. As a result, malicious updates are more likely to bypass simple aggregation-level suppression mechanisms. Despite this challenge, FedLSG consistently achieves significantly lower ASR across all client scales. This robustness stems from its dual-level defense design: the server-side semantic teacher identifies abnormal client behavior through semantic consistency analysis, while the client-side LoRA-based semantic students provide edge-level risk feedback to suppress malicious propagation during message passing. These two complementary mechanisms jointly reduce the influence of poisoned clients even as the system scales. 
+
+A.11 Defense on heterogeneous graphs 
+
+We evaluate FedLSG on the heterogeneous graph dataset Chameleon [ 34 ]. Chameleon contains 2277 nodes, 31396 edges, 2325 feature dimensions, 5 classes. The dataset is split into 1,365 training, 455 validation, and 457 test samples. We attack Chameleon using backdoor attacks and the untargeted poisoning attack Meta [ 35 ]. Meta directly reduces test accuracy by modifying the graph structure via meta-gradients. And we use the method from [ 26 ] to generate graphlet degree vectors. The results in Figure 7 show that backdoor attacks are not applicable to heterogeneous graphs. Since these attacks rely on the homogeneous graph assumption leads to considerable ASR, but at the expense of clean accuracy. This makes attacks easier to detect. For defending Meta, it can be seen that as the perturbation ratio increases, the baselines’ ACC is significantly reduced, since they also rely on the homogeneous graph assumption. While FedLSG overcomes this limitation and nearly recovers the original performance using graphlet degree vectors. 22 Running Title for Header 0.0 0.1 0.2 0.45 0.50 0.55 0.60 0.65 ACC Perturbation ratio  None  Prune  NoisyGCN  FedGDF ACC 
+
+(a) Meta attack SBA UGBA DPGBA 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 ASR Attacks  None  Prune  NoisyGCN  FedGDF ASR (b) Backdoor attacks (ASR) Clean SBA UGBA DPGBA 0.40 0.45 0.50 0.55 0.60 0.65 ACC Attacks  None  Prune  NoisyGCN  FedGDF ACC (c) Backdoor attacks (ACC) 
+
+Figure 7: Defense on heterogeneous graphs 
+
+A.12 Non-IID-Louvain and IID settings 
+
+All the above experiments are conducted under the non-identically distributed Louvain (Non-IID-Louvain) data partition setting. To comprehensively evaluate the robustness of FedLSG, we conduct a comparison between independent and identically distributed (IID) and Non-IID-Louvain settings in this section to comprehensively assess the FedLSG’s defenses. We conduct experiments on all four datasets. The experimental results are presented in Table 4, from which we draw the following conclusions: The models trained under IID settings are consistently more vulnerable to backdoor attacks compared to those trained under Non-IID-Louvain settings. This indicates that the IID setting actually constitutes a more challenging scenario for backdoor defense. The reason is that similar data distributions across clients in IID settings make clean clients more susceptible to being influenced by poisoned updates, thereby amplifying the attack effect. In contrast, the diversity introduced by non-IID partitions can partially mitigate such interference, leading to improved robustness, although often at the cost of reduced clean accuracy. This observation is consistent with findings in [ 4] and [ 16 ]. Importantly, it also highlights the effectiveness of FedLSG across different data distributions. In particular, although IID settings are more vulnerable to backdoor attacks, FedLSG consistently maintains strong defense performance in both IID and Non-IID-Louvain scenarios. This indicates that FedLSG does not rely on distributional heterogeneity for robustness, but instead benefits from its semantic-aware modeling and client behavior characterization, which remain effective even when client data distributions are highly homogeneous. Table 4: Non-IID-Louvain and IID experiment results Attack- Defense Non-IID IID Dataset ASR ↓ ACC ↑ ASR ↓ ACC ↑
+
+SBA- None 47.82 73.48 48.57 73.69 Citeseer FedLSG 0.00 74.97 0.00 74.54 UGBA- None 95.23 84.19 99.78 85.20 Pubmed FedLSG 42.30 85.13 8.79 85.85 UGBA- None 83.26 45.10 90.04 46.25 Flickr FedLSG 0.00 46.29 0.00 46.70 DPGBA- None 95.35 65.67 99.86 65.89 Ogb-arxiv FedLSG 30.21 66.22 38.41 66.70 23
