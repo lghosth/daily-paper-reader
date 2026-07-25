@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-07-26 <!--dpr-date:20260725-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/25/2607.19539v1-fine-grained-computation-communication-overlap-via-tile-level-signaling-and-scheduling-for-mixture-of-experts" data-sidebar-item="{&quot;title&quot;: &quot;Fine-grained Computation-Communication Overlap via Tile-level Signaling and Scheduling for Mixture-of-Experts&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.19539v1-fine-grained-computation-communication-overlap-via-tile-level-signaling-and-scheduling-for-mixture-of-experts&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;针对分布式MoE训练的细粒度计算-通信重叠方法&quot;}">Fine-grained Computation-Communication Overlap via Tile-level Signaling and Scheduling for Mixture-of-Experts</a>
   * 2026-07-25 <!--dpr-date:20260724-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/24/2607.21224v1-controlled-periodic-synchronization-for-efficient-data-parallel-training" data-sidebar-item="{&quot;title&quot;: &quot;Controlled Periodic Synchronization for Efficient Data-Parallel Training&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.21224v1-controlled-periodic-synchronization-for-efficient-data-parallel-training&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;周期性同步实现通信高效的数据并行训练&quot;}">Controlled Periodic Synchronization for Efficient Data-Parallel Training</a>

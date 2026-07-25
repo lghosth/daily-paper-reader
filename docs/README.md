@@ -18,32 +18,27 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-25
-- 运行时间：2026-07-25 05:17:55 北京时间
+- 最新运行日期：2026-07-26
+- 运行时间：2026-07-26 04:00:53 北京时间
 - 运行状态：成功
-- 本次总论文数：3
+- 本次总论文数：1
 - 精读区：1
-- 速读区：2
-- 下次更新：约 2026-07-26 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 速读区：0
+- 下次更新：约 2026-07-27 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-1) 今日精选3篇论文，精读一篇关于数据并行训练中高效周期性同步控制的研究（9.0分），另速读联邦图反攻防与无线联邦学习资源分配。  
-2) 最值得关注的方向是《Controlled Periodic Synchronization》提出的同步策略，可显著提升大规模训练效率。  
-3) 建议普通读者优先精读此论文，了解如何通过可控周期同步平衡通信开销与收敛速度，并关注联邦学习中的语义校准与硬件协作思路。
-- 详情：[2026-07-25 日报](/202607/24/README)
+今日精读一篇关于混合专家模型的高分论文，重点关注细粒度计算与通信重叠技术。
+核心方向是通过tile级信令和调度实现更高效的计算通信并行，显著提升MoE模型训练效率。
+建议进一步了解该方法的实际性能增益以及与其他重叠策略的对比，以评估其适用范围。
+- 详情：[2026-07-26 日报](/202607/25/README)
 
 ### 精读区论文标签
-1. [Controlled Periodic Synchronization for Efficient Data-Parallel Training](/202607/24/2607.21224v1-controlled-periodic-synchronization-for-efficient-data-parallel-training)  
+1. [Fine-grained Computation-Communication Overlap via Tile-level Signaling and Scheduling for Mixture-of-Experts](/202607/25/2607.19539v1-fine-grained-computation-communication-overlap-via-tile-level-signaling-and-scheduling-for-mixture-of-experts)  
    标签：评分：9.0/10、query:dgnn-nas
-   evidence：周期性同步实现通信高效的数据并行训练
+   evidence：针对分布式MoE训练的细粒度计算-通信重叠方法
 
 ### 速读区论文标签
-1. [FedLSG: LLM-Enhanced Semantic Calibration for Federated Graph Backdoor Defense](/202607/24/2607.19674v1-fedlsg-llm-enhanced-semantic-calibration-for-federated-graph-backdoor-defense)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：联邦图神经网络后门防御
-2. [Convergence-Latency-Aware Adaptive Modulation and Resource Allocation in RIS-Assisted Wireless Federated Learning](/202607/24/2607.19759v1-convergence-latency-aware-adaptive-modulation-and-resource-allocation-in-ris-assisted-wireless-federated-learning)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：自适应调制和资源分配实现通信高效的联邦学习
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card dpr-home-panel">

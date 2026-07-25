@@ -1,0 +1,54 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-25T19:59:41.440165+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2607.19539v1",
+      "source": "arxiv",
+      "title": "Fine-grained Computation-Communication Overlap via Tile-level Signaling and Scheduling for Mixture-of-Experts",
+      "abstract": "Mixture-of-Experts (MoE) architectures increase model capacity without proportionally increasing computation cost and have become a key building block for scaling large language models (LLMs) to trillion-parameter regimes. Efficient deployment of these MoE models relies on distributed execution across multiple GPUs, where each MoE layer involves two all-to-all communications: dispatching tokens to expert ranks and returning the expert outputs to their source ranks. Conventional MoE implementations launch this return all-to-all after expert compute completes, exposing communication latency on the critical path and reducing GPU utilization. We present a fine-grained approach that overlaps expert compute with the second all-to-all via tile-level signaling and scheduling. Our producer-consumer co-design combines: (1) a persistent per-rank computation kernel (producer) that covers all local experts on the rank to eliminate repeated kernel launch overhead and prioritizes remote-critical tiles, and (2) a persistent communication kernel (consumer) on a small dedicated partition of streaming multiprocessors (SMs) that issues segment-granular transfers as tiles become ready. Our co-design avoids intrusive changes to the underlying computation operators or communication primitives, making it practical for improving distributed MoE execution efficiency on multi-GPU systems. On a 4-A100 GPU platform, evaluated on three MoE models against four state-of-the-art MoE systems, our approach achieves up to 2.64x end-to-end speedup and 2.74x MoE-layer speedup. Compared with a conventional non-overlap baseline, our approach consistently improves both operator- and MoE-layer-level performance across varying GEMM shapes, router modes, and a broad range of producer/consumer SM partitions, while preserving correctness.",
+      "authors": [
+        "Minyu Cui",
+        "Anna Wingkvist",
+        "Morgan Ericsson"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI"
+      ],
+      "published": "2026-07-21T19:40:06+00:00",
+      "link": "https://arxiv.org/pdf/2607.19539v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "fine-grained overlap of computation and communication for distributed MoE training",
+      "llm_evidence_cn": "针对分布式MoE训练的细粒度计算-通信重叠方法",
+      "llm_evidence": "针对分布式MoE训练的细粒度计算-通信重叠方法",
+      "canonical_evidence": "针对分布式MoE训练的细粒度计算-通信重叠方法",
+      "llm_tldr_en": "Proposes a tile-level signaling and scheduling approach to overlap expert compute with all-to-all communication in Mixture-of-Experts models, reducing training latency.",
+      "llm_tldr_cn": "混合专家（MoE）模型在分布式部署中面临全到全通信延迟瓶颈。本文提出了一种细粒度的块级信令与调度方法，通过将专家计算与返回全到全通信重叠，消除了通信在关键路径上的等待时间。实验表明，该方法能显著提升GPU利用率并降低训练时间，为大规模MoE模型的高效训练提供了实用解决方案。",
+      "llm_tldr": "混合专家（MoE）模型在分布式部署中面临全到全通信延迟瓶颈。本文提出了一种细粒度的块级信令与调度方法，通过将专家计算与返回全到全通信重叠，消除了通信在关键路径上的等待时间。实验表明，该方法能显著提升GPU利用率并降低训练时间，为大规模MoE模型的高效训练提供了实用解决方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}
