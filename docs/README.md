@@ -18,27 +18,27 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-26
-- 运行时间：2026-07-26 04:00:53 北京时间
+- 最新运行日期：2026-07-27
+- 运行时间：2026-07-27 04:14:35 北京时间
 - 运行状态：成功
-- 本次总论文数：1
+- 本次总论文数：2
 - 精读区：1
-- 速读区：0
-- 下次更新：约 2026-07-27 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 速读区：1
+- 下次更新：约 2026-07-28 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日精读一篇关于混合专家模型的高分论文，重点关注细粒度计算与通信重叠技术。
-核心方向是通过tile级信令和调度实现更高效的计算通信并行，显著提升MoE模型训练效率。
-建议进一步了解该方法的实际性能增益以及与其他重叠策略的对比，以评估其适用范围。
-- 详情：[2026-07-26 日报](/202607/25/README)
+今日精读一篇流水线梯度编码高分论文，速读一篇大模型后训练实践。最值得关注的是流水线梯度编码方案，通过多阶段压缩显著降低分布式训练通信开销。建议进一步探索该方案与异步训练范式的协同潜力。
+- 详情：[2026-07-27 日报](/202607/26/README)
 
 ### 精读区论文标签
-1. [Fine-grained Computation-Communication Overlap via Tile-level Signaling and Scheduling for Mixture-of-Experts](/202607/25/2607.19539v1-fine-grained-computation-communication-overlap-via-tile-level-signaling-and-scheduling-for-mixture-of-experts)  
-   标签：评分：9.0/10、query:dgnn-nas
-   evidence：针对分布式MoE训练的细粒度计算-通信重叠方法
+1. [Pipelined Gradient Coding](/202607/26/2607.20739v1-pipelined-gradient-coding)  
+   标签：评分：8.0/10、query:dgnn-nas
+   evidence：流水线梯度编码减少分布式训练中的通信开销
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [SLAI T-Rex: Full-Parameter Post-training of the DeepSeek-V4 Family on Ascend SuperPOD](/202607/26/2607.20145v1-slai-t-rex-full-parameter-post-training-of-the-deepseek-v4-family-on-ascend-superpod)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：端到端优化通信高效的大规模分布式训练
 
 
 <div class="dpr-home-promo-card dpr-home-panel">
