@@ -18,27 +18,31 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-27
-- 运行时间：2026-07-27 04:14:35 北京时间
+- 最新运行日期：2026-07-28
+- 运行时间：2026-07-28 05:20:16 北京时间
 - 运行状态：成功
-- 本次总论文数：2
-- 精读区：1
-- 速读区：1
-- 下次更新：约 2026-07-28 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 本次总论文数：3
+- 精读区：0
+- 速读区：3
+- 下次更新：约 2026-07-29 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日精读一篇流水线梯度编码高分论文，速读一篇大模型后训练实践。最值得关注的是流水线梯度编码方案，通过多阶段压缩显著降低分布式训练通信开销。建议进一步探索该方案与异步训练范式的协同潜力。
-- 详情：[2026-07-27 日报](/202607/26/README)
+今日速读三篇论文，涵盖联邦学习频谱控制、方差缩减Q学习与图粗化推荐。最值得关注的是联邦参数高效微调中的三叉戟频谱控制方法，以及图粗化与标签传播的高效推荐方案。普通读者可优先尝试图粗化推荐方法，它在数据稀疏场景下更实用。
+- 详情：[2026-07-28 日报](/202607/27/README)
 
 ### 精读区论文标签
-1. [Pipelined Gradient Coding](/202607/26/2607.20739v1-pipelined-gradient-coding)  
-   标签：评分：8.0/10、query:dgnn-nas
-   evidence：流水线梯度编码减少分布式训练中的通信开销
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [SLAI T-Rex: Full-Parameter Post-training of the DeepSeek-V4 Family on Ascend SuperPOD](/202607/26/2607.20145v1-slai-t-rex-full-parameter-post-training-of-the-deepseek-v4-family-on-ascend-superpod)  
+1. [Three-Pronged Spectral Control for Federated Parameter Efficient Fine Tuning](/202607/27/2607.20914v1-three-pronged-spectral-control-for-federated-parameter-efficient-fine-tuning)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：端到端优化通信高效的大规模分布式训练
+   evidence：通信高效的联邦微调（PEFT）
+2. [Variance-Reduced Q-Learning over Static and Time-Varying Networks](/202607/27/2607.21876v1-variance-reduced-q-learning-over-static-and-time-varying-networks)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：分布式Q学习与恒定通信量
+3. [Efficient Recommendations via Graph Coarsening and Label Propagation](/202607/27/2607.22287v1-efficient-recommendations-via-graph-coarsening-and-label-propagation)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：图粗化技术用于高效图处理
 
 
 <div class="dpr-home-promo-card dpr-home-panel">

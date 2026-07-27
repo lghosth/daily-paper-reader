@@ -1,0 +1,131 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-27T21:18:45.237551+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.20914v1",
+      "source": "arxiv",
+      "title": "Three-Pronged Spectral Control for Federated Parameter Efficient Fine Tuning",
+      "abstract": "Federated parameter-efficient fine-tuning (PEFT) enables communication-efficient adaptation of large pretrained models on decentralized edge data, but it remains fragile under non-IID client heterogeneity. In low-rank adaptation (LoRA), different clients may learn locally useful but spectrally misaligned update subspaces, causing high-variance aggregation and poor global transfer. We propose TRISHUL, a spectral-control framework for robust federated PEFT. TRISHUL follows the FL no-raw-data-sharing setting but does not itself provide formal privacy guarantees. TRISHUL uses shared frozen multi-head low-rank bases to obtain algebraically exact aggregation of compact core updates, applies nuclear norm proximal shrinkage to suppress client-specific high-rank spectral components before upload, and allocates adaptation heads non-uniformly across layers using a concave water filling budget rule derived from pretrained layer capacity. Because shrinkage is performed only on small core matrices, TRISHUL adds negligible computation and no extra per-round communication over the underlying multi-head PEFT protocol. Across vision and language benchmarks, including CIFAR-100, SVHN, 20 Newsgroups, MRQA, and GLUE with LLaMA3.2-1B, TRISHUL improves convergence, stability, and final performance over federated LoRA baselines, with greater gains under stronger heterogeneity.",
+      "authors": [
+        "Shiva Raj Pokhrel",
+        "Dipsan Bhattarai",
+        "Anwar Walid"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.NI"
+      ],
+      "published": "2026-07-23T04:49:38+00:00",
+      "link": "https://arxiv.org/pdf/2607.20914v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "communication-efficient federated fine-tuning (PEFT)",
+      "llm_evidence_cn": "通信高效的联邦微调（PEFT）",
+      "llm_evidence": "通信高效的联邦微调（PEFT）",
+      "canonical_evidence": "通信高效的联邦微调（PEFT）",
+      "llm_tldr_en": "TRISHUL is a spectral-control framework for federated parameter-efficient fine-tuning, achieving communication efficiency via shared bases and nuclear norm shrinkage. Directly addresses communication-efficient training but in LLM domain, not GNN.",
+      "llm_tldr_cn": "TRISHUL针对联邦参数高效微调（PEFT）中客户端异质性导致聚合不稳定的问题，提出频谱控制框架。使用共享冻结多秩低秩基实现精确聚合，并利用核范数近端收缩抑制异常更新。虽然应用于大语言模型，但其通信高效微调思想可迁移至图神经网络分布式训练，例如用于减少客户端间通信。实验表明该方法收敛更快且全局模型更鲁棒。",
+      "llm_tldr": "TRISHUL针对联邦参数高效微调（PEFT）中客户端异质性导致聚合不稳定的问题，提出频谱控制框架。使用共享冻结多秩低秩基实现精确聚合，并利用核范数近端收缩抑制异常更新。虽然应用于大语言模型，但其通信高效微调思想可迁移至图神经网络分布式训练，例如用于减少客户端间通信。实验表明该方法收敛更快且全局模型更鲁棒。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.21876v1",
+      "source": "arxiv",
+      "title": "Variance-Reduced Q-Learning over Static and Time-Varying Networks",
+      "abstract": "We investigate a decentralized reinforcement learning problem involving multiple agents that interact with the same Markov Decision Process (MDP). The agents can exchange information over a network to collectively learn the optimal state-action value function. For this setting, we introduce a novel epoch-based distributed $Q$-learning algorithm called VRDQ, where within each epoch, agents locally estimate the Bellman optimality operator and diffuse information using a consensus-based protocol. For both static and time-varying networks, we establish high-probability finite-time convergence rates for VRDQ that enjoy linear speedups from collaboration. Crucially, we prove that such speedups in sample-complexity require only $\\tilde{O}(1)$ communication, substantially improving upon the communication costs in prior work.",
+      "authors": [
+        "Sreejeet Maity",
+        "Feng Zhu",
+        "Aritra Mitra",
+        "Robert W. Heath"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "eess.SY"
+      ],
+      "published": "2026-07-24T00:24:09+00:00",
+      "link": "https://arxiv.org/pdf/2607.21876v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "distributed Q-learning with constant communication",
+      "llm_evidence_cn": "分布式Q学习与恒定通信量",
+      "llm_evidence": "分布式Q学习与恒定通信量",
+      "canonical_evidence": "分布式Q学习与恒定通信量",
+      "llm_tldr_en": "Proposes VRDQ, a distributed Q-learning algorithm achieving linear speedups with only tilde O(1) communication, enabling communication-efficient training.",
+      "llm_tldr_cn": "该论文针对多智能体分布式强化学习中的通信效率问题，提出了VRDQ算法。该算法采用基于回合的分布式Q学习，通过共识协议扩散信息，在静态和时变网络上均能实现线性加速，且仅需常数级别的通信开销。实验证明了其通信效率，为分布式训练中的通信优化提供了可迁移方法。",
+      "llm_tldr": "该论文针对多智能体分布式强化学习中的通信效率问题，提出了VRDQ算法。该算法采用基于回合的分布式Q学习，通过共识协议扩散信息，在静态和时变网络上均能实现线性加速，且仅需常数级别的通信开销。实验证明了其通信效率，为分布式训练中的通信优化提供了可迁移方法。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.22287v1",
+      "source": "arxiv",
+      "title": "Efficient Recommendations via Graph Coarsening and Label Propagation",
+      "abstract": "Graph-based recommendations are widely adopted in real-world industrial applications. However, graphs in these systems often reach a massive scale, posing notable scalability and efficiency challenges. This requires techniques that can effectively balance predictive quality with computational cost. One promising approach is graph coarsening, an adaptive graph reduction technique that offers a way to systematically construct smaller, yet structurally representative, versions of the original large-scale graphs.   In this work, we propose a flexible two-stage diffusion framework that combines graph coarsening with multi-step label propagation in the telecommunications domain. Domain-specific heuristics are applied to first aggregate nodes into meaningful communities, reducing graph size while preserving essential business-relevant relationships. An initial diffusion process done by a Label Propagation Algorithm (LPA) or a Graph Neural Network (GNN) propagates labels across the coarsened graph to produce coarse-grained predictions. Finally, a second LPA within subgraphs generates the final recommendations for individual users.   On a real-world telecommunications dataset, when using LPA in both stages, our method achieves up to +24% NDCG@5 over the full-graph LPA baseline. Incorporating a lightweight GNN in the first stage further boosts NDCG@5 by more than 50%, but requires substantial training and inference time. Through extensive experiments and a detailed ablation, we quantify these trade-offs and demonstrate that our coarsening-driven approach delivers an optimal balance between scalability, latency, and recommendation quality.",
+      "authors": [
+        "Alessandro Sbandi",
+        "Federico Siciliano",
+        "Fabrizio Silvestri"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-24T13:25:26+00:00",
+      "link": "https://arxiv.org/pdf/2607.22287v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "graph coarsening technique for efficient graph processing",
+      "llm_evidence_cn": "图粗化技术用于高效图处理",
+      "llm_evidence": "图粗化技术用于高效图处理",
+      "canonical_evidence": "图粗化技术用于高效图处理",
+      "llm_tldr_en": "Proposes a two-stage diffusion framework combining graph coarsening and label propagation for scalable graph-based recommendations, reducing graph size while preserving structure.",
+      "llm_tldr_cn": "该论文针对大规模图推荐系统的可扩展性挑战，提出一种结合图粗化和多步标签传播的两阶段扩散框架。首先通过领域特定启发式聚合节点构建粗化图，然后进行标签传播完成推荐。实验表明该方法在保持预测质量的同时显著降低计算成本。",
+      "llm_tldr": "该论文针对大规模图推荐系统的可扩展性挑战，提出一种结合图粗化和多步标签传播的两阶段扩散框架。首先通过领域特定启发式聚合节点构建粗化图，然后进行标签传播完成推荐。实验表明该方法在保持预测质量的同时显著降低计算成本。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
