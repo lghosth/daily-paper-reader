@@ -18,31 +18,28 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-28
-- 运行时间：2026-07-28 05:20:16 北京时间
+- 最新运行日期：2026-07-29
+- 运行时间：2026-07-29 04:05:32 北京时间
 - 运行状态：成功
-- 本次总论文数：3
+- 本次总论文数：2
 - 精读区：0
-- 速读区：3
-- 下次更新：约 2026-07-29 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 速读区：2
+- 下次更新：约 2026-07-30 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日速读三篇论文，涵盖联邦学习频谱控制、方差缩减Q学习与图粗化推荐。最值得关注的是联邦参数高效微调中的三叉戟频谱控制方法，以及图粗化与标签传播的高效推荐方案。普通读者可优先尝试图粗化推荐方法，它在数据稀疏场景下更实用。
-- 详情：[2026-07-28 日报](/202607/27/README)
+今日速读两篇论文，聚焦分布式网络中的秩回归与异质性图神经网络训练。值得关注分布式卷积秩回归方法（7分）以及针对异质性图谱的粗化GNN自适应增强技术（6分）。下一步建议深入了解分布式优化框架与异质性图数据增强策略。
+- 详情：[2026-07-29 日报](/202607/28/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Three-Pronged Spectral Control for Federated Parameter Efficient Fine Tuning](/202607/27/2607.20914v1-three-pronged-spectral-control-for-federated-parameter-efficient-fine-tuning)  
+1. [Distributed Convolutional Rank Regression over Decentralized Networks](/202607/28/2607.23639v1-distributed-convolutional-rank-regression-over-decentralized-networks)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：去中心化分布式学习框架，具有高通信效率
+2. [Remedying Coarsening-Based GNN Training under Heterophily via Adaptive Complementary Enhancement](/202607/28/2607.21885v1-remedying-coarsening-based-gnn-training-under-heterophily-via-adaptive-complementary-enhancement)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：通信高效的联邦微调（PEFT）
-2. [Variance-Reduced Q-Learning over Static and Time-Varying Networks](/202607/27/2607.21876v1-variance-reduced-q-learning-over-static-and-time-varying-networks)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：分布式Q学习与恒定通信量
-3. [Efficient Recommendations via Graph Coarsening and Label Propagation](/202607/27/2607.22287v1-efficient-recommendations-via-graph-coarsening-and-label-propagation)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：图粗化技术用于高效图处理
+   evidence：基于粗化的GNN训练方法用于大规模图缩放
 
 
 <div class="dpr-home-promo-card dpr-home-panel">
