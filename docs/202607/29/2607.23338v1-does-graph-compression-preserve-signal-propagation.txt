@@ -1,0 +1,231 @@
+Title: Does Graph Compression Preserve Signal Propagation?
+
+URL Source: https://arxiv.org/pdf/2607.23338v1
+
+Published Time: Tue, 28 Jul 2026 00:44:17 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# Does Graph Compression Preserve Signal Propagation? 
+
+Kawshik Banerjee and Khaled Mohammed Saifuddin 
+
+School of Computing, Southern Illinois University, Carbondale, IL, USA kawshik.banerjee@siu.edu, k.saifuddin@siu.edu 
+
+Abstract —Graph compression reduces the computational cost of graph learning, but its effect on signal propagation remains largely underexplored. Existing work evaluates compression through downstream task performance or structural preser-vation, neither of which directly captures how propagation dynamics change after compression. We study two fundamen-tal compression paradigms, coarsening and sparsification, and ask whether they preserve the propagation behavior of the original graph. Across five datasets, varying compression rates, and propagation depths, we measure signal behavior through three complementary metrics. Our results reveal a consistent tension between the two compression families. Sparsification retains higher signal diversity and mitigates oversmoothing, but its propagation trajectory progressively diverges from that of the original graph. Coarsening more faithfully preserves propagation behavior, but at the cost of stronger smoothing and rank collapse. These findings demonstrate that two propagation-centric objectives, preserving signal diversity and preserving propagation fidelity, are distinct and empirically at odds under graph compression, highlighting the need for evaluation protocols that jointly consider both dimensions. The code and results are available at: https://github.com/KawshikBanerjee/Compression-Propagation-Duality 
+
+Index Terms —Graph compression, Oversmoothing, Graph learning 
+
+I. I NTRODUCTION 
+
+Graph compression has emerged as a practical solution to the computational and memory demands of large-scale graph learning, reducing graph size while aiming to retain properties necessary for effective learning [1], [2], [3], [4]. Graph compression research has converged on two dominant paradigms: coarsening, which merges nodes into supernodes to reduce graph order [5], [6], and sparsification, which prunes edges to reduce graph size [7], [8]. Despite substantial progress in compression methodology, evaluation has centered on a narrow set of downstream prox-ies. The predominant approach assesses compression quality through downstream task performance, such as classification accuracy or link prediction area under the curve (AUC) [9], [10]. A complementary line of work evaluates structural preservation, examining whether spectral properties [11] or cut guarantees [5] are retained after compression. While both perspectives are valuable, neither directly addresses whether compression preserves how node features evolve under re-peated application of the graph operator [12]. We refer to this as signal propagation throughout the paper. This distinction has practical consequences. Propagation is the mechanism through which graph structure influences node representations. If compression alters propagation dynamics, then the signal a node receives after compression differs fundamentally from what it would receive on the original graph, regardless of whether downstream task metrics appear unaffected [13]. Understanding this gap has direct implications for when and how compression can be safely applied. In this work, we take a propagation-centric view of graph compression. We evaluate representative coarsening and spar-sification methods across multiple graph datasets at varying compression rates and propagation depths, measuring signal behavior through complementary metrics that capture both intrinsic smoothness and fidelity to the original propagation trajectory. Our analysis reveals a consistent and sharp ten-sion between the two paradigms. Coarsening methods closely follow the original propagation trajectory, but at the cost of stronger signal smoothing, i.e., oversmoothing [14], [15], [16]. Sparsification methods better preserve signal diversity and resist oversmoothing, yet their propagation trajectories diverge progressively from the original graph as depth in-creases. These two objectives, preserving signal diversity and preserving propagation fidelity, are empirically at odds under both paradigms. Our main contributions are as follows:  
+
+> •
+
+We identify and empirically characterize signal diversity preservation and propagation fidelity as two distinct and empirically competing evaluation objectives under graph compression.  
+
+> •
+
+We provide a systematic empirical analysis of six com-pression methods across two paradigms, five datasets, multiple compression rates, and propagation depths using three propagation-centric metrics.  
+
+> •
+
+We show that the coarsening-sparsification tension gen-eralizes across methods within each paradigm, with im-portant within-category variation, and demonstrate that methods favorable under oversmoothing-oriented metrics may simultaneously exhibit large deviations from the original propagation trajectory. II. R ELATED WORK 
+
+Graph compression reduces a large graph to a smaller one while preserving properties relevant to downstream tasks [4], [17]. Rather than evaluating compression by its effect on arXiv:2607.23338v1 [cs.LG] 25 Jul 2026 task performance, we study how the propagation operator itself behaves under compression — how closely the signal propagated on a compressed graph reproduces that of the original. We focus on two paradigms that admit a training-free propagation operator: coarsening, which reduces the node set, and sparsification, which reduces the edge set. 
+
+a) Graph Coarsening: Graph coarsening reduces a graph by grouping nodes into supernodes and aggregating their connections [6]. Heavy Edge Matching (HE) [18] iteratively matches adjacent node pairs by the heaviest edge and contracts them into single supernodes, prioritizing strong local connec-tivity. Variation Neighborhoods (VN) [5] takes a broader view by grouping each node with all its neighbors as candidate contraction sets, and greedily contracts the group with the smallest local variation — a localized measure of how non-smooth the preserved signals are across the group. Both methods rely on pairwise or local structural similarity as the merging criterion. NOPE [19] departs from this by prioritizing collective neighborhood interference: rather than optimizing each merge independently, it penalizes neighborhood-level deviation, avoiding merging decisions that preserve pairwise similarity at the cost of disrupting the surrounding semantic structure. 
+
+b) Graph Sparsification: Graph sparsification approxi-mates a dense graph with a sparse one by removing a subset of edges [20], motivated by the theoretical guarantee that every graph has a spectral sparsifier that is nearly-linear in size [21]. In practice, sparsification methods assign a score to each edge based on some structural objective and apply global filtering to retain a target fraction of edges [8]. Random Edge (RE) [8] is the simplest approach, uniformly sampling edges without regard to graph structure. Local Degree (LE) [8] improves on this by retaining edges incident to the highest-degree neighbors of each node, thereby preserving local connectivity and hub structure, following community detection approaches [22]. TEDDY [23] takes a more principled approach, assigning degree-based scores to edges and pruning high-degree edges in a single pass while retaining low-degree ones that serve as structurally critical links between otherwise distant parts of the graph. 
+
+c) Oversmoothing and Propagation Under Compression: 
+
+Oversmoothing is a well-documented phenomenon in graph learning, where node representations become increasingly sim-ilar with depth, eventually collapsing into near-identical vec-tors [24], [15]. Dirichlet energy is commonly used to measure this effect and has been shown to decay exponentially with depth [15], [14], [25]. Recent work questions the sufficiency of energy-based metrics, showing that performance degradation can precede meaningful energy decay, and proposes rank-based alternatives [26]. Since compression alters the propa-gation operator itself, oversmoothing and compression are not independent: [14] shows that dropping edges and coarsening nodes shift a graph’s eigenvalues and Dirichlet energy in similar ways. Closer to our setting, [13] shows that spectral preservation under coarsening does not guarantee that message passing on the coarsened graph matches the original and proposes a new propagation matrix with explicit message-passing guarantees. 
+
+d) Positioning of This Work: Compression is evaluated in the literature mostly through downstream task perfor-mance, while the oversmoothing literature characterizes how propagation degrades feature representations independently of compression. We connect these threads, asking whether signal diversity preservation and propagation fidelity are distinct ob-jectives under compression, and whether the two compression categories sit on complementary sides of this trade-off. III. P ROBLEM SETUP AND METHODOLOGY 
+
+A. Overview 
+
+We investigate how different graph compression paradigms alter signal propagation dynamics. Specifically, we contrast two fundamentally different compression categories, coars-ening and sparsification, and ask whether they preserve the propagation behavior of the original graph. To this end, we em-ploy three complementary metrics that jointly capture intrinsic signal smoothness and fidelity to the original propagation trajectory. 
+
+B. Baseline Propagation 
+
+To study how compression alters signal propagation, we first establish a reference propagation on the original un-compressed graph. This baseline captures how node features spread through the graph structure under repeated neighbor-hood aggregation and serves as the ground truth against which compressed graph propagation is compared. We consider a graph G = ( V, E) where V denotes a set of N nodes and E denotes a set of E edges. We define the baseline propagation operator following the symmetric normalized adjacency matrix with self-loops introduced in [12]: ˜A = ˜D− 12 (A + I) ˜D− 12 where A is the adjacency matrix, I is the identity matrix, and ˜D is the degree matrix of A + I. Given the initial node feature matrix X ∈ RN ×d of 
+
+d-dimensional node features, the propagated signal at depth k
+
+is: 
+
+Y (k) = ˜AkX. (1) Note that we do not train any model; ˜A is used solely to measure how signals evolve through the graph structure at increasing depths. 
+
+C. Graph Compression 
+
+Graph compression seeks to reduce the size of a graph G =(V, E) while retaining its structural properties. We contrast two fundamentally different compression paradigms: coarsening and sparsification. In both cases, we treat compression as an operation that alters the graph topology, and we evaluate its effect on signal propagation rather than on trained model performance. 1) Graph Coarsening: Graph coarsening produces asmaller graph Gc = (Vc, Ec) by partitioning the original node set V into N ′ disjoint groups and merging each group into a single supernode, where |V c| = N ′ < N . Formally, a cluster assignment matrix C ∈ { 0, 1}N ′×N encodes this partition, where Cμi = 1 if and only if node i belongs to supernode μ. The initial features in X are averaged within each group to form the coarsened feature matrix Xc ∈ RN ′×d,and the coarse propagation operator ˜Ac is constructed on the resulting supernode graph. The coarse signal at depth k is then: 
+
+Y (k) 
+
+> c
+
+= ˜Akc Xc.Since the coarsened graph operates in a reduced node space, direct comparison with the original baseline is not straightforward. We therefore map the coarse signal back to the original node space by applying the transpose of C:
+
+Y (k) 
+
+> m
+
+= C⊤Y (k) 
+
+> c
+
+. (2) 
+
+2) Graph Sparsification: Graph sparsification produces a sparser graph Gs = ( V, Es) by removing a subset of edges from E, where Es ⊆ E , while preserving the original node set V. Since the node set remains unchanged, the sparsified signal can be compared directly against the original baseline without any lifting step. The sparsified graph yields a modified propagation operator ˜As, and the signal trajectory is measured as: 
+
+Y (k) 
+
+> s
+
+= ˜Aks X. (3) 
+
+D. Evaluation Metrics 
+
+We assess the effect of compression on signal propagation through three complementary metrics, each capturing a dis-tinct aspect of propagation behavior. We report these metrics across multiple propagation depths to capture both early and asymptotic propagation regimes. Shallow depths reflect the immediate effect of compression on local neighborhood aggregation, while deeper depths reveal whether compressed graphs exhibit qualitatively different long-range behavior, such as accelerated rank collapse or sustained deviation from the original trajectory. 
+
+1) Dirichlet Energy Ratio: Dirichlet energy (DE) measures the total variation of a signal across graph edges and is one of the most widely used metrics to quantify oversmoothing [16]. Intuitively, as propagation depth increases, repeated neigh-borhood aggregation causes node representations to become increasingly similar, driving the energy toward zero. Following [14], [27], we measure the Dirichlet energy of the signal 
+
+Y (k) = ˜AkX at depth k as: 
+
+E(k) = tr  (Y (k))⊤L Y (k) = 12
+
+X
+
+> i,j
+
+Aij ∥y(k) 
+
+> i
+
+− y(k) 
+
+> j
+
+∥22 (4) where L is the unnormalized graph Laplacian, and a lower 
+
+E(k) indicates stronger oversmoothing [27], [28]. Since raw energy values depend on input feature scale and graph size, comparing them directly across compression categories is not meaningful. Therefore, following [28], we normalize by the initial energy at k = 0 and measure the DE ratio R(k):
+
+R(k) = E(k)
+
+E(0) . (5) A lower R(k) indicates stronger smoothing relative to the original signal energy, with a ratio approaching zero implying near-complete oversmoothing. 
+
+2) Deviation: While the energy ratio measures the intrinsic smoothness of the compressed signal, it does not capture whether the compressed graph preserves the propagation be-havior of the original graph. Two graphs could exhibit identical energy decay profiles yet produce entirely different signal trajectories. To capture this, motivated by [13], we measure the relative Frobenius error ( ∆k) between the compressed and original signals at each depth k:
+
+∆k =
+
+Y (k) − Y (k) 
+
+> cmp F
+
+Y (k) F
+
+, Y (k) 
+
+> cmp
+
+=
+
+(
+
+Y (k) 
+
+> s
+
+sparsification 
+
+Y (k) 
+
+> m
+
+coarsening (6) following equations 1, 2, and 3. A higher ∆k indicates that the compressed graph produces signals that diverge more strongly from the original propagation trajectory. 
+
+3) Rank: Rank-based metrics provide a complementary perspective on oversmoothing that is distinct from energy de-cay. While Dirichlet energy captures the total variation of the signal across edges, rank directly measures the dimensionality of the signal subspace and is a more reliable indicator of oversmoothing in certain cases [26]. When oversmoothing oc-curs, node representations collapse toward a low-dimensional subspace, reducing the rank of the signal matrix. We report the numeric rank (NumRank) that approximates the effective number of linearly independent directions in the signal matrix [29]: 
+
+NumRank = ∥Y (k) 
+
+> cmp
+
+∥2
+
+> F
+
+∥Y (k) 
+
+> cmp
+
+∥22
+
+, Y (k) 
+
+> cmp
+
+=
+
+
+
+Y (k) baseline 
+
+Y (k) 
+
+> s
+
+sparsification 
+
+Y (k) 
+
+> m
+
+coarsening (7) where, ∥.∥F and ∥.∥2 denote the Frobenius norm and the spectral norm, respectively. A higher rank indicates greater signal diversity. For coarsening-based methods, both metrics are measured in the original node space after lifting through C⊤, making them directly comparable across compression categories. 
+
+E. Experimental Setup 
+
+We evaluate six compression methods on five datasets (see Table I) across two categories: NOPE [19], Heavy Edge Matching [5], and Variation Neighborhoods [5] for coars-ening, and TEDDY [23], Local Degree [8], and Random Edge [8] for sparsification. Heavy Edge Matching, Variation Neighborhoods, Local Degree, and Random Edge follow the implementations in [10]. Each method is applied at three compression rates r ∈ {0.3, 0.5, 0.7} in our experiments, where r denotes the fraction of nodes merged for coarsening and the fraction of edges pruned for sparsification. However, for visual clarity, we report only r ∈ { 0.3, 0.7} in our figures, while the complete results are available in our codebase. We report propagation depths k ∈ { 2, 4, 8, 16 , 32 }.TABLE I: Dataset Statistics                         
+
+> Dataset #Nodes #Edges #Features #Compo-nents
+> Cora [30] 2,708 5,278 1,433 78 Citeseer [30] 3,327 4,552 3,703 438 Pubmed [30] 19,717 44,324 500 1DBLP [31] 17,716 52,867 1,639 589 Amazon Computers [32] 13,752 245,861 767 314
+
+Each method-dataset-rate combination is run over five ran-dom seeds {0, 1, 2, 3, 4}, and we report the mean ± standard deviation across seeds. The baseline dense graph propagation is computed on a single fixed seed, as it involves no stochastic components. All experiments were conducted on a single NVIDIA RTX PRO 6000 GPU. IV. R ESULTS AND DISCUSSION 
+
+Broadly, our findings reveal distinct failure modes for the two compression paradigms. Sparsification-based meth-ods retain higher energy and rank at larger depths than the uncompressed graph, indicating reduced oversmoothing and stronger signal diversity, but at the cost of a propagation trajectory that increasingly diverges from the original as depth increases. Coarsening-based methods show the opposite ten-dency: they reproduce the original propagation trajectory more faithfully, but generally exhibit stronger oversmoothing, with lower energy and rank at larger depths. This effect is not uniform across settings. Trajectory fidelity and oversmoothing are largely decoupled: a coarsened graph can follow the baseline trajectory closely while its representations are either more or less oversmoothed than the baseline’s, depending on dataset structure and propagation depth. 
+
+A. Coarsening: Propagation Fidelity at the Cost of Diversity 
+
+Across NOPE, Heavy Edge Matching, and Variation Neigh-borhoods, deviation ∆k consistently decreases with depth on Cora, Citeseer, and DBLP (see Fig 1), indicating that coars-ened propagation converges toward the baseline trajectory as depth increases. At the same time, the numeric rank fall below the baseline at all depths and rates, with the gap widening as r
+
+increases, consistent with coarsening accelerating oversmooth-ing through both feature averaging and repeated aggregation on the coarse operator ˜Ac.Pubmed and Amazon Computers break this pattern. On Pubmed, all three methods show deviation that increases 
+
+with depth. Heavy Edge Matching is most extreme (DE ratio exceeding 6 at r = 70% , deviation reaching ∼4.3 at k =32; see Fig. 1 and 2), Variation Neighborhoods is milder (between 
+
+∼0.55 and ∼0.75 at r = 70% ), and NOPE relatively stable (between ∼0.65 and ∼0.75 at r = 70% ). We attribute this to cluster size imbalance rather than disconnection: components remain fully connected (singletons = 0 ) on Pubmed at all rates, but at r = 70% Heavy Edge Matching’s largest cluster contains 697 nodes, compared to 55 for NOPE and 62 for Variation Neighborhoods. A similar pattern is also observed in Amazon Computers as well. Averaging features over large heterogeneous groups produces coarse features that poorly represent individual nodes, causing the coarse operator ˜Ac to amplify rather than smooth the signal. Coarsening’s fidelity advantage thus appears conditional on balanced cluster sizes, a condition more easily violated on denser graphs at high compression rates. 
+
+B. Sparsification: Signal Diversity at the Cost of Fidelity 
+
+TEDDY, Local Degree, and Random Edge all preserve substantially higher rank than the baseline across all settings (see Fig. 3), since edge removal does not directly reduce feature dimensionality and slows convergence to a common subspace. DE ratio plateaus above the baseline, with the plateau value increasing monotonically with pruning rate (e.g., TEDDY on Cora rises from ∼0.1 at r = 30% to ∼0.6 at 
+
+r = 70% and k = 32 ; see Fig. 2). This comes at a cost of deviation that increases mono-tonically with depth, the opposite of coarsening. TEDDY’s increase is smooth and plateaus ( ∼2.1 on Cora, ∼2.4 on Pubmed, ∼0.6 on Amazon Computers at r = 70% and k = 32 ;see Fig. 1). Random Edge shows comparable divergence ( ∼2.0 on Cora, ∼2.6 on Pubmed at r = 70% and k = 32 ; see Fig. 1), though its graph statistics show 8,980 singletons on Pubmed at r = 70% . Since isolated nodes retain their initial features unchanged, its apparent rank advantage can be partly considered an artifact of disconnection. Local Degree does not fit cleanly into either paradigm: at r = 30% , deviation decreases with depth (coarsening-like), while at r = 70% it increases (sparsification-like). On Pubmed, this is most pronounced, with a deviation flattening near 0.25 at r = 30% but rising to ∼1.0 at k = 32 
+
+for r = 70% . This suggests that its degree-aware criterion preserves enough local structure at low rates to maintain fidelity, but this breaks down as more high-degree-adjacent edges are removed. 
+
+C. The Diversity-Fidelity Tension Across Methods 
+
+Together, the six methods support a category-level distinc-tion that is neither absolute nor uniform. Coarsening generally preserves fidelity at the cost of oversmoothing, but this ad-vantage degrades on denser graphs at high compression rates, reversing entirely for Heavy Edge Matching on Pubmed. Spar-sification generally preserves diversity at the cost of fidelity, but the magnitude varies with the pruning criterion, from TEDDY’s bounded divergence to Random Edge’s comparable but partly artifactual divergence inflated by disconnection. These results suggest that diversity preservation and prop-agation fidelity reflect two distinct mechanisms: reducing signal dimensionality (coarsening) versus reducing aggrega-tion connectivity (sparsification). A method favorable under oversmoothing-oriented metrics may simultaneously exhibit large, growing deviation from the original trajectory, and vice versa. This has practical implications: applications requiring faithful reproduction of propagation behavior should favor coarsening on sufficiently connected graphs, while applica-tions requiring diverse node representations may favor sparsi-fication despite its growing divergence. However, our analysis Fig. 1: Deviation from baseline comparison across compression methods, compression ratios, and datasets. 
+
+Fig. 2: Dirichlet energy ratio comparison across compression methods, compression ratios, and datasets. 
+
+Fig. 3: Numeric rank comparison across compression methods, compression ratios, and datasets. is purely propagation-focused and does not connect these findings to downstream task performance. Because r denotes the fraction of nodes merged in one family and the fraction of edges removed in the other, matched ratios represent matched budgets rather than equivalent structural changes. We leave two directions to future work : translating propagation fidelity and signal diversity to downstream performance, and defin-ing compression measures that align across graph reduction categories. V. C ONCLUSION 
+
+We studied the effect of graph compression on signal propagation, evaluating representative coarsening and sparsi-fication methods across multiple datasets, compression rates, and propagation depths. Our results reveal a consistent ten-sion: coarsening preserves propagation fidelity at the cost of stronger oversmoothing, while sparsification retains higher signal diversity but diverges progressively from the origi-nal propagation trajectory. This tension generalizes across methods within each category, with important caveats —aggressive coarsening on denser graphs can destabilize fidelity, and unstructured sparsification inflates rank metrics through disconnection rather than genuine diversity. Together, these findings suggest that signal diversity and propagation fidelity are distinct and competing objectives, and that evaluation frameworks relying solely on oversmoothing-oriented metrics may give an incomplete picture of compression quality. ACKNOWLEDGEMENT 
+
+Generative AI tools were used for proofreading, sentence enhancement, and grammatical correction in this paper. REFERENCES [1] G. Bravo Hermsdorff and L. Gunderson, “A unifying framework for spectrum-preserving graph sparsification and coarsening,” Advances in Neural Information Processing Systems , vol. 32, 2019. [2] K. Duan, Z. Liu, P. Wang, W. Zheng, K. Zhou, T. Chen, X. Hu, and Z. Wang, “A comprehensive study on large-scale graph training: Bench-marking and rethinking,” Advances in Neural Information Processing Systems , vol. 35, pp. 5376–5389, 2022. [3] Z. Liu, K. Zhou, Z. Jiang, L. Li, R. Chen, S.-H. Choi, and X. Hu, “DSpar: An embarrassingly simple strategy for efficient GNN training and inference via degree-based sparsification,” Transactions on Machine Learning Research , 2023. [4] H. Xu, L. Zhang, Y. Ma, S. Zhou, Z. Zheng, and J. Bu, “Learning to reduce the scale of large graphs: A comprehensive survey,” ACM Transactions on Knowledge Discovery from Data , vol. 19, no. 5, pp. 1–25, 2025. [5] A. Loukas, “Graph reduction with spectral and cut guarantees,” Journal of Machine Learning Research , vol. 20, no. 116, pp. 1–42, 2019. [6] A. Loukas and P. Vandergheynst, “Spectrally approximating large graphs with smaller graphs,” in Proceedings of the International Conference on Machine Learning . PMLR, 2018, pp. 3237–3246. [7] G. Zhang, X. Sun, Y. Yue, C. Jiang, K. Wang, T. Chen, and S. Pan, “Graph sparsification via mixture of graphs,” in International Conference on Learning Representations , vol. 2025, 2025, pp. 92 735–92 763. [8] G. Lindner, C. L. Staudt, M. Hamann, H. Meyerhenke, and D. Wagner, “Structure-preserving sparsification of social networks,” in Proceedings of the 2015 IEEE/ACM International Conference on Advances in Social Networks Analysis and Mining 2015 , 2015, pp. 448–454. [9] B. Yang, K. Wang, Q. Sun, C. Ji, X. Fu, H. Tang, Y. You, and J. Li, “Does graph distillation see like vision dataset counterpart?” Advances in Neural Information Processing Systems , vol. 36, pp. 53 201–53 226, 2023. [10] S. Gong, J. Ni, N. Sachdeva, C. Yang, and W. Jin, “GC4NC: A benchmark framework for graph condensation on node classification with new insights,” Advances in Neural Information Processing Systems ,vol. 38, 2026. [11] M. Kataria, S. Kumar et al. , “UGC: Universal graph coarsening,” Ad-vances in Neural Information Processing Systems , vol. 37, pp. 63 057– 63 081, 2024. [12] T. N. Kipf and M. Welling, “Semi-supervised classification with graph convolutional networks,” in Proceedings of The International Conference on Learning Representations , 2017. [13] A. Joly and N. Keriven, “Graph coarsening with message-passing guar-antees,” Advances in Neural Information Processing Systems , vol. 37, pp. 114 902–114 927, 2024. [14] C. Cai and Y. Wang, “A note on over-smoothing for graph neural networks,” in Proceedings of The 37th International Conference on Machine Learning . PMLR, 2020. [15] K. Oono and T. Suzuki, “Graph neural networks exponentially lose expressive power for node classification,” in International Conference on Learning Representations , 2020. [16] T. K. Rusch, M. M. Bronstein, and S. Mishra, “A survey on oversmooth-ing in graph neural networks,” arXiv preprint arXiv:2303.10993 , 2023. [17] M. Hashemi, S. Gong, J. Ni, W. Fan, B. A. Prakash, and W. Jin, “A comprehensive survey on graph reduction: Sparsification, coarsening, and condensation,” in Proceedings of the Thirty-Third International Joint Conference on Artificial Intelligence , 2024, pp. 8058–8066. [18] G. Karypis and V. Kumar, “A fast and high quality multilevel scheme for partitioning irregular graphs,” SIAM Journal on Scientific Computing ,vol. 20, no. 1, pp. 359–392, 1998. [19] X. Bai, B. Lu, K. Zhang, S. Chen, X. Wang, C. Zhou, and M. Jin, “Rethinking efficient graph coarsening via a non-selfishness principle,” in Proceedings of The International Conference on Machine Learning .PMLR, 2026. [20] W. S. Fung, R. Hariharan, N. J. Harvey, and D. Panigrahi, “A general framework for graph sparsification,” in Proceedings of the Forty-Third Annual ACM Symposium on Theory of Computing , 2011, pp. 71–80. [21] D. A. Spielman and S.-H. Teng, “Spectral sparsification of graphs,” 
+
+SIAM Journal on Computing , vol. 40, no. 4, pp. 981–1025, 2011. [22] V. Satuluri, S. Parthasarathy, and Y. Ruan, “Local graph sparsification for scalable clustering,” in Proceedings of the 2011 ACM SIGMOD International Conference on Management of Data , 2011, pp. 721–732. [23] H. Seo, J. Yun, and E. Yang, “TEDDY: Trimming edges with degree-based discrimination strategy,” in Proceedings of The Twelfth Interna-tional Conference on Learning Representations , 2024. [24] Q. Li, Z. Han, and X.-M. Wu, “Deeper insights into graph convolutional networks for semi-supervised learning,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 32, no. 1, 2018. [25] X. Wu, A. Ajorlou, Z. Wu, and A. Jadbabaie, “Demystifying over-smoothing in attention-based graph neural networks,” Advances in Neural Information Processing Systems , vol. 36, pp. 35 084–35 106, 2023. [26] K. Zhang, P. Deidda, D. J. Higham, and F. Tudisco, “Are we measuring oversmoothing in graph neural networks correctly?” in Proceedings of the International Conference on Learning Representations , 2026. [27] K. Zhou, X. Huang, D. Zha, R. Chen, L. Li, S.-H. Choi, and X. Hu, “Dirichlet energy constrained learning for deep graph neural networks,” 
+
+Advances in Neural Information Processing Systems , vol. 34, pp. 21 834–21 846, 2021. [28] Z. Zhou, Z. Ding, J. Shi, L. Qing, and S. Shen, “TINED: GNNs-to-MLPs by teacher injection and dirichlet energy distillation,” in International Conference on Machine Learning . PMLR, 2025, pp. 78 616–78 632. [29] M. Rudelson and R. Vershynin, “Sampling from large matrices: An approach through geometric functional analysis,” Journal of the ACM (JACM) , vol. 54, no. 4, pp. 21–es, 2007. [30] Z. Yang, W. Cohen, and R. Salakhudinov, “Revisiting semi-supervised learning with graph embeddings,” in Proceedings of The International Conference on Machine Learning . PMLR, 2016, pp. 40–48. [31] A. Bojchevski and S. G¨ unnemann, “Deep gaussian embedding of graphs: Unsupervised inductive learning via ranking,” in International Conference on Learning Representations , 2018. [32] O. Shchur, M. Mumme, A. Bojchevski, and S. G¨ unnemann, “Pitfalls of graph neural network evaluation,” arXiv preprint arXiv:1811.05868 ,2018.

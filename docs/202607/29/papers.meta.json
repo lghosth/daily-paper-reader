@@ -1,0 +1,39 @@
+{
+  "label": "2026-07-30",
+  "date": "2026-07-29",
+  "generated_at": "2026-07-29T20:47:04",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202607/29/2607.22805v1-orchnas-orchestrated-neural-architecture-search-service-for-personalised-federated-edge-intelligence",
+      "section": "deep",
+      "title_en": "OrchNAS: Orchestrated Neural Architecture Search Service for Personalised Federated Edge Intelligence",
+      "authors": "Keya Patel, Sajib Mistry, Sheik Mohammad Mostakim Fattah, Aneesh Krishna",
+      "date": "2026-07-24",
+      "pdf": "https://arxiv.org/pdf/2607.22805v1",
+      "score": "8.0",
+      "evidence": "联邦边缘智能中的神经架构搜索",
+      "tldr": "面向异构边缘环境中能源、计算和内存约束，OrchNAS框架通过服务端神经架构搜索服务自动设计模型。采用能量感知全局搜索学习紧凑全局表示，并以渐进贪婪剪枝策略为各服务导出满足资源限制的个性化子网。利用原始对偶优化机制在模型适应中严格保证能量预算。实验证明该方法在多种数据集上效果显著，实现了资源约束下的高效个性化联邦边缘智能。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "We propose OrchNAS, an energy-aware, personalised, federated edge intelligence framework that leverages a Neural Architecture Search Service to automatically design service-adaptive models for heterogeneous edge environments. The framework orchestrates the architecture search process on a server-side NAS service, enabling edge services to derive personalised architectures under device-level energy, computation, and memory constraints. We introduce an energy-aware global architecture search mechanism that learns a compact global representation across heterogeneous services. We develop an energy-efficient architecture selection mechanism that enables each service to derive a personalised subnet that satisfies its resource constraints via a progressive, greedy, energy-aware pruning strategy. We propose an energy-efficient personalised model optimisation scheme that updates service-adaptive parameters while preserving global representations, where a primal-dual optimisation mechanism enforces strict energy budgets during architecture adaptation. Experiments on real-world and benchmark datasets demonstrate the effectiveness of the proposed approach.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/29/2607.23338v1-does-graph-compression-preserve-signal-propagation",
+      "section": "quick",
+      "title_en": "Does Graph Compression Preserve Signal Propagation?",
+      "authors": "Kawshik Banerjee, Khaled Mohammed Saifuddin",
+      "date": "2026-07-25",
+      "pdf": "https://arxiv.org/pdf/2607.23338v1",
+      "score": "7.0",
+      "evidence": "图压缩用于高效图学习",
+      "tldr": "图压缩在降低计算成本的同时如何影响信号传播尚未明确。本文研究粗化和稀疏化两种压缩范式，在五个数据集上测量信号多样性、传播保真度和平滑程度。结果表明：稀疏化保留更高的信号多样性并缓解过度平滑，但其传播轨迹逐渐偏离原始图；粗化更忠实地保持传播行为，但以更强的平滑和秩塌陷为代价。两者在传播多样性保持与传播保真度之间存在固有矛盾，凸显了联合评估两个维度的必要性。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Graph compression reduces the computational cost of graph learning, but its effect on signal propagation remains largely underexplored. Existing work evaluates compression through downstream task performance or structural preservation, neither of which directly captures how propagation dynamics change after compression. We study two fundamental compression paradigms, coarsening and sparsification, and ask whether they preserve the propagation behavior of the original graph. Across five datasets, varying compression rates, and propagation depths, we measure signal behavior through three complementary metrics. Our results reveal a consistent tension between the two compression families. Sparsification retains higher signal diversity and mitigates oversmoothing, but its propagation trajectory progressively diverges from that of the original graph. Coarsening more faithfully preserves propagation behavior, but at the cost of stronger smoothing and rank collapse. These findings demonstrate that two propagation-centric objectives, preserving signal diversity and preserving propagation fidelity, are distinct and empirically at odds under graph compression, highlighting the need for evaluation protocols that jointly consider both dimensions. The code and results are available at: https://github.com/KawshikBanerjee/Compression-Propagation-Duality",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
