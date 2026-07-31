@@ -1,0 +1,54 @@
+{
+  "label": "2026-08-01",
+  "date": "2026-07-31",
+  "generated_at": "2026-07-31T20:07:52",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202607/31/2607.25716v1-speechllm-meets-federated-learning-for-end-to-end-asr-english-and-italian-case-studies",
+      "section": "deep",
+      "title_en": "SpeechLLM Meets Federated Learning for End-to-End ASR: English and Italian Case Studies",
+      "authors": "Mohamed Nabih Ali, Daniele Falavigna, Alessio Brutti",
+      "date": "2026-07-28",
+      "pdf": "https://arxiv.org/pdf/2607.25716v1",
+      "score": "8.0",
+      "evidence": "针对SpeechLLM ASR设计通信高效的联邦优化策略",
+      "tldr": "联邦学习可隐私保护训练ASR，但SpeechLLM尚未探索。本文首次系统研究SpeechLLM联邦端到端ASR，设计通信高效优化策略应对高维参数和通信开销。在英语和意大利语上验证，达到集中训练相当的词错误率并降低通信成本，消融揭示编码器架构影响。为实际多语部署奠定基础。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated learning (FL) enables privacy-preserving training of automatic speech recognition (ASR) systems across distributed data sources, yet its application to large-scale speech language models (SpeechLLMs) remains unexplored. This paper presents the first systematic study of federated training for SpeechLLM-based end-to-end ASR systems. We design a communication-efficient federated optimization strategy tailored to the unique challenges of SpeechLLM architectures, addressing high-dimensional parameter spaces, gradient communication overhead, and computational constraints in distributed settings. Through extensive empirical evaluation on monolingual ASR tasks in English and Italian, we demonstrate the effectiveness and stability of our federated approach compared to centralized training baselines across diverse acoustic conditions and speaking styles. Additionally, we conduct a comprehensive ablation study analyzing the impact of different speech encoder architectures on monolingual English ASR performance within the federated framework, providing insights into optimal model configurations for decentralized training. Our results achieve competitive word error rates while reducing communication costs, establishing practical foundations for federated SpeechLLM deployment in real-world multilingual scenarios.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/31/2607.27689v1-on-graph-informed-distance-metrics-for-comparing-graph-partitions",
+      "section": "quick",
+      "title_en": "On Graph-Informed Distance Metrics for Comparing Graph Partitions",
+      "authors": "Srijato Bhattacharyya, Huiyan Sang, Bani Mallick",
+      "date": "2026-07-30",
+      "pdf": "https://arxiv.org/pdf/2607.27689v1",
+      "score": "7.0",
+      "evidence": "提供图划分比较度量，可直接用于评估分布式GNN划分策略",
+      "tldr": "现有图划分比较方法通常忽略图拓扑结构，仅将顶点视为可交换，难以反映社区内聚与分离。本文提出一种基于图的距离构造框架，通过诱导边划分来比较顶点划分，并给出变分信息与van Dongen距离的图感知版本及二值割距离。理论证明这些距离满足局部图感知细化准则，并在随机块模型下证明拓扑扰动越大距离越大，提供尊重图结构的划分比较工具。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Comparing graph partitions is fundamental to the analysis of network-structured data, yet existing measures for comparing graph partitions typically rely on graph-agnostic indices that treat vertices as exchangeable, ignoring the underlying graph topology that encodes essential information about community cohesion and separation. We propose a general construction of graph-informed distances that compares vertex partitions through induced edge partitions and yields valid metrics on the space of contiguous graph partitions. As special cases, we develop graph-informed versions of variation of information and the van Dongen distance together with a binary cut-based companion distance, and show that these distances satisfy a natural local graph-aware refinement criterion. Under stochastic block models, we prove that stronger topological disruptions incur asymptotically larger distances almost surely in both inter-community and intra-community split settings. These results provide a simple and principled framework to compare graph partitions while respecting the underlying graph structure.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/31/2607.27767v1-train-small-deploy-large-zero-shot-gnn-transfer-through-geometric-renormalization",
+      "section": "quick",
+      "title_en": "Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization",
+      "authors": "Robert Jankowski, Pedro Almagro-Blanco, Marián Boguñá, Melanie Weber, M. Ángeles Serrano",
+      "date": "2026-07-30",
+      "pdf": "https://arxiv.org/pdf/2607.27767v1",
+      "score": "6.0",
+      "evidence": "几何重整化图粗化可视为一种图划分/粗化策略，用于降低大规模GNN训练成本",
+      "tldr": "大规模图神经网络训练代价高，且对基础设施敏感。本文提出零样本迁移协议：利用几何重整化对图进行粗粒化，在缩小版副本上训练GNN，并将权重直接迁移到原始全分辨率图。实验表明该方式在保持预测性能的同时显著降低训练成本，且表示与预测轨迹跨尺度对齐，表明结构相似性比规模更重要。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Graph neural networks (GNNs) can operate on large graphs but become infrastructure-sensitive at the scale of millions of nodes and typically require scalable training techniques for even larger graphs. This raises a central question: when can a model trained on a smaller, scaled-down replica of a graph be deployed on the full-resolution graph without retraining? We introduce a zero-shot transfer protocol in which a GNN is trained on a graph coarse-grained by geometric renormalization (GR), and the resulting weights are transferred directly to the original network. Across synthetic and real-world networks, training on GR scaled-down replicas preserves much of the original-scale predictive performance while significantly reducing training cost. We further find that learned representations and predictive trajectories remain aligned across scales. These findings suggest that structural similarity may be more important than network size in determining GNN transferability, opening a path toward scale-equivariant graph architectures.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

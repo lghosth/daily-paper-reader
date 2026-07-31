@@ -1,0 +1,3110 @@
+Title: Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization
+
+URL Source: https://arxiv.org/pdf/2607.27767v1
+
+Published Time: Fri, 31 Jul 2026 00:35:22 GMT
+
+Number of Pages: 26
+
+Markdown Content:
+## Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 
+
+Robert Jankowski 
+
+TU Delft 
+
+R.Jankowski@tudelft.nl 
+
+Pedro Almagro-Blanco 
+
+University of Seville 
+
+palmagro@us.es 
+
+Marián Boguñá 
+
+University of Barcelona 
+
+marian.boguna@ub.edu 
+
+Melanie Weber 
+
+Harvard University 
+
+mweber@seas.harvard.edu 
+
+M. Ángeles Serrano 
+
+University of Barcelona and ICREA 
+
+marian.serrano@ub.edu 
+
+Abstract 
+
+Graph neural networks (GNNs) can operate on large graphs but become infrastructure-sensitive at the scale of millions of nodes and typically require scalable training techniques for even larger graphs. This raises a central question: when can a model trained on a smaller, scaled-down replica of a graph be de-ployed on the full-resolution graph without retraining? We introduce a zero-shot transfer protocol in which a GNN is trained on a graph coarse-grained by geo-metric renormalization (GR), and the resulting weights are transferred directly to the original network. Across synthetic and real-world networks, training on GR scaled-down replicas preserves much of the original-scale predictive perfor-mance while significantly reducing training cost. We further find that learned representations and predictive trajectories remain aligned across scales. These findings suggest that structural similarity may be more important than network size in determining GNN transferability, opening a path toward scale-equivariant graph architectures. k layers    
+
+> 2. Embedding 1. Input network 3. Renormalization 4. GNN training 5. Zero-shot inference
+> Predictions
+> trained
+> weights
+
+Figure 1: Overview of the train-small, deploy-large protocol . The input graph G0 is embedded and renormalized to obtain a scaled-down graph Gℓ. A GNN is trained on Gℓ, and the learned weights are transferred without retraining to G0 for zero-shot inference. 
+
+1 Introduction 
+
+Message-passing GNNs learn node, edge, and graph representations by iteratively propagating and aggregating information among adjacent nodes of the input graph [ 1, 2 ]. Although a given GNN architecture can, in principle, be applied to graphs of any size, successful transfer across graph scales is not guaranteed. A GNN trained at one scale may perform poorly at another when the structural properties encountered during training differ from those present at deployment [ 3 ]. The central challenge is therefore not merely computational scalability, but understanding how changes in 
+
+Preprint. Preliminary work. arXiv:2607.27767v1 [cs.LG] 30 Jul 2026 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 
+
+graph resolution induce distribution shifts that can alter the statistics governing message passing and compromise transfer across scales. Addressing this challenge requires identifying the structural conditions under which GNN parameters learned on a scaled-down replica of a graph can be transferred to the full resolution graph without retraining. Existing results establish GNN transferability across graphs under restrictive assumptions, such as dense graphon limits [ 4]. However, real networks are often sparse, heterogeneous, and clustered [ 5], and standard message-passing GNNs can yield markedly different representations of the same network at different resolutions or levels of coarse-graining [ 6]. These observations suggest that cross-scale GNN transfer requires more than size-independent weights. It requires a scale transformation that preserves the statistics used by message passing. Graph coarsening provides one route to smaller training graphs, but most existing methods are designed to preserve global properties rather than the local neighborhood statistics that govern message passing in GNNs [ 7, 8]. As a result, a coarsened graph may remain a good approximation of the original in the spectral sense while substantially altering degree distributions, clustering spectra, or community structure. Recent work has derived message-passing guarantees for graph coarsening, requiring a purpose-built propagation operator and approximate original-graph training [9]. Our approach builds on a different principle: many real networks are shaped by an underlying latent space [ 10 , 11 ] with hyperbolic geometry [ 12 ] in which pairwise distances between nodes determine the likelihood of connection. The geometric framework explains characteristic network properties such as the small-world property, heterogeneous degree distributions, high clustering, and self-similar organization [ 10 , 13 ]. Geometric renormalization (GR) [ 14 ] is a technique that merges nearby nodes along the similarity subspace, producing a hierarchy of graph representations at progressively lower resolutions that preserve the multiscale organization of the original network. Therefore, GR is not merely a graph compression procedure but a geometry-preserving scale transformation. In this work, we study zero-shot GNN weight transfer across network resolutions defined by a geometric renormalization flow. Given an original graph G0 and a renormalized graph Gℓ, we train a GNN on Gℓ and deploy the same weights directly on G0. This train-small, deploy-large protocol tests whether the learned parameters are approximately invariant across network scales. We evaluate transfer using node classification accuracy, similarity of learned representations [ 15 ], and alignment of predictive trajectories during training. On real networks and synthetic networks of the HypBench framework [ 16 ], generated using the S1/H2 model, we find that predictive performance can be largely preserved under zero-shot transfer as GR preserves the relevant geometric and topological structure. Our contributions are five-fold: • We introduce a train-small, deploy-large protocol for studying zero-shot GNN weight transfer across graph resolutions. • We provide empirical evidence that GR preserves GNN transfer performance under substantial graph compression on synthetic and real networks. • We show that models trained at different GR scales learn compatible node representations, as quantified by centered kernel alignment (CKA) and orthogonal Procrustes (OP) similarity measures. • We demonstrate that GR preserves functional training trajectories across graph scales, as quantified by the Jensen-Shannon divergence between output-probability distributions. • We release cuMercator , a GPU implementation of Mercator that achieves a speedup of more than 400 × in computing hyperbolic embeddings for networks with 10,000 nodes, with even greater speedups for larger networks; this implementation may be of independent interest. 
+
+2 Related work 
+
+In machine learning, graph coarsening is widely used to reduce graph size or construct hierarchical representations. Learned pooling methods, such as DiffPool [ 17 ] and Graph U-Nets [ 18 ], build task-dependent coarse graphs inside the model. This line of work is closely related to graph pooling, where coarse representations are learned through node assignments, edge contractions, or geometric reductions [ 19 – 21 ]. Preprocessing approaches instead coarsen the input graph before training; for example, Huang et al. [ 22 ] used graph coarsening to scale GNN training. More recently, Joly and 
+
+> 2Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization
+
+Keriven [ 9] argued that classical spectral coarsening does not automatically preserve message passing and proposed coarsening operators with message-passing guarantees. These works primarily focus on efficient training, hierarchical pooling, or signal preservation on the coarse graph. In network science, network renormalization provides a framework for relating graph structure across scales [ 23 ]. Early work by Song, Havlin, and Makse [ 24 ] introduced box-covering renormalization and showed that many real networks exhibit self-similar organization. Hidden-metric-space models later connected network self-similarity to latent geometry [ 10 , 12 ]. Geometric renormalization builds on this idea by embedding a graph in the hyperbolic plane and merging nearby nodes in the similarity subspace, producing a multiscale flow that preserves the probability of connection and therefore key topological observables [ 14 ]. This framework has been applied to empirical systems such as the human connectome [ 25 ] and extended to weighted networks [ 26 ]. Other renormalization schemes define scales without hidden geometry, including Laplacian renormalization for heterogeneous networks [ 27 ], higher-order Laplacian renormalization for simplicial and hypergraph structures [ 28 ], and geometry-free multiscale renormalization based on hidden variables [ 29 ]. Among these methods, GR is distinguished by its direct connection to analytically tractable hidden-metric-space models, which makes its coarse-graining and rescaling rules interpretable as a renormalization flow in the underlying similarity subspace rather than merely as an algorithmic graph contraction. These approaches define principled graph-scale transformations, but have not been used to study the scale dependence of learned GNN weights. GNNs can be applied to graphs of different sizes because their parameters are shared across neigh-borhoods. However, this architectural size agnosticism does not guarantee cross-size generalization. More broadly, GNN performance has been shown to depend sensitively on graph-specific data properties, including degree distributions, joint topological and feature structure, and spectral char-acteristics [ 30 , 31 ]. Yehudai et al. [ 3 ] showed that GNNs may fail to generalize from small to large graphs when local structures differ across sizes. Graphon-based analyses provide transferability guarantees for graph sequences sampled from a common limiting object [ 4, 32 ], while recent work shows that standard message-passing GNNs can be discontinuous across graph resolutions [ 6]. These results demonstrate that GNN transfer across scales is nontrivial. 
+
+3 Network geometry and geometric renormalization 
+
+Random geometric graphs describe complex networks by embedding nodes in a latent metric space, where geometric distances encode similarity and link formation emerges from a trade-off between node popularity and similarity [ 10 ], with emerging hyperbolic geometry [ 12 ]. The canonical model in this framework is the S1 model [ 10 ], which places nodes on a circle of radius R = N/ 2π, representing the similarity space, and connects every pair i, j with probability 
+
+pij = 11 + χβ = 11 + 
+
+ R∆θij 
+
+> μκ iκj
+
+β , (1) where μ controls the average degree of the network, β its clustering coefficient, and ∆θij is the angular distance between nodes i and j. The hidden degrees κ reflect node popularity or importance. The S1 model is isomorphic to the purely geometric H2 model [ 12 ], in which nodes are placed in a two-dimensional hyperbolic disk of radius RH2 = 2 ln 
+
+ 2Rμκ 20
+
+
+
+, where κ0 = min {κi}. By mapping each κi to a radial coordinate ri, ri = RH2 − 2 ln κi 
+
+> κ0
+
+, the connection probability, Eq. 1, becomes 
+
+pij = 11 + e β    
+
+> 2(xij −RH2)
+
+, (2) where xij = ri + rj + 2 ln(∆ θij /2) is a good approximation of the hyperbolic distance between two points with coordinates (ri, θ i) and (rj , θ j ) in the native representation of hyperbolic space [13]. Geometric renormalization (GR) unveils the self-similarity of complex networks to construct scaled-down representations [ 14 ]. It operates by merging neighboring nodes in the similarity subspace into supernodes and rescaling connections, averaging over short-range interactions and progressively preserving longer-range connections. The procedure is shown in Figure 2a. Given an input network 
+
+G0 at layer 0, we first construct its hyperbolic map using the embedder Mercator [ 33 , 34 ], obtaining the hidden degree (or radial position) and angular position of each node, (κi, θ i). Then, we partition 
+
+> 3
+
+Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization al = 0                 
+
+> l = 1
+> l = 2
+> r = 2
+> r = 2
+> r = 4 10 010 110 2
+> k
+> 10 −5
+> 10 −4
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+> Pc(k)
+> l= 0
+> l= 1
+> l= 2
+> l= 3
+> l= 4
+> 10 110 2
+> k
+> 0.00.10.20.30.40.50.6
+> ¯c(k)
+> 10 010 110 2
+> k
+> 0510 15 20 25 30
+> ¯knn (k)
+> 020
+> ¯k
+> 01
+> H
+> 01234
+> Renormalization level `
+> 01
+> μL
+> 2
+
+## b
+
+Figure 2: (a) Schematic of geometric renormalization. Each layer is obtained by applying a renormalization step with resolution r, starting from the original network at l = 0 . Orange nodes are placed on the circle, with sizes proportional to the logarithm of their hidden degrees, and solid lines denote links within each layer. Blue shaded regions indicate coarse-graining blocks, and dashed lines connect nodes to their supernodes in layer ℓ + 1 . Two supernodes are linked in layer ℓ + 1 if at least one pair of nodes belonging to them is linked in layer ℓ. Under composition, GR forms an Abelian semigroup: repeated transformations at a given resolution are equivalent to a single transformation at higher resolution. If the number of nodes is not divisible by r, the final supernode contains fewer than 
+
+r nodes, as shown at ℓ = 1 . Reproduced from [ 14 ]. ( b) Topological validation of GR for synthetic networks in the small-world regime. In the top-left panel, the complementary cumulative degree distribution Pc(k) is shown across renormalization levels l = 0 to l = 4 . The top-right panel shows the clustering spectrum ¯c(k), and the bottom-left panel shows the average nearest-neighbor degree 
+
+¯knn (k). In both panels, solid lines denote the median and shaded regions denote the interquartile range (IQR). The three panels on the bottom right show, as a function of scale l, the mean degree ¯k,the homophily ratio H, and the spectral gap μL 
+
+> 2
+
+.the nodes into nonoverlapping blocks of r consecutive nodes along the circle and coarse-grain each block into a supernode, independently of whether the nodes within the block are connected. Each supernode is placed within the angular region spanned by its corresponding block, thereby preserving the circular order of nodes in the original embedding throughout the renormalization process. Finally, all links between nodes belonging to two different supernodes, if any, are rescaled into a single link between those supernodes. The GR transformation generates a version of the original network with the same statistical properties while typically increasing the average degree. The additional links are then selectively pruned to preserve the network’s structure, yielding a scaled-down replica of the original network. In Appendix A.1, we provide a detailed description of the algorithm. 
+
+4 Methods 
+
+4.1 Experimental setup 
+
+In this work, we use synthetic networks generated with HypBench [ 16 ], together with a set of real networks. The schematic pipeline is shown in Figure 1. Starting from the input graph G0, we first embed the network into the hyperbolic disk using Mercator. For synthetic networks, this embedding step is not required because the ground-truth coordinates are known. We then apply GR to construct a coarse-grained network Gℓ, which is used for GNN training. After training the GNN on Gℓ for node classification, we evaluate the model directly on G0 without any retraining: node representations are computed on G0 using the weights learned on Gℓ, and predictions are obtained for every node in the original test set. We refer to the resulting accuracy, computed on the original test nodes of G0, as the 
+
+transfer test accuracy .
+
+4Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 
+
+Results are averaged over 10 random train/test splits per network (60/40 ratio), and, for synthetic networks, over 10 independently generated network realizations per configuration. To generate scale-down replicas of a given input network, we use the geometric renormalization procedure based on the family of hyperbolic random graph models S1/H2 as described in Section 3. Because nodes are divided into train and test sets, the merging procedure must avoid label leakage. Each supernode label is assigned by majority vote over the training labels within the block; test labels are ignored. In the event of a tie, one of the tied labels is selected at random. This yields a fixed compression factor of r per level. Unless stated otherwise, we use r = 2 in all experiments. The feature vector of each supernode is obtained by averaging the feature vectors of its constituent nodes. 
+
+Random Baselines. As a baseline, we also consider random renormalization, in which both the network topology and the node coordinates are randomized before renormalization ( Random ). To disentangle the contribution of each of these two factors, we additionally consider two partial baselines in which only the topology ( Random-T ) or only the geometry ( Random-G ) is randomized, while the other is kept unaltered, following the same topology/geometry disentanglement strategy used by Zheng et al. [ 25 ]. In the main text, we report the results for GR against the fully randomized baseline (Random ). Results for Random-T and Random-G are reported in Appendix A.8.3. 
+
+Parameters of HypBench. The HypBench framework allows us to generate synthetic networks with nodes’ features by varying parameters of the S1/H2 and bipartite-S1/H2 models [ 16 ]. The unipartite networks are generated with N = 2 17 = 131 ,072 nodes, ⟨k⟩ = 10 and β = 1 .5, Nc = 6 classes, and homophily parameter α = 6 . We consider two degree-distribution exponents, γ = 2 .5 and γ = 3 .5,corresponding to the ultra-small-world (USW) and small-world (SW) regimes, respectively [ 35 ]. These regimes differ in the scaling of the average shortest-path length with network size: it grows as O(log log N ) in USW networks and as O(log N ) in SW networks. The bipartite networks used to encode node features are generated with Nf = 1000 features and γn = γf = 2 .5, which are the degree-distribution exponents for node and feature vertices, respectively. We set ⟨kn⟩ = 10 , the average node degree in the bipartite network. 
+
+Real networks. For real networks, we consider eight benchmark datasets: Cora, PubMed [ 36 , 37 ], Computers, Photo, CS, Physics [ 38 ], WikiCS [ 39 ], and Flickr [ 40 ]. Table 2 summarizes the main properties of each dataset. For each network, we infer β using Mercator [ 33 ] and estimate the exponent γ of the degree distribution following [ 41 ]. Based on the classification in [ 35 ], networks with β < 2 and 2 < γ < 3 are categorized as ultra-small-world (USW), whereas networks with 
+
+β < 2 and γ > 3 are categorized as small-world (SW). We used the original dataset features. 
+
+GNN training details. We compare three GNN models: GCN [ 1], GraphSAGE [ 2], and GAT [ 42 ], each implemented with two layers and 32 hidden dimensions using the PyTorch Geometric library [ 43 ]. We train the models using the Adam optimizer with an initial learning rate of 0.01 and a cosine learning-rate scheduler. We also evaluated SGD, but found that it led to weaker performance on some real-world networks. Further details are provided in Appendix A.7. 
+
+Hyperbolic embeddings of real networks. Mercator infers node coordinates by maximizing the likelihood that the observed network was generated by the S1/H2 model. It requires no input parameters beyond the graph itself and returns, for each node, an angular coordinate θi and hidden degree κi, as well as the model parameters β and μ. A limitation of Mercator [ 33 , 34 ] is the computational cost of embedding large networks, because its time complexity scales as O(N 2). In this work, we introduce cuMercator , an accelerated implementation of Mercator that uses CUDA kernels for GPU execution and negative sampling to approximate the contribution of non-neighbors to the maximum-likelihood calculation. Detailed computational comparisons and estimates of the time required to embed large networks are provided in Appendix A.6. 
+
+4.2 Representational similarity measures 
+
+To investigate why transfer is possible, we compare the similarity between representations learned by GNNs trained on the original network and on its GR counterpart. Although many representation-similarity measures are available (see [ 15 ]), we restrict our analysis to two measures that capture complementary aspects of representational similarity: Centered Kernel Alignment (CKA) [ 44 , 45 ]and Orthogonal Procrustes (OP) analysis [46, 47]. 
+
+> 5Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization
+
+For each renormalization level ℓ, we train a GNN fℓ on the coarse-grained graph Gℓ = ( Vℓ, E ℓ)
+
+using labels induced from the original graph G0. To compare this model with a GNN trained directly on G0, we must first put their representations on the same set of nodes. We do this using the hierarchical coarse-graining map ϕℓ : V0 → Vℓ, which records which supernode in Gℓ each original node belongs to. Thus, if two original nodes i and j are merged into the same supernode, they are assigned the same coarse-scale representation when we lift back to V0. We then compute CKA and OP between the original-scale and lifted coarse-scale representations. CKA compares the node–node geometry induced by the two representations, whereas OP measures how closely they can be aligned by a rotation or reflection. Both measures range from 0 to 1, with larger values indicating greater representational similarity. Formal definitions and further details are provided in Appendix A.2. 
+
+4.3 Functional trajectory preservation during training 
+
+To test whether a renormalized graph preserves the predictive dynamics of training, we compare the class-probability distributions produced during training on the original graph G0 and a coarse graph Gℓ. Let Pj→i(t) denote the collection of node-wise categorical distributions over class labels obtained at training step t by a model trained on Gj and evaluated on Gi.First, we compute the training-graph divergence 
+
+DTG JS = DJS (P0→0(t), P ℓ→0(t)) , (3) where DJS is the Jensen-Shannon divergence. Small values of DTG JS indicate that the renormalized graph acts as a good training surrogate for the original graph in output space. Second, we examine the 
+
+evaluation-graph divergence: it quantifies how much a model trained on Gℓ changes when evaluated on G0 rather than Gℓ,
+
+DEG JS = DJS (UℓPℓ→ℓ(t), P ℓ→0(t)) . (4) Here, Uℓ denotes the coarse-to-fine lifting operator that maps coarse-node predictions from Gℓ back to the node set of G0. Further definitions and implementation details are provided in Appendix A.3. 
+
+5 Results 
+
+We report results for synthetic and real networks. In both cases, we first assess whether networks preserve key structural properties along the GR flow. We then evaluate the transfer test accuracy of GNNs trained on renormalized networks. Next, we show that learned representations and the training dynamics remain aligned across graph scales. 
+
+5.1 Zero-shot GNN transfer on synthetic networks 
+
+Figure 2b presents the topological validation of geometric renormalization for synthetic networks in the small-world regime. The degree distribution, clustering spectrum, and average nearest-neighbor-degree spectrum are preserved during coarse-graining. Global properties, such as the average degree and homophily level, are also maintained. The spectral gap is slightly larger for smaller networks, as expected from its asymptotic vanishing in the large-network limit [ 48 ]. Similar results are obtained in the ultra-small-world regime, see Figure 8 in Appendix A.8.1. In Figure 3, we summarize our results for synthetic networks in the small-world regime. Panel a shows the transfer test accuracy across different renormalization levels. In most cases, it closely matches the test accuracy obtained at the original graph scale. For GCN and GraphSAGE, performance remains high even at a compression factor of 25 = 32 , whereas GAT exhibits a slight decrease. In contrast, the random baseline declines in performance at higher renormalization levels. However, performance does not fall to the level of random chance because the models continue to leverage the original node features, which are not randomized. Reducing the network size also substantially improves training time, as shown in Fig. 3b. For example, for GraphSAGE, training on a coarse-grained network with 4,096 nodes instead of the original network with 131,072 nodes yields a 20-fold speedup, see also Figure 3c for the network size at each renormalization level. Figures 3d and 3e report the representational-similarity results. GNNs trained independently at different graph scales converge to similar hidden representations, indicating that geometric renormalization preserves the learned representation space across scales. Both linear CKA and OP similarity remain high even under strong 
+
+> 6
+
+Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 0 1 2 3 4 5
+
+> 0.50
+> 0.55
+> 0.60
+> 0.65
+> 0.70
+> 0.75
+> 0.80
+> 0.85
+> 0.90
+> Transfer accuracy
+
+a     
+
+> GR
+> Random
+> GCN
+> GAT
+> GraphSAGE
+> 012345
+> 0
+> 20
+> 40
+> 60
+> Training time (s)
+
+b     
+
+> 012345
+> Renormalization level
+> 0
+> 50k
+> 100k
+> Nodes
+
+c                             
+
+> G0G1G2G3G4G5
+> G0
+> G1
+> G2
+> G3
+> G4
+> G5
+> 0.87 0.83 0.81 0.79 0.78
+> 0.04 0.86 0.82 0.80 0.79
+> 0.02 0.14 0.90 0.86 0.84
+> 0.01 0.03 0.14 0.92 0.89
+> 0.00 0.01 0.02 0.14 0.94
+> 0.00 0.00 0.01 0.02 0.12
+
+d CKA                              
+
+> G0G1G2G3G4G5
+> G0
+> G1
+> G2
+> G3
+> G4
+> G5
+> 0.91 0.88 0.87 0.87 0.86
+> 0.19 0.91 0.88 0.87 0.86
+> 0.14 0.37 0.93 0.90 0.88
+> 0.10 0.16 0.38 0.95 0.92
+> 0.06 0.07 0.15 0.35 0.96
+> 0.03 0.03 0.06 0.14 0.34
+
+e OP similarity         
+
+> 060 120 180 240 300 360 420 480
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> 0.35
+> DTG JS
+
+f        
+
+> 060 120 180 240 300 360 420 480
+> Epoch
+> 0.0000
+> 0.0025
+> 0.0050
+> 0.0075
+> 0.0100
+> 0.0125
+> 0.0150
+> 0.0175
+> DEG JS
+
+g 
+
+> GR
+> Random
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0 train GNN
+
+G0 G0 
+
+> evaluate
+> train GNN
+
+Gl
+
+> evaluate
+
+G0
+
+Glevaluate  
+
+> train GNN
+
+Gl
+
+> evaluate
+
+Figure 3: Zero-shot GNN transfer on synthetic networks . ( a) Transfer test accuracy as a function of renormalization level ℓ for different GNN architectures. Solid lines denote GR and dashed lines denote the random baseline. ( b) Training time for GNNs across renormalization levels. ( c) Number of nodes at each renormalization level ℓ. (d, e) Representation similarity between levels, measured by linear CKA and orthogonal Procrustes similarity, respectively (higher is better). The upper-triangular entries correspond to GR and the lower-triangular entries to the random baseline. (f, g) Training alignment of output prediction distributions quantified by Jensen-Shannon divergence DJS (lower is better). Panel f shows DTG JS (Eq. 3), whereas panel g shows DEG JS (Eq. 4). Solid and dashed lines indicate GR and random renormalization, respectively. In panels f and g, we use a GCN model and a GR resolution of r = 32 to produce the coarse-grained graph Gℓ. All results are shown for the synthetic network in the small-world regime. compression, whereas random merging produces almost no similarity across scales. Figures 3f,g show the alignment of prediction dynamics across graph scales. The training-graph divergence DTG JS 
+
+(Fig. 3f) remains close to zero throughout training for GR, indicating that a model trained on the renormalized graph produces prediction distributions on G0 that closely match those of a model trained directly on G0. In contrast, the random baseline leads to a rapid and sustained increase in 
+
+DTG JS , showing that random coarse graphs do not preserve the output-space training trajectory. The evaluation-graph divergence DEG JS (Fig. 3g) remains small for both GR and the random baseline, indicating that models trained on coarse graphs are relatively stable when evaluated across graph resolutions. However, this stability alone is not sufficient to preserve predictive performance: despite similarly low DEG JS , only GR maintains high transfer test accuracy across renormalization levels, whereas the random baseline leads to a pronounced accuracy degradation (Fig. 3a). Together, these results suggest that GR preserves the functional training trajectory. 
+
+5.2 Zero-shot GNN transfer on real networks 
+
+We apply the same methodology to a set of real-world networks. Figure 4 summarizes the results for the Photo dataset, while results for the remaining datasets are reported in Appendix A.8.2. We also report in Appendix A.8.4 the topological validation of the GR transformation. Overall, we observe qualitatively similar behavior to that seen in the synthetic networks. Under geometric renormalization, transfer test accuracy remains relatively high across renormalization levels (Fig. 4a). Among the architectures considered, the simpler GCN model appears to be the most suitable for weight transfer, outperforming both GAT and GraphSAGE. Although the transfer accuracy of GraphSAGE decreases by approximately 10% , this reduction is accompanied by a roughly fourfold speedup in training time. We note that transfer accuracy on real-world networks is not preserved as strongly as in the synthetic 
+
+7Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 
+
+Table 1: Transfer test accuracy for eight real-world datasets. For each dataset and level ℓ, the GCN is trained on the coarse-grained graph Gℓ obtained via GR, and its weights are directly applied, without retraining, to the original graph G0. We report the mean ± standard deviation of transfer test accuracy over 10 random train/test splits. The bottom row shows the compression ratio N0/N ℓ at each renormalization level, obtained with a fixed resolution r = 2 per level. 
+
+Original Coarse-grained 
+
+ℓ = 0 ℓ = 1 ℓ = 2 ℓ = 3 ℓ = 4 ℓ = 5 
+
+Computers 0.92 ± 0.01 0.90 ± 0.00 0.88 ± 0.01 0.87 ± 0.00 0.84 ± 0.01 0.80 ± 0.03 Cora 0.87 ± 0.01 0.80 ± 0.01 0.77 ± 0.01 0.77 ± 0.01 0.76 ± 0.01 0.71 ± 0.02 CS 0.94 ± 0.00 0.90 ± 0.00 0.87 ± 0.00 0.87 ± 0.00 0.88 ± 0.01 0.88 ± 0.01 Flickr 0.52 ± 0.00 0.49 ± 0.02 0.49 ± 0.01 0.50 ± 0.00 0.49 ± 0.00 0.50 ± 0.00 Photo 0.95 ± 0.00 0.94 ± 0.00 0.93 ± 0.01 0.92 ± 0.01 0.90 ± 0.01 0.85 ± 0.02 Physics 0.96 ± 0.00 0.94 ± 0.00 0.92 ± 0.00 0.92 ± 0.01 0.92 ± 0.01 0.91 ± 0.01 PubMed 0.88 ± 0.00 0.85 ± 0.00 0.85 ± 0.00 0.85 ± 0.01 0.84 ± 0.01 0.83 ± 0.00 WikiCS 0.83 ± 0.00 0.81 ± 0.00 0.79 ± 0.01 0.75 ± 0.01 0.68 ± 0.01 0.64 ± 0.01 Compression ratio 1× 2× 4× 8× 16 × 32 ×
+
+examples, likely because topology, node features, and labels are correlated in a more complex and nontrivial manner [49]. 0 1 2 3 4 5
+
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> Transfer accuracy
+
+a     
+
+> GCN
+> GAT
+> GraphSAGE
+> GR
+> Random
+> 012345
+> 2
+> 3
+> 4
+> Training time (s)
+
+b     
+
+> 012345
+> Renormalization level
+> 0
+> 2k
+> 4k
+> 6k
+> Nodes
+
+c                             
+
+> G0G1G2G3G4G5
+> G0
+> G1
+> G2
+> G3
+> G4
+> G5
+> 0.56 0.38 0.30 0.26 0.22
+> 0.16 0.64 0.48 0.42 0.36
+> 0.07 0.42 0.74 0.64 0.56
+> 0.03 0.19 0.41 0.84 0.73
+> 0.01 0.09 0.18 0.43 0.84
+> 0.01 0.03 0.08 0.19 0.41
+
+d CKA                              
+
+> G0G1G2G3G4G5
+> G0
+> G1
+> G2
+> G3
+> G4
+> G5
+> 0.75 0.63 0.57 0.53 0.50
+> 0.35 0.82 0.72 0.68 0.64
+> 0.23 0.60 0.86 0.81 0.76
+> 0.16 0.40 0.60 0.90 0.85
+> 0.11 0.27 0.39 0.64 0.91
+> 0.07 0.17 0.25 0.42 0.63
+
+e OP similarity         
+
+> 060 120 180 240 300 360 420 480
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> 0.35
+> 0.40
+> DTG JS
+
+f        
+
+> 060 120 180 240 300 360 420 480
+> Epoch
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.10
+> 0.12
+> DEG JS
+
+g 
+
+> GR
+> Random
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0 train
+
+GNN G0 G0 
+
+> evaluate
+> train
+
+GNN Gl
+
+> evaluate
+
+G0
+
+Glevaluate  
+
+> train
+
+GNN Gl
+
+> evaluate
+
+Figure 4: Zero-shot GNN transfer on the Photo dataset . See the caption of Fig. 3 for more detail. The representation-similarity measures remain higher under GR than under the random baseline (Fig. 4d,e), indicating that the GR graphs better preserve the learned representation structure. As in the synthetic case, representational similarity does not fall to negligible levels under the random baseline because the models continue to leverage the original node features, which are not randomized. The functional trajectories show a qualitatively similar pattern to the synthetic networks (Fig. 4f,g): GR preserves the training-graph trajectory more effectively than the random baseline, while the evaluation-graph divergence remains relatively small. In Table 1, we show the transfer test accuracy in the 8 considered datasets. Several other coarse-graining methods have been proposed in the literature. We compare GR with the Laplacian renormalization group (LRG) [ 27 ] and with two edge-contraction pooling methods, MagEdgePool and SpreadEdgePool [20]. 
+
+8Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 0.0 0.5 1.0 1.5 2.0 2.5 
+
+> Combined topology preservation error
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> Acc = Acc original  Acc transfer
+> Lower is better
+> Lower is better
+> GR
+> LRG
+> MagEdgePool
+> SpreadEdgePool
+> Reduction rate
+> ~6x
+> ~31x
+> ~76x
+
+Figure 5: Combined topology preservation er-ror as a function of the difference between the transfer and original test accuracies for differ-ent coarse-graining methods for the PubMed dataset. Marker color denotes the coarse-graining method, while marker size represents the compression rate. Larger markers corre-spond to smaller coarse-grained networks. Re-sults are averaged over 10 train-test splits. We repeat the zero-transfer weight evaluation for each method and network reduction rate. Specifi-cally, we measure the difference between the trans-fer and original test accuracies and the combined topology preservation error. The latter quantifies how well the coarse-graining procedure preserves key topological properties, including the degree distribution, clustering spectrum, average nearest-neighbor degree, average clustering coefficient, and spectral gap. See Appendix A.5 for more details. Figure 5 shows that GR produces the smallest ac-curacy gap, indicating that it maintains high trans-fer test accuracy even at high compression rates. It also achieves the lowest combined topological error, demonstrating superior preservation of the original network structure. The other methods gen-erally perform worse, except at low compression rates. Together, these results suggest that GR pro-vides a faithful scaled-down replica of the original graph. 
+
+6 Discussion 
+
+We introduced a train-small, deploy-large proto-col for zero-shot GNN transfer through geometric renormalization. Our results show that GNN pa-rameters learned on substantially compressed GR graphs can be transferred directly to the original network while retaining much of the full-scale predictive performance and reducing training cost. This behavior is not explained by graph-size reduction alone: random aggregation substantially degrades transfer, demonstrating that preserving network structure is essential. Models trained across GR scales also learn compatible representation spaces and follow similar predictive trajectories during optimization. These observations indicate that, within a finite range of scales, GR approximately preserves both the representations learned by a GNN and the effective objective it optimizes. 
+
+7 Limitations 
+
+While the results are promising, we highlight several limitations of our study. First, we renormalize graph structure but not node features. We used simple mean feature aggregation rather than deriving a principled scale transformation for node features, which we leave for future work. Second, we keep the GNN architecture and hyperparameters fixed across scales; whether hyperparameters optimized at a lower scale remain optimal at the original scale is therefore unknown. Third, transfer may depend on the dimensionality of the underlying hyperbolic representation [ 34 , 50 , 51 ]. However, geometric renormalization is currently limited to a one-dimensional similarity space. Fourth, we focus on homophilic graphs, whether a similar scale transfer approach is possible in heterophilic settings remains open. Finally, we study node-level learning tasks; extending the framework to graph classification [ 6 ], link prediction, and other graph-learning problems is an important direction for future work. 
+
+Acknowledgments 
+
+The authors acknowledge support from Grants PID2022-137505NB-C22, PID2024-156576OB-C33, and PID2023-147198NB-I00, funded by MICIU/AEI/10.13039/501100011033 and by ERDF/EU. M. B. acknowledges support from the Agency for Management of University and Research Grants of the Generalitat de Catalunya through the Acadèmia d’Excel·lència grant. M. W. acknowledges partial support from NSF award DMS-2406905, an Alfred P. Sloan Research Fellowship in Mathematics, the AI2050 program at Schmidt Sciences (Grant G-25-69786), and an Aramont Fellowship for Emerging Science Research. 
+
+9Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 
+
+References 
+
+[1] Thomas N. Kipf and Max Welling. Semi-supervised classification with graph convolutional networks. In International Conference on Learning Representations , 2017. URL https: //openreview.net/forum?id=SJU4ayYgl . 1, 5 [2] Will Hamilton, Zhitao Ying, and Jure Leskovec. Inductive representation learning on large graphs. In I. Guyon, U. Von Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett, editors, Advances in Neural Information Processing Systems , volume 30. Curran Associates, Inc., 2017. URL https://proceedings.neurips.cc/paper_files/paper/ 2017/file/5dd9db5e033da9c6fb5ba83c7a7ebea9-Paper.pdf . 1, 5 [3] Gilad Yehudai, Ethan Fetaya, Eli Meirom, Gal Chechik, and Haggai Maron. From local structures to size generalization in graph neural networks. In International Conference on Machine Learning , pages 11975–11986. PMLR, 2021. 1, 3 [4] Luana Ruiz, Luiz Chamon, and Alejandro Ribeiro. Graphon neural networks and the trans-ferability of graph neural networks. Advances in Neural Information Processing Systems , 33: 1702–1712, 2020. 2, 3 [5] Mark EJ Newman. The structure and function of complex networks. SIAM Review , 45(2): 167–256, 2003. 2 [6] Christian Koke, Yuesong Shen, Abhishek Saroha, Marvin Eisenberger, Bastian Rieck, Michael Bronstein, and Daniel Cremers. Graph neural networks are not continuous across graph resolutions. arXiv preprint arXiv:2605.31315 , 2026. 2, 3, 9 [7] Andreas Loukas. Graph reduction with spectral and cut guarantees. Journal of Machine Learning Research , 20(116):1–42, 2019. 2 [8] Jie Chen, Yousef Saad, and Zechen Zhang. Graph coarsening: from scientific computing to machine learning. SeMA Journal , 79(1):187–223, 2022. 2 [9] Antonin Joly and Nicolas Keriven. Graph coarsening with message-passing guarantees. Ad-vances in Neural Information Processing Systems , 37:114902–114927, 2024. 2, 3 [10] M Ángeles Serrano, Dmitri Krioukov, and Marián Boguná. Self-similarity of complex networks and hidden metric spaces. Physical Review Letters , 100(7):078701, 2008. 2, 3 [11] Marian Boguna, Ivan Bonamassa, Manlio De Domenico, Shlomo Havlin, Dmitri Krioukov, and M Ángeles Serrano. Network geometry. Nature Reviews Physics , 3(2):114–135, 2021. 2 [12] Dmitri Krioukov, Fragkiskos Papadopoulos, Maksim Kitsak, Amin Vahdat, and Marián Boguná. Hyperbolic geometry of complex networks. Physical Review E—Statistical, Nonlinear, and Soft Matter Physics , 82(3):036106, 2010. 2, 3 [13] M Ángeles Serrano and Marián Boguñá. The Shortest Path to Network Geometry: A Practical Guide to Basic Models and Applications . Cambridge University Press, 2022. 2, 3 [14] Guillermo García-Pérez, Marián Boguñá, and M Ángeles Serrano. Multiscale unfolding of real networks by geometric renormalization. Nature Physics , 14(6):583–589, 2018. 2, 3, 4, 13, 15 [15] Simon Kornblith, Mohammad Norouzi, Honglak Lee, and Geoffrey Hinton. Similarity of neural network representations revisited. In International conference on machine learning , pages 3519–3529. PMLR, 2019. 2, 5 [16] Roya Aliakbarisani, Robert Jankowski, M. Ángeles Serrano, and Marián Boguñá. Hypbench: Hyperbolic benchmark for graph neural network performance. IEEE Transactions on Neural Networks and Learning Systems , pages 1–14, 2026. doi: 10.1109/TNNLS.2026.3697597. 2, 4, 5[17] Zhitao Ying, Jiaxuan You, Christopher Morris, Xiang Ren, Will Hamilton, and Jure Leskovec. Hierarchical graph representation learning with differentiable pooling. Advances in neural information processing systems , 31, 2018. 2 [18] Hongyang Gao and Shuiwang Ji. Graph u-nets. In Kamalika Chaudhuri and Ruslan Salakhutdi-nov, editors, Proceedings of the 36th International Conference on Machine Learning , volume 97 of Proceedings of Machine Learning Research , pages 2083–2092. PMLR, 09–15 Jun 2019. URL https://proceedings.mlr.press/v97/gao19a.html . 2 
+
+> 10 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization
+
+[19] Daniele Grattarola, Daniele Zambon, Filippo Maria Bianchi, and Cesare Alippi. Understanding pooling in graph neural networks. IEEE transactions on neural networks and learning systems ,35(2):2708–2718, 2022. 2 [20] Katharina Limbeck, Lydia Mezrag, Guy Wolf, and Bastian Rieck. Geometry-aware edge pooling for graph neural networks. Advances in Neural Information Processing Systems , 38: 157770–157808, 2026. 8, 14 [21] Amy Feng and Melanie Weber. Graph pooling via ricci flow. Transactions on Machine Learning Research , 2024. 2 [22] Zengfeng Huang, Shengzhong Zhang, Chong Xi, Tang Liu, and Min Zhou. Scaling up graph neural networks via graph coarsening. In Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD ’21) , pages 675–684, 2021. doi: 10.1145/ 3447548.3467256. 2 [23] Andrea Gabrielli, Diego Garlaschelli, Subodh P Patil, and M Ángeles Serrano. Network renormalization. Nature Reviews Physics , 7(4):203–219, 2025. 3 [24] Chaoming Song, Shlomo Havlin, and Hernan A Makse. Self-similarity of complex networks. 
+
+Nature , 433(7024):392–395, 2005. 3 [25] Muhua Zheng, Antoine Allard, Patric Hagmann, Yasser Alemán-Gómez, and M Ángeles Ser-rano. Geometric renormalization unravels self-similarity of the multiscale human connectome. 
+
+Proceedings of the National Academy of Sciences , 117(33):20244–20253, 2020. 3, 5 [26] Muhua Zheng, Guillermo García-Pérez, Marián Boguñá, and M Ángeles Serrano. Geometric renormalization of weighted networks. Communications Physics , 7(1):97, 2024. 3 [27] Pablo Villegas, Tommaso Gili, Guido Caldarelli, and Andrea Gabrielli. Laplacian renormaliza-tion group for heterogeneous networks. Nature Physics , 19(3):445–450, 2023. 3, 8, 14 [28] Marco Nurisso, Marta Morandini, Maxime Lucas, Francesco Vaccarino, Tommaso Gili, and Giovanni Petri. Higher-order laplacian renormalization. Nature Physics , 21(4):661–668, 2025. 3[29] Elena Garuccio, Margherita Lalli, and Diego Garlaschelli. Multiscale network renormalization: Scale-invariance without geometry. Physical Review Research , 5(4):043101, 2023. 3 [30] Ting Wei Li, Qiaozhu Mei, and Jiaqi Ma. A metadata-driven approach to understand graph neural networks. Advances in Neural Information Processing Systems , 36:15320–15340, 2023. 3[31] Lukas Fesser and Melanie Weber. Performance heterogeneity in graph neural networks: Lessons for architecture design and preprocessing. arXiv preprint arXiv:2503.00547 , 2025. 3 [32] Luana Ruiz, Luiz FO Chamon, and Alejandro Ribeiro. Transferability properties of graph neural networks. IEEE Transactions on Signal Processing , 71:3474–3489, 2023. 3 [33] Guillermo García-Pérez, Antoine Allard, M Ángeles Serrano, and Marián Boguñá. Mercator: uncovering faithful hyperbolic embeddings of complex networks. New Journal of Physics , 21 (12):123033, 2019. 3, 5, 16 [34] Robert Jankowski, Antoine Allard, Marian Boguna, and M Ángeles Serrano. The d-mercator method for the multidimensional hyperbolic embedding of real networks. Nature Communica-tions , 14(1):7585, 2023. 3, 5, 9, 16 [35] Marian Boguñá, Dmitri Krioukov, Pedro Almagro, and M. Ángeles Serrano. Small worlds and clustering in spatial networks. Physical Review Research , 2(2):023040, Apr 2020. doi: 10.1103/PhysRevResearch.2.023040. 5, 14 [36] Prithviraj Sen, Galileo Namata, Mustafa Bilgic, Lise Getoor, Brian Galligher, and Tina Eliassi-Rad. Collective classification in network data. AI Magazine , 29(3):93–106, 2008. 5 [37] Zhilin Yang, William Cohen, and Ruslan Salakhudinov. Revisiting semi-supervised learning with graph embeddings. In International conference on machine learning , pages 40–48. PMLR, 2016. 5 [38] Oleksandr Shchur, Max Mumme, Aleksandar Bojchevski, and Stephan Günnemann. Pitfalls of graph neural network evaluation. arXiv preprint arXiv:1811.05868 , 2018. doi: 10.48550/arXiv. 1811.05868. 5 
+
+> 11 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization
+
+[39] Péter Mernyei and C˘ at˘ alina Cangea. Wiki-cs: A wikipedia-based benchmark for graph neural networks. arXiv preprint arXiv:2007.02901 , 2020. 5 [40] Hanqing Zeng, Hongkuan Zhou, Ajitesh Srivastava, Rajgopal Kannan, and Viktor Prasanna. GraphSAINT: Graph sampling based inductive learning method. In International Conference on Learning Representations (ICLR) , 2020. 5 [41] Ivan Voitalov, Pim Van Der Hoorn, Remco Van Der Hofstad, and Dmitri Krioukov. Scale-free networks well done. Physical Review Research , 1(3):033034, 2019. 5 [42] Petar Veliˇ ckovi´ c, Guillem Cucurull, Arantxa Casanova, Adriana Romero, Pietro Liò, and Yoshua Bengio. Graph attention networks. In International Conference on Learning Representations ,2018. URL https://openreview.net/forum?id=rJXMpikCZ . 5 [43] Matthias Fey and Jan E. Lenssen. Fast graph representation learning with PyTorch Geometric. In ICLR Workshop on Representation Learning on Graphs and Manifolds , 2019. 5 [44] Corinna Cortes, Mehryar Mohri, and Afshin Rostamizadeh. Algorithms for learning kernels based on centered alignment. The Journal of Machine Learning Research , 13:795–828, 2012. 5 [45] Nello Cristianini, John Shawe-Taylor, Andre Elisseeff, and Jaz Kandola. On kernel-target alignment. Advances in neural information processing systems , 14, 2001. 5 [46] Frances Ding, Jean-Stanislas Denain, and Jacob Steinhardt. Grounding representation similarity through statistical testing. Advances in Neural Information Processing Systems , 34:1556–1568, 2021. 5 [47] Alex H Williams, Erin Kunz, Simon Kornblith, and Scott Linderman. Generalized shape metrics on neural representations. Advances in neural information processing systems , 34:4738–4750, 2021. 5 [48] Marcos Kiwi and Dieter Mitsche. Spectral gap of random hyperbolic graphs and related param-eters. The Annals of Applied Probability , 28(2):941 – 989, 2018. doi: 10.1214/17-AAP1323. URL https://doi.org/10.1214/17-AAP1323 . 6 [49] Robert Jankowski, Pegah Hozhabrierdi, Marián Boguñá, and M Ángeles Serrano. Feature-aware ultra-low dimensional reduction of real networks. npj Complexity , 1(1):13, 2024. 8 [50] Aina Ferrà Marcús, Robert Jankowski, Meritxell Vila-Miñana, Carles Casacuberta, and M. Án-geles Serrano. Chordless cycle filtrations for dimensionality detection in complex networks via topological data analysis. Nature Communications , 17(1):6105, 2026. 9 [51] Pedro Almagro, Marián Boguñá, and M Ángeles Serrano. Detecting the ultra low dimensionality of real networks. Nature Communications , 13(1):6096, 2022. 9 [52] Alessandro Muscoloni, Josephine Maria Thomas, Sara Ciucci, Ginestra Bianconi, and Carlo Vit-torio Cannistraci. Machine learning meets complex networks via coalescent embedding in the hyperbolic space. Nature Communications , 8(1):1615, 2017. 16 
+
+> 12 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization
+
+A Appendix 
+
+A.1 Geometric renormalization in detail 
+
+Here, we describe the renormalizability of the S1 model. For more details, such as the semigroup structure of the coarse-graining step and the solution in the power-law approximation, please refer to the Supplementary Information of [ 14 ]. The renormalized networks remain maximally congruent with the hidden metric space model by assigning a new hidden degree κ(l+1)  
+
+> i
+
+to supernode i in layer 
+
+l + 1 as a function of the hidden degrees of nodes it contains in layer l according to 
+
+κ(l+1)  
+
+> i
+
+=
+
+
+
+> r
+
+X
+
+> j=1
+
+
+
+κ(l)
+
+> j
+
+β
+
+
+
+> 1/β
+
+(5) as well as an angular coordinate θ(l+1)  
+
+> i
+
+given by 
+
+θ(l+1)  
+
+> i
+
+=
+
+
+
+> r
+
+P
+
+> j=1
+
+
+
+θ(l) 
+
+> j
+
+κ(l)
+
+> j
+
+βrP
+
+> j=1
+
+
+
+κ(l)
+
+> j
+
+β
+
+
+
+> 1/β
+
+. (6) The global parameters also need to be rescaled as μ(l+1) = μ(l)/r , β(l+1) = β(l), and R(l+1) =
+
+R(l)/r . This implies that the probability p(l+1)  
+
+> ij
+
+for two supernodes i and j to be connected in layer 
+
+l + 1 maintains its original form (Eq. 1). This applies both to the model and to real networks as long as they admit a good embedding. During the renormalization flow, the average degree increases according to ⟨k⟩(l+1) = rν ⟨k⟩(l), where ν is a scaling exponent determined by the connectivity structure of the original network. We therefore adjust the average degree of the downscaled network replicas. Specifically, to match the average degree of a renormalized network to that of the original network, we prune links according to the underlying metric model with which networks at all layers are congruent. 
+
+A.2 Representational similarity measures 
+
+Let n = |V0| and let d denote the common representation dimension of all models, which use the same GNN architecture. We write 
+
+Z0 ∈ Rn×d, Zℓ ∈ R|Vℓ|× d (7) for the node representations learned on the original and coarse-grained graphs. The coarse-scale representations are lifted to the original node set so that Z↑ 
+
+> ℓ
+
+∈ Rn×d. We center each feature across nodes, obtaining X0 and X↑ 
+
+> ℓ
+
+.We compute linear CKA as 
+
+CKA( X0, X ↑ 
+
+> ℓ
+
+) = ∥X⊤ 
+
+> 0
+
+X↑ 
+
+> ℓ
+
+∥2
+
+> F
+
+∥X⊤ 
+
+> 0
+
+X0|F ∥(X↑ 
+
+> ℓ
+
+)⊤X↑ 
+
+> ℓ
+
+∥F
+
+, (8) and normalized Orthogonal Procrustes similarity as 
+
+OP( X0, X ↑ 
+
+> ℓ
+
+) = ∥X⊤ 
+
+> 0
+
+X↑ 
+
+> ℓ
+
+∥∗
+
+∥X0∥F ∥X↑ 
+
+> ℓ
+
+∥F
+
+, (9) Here, ∥ · ∥ F is the Frobenius norm, i.e., the square root of the sum of squared matrix entries, and 
+
+∥ · ∥ ∗ is the nuclear norm, i.e., the sum of the singular values. For nonzero representation matrices, both measures are in [0 , 1] . A value of 1 indicates maximal similarity under the corresponding criterion, whereas 0 indicates no shared linear structure. CKA compares the geometry induced among nodes and is invariant to isotropic scaling and orthogonal transformations. OP measures the maximal similarity after rotating or reflecting one representation. 
+
+> 13 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization
+
+A.3 Functional trajectory diagnostics 
+
+Representation-similarity measures characterize learned embeddings but do not directly determine whether training on a graph-renormalization replica follows the same predictive trajectory as training on the original graph. We therefore compare model outputs throughout training rather than gradients in parameter space, which may be sensitive to parameterization and training noise. Let Yv ∈ { 1, . . . , C } denote the class-label random variable for node v, where C is the number of classes. Let ω(j) 
+
+> t
+
+denote the parameters of a GNN after training for t steps on graph Gj . For a node v
+
+in the evaluation graph Gi, define 
+
+P (v)
+
+> j→i
+
+(t) = softmax 
+
+
+
+fω(j)
+
+> t
+
+(Gi)v
+
+
+
+. (10) We use Pj→i(t) to denote the collection of these node-level distributions over the evaluated node set. In particular, P0→0(t) corresponds to training and evaluation on G0, Pℓ→ℓ(t) to training and evaluation on Gℓ, and Pℓ→0(t) to training on Gℓ followed by evaluation on G0.
+
+DTG JS (t) = DJS (P0→0(t), P ℓ→0(t)) . (11) This quantity isolates the effect of replacing G0 with Gℓ during training while keeping the evaluation graph fixed. Small values indicate that Gℓ acts as an effective training surrogate for G0 in output space. 
+
+DEG JS (t) = DJS (UℓPℓ→ℓ(t), P ℓ→0(t)) . (12) This quantity keeps the trained model fixed and compares its predictions at the coarse and original graph resolutions. The operator Uℓ maps each coarse-node prediction to the corresponding nodes of G0. Small values therefore indicate that the coarse-trained model transfers stably to the original graph. Both divergences are evaluated throughout training. Together, they distinguish the quality of 
+
+Gℓ as a training surrogate from the stability of evaluating a coarse-trained model at the original graph resolution. 
+
+A.4 Properties of real networks Table 2: Properties of the real datasets. N : number of nodes; E: number of edges; Nf : number of node features; Nc: number of classes; ¯k: average degree; H: homophily ratio; γ: degree-distribution exponent; β: clustering-coefficient parameter of the S1/H2 model, inferred with Mercator; ¯c: average clustering coefficient; Regime: structural classification of the network as ultra-small-world (USW) or small-world (SW), following [35], based on the inferred values of β and γ.                                                                                          
+
+> Dataset NENfNc¯kHγβ¯cRegime Computers 13,381 245,778 767 10 36.7 0.78 2.96 1.46 0.36 USW Cora 2,485 5,069 1433 74.1 0.81 3.08 1.54 0.29 SW CS 18,333 81,894 6805 15 8.9 0.81 6.11 1.72 0.37 SW Flickr 89,250 449,878 500 710.1 0.32 2.64 1.01 0.08 USW Photo 7,487 119,043 745 831.8 0.83 2.99 1.65 0.41 USW Physics 34,493 247,962 8415 514.4 0.93 5.0 1.71 0.38 SW PubMed 19,717 44,324 500 34.5 0.8 4.18 1.12 0.11 SW WikiCS 11,311 215,554 300 10 38.1 0.65 3.72 1.61 0.5 SW
+
+A.5 Comparison with other coarse-graining methods 
+
+We compare geometric renormalization (GR) with the Laplacian renormalization group (LRG), which identifies appropriate spatiotemporal scales in heterogeneous networks [ 27 ], and with two edge-contraction pooling methods, MagEdgePool and SpreadEdgePool. The latter methods iteratively contract the least important edges and are computed before GNN training [20]. For LRG, we first fix the network’s temporal resolution parameter τ . For GR, we choose the resolution parameter r so that the final size of the coarse-grained network matches the target compression level. We use the corresponding pooling ratio for MagEdgePool and SpreadEdgePool. 
+
+> 14
+
+Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 10 0 10 1 10 2 10 3    
+
+> k
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> Pc(k)
+
+a       
+
+> Original
+> Laplacian RG
+> Geometric RG
+> MagEdgePool
+> SpreadEdgePool
+> 10 110 210 3
+> k
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> c(k)
+
+b   
+
+> 10 010 110 210 3
+> k
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> knn (k)
+
+c  
+
+> 0
+> 54.5
+> 2.9
+> 4.6
+> 22.5
+
+d k
+
+> 0
+> 1
+> 0.11
+> 0.56
+> 0.042
+> 0.6
+> 0.98
+
+e c 
+
+> 0.0
+> 0.1
+> 0.014
+> 0.079
+> 0.018 0.0057
+> 0.14
+
+f 2 
+
+> 0.0
+> 0.5
+> 1.0 0.79
+> 0.54
+> 0.69
+> 0.49
+> 0.18
+
+g Transfer test accuracy 
+
+Figure 6: Comparison of coarse-graining methods on the PubMed dataset. We report: (a) the complementary cumulative degree distribution, (b) the clustering spectrum, (c) the average-neighbor-degree spectrum, (d) the average degree, (e) the average clustering coefficient, (f) the spectral gap, and (g) the transfer test accuracy. For LRG, we use τ = 1 .2, which yields approximately 1100 nodes, compressing the original network by a factor of approximately 17. For GR, MagEdgePool, and SpreadEdgePool, we match this number of nodes by varying the resolution parameter r for GR and the pooling ratio for MagEdgePool and SpreadEdgePool. For the transfer task, we train a two-layer GCN with 32 hidden dimensions. We first compare the topological properties of the coarse-grained networks produced by each method. In Figure 6a-f, we show the degree distribution, clustering spectrum, average nearest-neighbor degree spectrum, and global network properties, including the average degree, average clustering coefficient, and spectral gap. Overall, GR preserves both local and global network properties more accurately than the other methods. We then evaluate transfer accuracy (Fig. 6g). GR yields the smallest drop in transfer accuracy compared with a GNN trained on the original PubMed network. We extend the comparison by varying the parameter τ , which controls the compression rate. In Figure 5, we consider τ ∈ { 0.5, 1.6, 2}, corresponding to approximate reductions in network size of 6×, 31 ×, and 76 ×, respectively. We compute the combined topology-preservation error as the sum of the normalized discrepancies across all topology metrics except average degree, because GR explicitly preserves the average degree through network pruning [ 14 ]. This combined topology preservation error is defined as the sum of these normalized topology errors as 
+
+Err topo (Gℓ, G 0) = gErr P (k) + gErr c(k) + gErr knn (k) + gErr ¯c + gErr λ2 , (13) 
+
+15 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 
+
+where gErr i is the normalized error for topology statistic i, obtained by dividing the corresponding raw error by the maximum raw error of the same statistic across all coarse-grained graphs included in the comparison. Lower values indicate better preservation of the original topology. The degree-distribution term Err P (k) is the Anderson–Darling statistic between the node-degree samples of G0
+
+and Gℓ. The spectrum terms Err c(k) and Err knn (k) are root-mean-square errors (RMSE) between the original and coarse-grained degree-dependent clustering spectrum c(k) and average-neighbor-degree spectrum knn (k), respectively. The mean-clustering term is the relative error Err ¯c = |¯cℓ−¯c0| 
+
+> ¯c0
+
+, and the spectral-gap term is the absolute log-ratio error Err λ2 = log λ2,ℓ +ϵλ2,0+ϵ , where λ2 is the second-smallest eigenvalue of the normalized graph Laplacian and ϵ = 10 −6.Finally, we compare the computational complexity of the methods. Assuming that the input graph is sparse, i.e., E = O(N ), the GR coarse-graining procedure scales linearly with the network size, O(N ). However, GR first requires a hyperbolic embedding of the network using Mercator, whose standard time complexity is O(N 2). As shown in Appendix A.6, GPU acceleration can substantially reduce the practical runtime of this embedding step. LRG requires O(N 3) time due to the eigendecomposition and matrix exponential operations. MagEdgePool and SpreadEdgePool have time complexity O(N 3) on sparse graphs when approximate diffusion distances are used. 
+
+A.6 Computational analysis of Mercator on GPU 
+
+Mercator [ 33 , 34 ] is a reliable method for embedding complex networks into their underlying hyperbolic latent geometry. The algorithm combines machine-learning techniques with maximum-likelihood (ML) optimization to infer node coordinates in the hyperbolic disk by maximizing the agreement between the observed network topology and the geometric model. The original implemen-tation has a time complexity that scales quadratically with the network size. 10 3 10 4
+
+> Network size
+> 10 1
+> 10 2
+> 10 3
+> Time [s]
+
+a  
+
+> CPU
+> GPU
+> 5 × 10 41 × 10 55 × 10 5
+> Network size
+> 10 2
+> 10 3
+> 10 4
+> Time [s]
+
+b  
+
+> Exact
+> S=64
+> 5 × 10 41 × 10 55 × 10 5
+> Network size
+> 0.995
+> 0.996
+> 0.997
+> C-score
+
+c
+
+> Exact
+> S=64
+
+Figure 7: Computational performance of Mercator. ( a) Embedding time as a function of network size for the CPU and GPU implementations. ( b) Embedding time on the GPU using either exact maximum-likelihood (ML) calculations or negative sampling with S = 64 . ( c) c-score between the original and inferred angular coordinates for embeddings obtained with exact ML and negative sampling. Model parameters are β = 2 , γ = 10 , and ⟨k⟩ = 10 . All experiments were performed on a single H200 GPU. In this work, we accelerate the ML stage by moving the most computationally expensive operations to a GPU. In Figure 7a, we report the time required to embed networks of different sizes. The GPU implementation, called cuMercator , provides substantial speedup compared with the CPU version. However, the asymptotic time complexity remains O(N 2). To reduce this cost, we introduce negative sampling into the ML calculation. Instead of computing the log-likelihood contribution from all non-neighbors at each newly proposed position, we sample only S non-neighbors. This significantly reduces the cost of evaluating the non-neighbor contribution. In Figure 7b, we compare the embedding time obtained with exact ML calculations against the negative-sampling approximation with S = 64 .We observe a substantial reduction in runtime while retaining high-quality embeddings. Negative sampling may prevent the final log-likelihood from reaching the exact optimum. Nevertheless, Figure 7c shows that the resulting c-score [ 52 ] remains very high, indicating strong agreement between the ordering of nodes in the original and inferred angular coordinates. These changes allow us to embed very large networks efficiently and use the inferred node coordinates for geometric renormalization. 
+
+16 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 
+
+A.7 Choice of optimizer 
+
+In this work, we used Adam as the optimizer for GNN training. We also tested stochastic gradient de-scent (SGD) as a baseline. While SGD led to convergence on the synthetic networks, its performance was weaker on some real-world networks. Therefore, we used Adam in all experiments to ensure stable training and high accuracy across all considered networks. It is worth noting one limitation of using Adam when analyzing training trajectories. With SGD on synthetic networks, we were able to extract raw gradients and directly compare the gradients of GNNs trained on the original and coarse-grained graphs. With Adam, however, the raw gradients were noisier and less stable for comparison. For this reason, we instead compared the softmax prediction trajectories, which provided a more stable basis for analyzing training alignment. 
+
+A.8 Additional results A.8.1 Synthetic networks 
+
+Figure 8 shows the topological validation of geometric renormalization in the ultra-small-world (USW) regime. Similarly to the small-world regime, the topological properties are preserved. Figure 9 summarizes the zero-shot transfer results. 10 0 10 1 10 2 10 3
+
+k
+
+> 10 −5
+> 10 −4
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+
+Pc(k)
+
+l = 0 
+
+l = 1 
+
+l = 2 
+
+l = 3 
+
+l = 4   
+
+> 10 110 210 3
+
+k
+
+> 0.00.20.40.60.8
+
+¯c(k)   
+
+> 10 010 110 210 3
+
+k 
+
+> 050 100 150
+
+¯knn (k)
+
+> 020
+
+¯k
+
+> 01
+
+H    
+
+> 01234
+
+Renormalization level `
+
+> 01
+
+μL
+
+> 2
+
+Figure 8: Topological validation of geometric renormalization in the ultra-small-world (USW). See the caption of Fig. 2 for panel details. Across all renormalization levels, these topological and mesoscale properties remain stable, confirming that geometric renormalization preserves the structural organization of the network in this regime as well. 0 1 2 3 4 5
+
+> 0.55
+> 0.60
+> 0.65
+> 0.70
+> 0.75
+> 0.80
+> 0.85
+> 0.90
+> Transfer accuracy
+
+a     
+
+> GR
+> Random
+> GCN
+> GAT
+> GraphSAGE
+> 012345
+> 0
+> 20
+> 40
+> 60
+> Training time (s)
+
+b     
+
+> 012345
+> Renormalization level
+> 0
+> 50k
+> 100k
+> Nodes
+
+c                             
+
+> G0G1G2G3G4G5
+> G0
+> G1
+> G2
+> G3
+> G4
+> G5
+> 0.82 0.73 0.65 0.64 0.63
+> 0.06 0.82 0.71 0.69 0.68
+> 0.03 0.15 0.80 0.74 0.72
+> 0.01 0.03 0.15 0.83 0.77
+> 0.00 0.01 0.03 0.14 0.87
+> 0.00 0.00 0.01 0.02 0.12
+
+d CKA                              
+
+> G0G1G2G3G4G5
+> G0
+> G1
+> G2
+> G3
+> G4
+> G5
+> 0.89 0.83 0.77 0.76 0.75
+> 0.23 0.89 0.82 0.80 0.79
+> 0.16 0.38 0.88 0.84 0.82
+> 0.11 0.17 0.39 0.90 0.85
+> 0.07 0.08 0.16 0.36 0.92
+> 0.04 0.04 0.07 0.14 0.34
+
+e OP similarity         
+
+> 060 120 180 240 300 360 420 480
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> 0.35
+> DTG JS
+
+f        
+
+> 060 120 180 240 300 360 420 480
+> Epoch
+> 0.000
+> 0.005
+> 0.010
+> 0.015
+> 0.020
+> DEG JS
+
+g 
+
+> GR
+> Random
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0 train
+
+GNN G0 G0 
+
+> evaluate
+> train
+
+GNN Gl
+
+> evaluate
+
+G0
+
+Glevaluate  
+
+> train
+
+GNN Gl
+
+> evaluate
+
+Figure 9: Zero-shot GNN transfer on synthetic networks in the USW regime. See the caption of Figure 3 for more details. 
+
+17 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 
+
+A.8.2 Real networks 
+
+Figures 10–16 show transfer accuracy and training time across renormalization levels for the remain-ing real-world datasets. 0 1 2 3 4 5
+
+0.60 
+
+0.65 
+
+0.70 
+
+0.75 
+
+0.80 
+
+0.85 
+
+0.90 
+
+> Transfer accuracy
+
+a
+
+GCN 
+
+GAT 
+
+GraphSAGE 
+
+GR 
+
+Random 
+
+0 1 2 3 4 5
+
+4
+
+6
+
+> Training time (s)
+
+b
+
+0 1 2 3 4 5
+
+Renormalization level 
+
+0
+
+10k 
+
+20k 
+
+> Nodes
+
+c
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.61 0.44 0.34 0.28 0.24 
+
+0.11 0.68 0.54 0.45 0.40 
+
+0.05 0.20 0.74 0.62 0.56 
+
+0.02 0.05 0.16 0.78 0.70 
+
+0.01 0.01 0.03 0.12 0.81 
+
+0.00 0.00 0.01 0.02 0.08 
+
+d CKA 
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.78 0.66 0.58 0.51 0.46 
+
+0.33 0.82 0.73 0.65 0.60 
+
+0.22 0.44 0.85 0.76 0.70 
+
+0.14 0.22 0.40 0.86 0.79 
+
+0.09 0.10 0.17 0.35 0.86 
+
+0.04 0.05 0.07 0.12 0.27 
+
+e OP similarity 
+
+0 60 120 180 240 300 360 420 480 
+
+0.000 
+
+0.025 
+
+0.050 
+
+0.075 
+
+0.100 
+
+0.125 
+
+0.150 
+
+0.175 
+
+> DTG JS
+
+f
+
+0 60 120 180 240 300 360 420 480 
+
+Epoch 
+
+0.00 
+
+0.01 
+
+0.02 
+
+0.03 
+
+0.04 
+
+0.05 
+
+> DEG JS
+
+g
+
+GR 
+
+Random 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 train GNN G0 G0
+
+evaluate 
+
+train GNN Gl
+
+evaluate 
+
+G0
+
+Glevaluate 
+
+train GNN Gl
+
+evaluate 
+
+Figure 10: Zero-shot GNN transfer on PubMed dataset . See the caption of Fig. 3 for more detail. 0 1 2 3 4 5
+
+0.5 
+
+0.6 
+
+0.7 
+
+0.8 
+
+0.9 
+
+> Transfer accuracy
+
+a
+
+GCN 
+
+GAT 
+
+GraphSAGE 
+
+GR 
+
+Random 
+
+0 1 2 3 4 5
+
+0
+
+10 
+
+20 
+
+> Training time (s)
+
+b
+
+0 1 2 3 4 5
+
+Renormalization level 
+
+0
+
+5k 
+
+10k 
+
+15k 
+
+> Nodes
+
+c
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.57 0.44 0.40 0.39 0.38 
+
+0.13 0.67 0.57 0.54 0.52 
+
+0.06 0.33 0.77 0.72 0.69 
+
+0.02 0.11 0.30 0.86 0.81 
+
+0.01 0.04 0.09 0.26 0.90 
+
+0.00 0.01 0.03 0.08 0.24 
+
+d CKA 
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.69 0.59 0.54 0.53 0.51 
+
+0.28 0.74 0.65 0.62 0.60 
+
+0.18 0.45 0.78 0.73 0.70 
+
+0.12 0.23 0.42 0.84 0.79 
+
+0.08 0.13 0.21 0.40 0.89 
+
+0.04 0.08 0.12 0.20 0.39 
+
+e OP similarity 
+
+0 60 120 180 240 300 360 420 480 
+
+0.0 
+
+0.1 
+
+0.2 
+
+0.3 
+
+0.4 
+
+> DTG JS
+
+f
+
+0 60 120 180 240 300 360 420 480 
+
+Epoch 
+
+0.00 
+
+0.05 
+
+0.10 
+
+0.15 
+
+0.20 
+
+0.25 
+
+> DEG JS
+
+g
+
+GR 
+
+Random 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+Figure 11: Zero-shot GNN transfer on CS dataset . See the caption of Fig. 3 for more detail. 
+
+18 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 0 1 2 3 4 5
+
+0.65 
+
+0.70 
+
+0.75 
+
+0.80 
+
+0.85 
+
+0.90 
+
+0.95 
+
+> Transfer accuracy
+
+a
+
+GCN 
+
+GAT 
+
+GraphSAGE 
+
+GR 
+
+Random 
+
+0 1 2 3 4 5
+
+0
+
+25 
+
+50 
+
+75 
+
+> Training time (s)
+
+b
+
+0 1 2 3 4 5
+
+Renormalization level 
+
+0
+
+10k 
+
+20k 
+
+30k 
+
+> Nodes
+
+c
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.81 0.77 0.76 0.76 0.75 
+
+0.10 0.87 0.84 0.82 0.80 
+
+0.04 0.29 0.91 0.88 0.86 
+
+0.02 0.10 0.28 0.94 0.91 
+
+0.01 0.04 0.11 0.25 0.96 
+
+0.00 0.02 0.04 0.08 0.27 
+
+d CKA 
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.83 0.79 0.78 0.77 0.76 
+
+0.28 0.87 0.83 0.82 0.80 
+
+0.18 0.46 0.91 0.88 0.86 
+
+0.12 0.24 0.45 0.94 0.91 
+
+0.07 0.15 0.24 0.43 0.95 
+
+0.04 0.09 0.13 0.22 0.45 
+
+e OP similarity 
+
+0 60 120 180 240 300 360 420 480 
+
+0.00 
+
+0.05 
+
+0.10 
+
+0.15 
+
+0.20 
+
+0.25 
+
+0.30 
+
+> DTG JS
+
+f
+
+0 60 120 180 240 300 360 420 480 
+
+Epoch 
+
+0.00 
+
+0.01 
+
+0.02 
+
+0.03 
+
+0.04 
+
+0.05 
+
+0.06 
+
+0.07 
+
+> DEG JS
+
+g
+
+GR 
+
+Random 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+Figure 12: Zero-shot GNN transfer on Physics dataset . See the caption of Fig. 3 for more detail. 0 1 2 3 4 5
+
+0.3 
+
+0.4 
+
+0.5 
+
+0.6 
+
+0.7 
+
+0.8 
+
+0.9 
+
+> Transfer accuracy
+
+a
+
+GCN 
+
+GAT 
+
+GraphSAGE 
+
+GR 
+
+Random 
+
+0 1 2 3 4 5
+
+2.5 
+
+5.0 
+
+7.5 
+
+10.0 
+
+> Training time (s)
+
+b
+
+0 1 2 3 4 5
+
+Renormalization level 
+
+0
+
+5k 
+
+10k 
+
+> Nodes
+
+c
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.50 0.30 0.20 0.17 0.16 
+
+0.24 0.57 0.37 0.32 0.29 
+
+0.11 0.46 0.61 0.51 0.46 
+
+0.05 0.20 0.44 0.72 0.66 
+
+0.02 0.10 0.21 0.48 0.80 
+
+0.01 0.04 0.10 0.22 0.47 
+
+d CKA 
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.73 0.59 0.49 0.46 0.44 
+
+0.42 0.78 0.65 0.60 0.57 
+
+0.29 0.64 0.80 0.73 0.68 
+
+0.19 0.43 0.65 0.84 0.79 
+
+0.13 0.29 0.45 0.69 0.88 
+
+0.09 0.20 0.30 0.46 0.68 
+
+e OP similarity 
+
+0 60 120 180 240 300 360 420 480 
+
+0.00 
+
+0.05 
+
+0.10 
+
+0.15 
+
+0.20 
+
+0.25 
+
+0.30 
+
+0.35 
+
+> DTG JS
+
+f
+
+0 60 120 180 240 300 360 420 480 
+
+Epoch 
+
+0.00 
+
+0.02 
+
+0.04 
+
+0.06 
+
+0.08 
+
+0.10 
+
+0.12 
+
+> DEG JS
+
+g
+
+GR 
+
+Random 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+Figure 13: Zero-shot GNN transfer on Computers dataset . See the caption of Fig. 3 for more detail. 
+
+19 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 0 1 2 3 4 5
+
+0.3 
+
+0.4 
+
+0.5 
+
+0.6 
+
+0.7 
+
+0.8 
+
+> Transfer accuracy
+
+a
+
+GCN 
+
+GAT 
+
+GraphSAGE 
+
+GR 
+
+Random 
+
+0 1 2 3 4 5
+
+4
+
+6
+
+8
+
+> Training time (s)
+
+b
+
+0 1 2 3 4 5
+
+Renormalization level 
+
+0
+
+5k 
+
+10k 
+
+> Nodes
+
+c
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.47 0.27 0.18 0.15 0.14 
+
+0.30 0.57 0.42 0.36 0.35 
+
+0.15 0.45 0.66 0.54 0.50 
+
+0.08 0.21 0.47 0.75 0.67 
+
+0.04 0.10 0.22 0.45 0.82 
+
+0.01 0.04 0.09 0.18 0.40 
+
+d CKA 
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.71 0.56 0.47 0.41 0.37 
+
+0.41 0.78 0.66 0.58 0.54 
+
+0.29 0.59 0.82 0.72 0.66 
+
+0.20 0.40 0.66 0.85 0.77 
+
+0.14 0.27 0.44 0.66 0.88 
+
+0.09 0.17 0.28 0.42 0.63 
+
+e OP similarity 
+
+0 60 120 180 240 300 360 420 480 
+
+0.00 
+
+0.05 
+
+0.10 
+
+0.15 
+
+0.20 
+
+0.25 
+
+0.30 
+
+> DTG JS
+
+f
+
+0 60 120 180 240 300 360 420 480 
+
+Epoch 
+
+0.00 
+
+0.02 
+
+0.04 
+
+0.06 
+
+0.08 
+
+0.10 
+
+0.12 
+
+0.14 
+
+0.16 
+
+> DEG JS
+
+g
+
+GR 
+
+Random 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+Figure 14: Zero-shot GNN transfer on WikiCS dataset . See the caption of Fig. 3 for more detail. 0 1 2 3 4 5
+
+0.25 
+
+0.30 
+
+0.35 
+
+0.40 
+
+0.45 
+
+0.50 
+
+> Transfer accuracy
+
+a
+
+GCN 
+
+GAT 
+
+GraphSAGE 
+
+GR 
+
+Random 
+
+0 1 2 3 4 5
+
+10 
+
+20 
+
+> Training time (s)
+
+b
+
+0 1 2 3 4 5
+
+Renormalization level 
+
+0
+
+25k 
+
+50k 
+
+75k 
+
+> Nodes
+
+c
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.32 0.14 0.07 0.04 0.02 
+
+0.11 0.35 0.15 0.08 0.04 
+
+0.07 0.18 0.35 0.19 0.09 
+
+0.04 0.07 0.25 0.41 0.18 
+
+0.02 0.03 0.10 0.30 0.41 
+
+0.01 0.01 0.04 0.12 0.35 
+
+d CKA 
+
+G0 G1 G2 G3 G4 G5
+
+G0
+
+G1
+
+G2
+
+G3
+
+G4
+
+G5
+
+0.51 0.33 0.22 0.17 0.12 
+
+0.25 0.55 0.36 0.26 0.18 
+
+0.20 0.36 0.57 0.42 0.29 
+
+0.14 0.22 0.43 0.62 0.43 
+
+0.10 0.14 0.26 0.47 0.64 
+
+0.07 0.09 0.17 0.30 0.54 
+
+e OP similarity 
+
+0 60 120 180 240 300 360 420 480 
+
+0.00 
+
+0.05 
+
+0.10 
+
+0.15 
+
+0.20 
+
+> DTG JS
+
+f
+
+0 60 120 180 240 300 360 420 480 
+
+Epoch 
+
+0.000 
+
+0.005 
+
+0.010 
+
+0.015 
+
+0.020 
+
+0.025 
+
+0.030 
+
+> DEG JS
+
+g
+
+GR 
+
+Random 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+Figure 15: Zero-shot GNN transfer on Flickr dataset . See the caption of Fig. 3 for more detail. 
+
+20 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 0 1 2 3 4 5
+
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> Transfer accuracy
+
+a     
+
+> GCN
+> GAT
+> GraphSAGE
+> GR
+> Random
+> 012345
+> 1
+> 2
+> 3
+> 4
+> Training time (s)
+
+b     
+
+> 012345
+> Renormalization level
+> 0
+> 1k
+> 2k
+> Nodes
+
+c                             
+
+> G0G1G2G3G4G5
+> G0
+> G1
+> G2
+> G3
+> G4
+> G5
+> 0.56 0.42 0.41 0.40 0.35
+> 0.07 0.57 0.50 0.47 0.43
+> 0.03 0.12 0.61 0.54 0.51
+> 0.01 0.03 0.09 0.69 0.60
+> 0.01 0.01 0.03 0.12 0.73
+> 0.00 0.01 0.01 0.04 0.10
+
+d CKA                              
+
+> G0G1G2G3G4G5
+> G0
+> G1
+> G2
+> G3
+> G4
+> G5
+> 0.70 0.57 0.54 0.53 0.50
+> 0.25 0.68 0.61 0.58 0.54
+> 0.15 0.31 0.70 0.64 0.59
+> 0.10 0.15 0.27 0.76 0.68
+> 0.07 0.09 0.15 0.30 0.78
+> 0.05 0.08 0.11 0.18 0.28
+
+e OP similarity         
+
+> 060 120 180 240 300 360 420 480
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> 0.35
+> DTG JS
+
+f        
+
+> 060 120 180 240 300 360 420 480
+> Epoch
+> 0.000
+> 0.025
+> 0.050
+> 0.075
+> 0.100
+> 0.125
+> 0.150
+> 0.175
+> DEG JS
+
+g
+
+> GR
+> Random
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+
+Figure 16: Zero-shot GNN transfer on Cora dataset . See the caption of Fig. 3 for more detail. 
+
+A.8.3 Comparison with Random-T and Random-G baselines 
+
+In the main text, we compared geometric renormalization (GR) against a fully randomized baseline (Random ), in which both the network topology and the geometric coordinates used to merge nodes are randomized before coarse-graining. To disentangle the individual contribution of these two factors, we here report results for two partial baselines: Random-T , in which only the topology is randomized while node coordinates are kept as inferred by Mercator, and Random-G , in which only the geometric coordinates are randomized while the original topology is preserved. Comparing GR against these two variants isolates whether preserving topology, preserving geometry, or their combination is responsible for the transfer performance observed in the main text. Figure 17 shows the zero-shot transfer accuracy for the synthetic networks in both the ultra-small-world (USW) and small-world (SW) regimes, comparing GR against Random-T and Random-G. Figure 18 shows the zero-shot transfer accuracy for each of the eight real-world datasets, comparing GR against Random-T and Random-G. 0 1 2 3 4 5
+
+Renormalization level `
+
+> 0.60.70.80.9
+> Accuracy
+
+Small world      
+
+> 012345
+
+Renormalization level `
+
+> 0.60.70.80.9
+> Accuracy
+
+Ultra-small world GCN GAT GraphSAGE GR Random-G Random-T 
+
+Figure 17: Zero-shot GNN transfer accuracy for SW and USW regimes, against Random-T and Random-G renormalization methods . See the caption of Fig. 3 for details on models and renormalization methods shown. Interestingly, the three architectures respond differently to the Random-T baseline. We hypothesize that this reflects how each model aggregates neighborhood information. One possible explanation is that each architecture aggregates neighborhood information differently: GraphSAGE separates self and neighbor transformations, GCN applies a shared transformation across both, and GAT learns attention weights over neighbors, which may make them differently sensitive to randomized topology. 
+
+21 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 0 1 2 3 4 5
+
+Renormalization level `
+
+> 0.40.50.60.70.80.9
+> Accuracy
+
+computers      
+
+> 012345
+
+Renormalization level `
+
+> 0.40.50.60.70.80.9
+> Accuracy
+
+cora      
+
+> 012345
+
+Renormalization level `
+
+> 0.60.70.80.9
+> Accuracy
+
+cs      
+
+> 012345
+
+Renormalization level `
+
+> 0.25 0.30 0.35 0.40 0.45 0.50
+> Accuracy
+
+flickr      
+
+> 012345
+
+Renormalization level `
+
+> 0.40.60.8
+> Accuracy
+
+photo      
+
+> 012345
+
+Renormalization level `
+
+> 0.70.80.9
+> Accuracy
+
+physics      
+
+> 012345
+
+Renormalization level `
+
+> 0.60.70.80.9
+> Accuracy
+
+pubmed      
+
+> 012345
+
+Renormalization level `
+
+> 0.40.60.8
+> Accuracy
+
+wikics GCN GAT GraphSAGE GR Random-G Random-T 
+
+Figure 18: Zero-shot GNN transfer accuracy across all real-world datasets, against Random-T and Random-G renormalization methods . Each panel corresponds to one dataset. See the caption of Fig. 3 for details on models and renormalization methods shown. 
+
+A.8.4 Topological validation 
+
+Figures 19 and 20 show the topological validation of GR across all real-world networks considered. Figures 21 and 22 further show the topological validation of the SW regime under the random renor-malization variants (Random, Random-T, and Random-G), the latter broken down by renormalization level l = 1 , 2, 3, 4.
+
+22 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 10 1 10 3
+
+k
+
+10 −4
+
+10 −3
+
+10 −2
+
+10 −1
+
+10 0
+
+Pc(k)     
+
+> computers
+> l= 0
+> l= 1
+> l= 2
+> l= 3
+> l= 4
+
+10 1 10 2 10 3
+
+k
+
+0.00 0.25 0.50 0.75 1.00 ¯c(k)
+
+10 1 10 2 10 3
+
+k
+
+0100 200 300 400 ¯knn (k)
+
+34 39 
+
+¯k
+
+01
+
+H
+
+0 1 2 3 4
+
+Renormalization level `
+
+01
+
+μL
+
+> 2
+
+10 0 10 1 10 2
+
+k
+
+10 −3
+
+10 −2
+
+10 −1
+
+10 0
+
+Pc(k)
+
+> cora
+
+10 1 10 2
+
+k
+
+0.00.20.40.60.8 ¯c(k)
+
+10 1 10 2
+
+k
+
+010 20 30 
+
+¯knn (k)
+
+17
+
+¯k
+
+01
+
+H
+
+0 1 2 3 4
+
+Renormalization level `
+
+01
+
+μL
+
+> 2
+
+10 0 10 1 10 2
+
+k
+
+10 −4
+
+10 −3
+
+10 −2
+
+10 −1
+
+10 0
+
+Pc(k)
+
+> cs
+
+10 1 10 2
+
+k
+
+0.00 0.25 0.50 0.75 1.00 ¯c(k)
+
+10 1 10 2
+
+k
+
+010 20 30 ¯knn (k)
+
+611 
+
+¯k
+
+01
+
+H
+
+0 1 2 3 4
+
+Renormalization level `
+
+01
+
+μL
+
+> 2
+
+10 1 10 3
+
+k
+
+10 −4
+
+10 −2
+
+10 0
+
+Pc(k)
+
+> flickr
+
+10 1 10 2 10 3
+
+k
+
+0.00.20.40.60.8 ¯c(k)
+
+10 1 10 2 10 3
+
+k
+
+0200 400 
+
+¯knn (k)
+
+813 
+
+¯k
+
+01
+
+H
+
+0 1 2 3 4
+
+Renormalization level `
+
+01
+
+μL
+
+> 2
+
+Figure 19: Topological validation of GR for the real-world datasets considered (part 1 of 2). 
+
+23 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 10 1 10 3
+
+k
+
+10 −4
+
+10 −3
+
+10 −2
+
+10 −1
+
+10 0
+
+Pc(k)     
+
+> photo  l= 0
+> l= 1
+> l= 2
+> l= 3
+> l= 4
+
+10 1 10 2 10 3
+
+k
+
+0.00 0.25 0.50 0.75 1.00 ¯c(k)
+
+10 1 10 2 10 3
+
+k
+
+0100 200 
+
+¯knn (k)
+
+29 35 
+
+¯k
+
+01
+
+H
+
+0 1 2 3 4
+
+Renormalization level `
+
+01
+
+μL
+
+> 2
+
+10 0 10 1 10 2
+
+k
+
+10 −4
+
+10 −3
+
+10 −2
+
+10 −1
+
+10 0
+
+Pc(k)
+
+> physics
+
+10 1 10 2
+
+k
+
+0.00 0.25 0.50 0.75 1.00 ¯c(k)
+
+10 1 10 2
+
+k
+
+020 40 60 ¯knn (k)
+
+12 17 
+
+¯k
+
+01
+
+H
+
+0 1 2 3 4
+
+Renormalization level `
+
+01
+
+μL
+
+> 2
+
+10 0 10 1 10 2
+
+k
+
+10 −4
+
+10 −3
+
+10 −2
+
+10 −1
+
+10 0
+
+Pc(k)
+
+> pubmed
+
+10 1 10 2
+
+k
+
+0.00.20.4
+
+¯c(k)
+
+10 1 10 2
+
+k
+
+010 20 30 40 ¯knn (k)
+
+27
+
+¯k
+
+01
+
+H
+
+0 1 2 3 4
+
+Renormalization level `
+
+01
+
+μL
+
+> 2
+
+10 1 10 3
+
+k
+
+10 −4
+
+10 −3
+
+10 −2
+
+10 −1
+
+10 0
+
+Pc(k)
+
+> wikics
+
+10 1 10 2 10 3
+
+k
+
+0.00 0.25 0.50 0.75 1.00 ¯c(k)
+
+10 1 10 2 10 3
+
+k
+
+0200 400 600 800 ¯knn (k)
+
+36 41 
+
+¯k
+
+01
+
+H
+
+0 1 2 3 4
+
+Renormalization level `
+
+01
+
+μL
+
+> 2
+
+Figure 20: Topological validation of GR for the real-world datasets considered (part 2 of 2). 
+
+24 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 10 0 10 1 10 2
+
+k
+
+10 −4
+
+10 −2
+
+10 0
+
+Pc(k)     
+
+> Random-G
+> l= 0
+> l= 1
+> l= 2
+> l= 3
+> l= 4
+
+10 1 10 2
+
+k
+
+0.00.10.20.3 ¯c(k)
+
+10 0 10 1 10 2
+
+k
+
+010 20 30 ¯knn (k)
+
+020 
+
+¯k
+
+01
+
+H
+
+0 1 2 3 4
+
+Renormalization level `
+
+01
+
+μL
+
+> 2
+
+10 0 10 1 10 2
+
+k
+
+10 −4
+
+10 −2
+
+10 0
+
+Pc(k)
+
+> Random-T
+
+10 1 10 2
+
+k
+
+0.00.10.20.3 ¯c(k)
+
+10 0 10 1 10 2
+
+k
+
+010 20 30 ¯knn (k)
+
+020 
+
+¯k
+
+01
+
+H
+
+0 1 2 3 4
+
+Renormalization level `
+
+01
+
+μL
+
+> 2
+
+10 0 10 1 10 2
+
+k
+
+10 −4
+
+10 −2
+
+10 0
+
+Pc(k)
+
+> Random
+
+10 1 10 2
+
+k
+
+0.00.10.20.3 ¯c(k)
+
+10 0 10 1 10 2
+
+k
+
+010 20 30 ¯knn (k)
+
+020 
+
+¯k
+
+01
+
+H
+
+0 1 2 3 4
+
+Renormalization level `
+
+01
+
+μL
+
+> 2
+
+Figure 21: Topological validation of the SW regime under three random variants of the renormaliza-tion method. 
+
+25 Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization 10 0 10 1 10 2
+
+k
+
+10 −4
+
+10 −2
+
+10 0
+
+Pc(k)
+
+> l = 1
+
+GR Random Random-G Random-T Original ( l = 0 )
+
+10 1 10 2
+
+k
+
+0.00 0.25 0.50 0.75 1.00 ¯c(k)
+
+10 0 10 1 10 2
+
+k
+
+010 20 30 ¯knn (k)
+
+020 
+
+¯k
+
+01
+
+H
+
+> GR Random Random-G Random-T
+
+01
+
+μL
+
+> 2
+
+10 0 10 1 10 2
+
+k
+
+10 −4
+
+10 −2
+
+10 0
+
+Pc(k)
+
+> l = 2
+
+10 1 10 2
+
+k
+
+0.00 0.25 0.50 0.75 1.00 ¯c(k)
+
+10 0 10 1 10 2
+
+k
+
+010 20 30 ¯knn (k)
+
+020 
+
+¯k
+
+01
+
+H
+
+> GR Random Random-G Random-T
+
+01
+
+μL
+
+> 2
+
+10 0 10 1 10 2
+
+k
+
+10 −4
+
+10 −2
+
+10 0
+
+Pc(k)
+
+> l = 3
+
+10 1 10 2
+
+k
+
+0.00 0.25 0.50 0.75 1.00 ¯c(k)
+
+10 0 10 1 10 2
+
+k
+
+010 20 30 ¯knn (k)
+
+020 
+
+¯k
+
+01
+
+H
+
+> GR Random Random-G Random-T
+
+01
+
+μL
+
+> 2
+
+10 0 10 1 10 2
+
+k
+
+10 −4
+
+10 −2
+
+10 0
+
+Pc(k)
+
+> l = 4
+
+10 1
+
+k
+
+0.00 0.25 0.50 0.75 1.00 ¯c(k)
+
+10 0 10 1 10 2
+
+k
+
+010 20 30 ¯knn (k)
+
+020 
+
+¯k
+
+01
+
+H
+
+> GR Random Random-G Random-T
+
+01
+
+μL
+
+> 2
+
+Figure 22: Topological validation of the SW regime under GR and three random variants-Random, Random-G, and Random-T of the renormalization method, shown for renormalization levels l =1, 2, 3, 4. Dashed black lines indicate the reference values of the original (non-renormalized) network at l = 0 .
+
+26
