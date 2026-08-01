@@ -1,0 +1,844 @@
+Title: Parallel Spectral Graph Sparsification via Low Diameter Decompositions
+
+URL Source: https://arxiv.org/pdf/2607.25059v1
+
+Published Time: Wed, 29 Jul 2026 00:21:16 GMT
+
+Number of Pages: 23
+
+Markdown Content:
+# Parallel Spectral Graph Sparsification via Low Diameter Decompositions 
+
+Yves Baumann 
+
+ETH Zurich 
+
+ybaumann@ethz.ch 
+
+Gernot Z¨ ocklein ∗
+
+ETH Zurich 
+
+gernot.zoecklein@inf.ethz.ch 
+
+Abstract 
+
+We present a new solver-free parallel spectral sparsification algorithm for weighted graphs that relies only on parallel low-diameter decompositions and independent sampling. This yields the first algorithmic improvement over prior, solver-free parallel sparsification approaches since Koutis (2014) and, for the first time for a practical algorithm, eliminates any dependence on the target approximation accuracy ε in the algorithm’s work and depth. Our algorithm works by sub-sampling edges according to their robust connectivity, as intro-duced by Kapralov and Panigrahy (2012). We show how to estimate the robust connectivities of 
+
+G in an extremely simple manner: we create multiple random sub graphs Gp, where each edge in G is sub-sampled independently with probability pe = min {we · p, 1}. Then, we run a Low Diameter Decomposition in each of the graphs. If u and v often share a cluster in the LDDs, then this provides us with an upper bound on the robust connectivity of the edge e = ( u, v ). Carefully invoking this procedure for O(log n) different values of the probabilities p then allows us to obtain sufficiently good estimates for sub-sampling. We additionally complement the theory with an experimental evaluation demonstrating strong performance across relevant graphs and sparsity regimes. 
+
+# 1 Introduction 
+
+Among the most important computational kernels in scientific computing is solving a linear system 
+
+Ax = b. 
+
+In many applications, the matrix A is large, sparse, and symmetric positive semidefinite, so solving this system via a direct factorization is often impractical. Instead, practitioners resort to iterative methods such as Conjugate Gradient (CG), which repeatedly refines an initial guess and only requires matrix–vector product access to A.Iterative methods also allow for preconditioning . If P is full rank (or shares the same kernel as 
+
+A), then the systems 
+
+P −1Ax = P −1b and Ax = b
+
+> ∗
+
+The research leading to these results has received funding from the starting grant “A New Paradigm for Flow and Cut Algorithms” (no. TMSGI2 218022) and grant no. 200021 204787 of the Swiss National Science Foundation. 
+
+1arXiv:2607.25059v1 [cs.DS] 27 Jul 2026 have the same solution. If the preconditioned system converges faster, it is advantageous to solve it instead. For CG, convergence to error δ is bounded by the condition number κ of the preconditioned system [18]. For an initial guess x0 and the exact solution x∗, we have the bound: 
+
+∥x∗ − xk∥A ≤ 2
+
+ √κ − 1
+
+√κ + 1 
+
+k
+
+∥x∗ − x0∥A, where ∥v∥A := √v⊤Av, κ := λmax (A)
+
+λmin (A) .
+
+This dependence on κ motivates the design of preconditioners that both (i) reduce the condition number substantially and (ii) can be applied efficiently in each CG iteration. There has been extensive work on constructing good preconditioners. Incomplete Cholesky pre-conditioners are effective for some general sparse SPSD matrices, while multigrid preconditioners are highly successful for structured systems arising from numerical PDE discretizations. How-ever, for graph-structured problems and other irregular sparsity patterns, designing parallelizable preconditioners with provable guarantees remains challenging. In their seminal paper, Spielman and Teng [21] showed that a linear system with a diagonally dominant matrix can be solved in nearly linear time in the number of nonzeros, via sparse spectral 
+
+approximations that lead to fast convergence of iterative methods. Diagonally dominant matrices can be interpreted as graph Laplacians. Let G = ( V, E, w ) be a weighted graph with Laplacian L. We say that a re-weighted sub graph eG of G, with Laplacian eL,is a (1 ± ε)-spectral sparsifier of G if (1 − ε) x⊤Lx ≤ x⊤ eLx ≤ (1 + ε) x⊤Lx ∀x ∈ RV .
+
+While graphs can be very dense ( |E| ≈ | V |2), it is known [2] that any graph admits a (1 ±ε)-spectral sparsifier with at most O(|V |/ε 2) edges. Thus, one can replace a dense graph by a much sparser one while approximately preserving its spectral structure, making downstream linear-algebraic primitives cheaper. A key application is solving Laplacian linear systems Lx = b. Such systems arise not only in scientific computing, but also as subroutines in graph optimization (e.g., max-flow and min-cost flow), in machine learning, and increasingly in modern graph-based pipelines including graph neural networks. Now, note that if eL is a spectral sparsifier of L, this in particular implies that the condition number of eL−1L is 1 + O(ε), so by using CG, we can solve linear systems in L by solving roughly O(√ε) systems in eL−1. As approximate Gaussian elimination yields a factorization with 
+
+O(|E| polylog( |V |)) nonzeros that can be used to solve Laplacian systems [14], we profit immensely if the graph eG is much sparser than G. Furthermore, repeated sparsification during factorization can yield polylogarithmic depth parallel constructions [3], making fast parallel sparsification a useful primitive both on its own and as a component inside parallel Laplacian solvers. For these reasons, we believe it to be an important problem to understand highly efficient and practical parallel constructions of sparse spectral sparsifiers. 
+
+Our Contribution We revisit spectral sparsification through the lens of robust connectivity, as introduced by [8]. Their approach incurs substantial polylogarithmic overhead in both depth and work due to the reliance on approximate distance oracles. We demonstrate that these overheads can be eliminated entirely when estimating robust connectivities. 2Our first insight is that it is unnecessary to compute the exact distances dist( u, v ) in the relevant auxiliary graphs. Instead, it suffices to detect the cases dist( u, v ) = O(log n) and dist( u, v ) = Ω(log 2 n). This is a significantly simpler task than approximating arbitrary distances. Our second insight is that, because robust connectivity is estimated by counting the occurrence of an event on random sub graphs, correctness in expectation is sufficient. Concretely, it is enough to sample random variables Xu,v such that Pr[ Xu,v = 1] ≥ 1/2 whenever dist( u, v ) ≤ O(log n), and Xu,v = 0 deterministically whenever dist( u, v ) ≥ Ω(log 2 n). Notice that this avoids an extra 
+
+O(log n) factor in work that would be required for a high probability statement. We show that such random variables can be obtained via a single low-diameter decomposition (LDD): we set Xu,v = 1 if and only if u and v lie in the same cluster. Importantly, low-diameter decompositions admit highly efficient parallel implementations, both in theory and in practice, yielding substantial improvements over prior work. Then, we show how we can use the estimated robust connectivities to construct practical, sparse preconditioners for Laplacian linear systems. We show that our proposed sparsification algorithm outperforms baselines by a factor of 4 × to 5 × on the largest graphs, measured by the number of PCG iterations used until convergence. And that it is robust with respect to the desired sparsity of the preconditioner. Our parallel algorithm, to the best of the authors’ knowledge, is the first solver-free, practical spectral sparsification algorithm with no dependency on the desired accuracy ε in the depth and work. As such, it is highly relevant as a subroutine in parallel approximate Cholesky algorithms, which need to repeatedly compute sparsifiers with accuracy ε  
+
+> log n
+
+. We outline how using our al-gorithm as a black box in the known parallelization framework from [3] leads to better work and depth guarantees to solve Laplacian linear systems. 
+
+Related Work Our algorithm builds heavily on the idea of robust connectivities, as introduced in [8]. Unfortunately, as the authors note, their algorithm requires access to an approximate distance oracle, and at the time of publication, no satisfactory parallel distance oracle was available. Very recently, in [12], a O(log n) approximate distance oracle with O(m polylog( n)) work and 
+
+O(polylog( n)) depth was discovered. Using this distance oracle inside [8] results in a combinatorial algorithm that constructs a spectral sparsifier of G with O(nε −2 log 3 n) edges. This algorithm requires O(m polylog( n)) work and O(polylog( n)) depth. Unfortunately, the polylog factors in [12] are quite large, mostly due to repeated calls to parallel approximate SSSP algorithms, and we are not aware of a practical parallel implementation. In [9], Koutis introduced an alternative combinatorial parallel algorithm based on graph span-ners, and the analysis of Koutis’ algorithm was later refined in [13]. Their algorithm produces sparsifiers with O(nε −2 log 2 n log log n) many edges, its depth is 
+
+O(ε−2 log 4 n log ∗ n), and its work O(mε −2 log 2 n). Note here the factor of ε−2 in both its depth and work. For values ε = O(1 / log n), this factor causes a significant overhead. Note also that our algorithm improves over the depth of the algorithm by a factor of O(log 2 n), although our sparsity is larger by a factor of O(log n). In [11], it was shown how to find 2-approximations to the effective resistances of a graph G
+
+by essentially solving O(log n) Laplacian linear systems. Consequently, one can use the parallel spectral sparsification algorithm from [19] to get a spectral sparsifier of G with O(nε −2 log n) many edges in O(log 2 n log log n) depth and O(m log 4 n log log n) or O(( m+n log 5 n) log 2 n log log n) work. Consequently, for graphs with more than Ω( n log 5 n) edges, this result matches our result both in 3work and depth, although it yields a graph that is sparser by a factor of O(log 2 n). We remark that one of the main practical applications of spectral sparsification is inside Laplacian Solvers, and so the practical relevance of a solver-based sparsification algorithm is unclear. We also believe that even from a theoretical viewpoint, combinatorial and solver-free spectral-sparsification algorithms are insightful and interesting in their own right. 
+
+# 2 Preliminaries 
+
+Notation In this paper, we consider weighted undirected graphs G = ( V, E, w ). Throughout, we denote by n the number of vertices of G, m the number of edges, and W = max e∈E we is the maximum weight of G. We denote by LG the graph Laplacian of G. We denote by dist G(u, v ) the shortest path distance between u and v in graph G. We call a set X of subsets of V a partition of G if S 
+
+> X∈X
+
+X = V and any two distinct sets X, X ′ ∈ X are disjoint: X ∩ X′ = ∅. Given a set X ⊆ V , we denote by G[X] the induced subgraph on X. We write that H ⪯ G if for every 
+
+x ∈ Rn, xT LH x ≤ xT LGx. We denote by Re the effective resistance of edge e = ( u, v ) in G, i.e., 
+
+Re = ( 1u − 1v)T L+
+
+> G
+
+(1u − 1v). We call the quantity weRe the leverage score of e.For a sampling parameter p ∈ [0 , 1] we denote by Gp the unweighted random graph obtained by sampling each edge e ∈ E independently with probability min {wep, 1}.
+
+Parallel Model In this paper, we assume the CRCW PRAM model. 
+
+2.1 Effective Resistance Sampling 
+
+Our algorithm works by independent sampling of edges according to their effective resistances , as first introduced in [20]. 
+
+Theorem 2.1 ([20]) . Let H be obtained by sampling edges of G independently with probability 
+
+pe ≥ cw eRe log n/ε 2 for some ε > 1/√n and a sufficiently large constant c > 0, and rescaling the weight of each sampled edge by 1/p e. Then with high probability, 
+
+(1 − ε)G ⪯ H ⪯ (1 + ε)G. 
+
+We will also use the following basic variant of a Chernoff Bound: 
+
+Theorem 2.2. [See Exercise 4.7 in [17]] Let {Xi}ki=1 be a sequence of independent Bernoulli random variables. Let X = 1
+
+> k
+
+Pki=1 Xi, and μ := E [X]. Then for any δ ∈ [0 , 1] , we have that 
+
+Pr[ X ≤ (1 − δ)μ] ≤ e−δ2kμ/ 2.
+
+Moreover, for any c ≥ μ and δ ∈ [0 , 1] , we additional have that 
+
+Pr[ X ≥ (1 + δ)c] ≤ e−δ2kc/ 3.
+
+We need this slightly non-standard version because in the proof of Lemma 3.1 the only control we have over E [X] is that E [X] ≤ 1/2. But in the lemma, our goal is to show that with high probability 
+
+X < 8.5/16. As E [X] may be much smaller than 1 /2, a standard-chernoff bound written only in terms of an exponential decay in terms of E [X] is thus not sufficient for our purposes. 42.2 Robust Connectivities 
+
+To efficiently estimate the leverage scores of the edges of G, we make use of the notion of robust connectivities, introduced by Kapralov and Panigrahy [8]. 
+
+Definition 2.3. Let G = ( V, E, w ) be a weighted undirected graph. For η ∈ [0 , 1] , κ ≥ 1 and 
+
+e = ( u, v ) ∈ E we define 
+
+pκ(e, η ) := Pr[dist Gη (u, v ) > κ ].
+
+We stress here again that while G is a weighted graph, the graph Gη is unweighted. We also remark that clearly pκ(e, η ) is a decreasing function with increasing η, i.e., that pκ(e, η ) ≤ pκ(e, η ′)for η ≥ η′.
+
+Definition 2.4 (Robust Connectivity) . For e = ( u, v ) ∈ E we let the κ-robust connectivity qκ(e)
+
+denote the largest η ∈ [0 , 1] such that pκ(e, η ) = Pr[dist Gη (u, v ) > κ ] ≥ 1/2.
+
+The next lemma shows that sampling according to scaled versions of the robust connectivities constitutes a valid leverage-score based over-sampling. 
+
+Lemma 2.5 (Lemma 2 in [8]) . For all edges e ∈ E,
+
+Re ≤ 2κ · qκ(e).
+
+Kapralov and Panigrahy [8] also proved that the weighted sum of robust connectivities is bounded from above: 
+
+Lemma 2.6 (Lemma 3 in [8]) . For a weighted undirected graph G = ( V, E, w ), we have that 
+
+X
+
+> e∈E
+
+weqκ(e) ≤ 2n 1+ O(1 /κ ).
+
+As we will later binary-search for the values of the robust connectivities, we also need to show that the minimum of the robust connectivities is suitably lower bounded. 
+
+Claim 2.7. For a graph G = ( V, E, w ) with maximum weight W , and any κ > 1, we have that 
+
+min  
+
+> e∈E
+
+qκ(e) ≥ 14 · | E| · W .
+
+Proof. We show that for p = 1 /(4 |E|W ), any pair u, v ∈ V satisfies Pr[ u, v disconnected in Gp] >
+
+1/2, from which the claim then immediately follows from the definition of qκ(e). To do so, consider any fixed cut ( S, V \ S) with u ∈ S and v ∈ V \ S. Let E(S, V \ S) denote the edges with one endpoint in S and the other in V \ S. Then 
+
+E |EGp (S, V \ S)| = X 
+
+> e∈EG(S,V \S)
+
+we
+
+4|E|W ≤ 1/4.
+
+Consequently, by Markov’s inequality, we must have Pr[ u, v connected in Gp] ≤ Pr[ |EGp (S, V \ S)| ≥ 1] ≤ 1/4.
+
+5We finally need the following auxiliary claim, which will later be crucial for the analysis of our algorithm. 
+
+Claim 2.8. Let π ∈ (0 , 1] . Then for an edge e with qκ(e) ≤ π/ 4, we have that pκ(e, π ) ≤ 1/4.Proof. We prove the claim by comparing Gπ to the union of two independent copies of Gπ/ 4. The proof has two steps. First, the assumption qκ(e) ≤ π/ 4 implies that a single copy of Gπ/ 4 fails to contain a u-to-v path of length at most κ with probability at most 1 /2. Second, the union of two independent copies of Gπ/ 4 is stochastically dominated by Gπ. Therefore, if Gπ has no u-to-v path of length κ, then the union of the two smaller samples also has no such path, and this can happen only if both independent copies fail to contain such a path. Let us formally start by noting that by the definition of qκ(e) as the largest η with pκ(e, η ) ≥ 1/2, the assumption qκ(e) ≤ π/ 4 implies 
+
+pκ
+
+ e, π
+
+> 4
+
+ ≤ 12 .
+
+Now take two independent copies of Gπ/ 4 (call them G(1)  
+
+> π/ 4
+
+and G(2) 
+
+> π/ 4
+
+) and let H be the graph whose edge set is the union of the edge sets of these two copies. Consider any fixed edge f . Its inclusion probability in a single copy Gπ/ 4 is 
+
+p′ 
+
+> f
+
+= Pr[ f ∈ Gπ/ 4] = min {wf · (π/ 4) , 1}.
+
+Hence the inclusion probability of f in H is Pr[ f ∈ H] = 1 − (1 − p′ 
+
+> f
+
+)2 = 2 p′ 
+
+> f
+
+− (p′ 
+
+> f
+
+)2 ≤ 2p′ 
+
+> f
+
+.
+
+If p′ 
+
+> f
+
+< 1, then 2 p′ 
+
+> f
+
+≤ 2 · (wf π/ 4) = wf π/ 2 ≤ wf π, and if p′ 
+
+> f
+
+= 1, then Pr[ f ∈ H] = 1 ≤ 1 = min {wf π, 1}. Thus in all cases Pr[ f ∈ H] ≤ min {wf π, 1} = Pr[ f ∈ Gπ].
+
+Therefore, there is an edgewise monotone coupling under which H ⊆ Gπ almost surely, i.e., EH is stochastically dominated by EGπ .Because H ⊆ Gπ, the event {dist Gπ (u, v ) > κ } (no u − v path of length ≤ κ in Gπ) implies 
+
+{dist H (u, v ) > κ }. Hence 
+
+pκ(e, π ) = Pr[dist Gπ (u, v ) > κ ] ≤ Pr[dist H (u, v ) > κ ].
+
+But H is the union of two independent copies of Gπ/ 4, so H can have no u−v path of length 
+
+≤ κ only if both copies have no such path. Therefore Pr[dist H (u, v ) > κ ] ≤  pκ(e, π 
+
+> 4
+
+)2 ≤   12
+
+2 = 14 .
+
+Combining the inequalities gives pκ(e, π ) ≤ 1/4, as required. Note that estimating robust connectivities can be done by answering approximate distance queries between vertices in a graph. While sequential constructions such as that of Thorup and Zwick [22] produce efficient approximate distance oracles with provable stretch-space tradeoffs, parallel constructions with similar guarantees are more complex. In the following sections, we will show how one can compute these estimates without resorting to approximate distance queries and instead use low-diameter decompositions, which are easy and fast to compute in parallel. 62.3 Low Diameter Decompositions 
+
+We need the following tool. Given a partition X of the vertex set of an unweighted graph G = ( V, E ), define by Edel the set of edges of G with endpoints in different clusters. 
+
+Definition 2.9 (( β, D )-LDD) . We call a random partition X of V a (β, D )-LDD, if, 1. For every u, v ∈ X ∈ X , we have dist G[X](u, v ) ≤ D, and 2. for every e ∈ E, we have that Pr[ e ∈ Edel ] ≤ β.
+
+Note the following consequence. 
+
+Claim 2.10. If X is a (β, D )-LDD, and u, v ∈ V are vertices satisfying dist G(u, v ) ≤ 14β , then 
+
+Pr[ u, v ∈ X ∈ X ] ≥ 3/4.
+
+Proof. Let Pu,v = e1, . . . , e l be a u-v shortest path of length l ≤ 14β . By a union bound, Pr[ u, v in different clusters] ≤ Pr[ ∃i ∈ [l] : ei ∈ Edel ]
+
+≤
+
+> l
+
+X
+
+> i=1
+
+β = lβ ≤ 1/4.
+
+Theorem 2.11 (See [15] and [16]) . There is an algorithm that takes an unweighted graph with 
+
+n vertices, m edges, a parameter β ≤ 1/2 and samples from a  β, α LDD · β−1-LDD for some 
+
+αLDD ∈ O (log n). The algorithm requires O  β−1 log n log ∗ n depth and O(m) work. 
+
+We remark that a highly efficient implementation of the above algorithm exists [4]. 
+
+# 3 Re estimation. 
+
+We start by presenting the main lemma that our algorithm is based on. Essentially, given a pa-rameter π, we show how to compute whether or not the robust connectivity of an edge satisfies 
+
+qκ(e) ≤ O(π), up to an error of O(αLDD ). This will then allow us to binary search for good ap-proximations of the robust connectivities. See Algorithm 1 for pseudocode. Intuitively, algorithm 1 creates sparser copies of the initial graph and uses low-diameter decompositions as an indicator of whether the endpoints of an edge are still close together. If the endpoints are too far apart often, then the algorithm takes that as evidence that the leverage score is higher than the current parameter checked. 7Algorithm 1 Robust Connectivity Decide 
+
+Require: Graph G = ( V, E ); parameters κ ≥ 1, π ∈ [0 , 1]  
+
+> 1:
+
+β ← 1/(4 κ) 
+
+> 2:
+
+t ← c log n for sufficiently large constant c 
+
+> 3:
+
+for i = 1 to t in parallel do  
+
+> 4:
+
+Sample an independent copy G(i) 
+
+> π
+
+∼ Gπ 
+
+> 5:
+
+Run LDD( G(i) 
+
+> π
+
+, β ) 
+
+> 6:
+
+Let C(i)(v) denote the component ID of each vertex v ∈ V 
+
+> 7:
+
+end for  
+
+> 8:
+
+for each edge e = ( u, v ) ∈ E in parallel do  
+
+> 9:
+
+Ze ← 1
+
+> t
+
+Pti=1 1 C(i)(u) = C(i)(v) 
+
+> 10:
+
+end for  
+
+> 11:
+
+eE ← { e ∈ E | Ze ≥ 8.5/16 } 
+
+> 12:
+
+return eE
+
+Lemma 3.1. Algorithm 1, given as input a graph G = ( V, E, w ) and parameters κ ≥ 1, π ∈ [0 , 1] 
+
+returns an edge set eE ⊆ E with the following properties. 1. For every edge e with q4·κ·αLDD (e) ≥ π, we have that e̸ ∈ eE.2. For every edge e with qκ(e) ≤ π/ 4, we have that e ∈ eE.The algorithm requires O(κ log n log ∗ n) depth, O(m log n) work and is correct with high probability. Proof. The proof separates edges into two regimes according to their robust connectivity. The statistic Ze estimates the probability that the endpoints ( u, v ) of e are placed in the same LDD cluster after sampling Gπ. We show that this probability is at least 9 /16 for edges with qκ(e) ≤ π/ 4, and at most 1 /2 for edges with q4κα LDD (e) ≥ π. Since the threshold 8 .5/16 lies between these two values, averaging O(log n) independent trials and applying a Chernoff bound separates the two cases for all edges simultaneously with high probability. Formally, for every i ∈ [t] and edge e = ( u, v ) ∈ E, let X(i) 
+
+> e
+
+be the indicator variable that is 1 if u, v share an LDD component in G(i) 
+
+> π
+
+, and 0 otherwise. That is, X(i) 
+
+> e
+
+= 1 C(i)(u) = C(i)(v) in the notation of the pseudo-code. We now first analyze the case qκ(e) ≤ π/ 4. We start by noticing that Pr[ Xe = 1 | dist Gπ (u, v ) ≤
+
+κ] ≥ 3/4 by ?? 2.10. So by writing 
+
+E [Xe] ≥ E [Xe| dist Gπ (u, v ) ≤ κ] · Pr[dist Gπ (u, v ) ≤ κ],
+
+we can deduce that E [Xe] ≥ 34 Pr[dist Gπ (u, v ) ≤ κ] = 34 (1 − pκ(e, π )). Observe now that by ?? 2.8, for an edge e with qκ(e) ≤ π/ 4, we also have pκ(e, π ) ≤ 1/4. Consequently, for an edge with 
+
+qκ(e) ≤ π/ 4, we must have E [Xe] ≥ (3 /4) 2 = 9 /16. Let us now consider the edges e for which q4κα LDD (e) ≥ π. First note that as the clusters of the LDD have diameter at most αLDD β−1, it must be the case that Pr[ Xe = 1 | dist Gπ (u, v ) > α LDD · β−1] = 0 .
+
+Similar to before, by decomposing by conditional expectations, we can thus conclude that 
+
+E [Xe] ≤ Pr[dist Gπ (u, v ) ≤ αLDD · β−1] = 1 − pαLDD ·β−1 (e, π ).
+
+8Now recall the definition of qαLDD ·β−1 (e) as the largest η ∈ [0 , 1] such that pαLDD ·β−1 (e, η ) ≥ 1/2. As in the case we are currently considering we assume that qαLDD ·β−1 (e) ≥ π, we can thus conclude that also pαLDD ·β−1 (e, π ) ≥ 1/2. Plugging this into the equation displayed above shows that 
+
+qαLDD ·β−1 (e) ≥ π indeed implies that E [Xe] ≤ 1/2. Now, let us apply the Chernoff bound from Theorem 2.2. First, by choosing t ∈ O(log n)large enough, it follows immediately from the lower bound supplied in that theorem that Pr[ Ze ≤
+
+(1 − 132 ) E [Ze]] ≤ n−10 . In particular, by a union bound, with probability at least 1 − n−8, it must be the case that for all edges e with qκ(e) ≤ π/ 4 it simultaneously holds that 
+
+Ze ≥ (1 − 132 ) E [Ze] ≥ (1 − 132 ) 916 > 8.5/16 .
+
+Similarly, as E [Ze] ≤ 1/2 for all edges e with q4κα LDD (e) ≥ π, we can use the upper-bound of the theorem (and choosing c = 1 /2 in Theorem 2.2) to conclude in an analogous fashion that all such edges simultaneously satisfy that 
+
+Ze < (1 + 132 ) 12 < 8.5/16 with probability at least 1 − n−8. Thus, the returned set 
+
+eE := {e ∈ EG : Ze ≥ 8.5/16 }
+
+indeed satisfies the requirements with probability at least 1 − 2n−8 by one final application of the union bound. Note that the depth is given by the depth of Theorem 2.11, so it is O(β−1 log n log ∗ n) = 
+
+O(κ log n log ∗ n). The total work is O(m log n). The next lemma shows how to use the previous lemma to efficiently binary-search for approxi-mations to the robust connectivities. 
+
+Lemma 3.2. There exists a parallel algorithm that, given as input a graph G = ( V, E, w ) and 
+
+κ > 0, computes estimates bq(e) satisfying q4κα LDD (e) ≤ bq(e) ≤ 8 · qκ(e). The algorithm requires 
+
+O(κ log n log ∗ n) depth, O(m log n log nW ) work and is correct with high probability. Proof. The algorithm searches over geometrically decreasing values πi = 2 −i with i = 0 , 1, . . . , log(8 mW ). Let eE(i) denote the returned set of edges. For a fixed value πi, Lemma 3.1 tells us that Algorithm 1 separates two cases: edges with qκ(e) ≤ πi/4 are included in eE(i), while edges with q4κα LDD (e) ≥ πi
+
+are excluded. This allows us to binary-search for the value of qκ(e) by setting it to be equal to πj ,where j is the last time that edge e is included in the set eE(j). In this proof, we will first separately argue for the lower- and upper bound of the bqκ(e), and then conclude by showing the resource bounds. To start formally, let us define for any edge e ∈ EG the quantity 
+
+je := max 
+
+n
+
+j : s.t. e ∈ eE(j)o
+
+.
+
+The estimates our algorithm returns are then 
+
+bqκ(e) = πje = 2 −je .
+
+9Let us now formally argue why this algorithm is correct. We can assume by a union bound that all calls to Lemma 3.1 succeed simultaneously. We prove the lower and upper bounds on bq(e) for an arbitrary fixed edge e.So let us fix an edge e. We start by proving that q4κα LDD (e) ≤ bq(e). To do so, note that as 
+
+e ∈ eE(je), we know by Item 1 of the preceding lemma that q4κα LDD (e) < π je = 2 −je = bq(e). This already finishes the proof of the lower bound. We now prove that bqκ(e) ≤ 8qκ(e). We proceed by a proof by contradiction, so assume that 
+
+qκ(e) ≤ 2−je−3 = bqκ(e)/8. Then we know by Item 2 of Lemma 3.1, that we would have that 
+
+e ∈ eE(je+1) , because eE(je+1) contains all edges e′ satisfying qκ(e′) ≤ 2−(je+1) /4 = 2 −je−3. This is in contradiction to the definition of je being the largest value of j such that e ∈ eE(j). We can conclude that qκ(e) > 2−je−3 = bqκ(e)/8. Note that in the last part we assumed that there is an instance of Algorithm 1 with parameter 2 −(je+1) , i.e., we assumed that je + 1 ≤ log(8 mW ). This is the case, as by ?? 2.7, we must have that qκ(e) ≥ 1/(4 mW ), so that je + 1 ≤ log(4 mW ) + 1 ≤ log(8 mW ). This also explains the reason why we need to choose L = log(8 mW ): because 1 /(4 mW ) is a lower bound for our binary-search range on the robust connectivities. This concludes the proof of correctness. We now argue about the resource bounds. First, we observe that the depth of the algorithm is given by the depth of Lemma 3.1, i.e., the depth is in O(κ log n log ∗ n). Additionally, the work is dominated by the work of all O(log nW ) calls to the same lemma, so it is in O(m log n log nW ). This concludes the proof. Using these estimates, we can now also construct estimates of the effective resistances, as described in the lemma below. 
+
+Lemma 3.3. There exists a parallel algorithm that, given as input a graph G = ( V, E, w ) with maximum weight W computes effective resistance estimates bRe satisfying bRe ≥ Re and P 
+
+> e
+
+we bRe ≤
+
+O(n log 2 n). The algorithm requires O(log 2 n log ∗ n) depth, O(m log n log nW ) work and is correct with high probability. Proof. We compute the estimates bqe from Lemma 3.2. Remember that by Lemma 2.5, Re ≤
+
+8κα LDD q4κα LDD (e). As q4κα LDD (e) ≤ bq(e), by setting bRe = 8 κα LDD bq(e), we have that bRe ≥ Re.Moreover, by Lemma 2.6, it is the case that 
+
+X
+
+> e∈E
+
+we bRe = 8 κα LDD 
+
+X
+
+> e∈E
+
+we bq(e)
+
+≤ 8κα LDD 
+
+X
+
+> e∈E
+
+8weqκ(e)
+
+≤ O(log n)κ · 2n1+ O(1 /κ ).
+
+Setting κ ∈ O(log n) large enough shows the claim. We can now prove the main theorem. Pseudocode is given in Algorithm 2. Intuitively, algo-rithm 2 estimates robust connectivities by running algorithm 1 at geometrically decreasing sparsi-ties, which then allows us to bound the robust connectivity estimates with a relatively small error. The pseudo-code combines the algorithmic steps from Lemma 3.2, Lemma 3.3, and Theorem 3.4. 
+
+Theorem 3.4. There is a parallel algorithm that produces a (1 ± ε) spectral sparsifier of a graph 
+
+G with O(nε −2 log 3 n) many edges in work O(m log n log nW ) and depth O(log 2 n log ∗ n) and is correct with high probability. 
+
+10 Proof. We sample each edge with probability pe = cw e bRe log n/ε 2 and rescale its weight by 1 /p e
+
+if sampled, where the constant c is from Theorem 2.1. By the theorem, H is a (1 ± ε) spectral sparsifier of G with high probability. Furthermore, the expected number of edges is given by P 
+
+> e
+
+pe = O(ε−2 log n) P we bRe = O(nε −2 log 3 n) by Lemma 3.3. A standard Chernoff bound may now be applied to turn this into a high probability guarantee. 
+
+Algorithm 2 Parallel Spectral Sparsification 
+
+Require: Graph G = ( V, E, w ); accuracy parameter ε > 0 
+
+> 1:
+
+Let L ← ⌈ log(8 mW )⌉ // As 14mW lower bounds all qκ(e).  
+
+> 2:
+
+Let κ ∈ O(log n) be large enough; αLDD be the constant from Theorem 2.11.  
+
+> 3:
+
+for i = 0 to L in parallel do  
+
+> 4:
+
+Run Algorithm 1 with πi = 2 −i 
+
+> 5:
+
+Let eE(i) be the edges returned  
+
+> 6:
+
+end for  
+
+> 7:
+
+for each edge e ∈ E in parallel do  
+
+> 8:
+
+je ← max { i | e ∈ eE(i) } 
+
+> 9:
+
+bq(e) ← 2−je 
+
+> 10:
+
+bRe ← 8κα LDD · bq(e) 
+
+> 11:
+
+end for  
+
+> 12:
+
+H ← (V, ∅) 
+
+> 13:
+
+for each edge e ∈ E in parallel do  
+
+> 14:
+
+pe ← min 
+
+
+
+1, c · we bRe log nε2
+
+
+
+// Here c is the constant from Theorem 2.1.  
+
+> 15:
+
+Sample edge e with probability pe 
+
+> 16:
+
+if e is sampled then  
+
+> 17:
+
+Add e to H with weight wH (e) ← we/p e 
+
+> 18:
+
+end if  
+
+> 19:
+
+end for  
+
+> 20:
+
+return H
+
+# 4 Experimental 
+
+We validate our proposed method to compute leverage score estimates on a range of graphs. 
+
+4.1 Problem setting 
+
+Spectrally sparsifying graphs is a key subroutine when solving Laplacian linear systems. The spar-sified version of a graph can be used as a preconditioner in iterative methods such as conjugate gradient. If the sparsified graph has significantly fewer nonzero entries than the original graph, while being spectrally similar, then it drastically reduces the time to compute and apply the pre-conditioner. Furthermore, in [3] it was shown that repeated sparsification of the remaining graph during approximate Cholesky leads to a polylogarithmic depth for computing the preconditioner. In this spirit, we propose the following experiment on two types of graphs. 11 We set up a multidimensional grid (2d-grid and 3d-grid) and run Cholesky on the underlying matrix until it is dense. Then, we sparsify the dense subgraph and see how well the sparsified graph spectrally approximates the dense subgraph. 
+
+4.2 Algorithms and Baselines 
+
+In theorem 3.4, we propose an algorithm that spectrally sparsifies a graph through repeated LDD computations. While our theoretical bound of O
+
+ n log 3 nε2
+
+
+
+is very sparse in theory, it is often not sparse enough in practice, since a large constant as well as the exponent of the logarithm may well exceed the desired density. This observation holds for many simple sparsification methods, includ-ing the simple parallel sparsifier by Koutis [9] or even just using the oversampling lemma together with leverage score estimates [20]. In fact, it is the reason why it is often said that sampling by leverage scores does not produce effective sparsifiers in practice. We instead propose a practical sparsifier motivated by the sparsifier of Koutis [9] and show how to leverage our robust connectivity estimates to improve spectral similarity. It should be seen as a heuristic to compute good spectral sparsifiers based on our robust connectivity estimates. Our algorithm takes as input a weighted graph G and a target sparsity budget of f · m edges. It first computes, for every edge, an estimate bRe of its effective resistance (robust connectivities), and sets a sampling score se ← we bRe. Next, it constructs a maximum weight spanning tree T
+
+where we replace the edge-weights by the score se. Finally, it samples each non-tree edge e ∈ E \ T
+
+independently with probability 
+
+pe = min 1, (f m − n + 1) se
+
+P 
+
+> e′∈E\T
+
+se′
+
+!
+
+,
+
+and, if selected, sets the weight to we/p e to keep the expected contribution unbiased. The resulting sparsifier is H = ( V, T ∪ bE). See algorithm 3 for pseudocode. 
+
+Algorithm 3 Leverage-Based Graph Sparsification, One-Shot: max-Tree(Leverage) + Leverage 
+
+Require: Graph G = ( V, E, w ) with |V | = n, |E| = m; sparsity parameter f
+
+Ensure: Sparsified graph H 
+
+> 1:
+
+Compute effective resistance estimates (robust connectivities) bRe for all e ∈ E // Lines 1-11 from algorithm 2, ε is only used after line 11 and does not have to be passed.  
+
+> 2:
+
+Set scores se ← we bRe 
+
+> 3:
+
+T ← maximum spanning tree of G using scores se 
+
+> 4:
+
+E′ ← E \ T 
+
+> 5:
+
+Z ← P 
+
+> e∈E′
+
+se 
+
+> 6:
+
+for each e ∈ E′ do  
+
+> 7:
+
+pe ← min 
+
+
+
+1, (f m −n+1) se
+
+> Z
+
+ 
+
+> 8:
+
+Sample e with probability pe. If sampled set we ← we/p e 
+
+> 9:
+
+end for  
+
+> 10:
+
+return H =
+
+
+
+V, T ∪ bE
+
+
+
+12 Remark 4.1. Given a graph G = ( V, E, w ), let bRe be the effective resistance estimates as in lemma 3.3. If f m −n+1   
+
+> P
+> e∈E′webRe
+
+> c 1 · log n for an appropriate constant c1, then algorithm 3 produces a 
+
+1/2-approximate spectral sparsifier of G.Proof. From theorem 2.1 we know that if we oversample the edges of the graph with respect to their leverage scores weRe by a factor of at least c log n, then we produce a valid spectral sparsifier. First, any edge that is in the sparsifier because it was in the maximum weight spanning tree (i.e. 
+
+T in algorithm 3) is clearly oversampled. Second, we get robust connectivity estimates bRe from lemma 3.3 (i.e. line 1 in algorithm 3). If f m −n+1   
+
+> P
+> e∈E′webRe
+
+> c 1 · log n for an appropriate constant c1,then, since bRe ≥ Re, we oversample the actual leverage scores Re by c1 · log n. If we set c1 = c,then we sample each edge with a probability larger than c log n · weRe and by invoking theorem 2.1, we achieve the desired guarantee. The work and depth of algorithm 3 are dominated by the computation of effective resistance estimates and consequently given by theorem 3.4. Algorithm 3 will oftentimes use fewer edges than allowed by the budget. Let Ef inal denote the number of edges in the final sparsifier and T the computed maximum spanning tree. Then, we get 
+
+E [Xfinal ] = n − 1 + E
+
+ X
+
+> e∈E\T
+
+pe
+
+
+
+≤ n − 1 + E
+
+ X
+
+> e∈E\T
+
+(f m − n + 1) se
+
+P 
+
+> e′∈E\T
+
+se′
+
+
+
+= n − 1 + f m − n + 1 = f m. 
+
+This is mostly true for f relatively large, in which case most sparsifiers work well. 
+
+A note on algorithm 3. Algorithm 3 is a budgeted, one-shot variant of leverage-score sampling. Rather than invoking the oversampling lemma with an ε−2 log n factor, we normalise the sampling probabilities to target a specific edge budget f · m. We include a spanning-tree backbone T , chosen as the maximum spanning tree with respect to the same scores se = we bRe. This guarantees connec-tivity of the output sparsifier. The overall design is in the spirit of backbone-based sparsification schemes (e.g. [9, 10]), which retain a structured subgraph and then sample the remaining edges to meet a target density. Variants of this template could replace T by other sparse backbones (such as spanners or low-stretch trees). In this work, we focus on the maximum-score tree since it is simple to compute and is known to be a good low-stretch tree in practice. 
+
+Baselines. We compare against the following baselines. (i) Uniform Sampling . Independently sample each edge with a fixed probability chosen so that the expected number of retained edges matches f · m, and reweight sampled edges by we/p .(ii) Leverage-Score Sampling . Independently sample each edge proportional to se = we bRe,with probabilities normalized to match the expected budget f · m, but without adding a backbone tree. 13 (iii) One-Shot: max-Tree(weight) + Uniform . We run the same pipeline as algorithm 3, but construct the backbone tree using the original weights we (maximum spanning tree by we)and sample non-tree edges uniformly at random (with the uniform rate chosen to match the same expected edge budget). (iv) Iterative variants. We also consider an iterative version in which we apply four rounds of sparsification. We budget each round so that the final expected density matches the desired budget. We report both Iterative: max-Tree(Leverage) + Leverage and Iterative: max-Tree(weight) + Uniform .We see the algorithm Iterative: max-Tree(weight) + Uniform as a simplified version of the algorithm described by Koutis [9]. Sampling a polylogarithmic number of spanners instead of a low-stretch tree would lead to additional density, which is why we opt for the max-weight tree. The rest of the algorithm is equivalent. 
+
+4.3 Experiments 
+
+The arguably most important application of spectral sparsifiers is as preconditioners to find solu-tions of partial differential equations. To that end, we construct two- and three-dimensional grid graphs with n nodes, and assign edge weights in a checkerboard pattern with patchsizes of 4 × 4and 4 × 4 × 4 respectively. These graphs typically appear in diffusion problems with a jumping diffusion coefficient and are known to be among the more difficult diffusion problems [7, 1]. We set the smallest weight to be 1, and the largest is 100 ,000. Next, we eliminate a fraction k of randomly chosen nodes using standard Cholesky elimination. This produces a smaller graph with (1 − k)n
+
+vertices that is much denser due to fill-in. In our experiments, we set k = 0 .5 for the 2d grids and 
+
+k = 0 .3 for the 3d grids. We denote this dense graph by G. We then compute a sparsified version 
+
+eG with s · m edges as the edge budget. We set s = 0 .25. We measure two indicators for how well the sparsified graph approximates the original graph. When feasible, we report the condition number λ( eG−1G)max  
+
+> λ(eG−1G)min
+
+directly, which can be used to bound the convergence of iterative methods such as the Conjugate Gradient method. Since computing the condition number exactly takes O(n3) time, it is only feasible for relatively small graphs. We compute it for graphs where n ≤ 2000. To measure how well our sparsifier approximates large graphs, we build an IC(0) preconditioner from eG and record how many PCG iterations are required to solve a linear system on G.Because all preconditioners are built to the same edge budget, their per-iteration solve cost is essentially identical, so the PCG iteration count serves as a hardware-independent proxy for total solve time. We confirm this and report end-to-end wall-clock timings in section A.2. When measuring the PCG iterations, we run two types of experiments. First, we vary the number of nodes n, while keeping all other parameters fixed. This allows us to study the convergence asymptotics of the different preconditioners across different graph sizes. Second, we vary the desired sparsity of the preconditioner while keeping all other variables fixed. While it is clear that a sparser preconditioner has to decrease in performance, it allows us to study how well each preconditioning method utilises the edge budget it is given. In section A, we also compute the condition numbers for different k.14 Table 1: Condition numbers for the 2D dataset as a function of method and n. Entries are the median condition number over successful runs. Column abbreviations: Unif. = Uniform Sampling ,Lev. = Leverage-Score Sampling , Tr-w+U = One-Shot: max-Tree(weight) + Uniform , Tr-lev+L = One-Shot: max-Tree(Leverage) + Leverage , It-U = Iterative max-Tree(weight) + Uniform , It-L = Iterative max-Tree(Leverage) + Leverage . ∗ denotes number of failed runs; an em dash (—) denotes that all runs failed. 
+
+n Unif. Lev. Tr-w+U Tr-lev+L It-U It-L 50 — 16.3 ∗∗ 51.4 23.8 65.4 16.3 
+
+200 — 2.5 × 10 15 ∗ 48.7 18.9 71.2 13.9 
+
+450 — 15.0 ∗∗ 56.9 75.5 76.3 11.1 
+
+800 — 17.8 60.4 6.8 77.7 8.4 1250 — 20.6 ∗ 61.0 11.5 126.9 11.8 
+
+4.4 Technical Specification 
+
+All experiments were implemented in C++ using the Graph Based Benchmark Suite (GBBS) [4, 5] and executed in parallel on an ASUS ROG Strix laptop running Ubuntu 24.04.3 LTS. Code was compiled with g++ 13.3.0. 
+
+4.5 Results 
+
+In this section, we present the practical results and benchmarks. 
+
+4.5.1 Condition Numbers for Small Graphs 
+
+In tables 1 and 2, we present the exact condition number of eG−1G. For the largest instance of the 2d grid, we see that our leverage score-based algorithm is approximately 5 × smaller than the best alternative baseline. Furthermore, we see that the condition number does not degenerate when increasing the size of the graph. Interestingly, we see that the iterative method of our proposed algorithm seems to be more stable for small graphs. The methods Uniform Sampling and 
+
+Leverage-Score Sampling have an unbounded condition number even for small problem instances. This may happen when either sampling the graph disconnects it, in which case the smallest and second smallest eigenvalues are both zero or when the eigenvalues become so small that there appear numerical instabilities when computing them. For the 3d grid, we see a similar behaviour, where our proposed method outperforms the baselines by about a factor of 4 ×, with the iterative version being slightly better than the one-shot version. 
+
+4.5.2 Results for Large Graphs 
+
+Figure 1 reports the number of PCG iterations as a function of the number of edges removed from the initial graph. The leverage score–based sparsifiers consistently outperform the weight-based baselines by a substantial margin. Moreover, the proposed sparsifier scales better with respect to the number of nodes than the weight-based alternatives. These results indicate that leverage score–based sparsification becomes increasingly relevant for larger graphs, which is exactly the regime where leverage score computation is also more demanding. 15 Figure 1: The number of PCG iterations as a function of the size of the graph. We first sparsify the original graph and then use IC(0) as a preconditioner. The budget for the edges is 25% of the initial, unsparsified number of edges, and we report the percentage that was actually removed. The result is the median number of PCG iterations across 3 runs. Failed runs (more than 2000 PCG iterations) are marked with a × in the corresponding color. 16 Table 2: Condition numbers for the 3D dataset as a function of method and n. Entries are the median condition number over successful runs. Column abbreviations: Unif. = Uniform Sampling ,Lev. = Leverage-Score Sampling , Tr-w+U = One-Shot: max-Tree(weight) + Uniform , Tr-lev+L = One-Shot: max-Tree(Leverage) + Leverage , It-U = Iterative max-Tree(weight) + Uniform , It-L = Iterative max-Tree(Leverage) + Leverage . ∗ denotes number of failed runs; an em dash (—) denotes that all runs failed. 
+
+n Unif. Lev. Tr-w+U Tr-lev+L It-U It-L 511 — 30.32 36.35 13.66 83.05 10.96 
+
+700 — 15.38 ∗ 45.05 5.14 66.33 6.76 932 — 59.11 52.95 17.07 61.00 10.72 
+
+1210 — 22.21 51.46 8.12 50.46 5.43 
+
+1538 — 25.64 46.64 10.27 86.09 8.48 
+
+Figure 2 reports the number of PCG iterations as a function of the number of edges removed from the original graph G. For each graph family, we evaluate the algorithm on two graph sizes. Across all experiments, we observe qualitatively similar behaviour: the leverage-score-based spar-sifier consistently outperforms the baselines by a substantial margin. At moderate sparsification levels, the leverage-score-based method also exhibits better scaling as sparsity increases. However, its performance worsens once the sparsified graph is required to be extremely sparse (10% of initial edges). A plausible explanation is that, in this regime, the variance introduced by independent sampling becomes more pronounced. 
+
+Remark. Iterative sparsification with the proposed method behaves very similarly to one-shot sparsification. Because the tree is recomputed from the leverage scores, the trees selected in consec-utive rounds can be nearly identical and effective resistances are preserved throughout the iterative sparsification. 
+
+# 5 Improving parallel approximate Cholesky 
+
+In [14, 7] the authors present algorithms that take a Laplacian matrix L and produce a factorization 
+
+LL ⊤ that spectrally approximates L and which can be used to solve linear systems fast. They essentially show that when running the standard Cholesky algorithm on the Laplacian matrix L, it suffices to insert a sparsified Schur complement at each step to achieve a good factorization. The algorithms themselves differ only in how the sparsified Schur complement is computed. To be more formal, let L(0) be the initial input Laplacian, where the vertices are randomly permuted. Then, the Cholesky algorithm, at step i, computes the factor L as 
+
+L[: , i ] = L(i)[: , i ]
+
+pL(i)[i, i ] and L(i+1) = L(i) − L(i)[: , i ] · L(i)[i, :] 
+
+L(i)[i, i ]where L[: , i ] and L[i, :] are the i-th row and column of L. It can be shown that not only L(i) is a Laplacian for any i, but also that the correction term can be decomposed into two Laplacians as follows 
+
+L(i)[: , i ] · L(i)[i, :] 
+
+L(i)[i, i ] = STAR( L(i), v i) − CLIQUE( L(i), v i).
+
+17 Figure 2: The number of PCG iterations as a function of the sparsity of the graph. We first sparsify the original graph and then use IC(0) as a preconditioner. We report the median number of PCG iterations out of three runs. Failed runs (more than 2000 PCG iterations) are marked with a × in the corresponding color. The CLIQUE( L(i), v i) Laplacian is essentially a clique on the neighbors of the vertex that is elimi-nated at stage i. The algorithms of [14, 7] now show that it suffices to replace the CLIQUE( L(i), v i)
+
+Laplacian by a sparsified version of it. In [3], it was then shown that these algorithms can be parallelized, with polylogarithmic depth, through a framework that, in addition to sparsifying each individual Schur complement, sparsifies the remaining graph L(i) at only O(log n) specific steps of the elimination process. While any black-box sparsification algorithm suffices to achieve polylogarithmic depth, the authors point out that the overall algorithm’s work and depth are bottlenecked by the work and depth of the sparsification algorithm. In fact, to achieve a factorization that is ε-approximate, the algorithm needs to compute an ε  
+
+> log n
+
+-approximate spectral sparsifier O(log n) times. When the sparsification algorithm proposed by [9] is used, then the depth and work of the sparsification algorithm scale with eε−2, where eε is the desired accuracy of the spectral sparsifier, and thus the total depth and work of the approximate Cholesky algorithm has an additional log 2 n factor in the depth and work. Our proposed algorithm in theorem 3.4 has, in addition to lower work and depth overall, no dependence on ε, and, when used as a black box, immediately improves the depth and work of the parallelization framework. In particular, it shifts the depth bottleneck from the computational depth of the sparsification routine to the sparsity of the resulting sparsifier. 18 6 Conclusion 
+
+We have presented a solver-free, parallel spectral sparsification algorithm that significantly reduces both work and depth compared to prior methods. Extremely simple in design, our approach relies only on sub-sampling and the computation of low-diameter decompositions. To demonstrate its practical impact, we implemented a heuristic based on the algorithm and observed strong perfor-mance across a set of graphs and sparsity regimes. 
+
+# 7 Future Work 
+
+We believe that the LDD-based spectral sparsification algorithm we presented could potentially also be turned into a dynamic algorithm by using dynamic versions of low-diameter decompositions, which exist [6]. Consequently, it would be interesting to see if one can extend the algorithm to work in a parallel batch-dynamic setting. We also believe that the key application of graph sparsification algorithms is for preconditioning Laplacian linear systems. In practice, Laplacian system solvers are highly optimized programs that run in time O(m log n) on huge graphs. As such, using spectral sparsification as a subroutine for these solvers would imply that the solvers need not only be theoretically fast, but also scale well in practice. For undirected Laplacian linear systems, we now have very simple spectral sparsification algorithms. However, more recent work has extended Laplacian solvers to directed, Eulerian graphs. It would be interesting to see to what extent sparsifiers could be used to speed up directed Laplacian solvers and whether simple enough sparsifiers for directed Laplacian linear systems can exist to speed up solving linear systems in practice. 19 References 
+
+[1] Noah Amsel, Yves Baumann, Paul Beckman, Peter B¨ urgisser, Chris Cama˜ no, Tyler Chen, Ed-mond Chow, Anil Damle, Michal Derezinski, Mark Embree, Ethan N. Epperly, Robert Falgout, Mark Fornace, Anne Greenbaum, Chen Greif, Diana Halikias, Zhen Huang, Elias Jarlebring, Yiannis Koutis, Daniel Kressner, Rasmus Kyng, J¨ org Liesen, Jackie Lok, Raphael A. Meyer, Yuji Nakatsukasa, Kate Pearce, Richard Peng, David Persson, Eliza Rebrova, Ryan Schnei-der, Rikhav Shah, Edgar Solomonik, Nikhil Srivastava, Alex Townsend, Robert J. Webber, and Jess Williams. Linear systems and eigenvalue problems: Open questions from a simons workshop, 2026. URL: https://arxiv.org/abs/2602.05394 , arXiv:2602.05394 .[2] Joshua Batson, Daniel A. Spielman, and Nikhil Srivastava. Twice-ramanujan sparsifiers. 
+
+SIAM Journal on Computing , 41(6):1704–1721, 2012. arXiv:https://doi.org/10.1137/ 090772873 , doi:10.1137/090772873 .[3] Yves Baumann and Rasmus Kyng. A framework for parallelizing approximate gaussian elim-ination. In Proceedings of the 36th ACM Symposium on Parallelism in Algorithms and Ar-chitectures , SPAA ’24, page 195–206, New York, NY, USA, 2024. Association for Computing Machinery. doi:10.1145/3626183.3659987 .[4] Laxman Dhulipala, Guy E. Blelloch, and Julian Shun. Theoretically efficient parallel graph algorithms can be fast and scalable. In ACM Symposium on Parallelism in Algorithms and Architectures (SPAA) , pages 293–304, 2018. [5] Laxman Dhulipala, Jessica Shi, Tom Tseng, Guy E. Blelloch, and Julian Shun. The graph based benchmark suite (GBBS). In International Workshop on Graph Data Management Experiences and Systems (GRADES) and Network Data Analytics (NDA) , pages 11:1–11:8, 2020. [6] Sebastian Forster and Gramoz Goranci. Dynamic low-stretch trees via dynamic low-diameter decompositions. In Proceedings of the 51st Annual ACM SIGACT Symposium on Theory of Computing , STOC 2019, page 377–388, New York, NY, USA, 2019. Association for Computing Machinery. doi:10.1145/3313276.3316381 .[7] Yuan Gao, Rasmus Kyng, and Daniel A. Spielman. Robust and practical solution of laplacian equations by approximate elimination, 2023. URL: https://arxiv.org/abs/2303.00709 ,
+
+arXiv:2303.00709 .[8] Michael Kapralov and Rina Panigrahy. Spectral sparsification via random spanners. In 
+
+Proceedings of the 3rd Innovations in Theoretical Computer Science Conference , ITCS ’12, page 393–398, New York, NY, USA, 2012. Association for Computing Machinery. doi: 10.1145/2090236.2090267 .[9] Ioannis Koutis. Simple parallel and distributed algorithms for spectral graph sparsification, 2014. URL: https://arxiv.org/abs/1402.3851 , arXiv:1402.3851 .[10] Ioannis Koutis, Alex Levin, and Richard Peng. Faster spectral sparsification and numerical algorithms for sdd matrices, 2013. URL: https://arxiv.org/abs/1209.5821 , arXiv:1209. 5821 .20 [11] Ioannis Koutis, Alex Levin, and Richard Peng. Faster spectral sparsification and numerical algorithms for sdd matrices. ACM Trans. Algorithms , 12(2), December 2015. doi:10.1145/ 2743021 .[12] Rasmus Kyng, Maximilian Probst Gutenberg, and Tim Rieder. Random-shift revisited: Tight approximations for tree embeddings and ℓ1-oblivious routings. In 2025 IEEE 66th Annual Symposium on Foundations of Computer Science (FOCS) , pages 2132–2142. IEEE, 2025. [13] Rasmus Kyng, Jakub Pachocki, Richard Peng, and Sushant Sachdeva. A framework for an-alyzing resparsification algorithms. In Proceedings of the Twenty-Eighth Annual ACM-SIAM Symposium on Discrete Algorithms , SODA ’17, page 2032–2043, USA, 2017. Society for In-dustrial and Applied Mathematics. [14] Rasmus Kyng and Sushant Sachdeva. Approximate gaussian elimination for laplacians: Fast, sparse, and simple, 2016. URL: https://arxiv.org/abs/1605.02353 , arXiv:1605.02353 .[15] Gary L. Miller, Richard Peng, Adrian Vladu, and Shen Chen Xu. Improved parallel algorithms for spanners and hopsets. In Proceedings of the 27th ACM Symposium on Parallelism in Algorithms and Architectures , SPAA ’15, page 192–201, New York, NY, USA, 2015. Association for Computing Machinery. doi:10.1145/2755573.2755574 .[16] Gary L. Miller, Richard Peng, and Shen Chen Xu. Parallel graph decompositions using random shifts. In Proceedings of the Twenty-Fifth Annual ACM Symposium on Parallelism in Algo-rithms and Architectures , SPAA ’13, page 196–203, New York, NY, USA, 2013. Association for Computing Machinery. doi:10.1145/2486159.2486180 .[17] Michael Mitzenmacher and Eli Upfal. Probability and computing: Randomized algorithms and probabilistic analysis, 2005. [18] Yousef Saad. Iterative Methods for Sparse Linear Systems . Society for Industrial and Ap-plied Mathematics, second edition, 2003. URL: https://epubs.siam.org/doi/abs/10.1137/ 1.9780898718003 , arXiv:https://epubs.siam.org/doi/pdf/10.1137/1.9780898718003 ,
+
+doi:10.1137/1.9780898718003 .[19] Sushant Sachdeva and Yibin Zhao. A simple and efficient parallel laplacian solver. In 
+
+Proceedings of the 35th ACM Symposium on Parallelism in Algorithms and Architectures ,SPAA ’23, page 315–325, New York, NY, USA, 2023. Association for Computing Machinery. 
+
+doi:10.1145/3558481.3591101 .[20] Daniel A. Spielman and Nikhil Srivastava. Graph sparsification by effective resistances. 
+
+SIAM Journal on Computing , 40(6):1913–1926, 2011. arXiv:https://doi.org/10.1137/ 080734029 , doi:10.1137/080734029 .[21] Daniel A. Spielman and Shang-Hua Teng. Nearly-linear time algorithms for graph partitioning, graph sparsification, and solving linear systems, 2008. URL: https://arxiv.org/abs/cs/ 0310051 , arXiv:cs/0310051 .[22] Mikkel Thorup and Uri Zwick. Approximate distance oracles. J. ACM , 52(1):1–24, January 2005. doi:10.1145/1044731.1044732 .21 Table 3: Condition numbers for the 2D dataset as a function of method and n. Entries are the median condition number over successful runs. Column abbreviations: Unif. = Uniform Sampling ,Lev. = Leverage-Score Sampling , Tr-w+U = One-Shot: max-Tree(weight) + Uniform , Tr-lev+L = One-Shot: max-Tree(Leverage) + Leverage , It-U = Iterative max-Tree(weight) + Uniform , It-L = Iterative max-Tree(Leverage) + Leverage . ∗ denotes number of failed runs; an em dash (—) denotes that all runs failed. 
+
+n Unif. Lev. Tr-w+U Tr-lev+L It-U It-L 40 — 5.5 × 10 16 ∗ 21.7 24.3 39.4 12.5 
+
+160 — 9.1 15.2 3.5 21.5 6.8 360 — 9.7 25.9 3.3 42.1 6.2 640 — 19.8 26.2 2.6 33.6 5.0 1000 — 45.7 30.6 2.6 47.2 5.2 Table 4: Condition numbers for the 3D dataset as a function of method and n. Entries are the median condition number over successful runs. Column abbreviations: Unif. = Uniform Sampling ,Lev. = Leverage-Score Sampling , Tr-w+U = One-Shot: max-Tree(weight) + Uniform , Tr-lev+L = One-Shot: max-Tree(Leverage) + Leverage , It-U = Iterative max-Tree(weight) + Uniform , It-L = Iterative max-Tree(Leverage) + Leverage . ∗ denotes number of failed runs; an em dash (—) denotes that all runs failed. 
+
+n Unif. Lev. Tr-w+U Tr-lev+L It-U It-L 438 — 14.3 20.7 2.3 37.0 5.1 600 — 29.3 21.3 2.1 24.3 4.3 799 — 22.1 21.7 2.4 32.6 3.8 1037 — 51.4 21.6 2.2 21.3 4.0 1319 — 54.5 37.5 2.2 42.9 4.1 
+
+# A Appendix 
+
+A.1 Condition numbers for slightly different graphs 
+
+In this section, we compare how the computed condition numbers behave if we vary the initial density of the sparsified graph. 
+
+A.1.1 Denser Graphs 
+
+Tables 3 and 4 show the condition numbers for the same experiment as run in section 4.3 but with 
+
+k = 0 .6 (vs. k = 0 .5 before) for the 2d grids and k = 0 .3 (vs. k = 0 .4 before). This leads to an overall denser graph. We observe that the proposed sparsifier outperforms the baselines by a wide margin. Increasing the density of the original graph also increases the edge budget mf relative to the number of nodes in the graph n, since we increase m while keeping n fixed. From figure 2 we already know that our proposed sparsifier better uses the budget available. The same can be observed in this instance. 22 Table 5: Spectral sparsifier scaling results on the 2D grid, measured on 24 threads. Rows show the median over 3 runs. Only the one-shot methods are included; the abbreviations Tr-w+U and Tr-lev+L are as in Table 1. Here morig and mspars are the edge counts before and after sparsification, 
+
+tsparsify is the sparsifier construction time, tsolve the total PCG solve time, and tsolve /iter the per-iteration solve cost. 
+
+Method n morig mspars mspars /m orig Iters tsparsify (s) tsolve (s) tsolve /iter (ms) Tr-w+U 720,000 20,976,346 5,243,755 25.0% 4,668 1.28 340.2 72.9 Tr-lev+L 720,000 20,976,346 5,305,784 25.3% 3,252 28.80 239.6 73.7 Tr-w+U 1,125,000 33,024,333 8,255,914 25.0% 5,264 1.92 642.2 122.0 Tr-lev+L 1,125,000 33,024,333 8,348,455 25.3% 3,841 46.14 471.9 122.9 
+
+A.2 End-to-end running times 
+
+Table 5 reports wall-clock timings on the 2D grid, measured on 24 threads. We focus on the two one-shot methods. The data support using PCG iteration count as the headline metric in section 4.3. First, once the edge budget is fixed the sparsifiers have essentially equal edge counts ( ≈ 25% of the original) and the per-iteration solve cost is identical across methods to within 1%, so iteration count is a hardware-independent proxy for solve time. Second, although estimating leverage scores makes the leverage-based construction more expensive than the weight-based baseline, the reduction in iterations more than compensates: the leverage-based method is faster end-to-end at both sizes (e.g. 268 s vs. 342 s at n = 720 ,000). Finally, our construction uses only LDDs, MSTs, array sums, and edge subsampling, all of which admit scalable parallel implementations [4]. 23

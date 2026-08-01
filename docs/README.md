@@ -18,30 +18,30 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-01
-- 运行时间：2026-08-01 04:07:46 北京时间
+- 最新运行日期：2026-08-02
+- 运行时间：2026-08-02 03:52:25 北京时间
 - 运行状态：成功
-- 本次总论文数：3
-- 精读区：1
+- 本次总论文数：2
+- 精读区：0
 - 速读区：2
-- 下次更新：约 2026-08-02 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 下次更新：约 2026-08-03 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日精读聚焦语音识别前沿：联邦学习结合SpeechLLM实现端到端ASR，英意双语案例获8.0高分推荐。另速读触及图分区度量与GNN零样本迁移，后者以“小模型训练、大模型部署”思路得6.0分。建议优先深入精读的ASR方向，速读可作扩展视野。
-- 详情：[2026-08-01 日报](/202607/31/README)
+今日速读2篇论文，均6.0分，无精读，主题覆盖图稀疏化与分布式三层优化。  
+最值得看的是并行谱图稀疏化（基于低直径分解）和面向鲁棒核心集选择的一阶约束三层优化。  
+建议普通读者优先接触图稀疏化方向，理解并行分解思路；对优化理论感兴趣再深入三层分布式方法。
+- 详情：[2026-08-02 日报](/202608/01/README)
 
 ### 精读区论文标签
-1. [SpeechLLM Meets Federated Learning for End-to-End ASR: English and Italian Case Studies](/202607/31/2607.25716v1-speechllm-meets-federated-learning-for-end-to-end-asr-english-and-italian-case-studies)  
-   标签：评分：8.0/10、query:dgnn-nas
-   evidence：针对SpeechLLM ASR设计通信高效的联邦优化策略
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [On Graph-Informed Distance Metrics for Comparing Graph Partitions](/202607/31/2607.27689v1-on-graph-informed-distance-metrics-for-comparing-graph-partitions)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：提供图划分比较度量，可直接用于评估分布式GNN划分策略
-2. [Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization](/202607/31/2607.27767v1-train-small-deploy-large-zero-shot-gnn-transfer-through-geometric-renormalization)  
+1. [Parallel Spectral Graph Sparsification via Low Diameter Decompositions](/202608/01/2607.25059v1-parallel-spectral-graph-sparsification-via-low-diameter-decompositions)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：几何重整化图粗化可视为一种图划分/粗化策略，用于降低大规模GNN训练成本
+   evidence：并行谱图稀疏化可加速分布式图神经网络训练中的图划分
+2. [First-order Constrained Trilevel Optimization Over Distributed Networks for Robust Coreset Selection](/202608/01/2607.27632v1-first-order-constrained-trilevel-optimization-over-distributed-networks-for-robust-coreset-selection)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：分布式稳健核心集选择可降低分布式训练中的通信与数据规模
 
 
 <div class="dpr-home-promo-card dpr-home-panel">

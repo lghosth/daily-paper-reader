@@ -1,0 +1,95 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-01T19:51:11.066293+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.25059v1",
+      "source": "arxiv",
+      "title": "Parallel Spectral Graph Sparsification via Low Diameter Decompositions",
+      "abstract": "We present a new solver-free parallel spectral sparsification algorithm for weighted graphs that relies only on parallel low-diameter decompositions and independent sampling. This yields the first algorithmic improvement over prior, solver-free parallel sparsification approaches since Koutis (2014) and, for the first time for a practical algorithm, eliminates any dependence on the target approximation accuracy $ε$ in the algorithm's work and depth.   Our algorithm works by sub-sampling edges according to their robust connectivity, as introduced by Kapralov and Panigrahy (2012). We show how to estimate the robust connectivities of $G$ in an extremely simple manner: we create multiple random sub graphs $G_p$, where each edge in $G$ is sub-sampled independently with probability $p_e = \\min \\{w_e \\cdot p, 1\\}$. Then, we run a Low Diameter Decomposition in each of the graphs. If $u$ and $v$ often share a cluster in the LDDs, then this provides us with an upper bound on the robust connectivity of the edge $e = (u,v)$. Carefully invoking this procedure for $O(\\log n)$ different values of the probabilities $p$ then allows us to obtain sufficiently good estimates for sub-sampling.   We additionally complement the theory with an experimental evaluation demonstrating strong performance across relevant graphs and sparsity regimes.",
+      "authors": [
+        "Yves Baumann",
+        "Gernot Zöcklein"
+      ],
+      "primary_category": "cs.DS",
+      "categories": [
+        "cs.DS",
+        "cs.DC"
+      ],
+      "published": "2026-07-27T20:42:27+00:00",
+      "link": "https://arxiv.org/pdf/2607.25059v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "parallel spectral sparsification can accelerate graph partitioning for distributed GNN training",
+      "llm_evidence_cn": "并行谱图稀疏化可加速分布式图神经网络训练中的图划分",
+      "llm_evidence": "并行谱图稀疏化可加速分布式图神经网络训练中的图划分",
+      "canonical_evidence": "并行谱图稀疏化可加速分布式图神经网络训练中的图划分",
+      "llm_tldr_en": "Presents a solver-free parallel spectral sparsification algorithm using only low-diameter decompositions and independent sampling, with no dependence on approximation accuracy; simple robust-connectivity estimation yields fast graph reduction useful for distributed graph partitioning.",
+      "llm_tldr_cn": "现有无求解器并行谱稀疏化算法自2014年以来改进有限，且工作深度依赖目标近似精度。本文提出一种仅依赖并行低直径分解与独立采样的无求解器并行谱稀疏化算法，首次在实际算法中消除了对近似精度的依赖。算法通过多张随机子图按鲁棒连通性对边进行子采样，给出极简的连接性估计，快速生成高质量稀疏图。该算法为大规模图的分布式划分与后续图神经网络训练提供了高效的预处理工具。",
+      "llm_tldr": "现有无求解器并行谱稀疏化算法自2014年以来改进有限，且工作深度依赖目标近似精度。本文提出一种仅依赖并行低直径分解与独立采样的无求解器并行谱稀疏化算法，首次在实际算法中消除了对近似精度的依赖。算法通过多张随机子图按鲁棒连通性对边进行子采样，给出极简的连接性估计，快速生成高质量稀疏图。该算法为大规模图的分布式划分与后续图神经网络训练提供了高效的预处理工具。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.27632v1",
+      "source": "arxiv",
+      "title": "First-order Constrained Trilevel Optimization Over Distributed Networks for Robust Coreset Selection",
+      "abstract": "With the rapid advancement of the Internet of Things (IoT), massive amounts of data are generated across distributed edge networks. Training models on full data incurs significant computational overhead and storage bottlenecks, rendering coreset selection a critical paradigm. Furthermore, given the privacy-sensitive nature of local data and the escalating demand for model robustness in real-world deployments, developing an effective distributed optimization framework for robust coreset selection is vital, yet remains largely unexplored. To this end, this work first characterizes the hierarchical dependencies among coreset selection, robust optimization, and distributed learning, and formulates the distributed robust coreset selection as a trilevel optimization problem with level-wise constraints. Furthermore, to effectively solve the trilevel problem in a distributed manner, the \\underline{F}ederated \\underline{F}irst-order \\underline{C}onstrained \\underline{T}rilevel \\underline{O}ptimization (F$^2$CTO) is proposed, which synergistically integrates a hierarchical composite value-function reformulation and a distributed alternating projected gradient algorithm. To the best of our knowledge, F$^2$CTO is the first method developed for distributed robust coreset selection, as well as the first distributed optimization approach for trilevel optimization problems with level-wise constraints. Additionally, we prove that the proposed method achieves a non-asymptotic convergence rate of $\\mathcal{O}(ε^{-3/2})$ for finding an $ε$-stationary point. Extensive empirical evaluations on reliable continual learning demonstrate the effectiveness and efficiency of the proposed F$^2$CTO.",
+      "authors": [
+        "Yang Jiao",
+        "Kaixuan Jiao",
+        "Kai Yang",
+        "Nadjib Aitsaadi",
+        "Ilhem Fajjari",
+        "Renwei",
+        "Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-30T03:43:18+00:00",
+      "link": "https://arxiv.org/pdf/2607.27632v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "distributed robust coreset selection reduces data and communication in distributed training",
+      "llm_evidence_cn": "分布式稳健核心集选择可降低分布式训练中的通信与数据规模",
+      "llm_evidence": "分布式稳健核心集选择可降低分布式训练中的通信与数据规模",
+      "canonical_evidence": "分布式稳健核心集选择可降低分布式训练中的通信与数据规模",
+      "llm_tldr_en": "Addresses robust coreset selection in distributed networks via a first-order constrained trilevel optimization framework, characterizing hierarchical dependencies among coreset selection, robust optimization, and distributed learning; enables efficient local-data summarization for communication-efficient training.",
+      "llm_tldr_cn": "针对分布式边缘网络中全量数据训练带来的高计算与存储开销，以及本地数据隐私敏感的挑战，本文提出面向稳健核心集选择的一阶约束三重优化方法。该方法刻画了核心集选择、稳健优化与分布式学习之间的层次依赖关系，并设计了可在分布式网络上执行的一阶约束优化框架。通过分布式协同与数据筛选，该方法在尽量降低训练数据规模的同时保持模型鲁棒性，为通信高效的分布式训练提供了关键支撑。",
+      "llm_tldr": "针对分布式边缘网络中全量数据训练带来的高计算与存储开销，以及本地数据隐私敏感的挑战，本文提出面向稳健核心集选择的一阶约束三重优化方法。该方法刻画了核心集选择、稳健优化与分布式学习之间的层次依赖关系，并设计了可在分布式网络上执行的一阶约束优化框架。通过分布式协同与数据筛选，该方法在尽量降低训练数据规模的同时保持模型鲁棒性，为通信高效的分布式训练提供了关键支撑。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
