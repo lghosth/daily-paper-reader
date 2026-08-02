@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-03 <!--dpr-date:20260802-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/02/2607.27665v1-fedogl-combating-catastrophic-forgetting-in-federated-open-world-multimodal-graph-learning" data-sidebar-item="{&quot;title&quot;: &quot;FedOGL: Combating Catastrophic Forgetting in Federated Open-World Multimodal Graph Learning&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.27665v1-fedogl-combating-catastrophic-forgetting-in-federated-open-world-multimodal-graph-learning&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;联邦图学习在去中心化图数据上训练GNN，直接关联分布式GNN训练系统主题&quot;}">FedOGL: Combating Catastrophic Forgetting in Federated Open-World Multimodal Graph Learning</a>
   * 2026-08-02 <!--dpr-date:20260801-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/01/2607.25059v1-parallel-spectral-graph-sparsification-via-low-diameter-decompositions" data-sidebar-item="{&quot;title&quot;: &quot;Parallel Spectral Graph Sparsification via Low Diameter Decompositions&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.25059v1-parallel-spectral-graph-sparsification-via-low-diameter-decompositions&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;并行谱图稀疏化可加速分布式图神经网络训练中的图划分&quot;}">Parallel Spectral Graph Sparsification via Low Diameter Decompositions</a>

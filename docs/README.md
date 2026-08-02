@@ -18,30 +18,27 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-02
-- 运行时间：2026-08-02 03:52:25 北京时间
+- 最新运行日期：2026-08-03
+- 运行时间：2026-08-03 04:55:55 北京时间
 - 运行状态：成功
-- 本次总论文数：2
-- 精读区：0
-- 速读区：2
-- 下次更新：约 2026-08-03 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 本次总论文数：1
+- 精读区：1
+- 速读区：0
+- 下次更新：约 2026-08-04 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日速读2篇论文，均6.0分，无精读，主题覆盖图稀疏化与分布式三层优化。  
-最值得看的是并行谱图稀疏化（基于低直径分解）和面向鲁棒核心集选择的一阶约束三层优化。  
-建议普通读者优先接触图稀疏化方向，理解并行分解思路；对优化理论感兴趣再深入三层分布式方法。
-- 详情：[2026-08-02 日报](/202608/01/README)
+今日精读1篇联邦多模态图学习论文，聚焦开放世界灾难性遗忘难题。  
+《FedOGL》提出针对性方法，在跨模态图数据场景下表现值得关注。  
+建议关注联邦学习与多模态图结合的持续学习策略。
+- 详情：[2026-08-03 日报](/202608/02/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [FedOGL: Combating Catastrophic Forgetting in Federated Open-World Multimodal Graph Learning](/202608/02/2607.27665v1-fedogl-combating-catastrophic-forgetting-in-federated-open-world-multimodal-graph-learning)  
+   标签：评分：8.0/10、query:dgnn-nas
+   evidence：联邦图学习在去中心化图数据上训练GNN，直接关联分布式GNN训练系统主题
 
 ### 速读区论文标签
-1. [Parallel Spectral Graph Sparsification via Low Diameter Decompositions](/202608/01/2607.25059v1-parallel-spectral-graph-sparsification-via-low-diameter-decompositions)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：并行谱图稀疏化可加速分布式图神经网络训练中的图划分
-2. [First-order Constrained Trilevel Optimization Over Distributed Networks for Robust Coreset Selection](/202608/01/2607.27632v1-first-order-constrained-trilevel-optimization-over-distributed-networks-for-robust-coreset-selection)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：分布式稳健核心集选择可降低分布式训练中的通信与数据规模
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card dpr-home-panel">

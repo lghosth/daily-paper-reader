@@ -1,0 +1,58 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-02T20:54:40.315397+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2607.27665v1",
+      "source": "arxiv",
+      "title": "FedOGL: Combating Catastrophic Forgetting in Federated Open-World Multimodal Graph Learning",
+      "abstract": "Federated graph learning enables collaborative training over decentralized graph data without sharing raw graph information. As such risks evolve, clients must learn emerging classes from private multimodal graph streams, retain historical categories, and reject samples outside the known class space. In this setting, clients must learn emerging classes from private multimodal graph streams while preserving historical categories and rejecting samples outside the current known class space. The core challenge is catastrophic forgetting, which in federated multimodal graphs is not merely a classifier-level failure: old knowledge can be erased through modality-semantic overwriting, topology-induced structural erosion, and federated memory fragmentation. To address this challenge, we propose \\textbf{FedOGL}, a semantic-structural memory preservation framework. On the client side, FedOGL preserves historical decision behavior through replay and task-start distillation, while protecting graph-propagation memory via projection onto a globally shared structure basis. On the server side, FedOGL maintains and transfers compact category prototypes to facilitate cross-client knowledge sharing without exposing raw graph data. Extensive experiments demonstrate that, compared with the best-performing baselines, FedOGL reduces performance degradation caused by catastrophic forgetting by \\textbf{42.67\\%}, while maintaining or improving performance on downstream tasks.",
+      "authors": [
+        "Zekai Chen",
+        "Haodong Lu",
+        "Shihao Li",
+        "Weiwei Ji",
+        "Xunkai Li",
+        "Xun Wu",
+        "Yinlin Zhu",
+        "Rong-Hua Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-30T04:24:41+00:00",
+      "link": "https://arxiv.org/pdf/2607.27665v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "federated graph learning over decentralized graph data directly relates to distributed training systems for graph neural networks",
+      "llm_evidence_cn": "联邦图学习在去中心化图数据上训练GNN，直接关联分布式GNN训练系统主题",
+      "llm_evidence": "联邦图学习在去中心化图数据上训练GNN，直接关联分布式GNN训练系统主题",
+      "canonical_evidence": "联邦图学习在去中心化图数据上训练GNN，直接关联分布式GNN训练系统主题",
+      "llm_tldr_en": "FedOGL tackles catastrophic forgetting in federated open-world multimodal graph learning, preserving historical classes while learning new classes and rejecting unknowns via topology-aware memory and federated optimization.",
+      "llm_tldr_cn": "联邦多模态图学习在开放世界中面临灾难性遗忘，旧知识会被模态语义覆盖、拓扑结构侵蚀和联邦记忆冲突抹除。论文提出FedOGL，在客户端私有多模态图数据流上联合进行新类学习、历史类保持与开放集拒绝。方法通过拓扑感知的多模态记忆约束和联邦优化机制稳定训练过程。实验表明FedOGL显著缓解遗忘并提升新类识别与未知拒绝能力，拓展了分布式图神经网络的开放动态应用。",
+      "llm_tldr": "联邦多模态图学习在开放世界中面临灾难性遗忘，旧知识会被模态语义覆盖、拓扑结构侵蚀和联邦记忆冲突抹除。论文提出FedOGL，在客户端私有多模态图数据流上联合进行新类学习、历史类保持与开放集拒绝。方法通过拓扑感知的多模态记忆约束和联邦优化机制稳定训练过程。实验表明FedOGL显著缓解遗忘并提升新类识别与未知拒绝能力，拓展了分布式图神经网络的开放动态应用。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "distributed training systems for graph neural networks",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

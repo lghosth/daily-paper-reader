@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-03",
+  "date": "2026-08-02",
+  "generated_at": "2026-08-02T20:56:01",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/02/2607.27665v1-fedogl-combating-catastrophic-forgetting-in-federated-open-world-multimodal-graph-learning",
+      "section": "deep",
+      "title_en": "FedOGL: Combating Catastrophic Forgetting in Federated Open-World Multimodal Graph Learning",
+      "authors": "Zekai Chen, Haodong Lu, Shihao Li, Weiwei Ji, Xunkai Li, Xun Wu, Yinlin Zhu, Rong-Hua Li",
+      "date": "2026-07-30",
+      "pdf": "https://arxiv.org/pdf/2607.27665v1",
+      "score": "8.0",
+      "evidence": "联邦图学习在去中心化图数据上训练GNN，直接关联分布式GNN训练系统主题",
+      "tldr": "联邦开放世界多模态图学习中，灾难性遗忘源于模态语义覆盖、拓扑结构侵蚀和联邦记忆碎片化。提出FedOGL框架，通过客户端重放与任务起始蒸馏保留历史决策，利用全局结构基投影保护图传播记忆，服务端传递紧凑类别原型促进知识共享。相比最佳基线，遗忘导致的性能下降减少42.67%，并保持或提升下游任务性能。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated graph learning enables collaborative training over decentralized graph data without sharing raw graph information. As such risks evolve, clients must learn emerging classes from private multimodal graph streams, retain historical categories, and reject samples outside the known class space. In this setting, clients must learn emerging classes from private multimodal graph streams while preserving historical categories and rejecting samples outside the current known class space. The core challenge is catastrophic forgetting, which in federated multimodal graphs is not merely a classifier-level failure: old knowledge can be erased through modality-semantic overwriting, topology-induced structural erosion, and federated memory fragmentation. To address this challenge, we propose \\textbf{FedOGL}, a semantic-structural memory preservation framework. On the client side, FedOGL preserves historical decision behavior through replay and task-start distillation, while protecting graph-propagation memory via projection onto a globally shared structure basis. On the server side, FedOGL maintains and transfers compact category prototypes to facilitate cross-client knowledge sharing without exposing raw graph data. Extensive experiments demonstrate that, compared with the best-performing baselines, FedOGL reduces performance degradation caused by catastrophic forgetting by \\textbf{42.67\\%}, while maintaining or improving performance on downstream tasks.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
