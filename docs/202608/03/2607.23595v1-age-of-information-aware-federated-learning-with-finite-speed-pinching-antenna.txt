@@ -1,0 +1,1417 @@
+Title: Age-of-Information Aware Federated Learning with Finite Speed Pinching Antenna
+
+URL Source: https://arxiv.org/pdf/2607.23595v1
+
+Published Time: Tue, 28 Jul 2026 01:03:23 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+> 1
+
+# Age-of-Information Aware Federated Learning with Finite Speed Pinching Antenna 
+
+Kaidi Wang, Member, IEEE, Daniel K. C. So, Senior Member, IEEE, and Zhiguo Ding, Fellow, IEEE 
+
+Abstract —This paper investigates age-of-information (AoI) aware federated learning over wireless networks with finite speed pinching antennas. In contrast to existing studies that assume an infinitely high antenna moving speed, a practical round based training procedure is considered, where the pinching antenna is repositioned during the local training phase and its feasible movement range depends on the selected devices. This creates a new coupling among device selection, antenna placement, local training time, model uploading time, and AoI evolution. To char-acterize the impact of antenna moving speed, the rate gain over the fixed antenna and the gap to the infinite speed benchmark are analyzed. Subsequently, an overall AoI minimization problem is formulated under a round latency deadline by jointly optimizing the selected device set and the pinching antenna position. A coalitional game based device selection algorithm is proposed, where finite speed antenna placement is incorporated into the coalition utility evaluation. For antenna placement, the optimal search region is derived by exploiting the mobility constraint and device location span, based on which a branch-and-bound (BnB) algorithm is developed to obtain the global optimum. Simulation results show that the proposed scheme can accelerate learning convergence, reduce the sum AoI, and improve device participation compared with baseline schemes, demonstrating the potential of pinching antennas for enhancing federated learning through flexible spatial reconfiguration. 
+
+Index Terms —Federated learning, pinching antenna, finite an-tenna speed, age-of-information (AoI), device selection, antenna placement. 
+
+I. I NTRODUCTION 
+
+Federated learning has emerged as a promising paradigm for enabling privacy-preserving edge intelligence, where dis-tributed devices collaboratively train a shared model without uploading their raw data to a central server [1]. In wireless networks, however, the performance of federated learning is significantly affected by device heterogeneity and com-munication conditions [2], [3]. Due to diverse computation capabilities, local dataset sizes, and channel gains, devices may experience substantially different local training and model uploading delays, resulting in the straggler effect and prolong-ing the global model aggregation process [4], [5]. Moreover, repeatedly selecting devices with favorable computation or communication conditions may lead to unbalanced device par-ticipation, stale local updates, and biased global aggregation, especially under non-independent and identically distributed (non-IID) data distributions [6], [7]. Accordingly, reducing 
+
+Kaidi Wang and Daniel K. C. So are with the Department of Electrical and Electronic Engineering, the University of Manchester, Manchester, M1 9BB, UK (email: kaidi.wang@ieee.org; d.so@manchester.ac.uk). Zhiguo Ding is with the School of Electrical and Electronic Engineer-ing (EEE), Nanyang Technological University, Singapore 639798 (e-mail: zhiguo.ding@ntu.edu.sg). 
+
+communication latency while ensuring balanced and timely device participation remains a fundamental challenge in wire-less federated learning. In this context, pinching antennas provide a promising physical layer solution for mitigating communication induced straggler effects in wireless federated learning. By activating a dielectric particle on a waveguide, a pinching antenna creates a radiating point whose location can be flexibly adjusted along the waveguide [8]. Consequently, the wireless propagation environment can be partially reconfigured through antenna positioning, enabling the server to enhance the uplink channels of selected devices and reduce their model uploading delays [9], [10]. This capability fundamentally changes the conven-tional device selection logic in wireless federated learning. Instead of passively adapting device participation to existing channel conditions, the network can actively reshape the uplink geometry to support devices that are more valuable for learning, such as those with stale updates, diverse local data, or high training importance [11], [12]. Therefore, pinching antennas introduce a new spatial design dimension for jointly improving communication efficiency and learning aware de-vice participation in wireless federated learning [13], [14]. 
+
+A. Related Works 
+
+Motivated by these advantages, several recent studies have investigated the integration of pinching antennas into wire-less federated learning [15]–[19]. In [15], a single-waveguide pinching-antenna system was studied for both synchronous and asynchronous federated learning, where the active radi-ating point is adjusted along the waveguide to improve the worst uplink channels. In the synchronous setting, antenna positioning is designed to reduce the round latency determined by the slowest selected device, whereas in the asynchronous setting, it is employed to increase the number of devices that complete model uploading within a given deadline. To further exploit the communication benefits of pinching antennas, [16] proposed a hybrid conventional and pinching antenna network for non-orthogonal multiple access (NOMA) enabled federated learning, where devices are classified according to their data contributions and communication conditions, and the total training time is minimized by jointly optimizing pinching antenna placement and communication resource allocation via reinforcement learning. In [17], pinching antennas were incorporated into over-the-air federated learning, where aserver with multiple pinching antennas on a single waveg-uide aggregates local model updates through analog over-the-air computation. The corresponding design jointly optimizes arXiv:2607.23595v1 [eess.SP] 26 Jul 2026 2
+
+pinching antenna positions, device scheduling, and analog transmission scaling to minimize aggregation energy under a target accuracy requirement. From a latency-learning tradeoff perspective, [18] developed a low latency digital federated learning framework with multiple pinching antennas and time division multiple access (TDMA), where device scheduling, communication time allocation, transmit power, local comput-ing frequency, and pinching antenna positions are optimized to balance the end-to-end round latency and an upper bound on the learning optimality gap. In a related direction, [19] investigated a tail latency aware pinching-antenna assisted federated learning system, where a single pinching antenna reshapes the uplink latency distribution of sampled devices, and the pinching antenna position and device participation probabilities are jointly designed to minimize the expected time-to-accuracy by coupling the maximum order statistic round latency with a heterogeneity aware convergence factor. 
+
+B. Motivation and Contributions 
+
+Although these studies have demonstrated the benefits of pinching antennas for wireless federated learning, the antenna positioning process is generally assumed to be instantaneous, such that the optimized antenna position is obtained without explicitly considering the movement time along the waveguide. More broadly, most existing studies on pinching-antenna sys-tems focus on the final antenna location after reconfiguration [20]–[24], while the impact of finite antenna moving speed remains largely unexplored. In practice, antenna repositioning is not instantaneous, especially when the pinching antenna needs to move over a non-negligible distance along the waveg-uide. This issue is particularly relevant to federated learning, where the pinching antenna is repositioned sequentially across communication rounds from its previous location. Moreover, since each communication round consists of a local training phase followed by a model uploading phase, the local training phase naturally provides a time window for repositioning the pinching antenna before uplink transmission. In the round based procedure, the repositioning time is not fixed but depends on the selected devices, whose het-erogeneous computational workloads and processing capa-bilities determine the local training duration and hence the feasible movement range of the pinching antenna. This leads to a distinctive tradeoff, where a device with a long local training time is not necessarily unfavorable, as it may pro-vide a larger antenna movement budget despite increasing the training delay. Therefore, device selection and antenna mobility are mutually coupled in wireless federated learning. That is, the selected devices determine the feasible antenna movement range through the local training duration, while the resulting antenna position determines the uplink channel gains and uploading time. This mobility dependent coupling makes device selection fundamentally different from existing communication or learning oriented designs. To balance round latency and device participation fairness under this coupling, age-of-information (AoI) is adopted as the device selection criterion [25], as it characterizes the freshness of device participation over time. The main contributions of this paper can be summarized as follows:  
+
+> •
+
+A pinching-antenna assisted federated learning framework with finite antenna moving speed is proposed, where the pinching antenna is repositioned during the local training phase and its feasible movement range is determined by the corresponding training duration. Based on the AoI evolution model that captures the effects of device selection and round latency, an overall AoI minimization problem is formulated over device selection and antenna placement under a round latency deadline to ensure timely global aggregation.  
+
+> •
+
+The impact of finite antenna moving speed on the uplink rate is analyzed under the training time constrained antenna movement model. By comparing the fixed antenna, speed limited pinching-antenna, and unlimited speed pinching-antenna cases, the rate gain and the rate gap are derived with explicit bounds. The resulting saturation moving speed reveals how the antenna moving speed and local training time jointly determine the effectiveness of antenna reposi-tioning in reducing model uploading time.  
+
+> •
+
+The device selection problem is formulated as a coalitional game. A system level coalition utility is defined to capture both the freshness improvement brought by device partic-ipation and the round latency induced by local training and model uploading. A join-and-leave device selection algorithm is then developed to iteratively refine the selected device set, where the antenna placement subject to finite moving speed is incorporated into the utility evaluation to calculate the corresponding uploading time.  
+
+> •
+
+The antenna placement problem with finite antenna moving speed is studied for a given selected device set. For the single-device case, a closed-form optimal placement solu-tion is derived. For the multi-device case, the search region is tightened by exploiting the feasible movement interval and the horizontal span of the selected devices. The optimal boundary solution is identified when these two intervals are disjoint, while a branch-and-bound (BnB) based algorithm is developed to obtain a globally optimal antenna placement over the reduced non-convex search region. In addition, simulation results are presented to verify the effectiveness of the proposed framework under different learn-ing tasks and system configurations. The results show that pinching antenna placement under finite moving speed can sig-nificantly improve learning convergence and AoI performance compared with benchmark schemes. Moreover, the impacts of antenna moving speed, transmit power, and latency deadline on device participation are characterized, further demonstrating the role of antenna repositioning in improving the freshness-latency tradeoff in wireless federated learning. II. S YSTEM MODEL 
+
+A pinching-antenna assisted federated learning network is considered, where the server is connected to a waveguide equipped with one pinching antenna to serve N single-antenna devices. The set of all devices is denoted by N =
+
+{1, 2, . . . , N }. The service area is modeled as a rectangular region with length Dx and width Dy , with its center set as the origin. The waveguide, with length Dx, is deployed along the x-axis at y = 0 and at height d. The feed point 3
+
+is located at the left end of the waveguide and is given by 
+
+ψfeed = ( −Dx/2, 0, d ).
+
+A. Pinching-Antenna assisted Federated Learning Framework 
+
+In the considered pinching-antenna assisted federated learn-ing network, model training is performed over multiple com-munication rounds. At the beginning of round t, the server determines the selected device set St and broadcasts the current global model w(t), together with the device selection result, to all devices 1. After receiving this information, each selected device n ∈ S t performs local training on its local dataset and obtains the updated local model as 
+
+w(t) 
+
+> n
+
+= w(t) − αg(t) 
+
+> n
+
+, (1) where α is the learning rate, and g(t) 
+
+> n
+
+is the local gradient or stochastic gradient computed at device n. During the local training phase, the pinching antenna is repositioned along the waveguide from ψ(t−1) pin to ψ(t)pin , such that the local training duration serves as the time budget for antenna movement. After local training, the selected devices sequentially upload their updated local models w(t) 
+
+> n
+
+to the server via TDMA. The server then aggregates the received local models according to FedAvg [1], as follows: 
+
+w(t+1) =
+
+∑ 
+
+> n∈S t
+
+βnw(t)
+
+> n
+
+∑ 
+
+> i∈S t
+
+βi
+
+, (2) where βn is the number of local training samples at device n.
+
+B. Local Model Training and Pinching-Antenna Mobility 
+
+The local training time depends on the computational work-loads and central processing unit (CPU) capabilities of devices. For device n, the local training time is given by 
+
+Ttr ,n = μβ n
+
+Cn
+
+, (3) where μ is the required number of CPU cycles for training one sample, and Cn is the CPU capability of device n. According to the considered round based procedure, the local training time in communication round t is determined by the slowest selected device, i.e., 
+
+T (t)tr = max {Ttr ,n |n ∈ S t} . (4) During local training, the pinching antenna is repositioned along the waveguide. Since antenna positioning is performed within the local training period, the movement of the pinching antenna in round t is constrained by 
+
+∣∣∣x(t)pin − x(t−1) pin 
+
+∣∣∣ ≤ vpin T (t)tr , (5) where vpin is the moving speed of the pinching antenna. Equivalently, the horizontal position of the pinching antenna satisfies 
+
+x(t)pin ∈
+
+[
+
+x(t−1) pin − vpin T (t)tr , x (t−1) pin + vpin T (t)tr 
+
+]
+
+. (6)  
+
+> 1In this work, the optimization focuses on the local training and model uploading phases. The downlink transmission of the global model and the device selection notification is assumed to be completed before local training.
+
+Meanwhile, due to the finite waveguide length, the antenna position also satisfies x(t)pin ∈ [−Dx/2, D x/2] . Without loss of generality, the initial horizontal position of the pinching antenna is set at the center of the waveguide, i.e., x(0) pin = 0 .Therefore, the conventional fixed-location antenna case can be viewed as a special case by setting vpin = 0 , where the antenna remains fixed over all communication rounds. The above mobility model reveals a unique coupling be-tween device selection and antenna positioning, as follows. 
+
+Remark 1. In the proposed model, the feasible movement range of the pinching antenna in communication round t is not fixed in advance but is determined by the local training time 
+
+T (t)tr . Since T (t)tr depends on the selected device set St, device selection affects not only the learning and communication performance but also the feasible antenna position region in the same round. 
+
+Remark 2. Given a selected device set St, if an additional device n / ∈ S t has a local training time longer than those of all selected devices, the feasible antenna position region can be enlarged accordingly. Therefore, in the proposed model, device participation can also have a positive effect on communication by expanding the antenna movement budget and potentially improving the uplink communication performance. C. Pinching-Antenna based Local Model Uploading 
+
+In the pinching-antenna system, the effective channel from the server to each device consists of the in-waveguide prop-agation path and the free-space propagation path. In commu-nication round t, the channel from the server to device n can be modeled as follows: 
+
+h(t) 
+
+> n
+
+= ηe −j    
+
+> (2π
+> λ
+> ∥∥∥ψn−ψ(t)pin
+> ∥∥∥+2π
+> λg
+> ∥∥∥ψfeed −ψ(t)pin
+> ∥∥∥)
+
+∥∥∥ψn − ψ(t)pin 
+
+∥∥∥
+
+, (7) where η = c 
+
+> 4πf c
+
+, c is the speed of light, fc is the carrier frequency, λ is the carrier wavelength, and λg = λ 
+
+> neff
+
+is the wavelength in the dielectric waveguide, with neff denoting the effective refractive index. Moreover, ψn = ( xn, y n, 0) is the location of device n, ψ(t)pin = ( x(t)pin , 0, d ) is the location of the pinching antenna in communication round t, and ‖ · ‖ denotes the Euclidean norm. After local training is completed at all selected devices, the local model uploading phase is initiated 2. During this phase, TDMA is adopted, where the selected devices sequentially upload their local models to the server over orthogonal time slots for aggregation. Accordingly, the achievable data rate of device n in communication round t is given by 
+
+R(t) 
+
+> n
+
+= B log 2
+
+(
+
+1 + Pn|h(t) 
+
+> n
+
+|2
+
+σ2
+
+)
+
+, (8) 
+
+> 2In this work, the local training period serves as the antenna reposition-ing interval. Accordingly, model uploading starts after all selected devices complete local training, with all model updates transmitted from a common antenna position determined for the current round. This design utilizes the available training time for repositioning and facilitates the joint design of device selection and antenna placement. 4
+
+where B is the bandwidth, Pn is the transmit power at device 
+
+n, and σ2 is the noise power. For device n, the corresponding local model uploading time is 
+
+T (t)up ,n = Dlm 
+
+R(t)
+
+> n
+
+, (9) where Dlm is the data size of the local model. Therefore, the total model uploading time in communication round t is 
+
+T (t)up = ∑
+
+> n∈S t
+
+T (t)up ,n . (10) 
+
+D. Rate Gain Analysis under Antenna Mobility 
+
+To characterize the impact of pinching antenna moving speed on the uplink rate, a special case with a single selected device n is considered. The pinching antenna starts from the origin and moves toward the optimal antenna position, i.e., the projection of device n onto the waveguide, during local training. The fixed antenna case and the unlimited speed pinching antenna case are considered as two benchmarks, corresponding to vpin = 0 and vpin = ∞, respectively. For notational simplicity, the communication round index t is omitted in this subsection. In this case, the achievable data rate at antenna position xpin can be rewritten as follows: 
+
+Rn(xpin ) = B log 2
+
+(
+
+1 + an
+
+(xpin − xn)2 + bn
+
+)
+
+, (11) where an , Pnη2/σ 2 and bn , y2 
+
+> n
+
++ d2. The saturation speed is defined as 
+
+vsat ,n = |xn|
+
+Ttr ,n 
+
+, (12) which represents the minimum antenna moving speed required to reach the projection of device n within its local training time. If 0 ≤ vpin < v sat ,n , the residual horizontal distance between the pinching antenna and the projection of device n
+
+is given by 
+
+rn(vpin ) = |xn| − vpin Ttr ,n . (13) When vpin ≥ vsat ,n , the pinching antenna can reach the projection of device n during local training, and thus becomes equivalent to the unlimited speed benchmark. Based on these definitions, the impact of antenna moving speed on the data rate can be characterized as follows. 
+
+Proposition 1. When 0 ≤ vpin < v sat ,n , the rate gain from the fixed antenna to the speed limited pinching antenna is 
+
+∆Rn, 0→v = B log 2
+
+(
+
+1 + an
+
+(x2 
+
+> n
+
+− r2
+
+> n
+
+(vpin ))
+
+(r2
+
+> n
+
+(vpin ) + bn) ( x2 
+
+> n
+
++ bn + an)
+
+)
+
+,
+
+(14) 
+
+with the lower bound 
+
+∆Rn, 0→v ≥ B
+
+ln 2 
+
+an
+
+(x2 
+
+> n
+
+− r2
+
+> n
+
+(vpin ))
+
+(x2 
+
+> n
+
++ bn) ( r2
+
+> n
+
+(vpin ) + bn + an) . (15) 
+
+The remaining rate gap from the speed limited pinching antenna to the unlimited speed benchmark is 
+
+∆Rn,v →∞ = B log 2
+
+(
+
+1 + anr2
+
+> n
+
+(vpin )
+
+bn (r2
+
+> n
+
+(vpin ) + bn + an)
+
+)
+
+, (16) 
+
+with the upper bound 
+
+∆Rn,v →∞ ≤ B
+
+ln 2 
+
+anr2
+
+> n
+
+(vpin )
+
+bn (r2
+
+> n
+
+(vpin ) + bn + an) . (17) 
+
+Moreover, the lower bound of ∆Rn, 0→v is non-decreasing in 
+
+vpin , whereas the upper bound of ∆Rn,v →∞ is non-increasing in vpin . For vpin ≥ vsat ,n , ∆Rn,v →∞ = 0 .Proof: Refer to Appendix A. 
+
+This result provides the following insight. 
+
+Remark 3. Proposition 1 reveals that the rate performance depends on both the antenna moving speed and the local training time. Increasing vpin or Ttr ,n reduces the residual distance rn(vpin ), thereby increasing the gain over the fixed antenna benchmark and reducing the gap to the unlimited speed benchmark. Once vpin ≥ vsat ,n , further increasing the moving speed brings no additional uplink rate improvement. 
+
+Remark 4. Proposition 1 shows that the rate improvement enabled by antenna repositioning is also affected by bn =
+
+y2 
+
+> n
+
++ d2. Specifically, a larger device-to-waveguide distance or waveguide height increases the non-horizontal propagation distance, thereby reducing the relative distance improvement achieved by horizontal antenna movement. 
+
+Since the local model uploading time is inversely propor-tional to the achievable data rate, the above rate gain enabled by antenna repositioning can be equivalently interpreted as a reduction in model uploading time, which is incorporated into the following system optimization. 
+
+E. Round Latency and AoI Modeling 
+
+In federated learning, the staleness of local data updates has a significant impact on the training performance, especially under non-IID data distributions. As indicated in [26], AoI [27] can effectively characterize the freshness of local data in federated learning and improve the learning performance by facilitating timely device participation. Moreover, frequent selection of devices with favorable communication conditions may lead to unbalanced device participation and further cause weight divergence [7]. Therefore, in this work, AoI is adopted as the optimization criterion to balance device participation while maintaining data freshness. In communication round t, the round latency is determined by the selected devices and is given by 
+
+T (t) = T (t)tr + T (t)up = max {Ttr ,n |n ∈ S t} + ∑
+
+> n∈S t
+
+T (t)up ,n . (18) Following [25], the AoI of device n in communication round 
+
+t is defined as follows: 
+
+A(t) 
+
+> n
+
+=
+
+{A(t−1)  
+
+> n
+
++ T (t), if n / ∈ S t,
+
+0, if n ∈ S t. (19) The initial AoI of each device is set to the same value, i.e., 
+
+A(0)  
+
+> n
+
+= A0, ∀n ∈ N , where A0 ≥ 0.The above AoI expression reveals the coupling among device selection, round latency, and antenna mobility, as summarized in the following remarks. 5
+
+Remark 5. The overall AoI in communication round t consists of the accumulated freshness penalty of non-selected devices and the latency induced AoI increment. Therefore, device selection needs to balance the freshness improvement against the round latency increase caused by the selected device set. 
+
+Remark 6. Under TDMA based uploading, selecting an additional device incurs extra uploading time. Nevertheless, this device may still reduce the overall AoI by resetting its own AoI and, if it increases the local training time, by enlarging the feasible antenna movement region for subsequent uploading. 
+
+III. P ROBLEM FORMULATION 
+
+Based on the above latency and AoI models, in commu-nication round t, the selected device set St and the pinching antenna position x(t)pin are jointly considered for overall AoI minimization. Moreover, a round latency deadline is incorpo-rated to prevent excessive training and uploading delays in each communication round, thereby ensuring timely global model aggregation. Based on the AoI evolution model in (19), the overall AoI in round t is given by 
+
+A(t) = ∑
+
+> n∈N
+
+A(t) 
+
+> n
+
+= ∑
+
+> n∈N \S t
+
+A(t−1)  
+
+> n
+
++ ( N − |S t|)
+
+(
+
+T (t)tr + T (t)up 
+
+)
+
+.
+
+(20) Accordingly, the overall AoI minimization problem is formu-lated as follows: 
+
+min  
+
+> St,x (t)pin
+
+A(t)
+
+s.t. x(t)pin ∈
+
+[
+
+− Dx
+
+2 , Dx
+
+2
+
+]
+
+,
+
+∣∣∣x(t)pin − x(t−1) pin 
+
+∣∣∣ ≤ vpin T (t)tr ,
+
+St ⊆ N ,
+
+|S t| ≥ 1,T (t) ≤ Tmax .
+
+(21a) (21b) (21c) (21d) (21e) (21f) In problem (21), constraints (21a) and (21b) specify the feasible position of the pinching antenna. Constraints (21c) and (21d) define the feasible device selection set and ensure that at least one device is selected for model update. Constraint (21e) sets the round latency deadline, with Tmax denoting the latency threshold. Problem (21) is a mixed-integer non-convex problem due to the coupling between device selection and antenna positioning, where the selected device set affects both the round latency and the feasible antenna movement range. Since joint optimization involves combinatorial device selection and continuous non-convex antenna placement, prob-lem (21) is decomposed into device selection and antenna placement problems. For device selection, the selected device set is determined with its associated antenna placement evaluated for latency calculation, as follows: 
+
+min 
+
+> St
+
+A(t)
+
+s.t. (21d) , (21e) , and (21f) .
+
+(22a) For a given selected device set St, the freshness term, the number of non-selected devices, and the local training time are fixed with respect to x(t)pin . Therefore, minimizing the overall AoI is equivalent minimizing the model uploading time, and the antenna placement problem is formulated as 
+
+min 
+
+> x(t)pin
+
+T (t)up 
+
+s.t. (21b) , and (21c) .
+
+(23a) It should be noted that the latency deadline is included in the device selection problem. For a given device selection result 
+
+St, the local training time and the remaining latency budget for uploading are fixed. Since the antenna placement problem directly minimizes the uploading time, retaining the latency constraint does not affect the optimal antenna placement. IV. C OALITIONAL GAME BASED DEVICE SELECTION 
+
+In each communication round, the selected devices naturally form a coalition for local training and model uploading. Since the contribution of each device depends on the entire selected set through the AoI reduction, latency, and feasible antenna movement range, a coalitional game framework is adopted to characterize the set dependent utility. 
+
+A. Coalitional Game Formulation 
+
+For the device selection problem (22), a coalition formation game (N , v ) is constructed, where the devices in N are the players and the selected device set St is regarded as a coalition. Due to the set dependent contribution of each device, individual payoffs are difficult to define, and thus a coalition utility is adopted to directly evaluate each candidate coalition. Since the objective of the considered device selection problem is to minimize the overall AoI, the coalition utility is defined as the negative system cost, i.e., 
+
+v(St) = 
+
+{˜v(St), if St 6 = ∅ and T (t)(St) ≤ Tmax ,
+
+−∞ , otherwise , (24) where 
+
+˜v(St) = − ∑
+
+> n∈N \S t
+
+A(t−1)  
+
+> n
+
+− (N − |S t|)T (t)(St), (25) and T (t)(St) denotes the round latency associated with coali-tion St. Therefore, maximizing the coalition utility is equiva-lent to minimizing the overall AoI. The value −∞ is assigned to coalitions that violate constraint (21e) or (21f), correspond-ing to an empty coalition or a coalition exceeding the latency deadline, respectively. In this way, infeasible coalitions can be excluded from the coalition formation process. 
+
+B. Preference Relation and Update Rules 
+
+Given the coalition utility defined above, each device deter-mines its preference according to whether joining or leaving the coalition improves the coalition utility. Specifically, a join or leave operation is performed only if it leads to a strictly larger utility. Based on this preference relation, the coalition is updated through the following rules. 6
+
+Algorithm 1 Coalitional Game based Device Selection  
+
+> 1:
+
+Input: Device set N and system parameters.  
+
+> 2:
+
+Initialization: Set i = 0 and S(0)  
+
+> t
+
+= ∅. 
+
+> 3:
+
+repeat  
+
+> 4:
+
+Set S(i+1)  
+
+> t
+
+= S(i) 
+
+> t
+
+. 
+
+> 5:
+
+Set Ljoin as N \ S (i+1)  
+
+> t
+
+sorted by descending A(t−1)  
+
+> n
+
+. 
+
+> 6:
+
+for n ∈ L join do  
+
+> 7:
+
+if v(S(i+1)  
+
+> t
+
+∪ { n}) > v (S(i+1)  
+
+> t
+
+) then  
+
+> 8:
+
+Update S(i+1)  
+
+> t
+
+= S(i+1)  
+
+> t
+
+∪ { n}. 
+
+> 9:
+
+end if  
+
+> 10:
+
+end for  
+
+> 11:
+
+Set Lleave as S(i+1)  
+
+> t
+
+sorted by ascending A(t−1)  
+
+> n
+
+. 
+
+> 12:
+
+for n ∈ L leave do  
+
+> 13:
+
+if |S (i+1)  
+
+> t
+
+| > 1 and v(S(i+1)  
+
+> t
+
+\ { n}) > v (S(i+1)  
+
+> t
+
+) then  
+
+> 14:
+
+Update S(i+1)  
+
+> t
+
+= S(i+1)  
+
+> t
+
+\ { n}. 
+
+> 15:
+
+end if  
+
+> 16:
+
+end for  
+
+> 17:
+
+Set i = i + 1 . 
+
+> 18:
+
+until S(i) 
+
+> t
+
+= S(i−1)  
+
+> t
+> 19:
+
+Output: St = S(i) 
+
+> t
+
+.
+
+Definition 1 (Join Rule) . Given the current coalition St, any device n / ∈ S t joins the coalition if and only if 
+
+v(St ∪ { n}) > v (St). (26) 
+
+Definition 2 (Leave Rule) . Given the current coalition St with 
+
+|S t| > 1, any device n ∈ S t leaves the coalition if and only if 
+
+v(St \ { n}) > v (St). (27) Therefore, both the join and leave operations are performed only when they strictly improve the coalition utility. To char-acterize the coalition evolution, let S(i) 
+
+> t
+
+denote the coalition obtained after the i-th update in communication round t, with 
+
+S(0)  
+
+> t
+
+being the initial coalition. By iteratively performing such coalition updates, the selected device set is refined until no device can further improve the coalition utility by joining or leaving the coalition. At this point, the resulting coalition can be described in terms of Nash stability [28]. Specifically, the non-selected devices are regarded as an auxiliary coalition 
+
+N \ S t, such that the coalition structure can be represented by the two-coalition partition {S t, N \ S t}. Based on this induced coalition structure, Nash stability is defined as follows. 
+
+Definition 3. A coalition structure {S t, N \S t} is Nash-stable if no device can improve the coalition utility by unilaterally moving between the two coalitions, i.e., 
+
+v(St ∪ { n}) ≤ v(St), ∀n / ∈ S t, (28) 
+
+and 
+
+v(St \ { n}) ≤ v(St), ∀n ∈ S t, |S t| > 1. (29) The resulting coalition formation process is summarized in Algorithm 1, where the initial coalition is set as the empty set to avoid dependence on a specific initialization. During the algorithm, the coalition is constructed through join operations and refined through leave operations according to the coalition utility. To reduce the checking overhead, non-selected devices are examined in descending order of AoI, while selected devices are examined in ascending order of AoI, since devices with larger AoI are more likely to provide a larger freshness gain when joining, whereas devices with smaller AoI tend to cause a smaller freshness loss when leaving. For each candidate coalition, the corresponding antenna placement is updated to obtain the minimum uploading time used in the utility evaluation. 
+
+C. Properties Analysis 
+
+The main properties of Algorithm 1 are analyzed in terms of convergence, stability, and computational complexity. 
+
+1) Convergence: The convergence of Algorithm 1 follows from the monotonic improvement of the coalition utility and the finite number of feasible coalitions. Specifically, in each iteration, one accepted join or leave operation strictly increases the coalition utility v(St) according to the proposed update rules. Since the number of feasible coalitions satisfying 
+
+St ⊆ N and |S t| ≥ 1 is finite, the coalition utility cannot be improved indefinitely. Therefore, Algorithm 1 terminates after a finite number of iterations. 
+
+2) Stability: Let S⋆t denote the final coalition returned by Algorithm 1. The algorithm terminates only when no join or leave operation can further improve the coalition utility. Hence, no non-selected device can improve the utility by joining S⋆t , and no selected device can improve the utility by leaving S⋆t . According to Definition 3, the final coalition structure {S ⋆t , N \ S ⋆t } is Nash-stable. 
+
+3) Complexity: The computational complexity of Algo-rithm 1 depends on the number of outer checking loops and the number of candidate devices evaluated in each loop. Let 
+
+C denote the number of outer loops before convergence. In each outer loop, at most N candidate devices are evaluated for possible joining or leaving, and each accepted operation corresponds to one coalition update. Therefore, the overall computational complexity of Algorithm 1 is O(CN ).V. B RANCH -AND -B OUND BASED ANTENNA PLACEMENT 
+
+In this section, the antenna placement problem (23) is solved for a given device selection result St. Since the waveguide propagation path only contributes a phase rotation in the adopted channel model, |h(t) 
+
+> n
+
+|2 depends on the antenna posi-tion only through the free-space propagation distance between the pinching antenna and device n. By defining an , Pnη2/σ 2
+
+and bn , y2 
+
+> n
+
++ d2, the normalized uploading time of selected device n can be written as follows: 
+
+fn(x(t)pin ) = 1
+
+log 2
+
+(
+
+1 + an 
+
+> (x(t)pin −xn)2+bn
+
+) . (30) By omitting the positive constant factor Dlm /B , the antenna placement problem in (23) is equivalently expressed as 
+
+min 
+
+> x(t)pin
+
+∑
+
+> n∈S t
+
+fn(x(t)pin )
+
+s.t. (21b) , and (21c) .
+
+(31a) The solution to problem (31) is presented in the following subsections for the singleton coalition case and the general multi-device case, respectively. 7
+
+A. Optimal Placement for Singleton Device Case 
+
+Before solving the multi-device case, the singleton device case is first examined, for which the optimal antenna place-ment admits a closed-form solution. When St = {n}, the antenna placement problem reduces to minimizing a single term over the mobility constrained feasible interval, i.e., 
+
+min   
+
+> x(t)pin ∈[l(t),u (t)]
+
+fn(x(t)pin ), (32) where 
+
+l(t) = max 
+
+{
+
+− Dx
+
+2 , x (t−1) pin − vpin T (t)tr 
+
+}
+
+, (33) and 
+
+u(t) = min 
+
+{ Dx
+
+2 , x (t−1) pin + vpin T (t)tr 
+
+}
+
+. (34) Since fn(x(t)pin ) is monotonically increasing with respect to 
+
+(x(t)pin − xn)2, the optimal antenna position is the feasible point closest to xn. Equivalently, it is obtained by projecting xn onto the feasible interval [l(t), u (t)], i.e., 
+
+x(t)⋆ 
+
+> pin
+
+=
+
+
+
+l(t), if xn < l (t),xn, if l(t) ≤ xn ≤ u(t),u(t), if xn > u (t).
+
+(35) This result indicates that the antenna is placed at the projection point of device n if it is feasible; otherwise, it is placed at the nearest boundary of the feasible interval. Thus, the optimal antenna position in the singleton device case can be obtained without further optimization. In the following, the general case with |S t| ≥ 2 is considered. 
+
+B. Optimal Antenna Placement Region 
+
+For the multi-device case, the antenna placement problem does not admit a direct closed-form solution due to the summa-tion of multiple nonlinear uploading time terms. Nevertheless, the search region can be tightened by exploiting the mono-tonicity of each term with respect to the horizontal distance between the antenna and the selected devices. Recall that 
+
+[l(t), u (t)] denotes the mobility constrained feasible interval. Define the horizontal span of the selected devices as 
+
+x(t)min = min {xn|n ∈ S t}, (36) and 
+
+x(t)max = max {xn|n ∈ S t}. (37) Here, xn is the signed horizontal coordinate of device n. The following proposition shows that, when the feasible interval intersects with the span of the selected devices, the global optimum lies in their intersection. 
+
+Proposition 2. Define x(t) = max {l(t), x (t)min } and x(t) =min {u(t), x (t)max }. If x(t) ≤ x(t), the global optimal antenna position satisfies 
+
+x(t)⋆ 
+
+> pin
+
+∈ [x(t), x(t)]. (38) 
+
+Proof: Refer to Appendix B. 
+
+As a direct consequence of Proposition 2, when the mobility constrained feasible interval does not intersect with the span of the selected devices, the optimal antenna position can be obtained directly from the boundary of the feasible interval, as stated below. 
+
+Corollary 1. If x(t) > x(t), the optimal antenna position is given by 
+
+x(t)⋆ 
+
+> pin
+
+=
+
+{u(t), if u(t) < x (t)min ,l(t), if l(t) > x (t)max . (39) 
+
+Proof: When x(t) > x(t), the mobility constrained feasi-ble interval [l(t), u (t)] and the span of the selected devices 
+
+[x(t)min , x (t)max ] do not intersect. Therefore, either the entire feasible interval lies to the left of the selected device span, i.e., u(t) < x (t)min , or it lies to the right, i.e., l(t) > x (t)max .If u(t) < x (t)min , increasing x(t)pin within [l(t), u (t)] reduces the horizontal distance to all selected devices. Since each fn(x(t)pin )
+
+is monotonically increasing with respect to (x(t)pin − xn)2, the objective function is monotonically decreasing, and the opti-mum is attained at u(t). Conversely, if l(t) > x (t)max , increasing 
+
+x(t)pin enlarges the horizontal distance to all selected devices. Hence, the objective function is monotonically increasing, and the optimum is attained at l(t). The proof is completed. 
+
+According to Proposition 2 and Corollary 1, the antenna placement problem in (31) can be divided into two cases. If 
+
+x(t) > x(t), the optimal antenna position is directly obtained from the boundary of the mobility constrained feasible inter-val. Otherwise, when x(t) ≤ x(t), problem (31) is reduced to to the following problem: 
+
+min   
+
+> x(t)pin ∈[x(t),x(t)]
+
+∑
+
+> n∈S t
+
+fn(x(t)pin ). (40) Based on Proposition 2, the antenna placement problem is con-fined to a one-dimensional search over the interval [x(t), x(t)].This reduced search interval makes BnB suitable for obtaining the globally optimal solution with lower computational com-plexity. Specifically, the BnB procedure iteratively partitions the interval, constructs valid lower and upper bounds for each subinterval, and prunes subintervals that cannot contain the global optimum [29]. 
+
+C. Interval based Bound Construction 
+
+To implement the BnB procedure, valid lower and upper bounds need to be constructed over each generated interval. Consider an arbitrary interval I = [ xL, x U] ⊆ [x(t), x(t)]. For each selected device n ∈ S t, define dn(I) as the minimum value of (x(t)pin − xn)2 over I, i.e., 
+
+dn(I) = 
+
+
+
+0, if xn ∈ [xL, x U],
+
+(xL − xn)2, if xn < x L,
+
+(xn − xU)2, if xn > x U.
+
+(41) That is, dn(I) = 0 when the projection point xn lies inside the interval I; otherwise, dn(I) is the squared distance from 8
+
+xn to the nearest endpoint of I. Therefore, for any x(t)pin ∈ I ,the following inequality can be obtained: 
+
+(x(t)pin − xn)2 ≥ dn(I). (42) Since fn(x(t)pin ) is monotonically increasing with respect to 
+
+(x(t)pin − xn)2, it follows that 
+
+fn(x(t)pin ) ≥ 1
+
+log 2
+
+(
+
+1 + an
+
+> dn(I)+ bn
+
+) . (43) By summing over all selected devices, a valid lower bound of the objective value over I is obtained as 
+
+ℓ(I) = ∑
+
+> n∈S t
+
+1
+
+log 2
+
+(
+
+1 + an
+
+> dn(I)+ bn
+
+) . (44) For upper bounding, the objective value evaluated at any feasible point in I provides a valid upper bound. To obtain a tighter bound with low computational cost, the two endpoints and the midpoint of I are evaluated. With the midpoint 
+
+xM = xL + xU
+
+2 , (45) the upper bound over I is defined as 
+
+u(I) = min 
+
+{ ∑
+
+> n∈S t
+
+fn(xL), ∑
+
+> n∈S t
+
+fn(xM), ∑
+
+> n∈S t
+
+fn(xU)
+
+}
+
+.
+
+(46) Let x(I) ∈ { xL, x M, x U} denote the feasible point attaining the minimum value in (46). Since x(I) is a feasible point in 
+
+I, u(I) is a valid upper bound. 
+
+D. Branching, Bounding, and Pruning 
+
+Let P denote the set of unpruned intervals. At each iteration, the interval with the smallest lower bound is selected for branching, i.e., 
+
+I⋆ = arg min  
+
+> I∈P
+
+ℓ(I), (47) where I⋆ = [ x⋆
+
+> L
+
+, x ⋆U ]. Since problem (40) is one-dimensional, 
+
+I⋆ is bisected at its midpoint 
+
+x⋆ 
+
+> M
+
+= x⋆ 
+
+> L
+
++ x⋆U
+
+2 , (48) which results in two subintervals I− = [ x⋆
+
+> L
+
+, x ⋆
+
+> M
+
+] and I+ =[x⋆
+
+> M
+
+, x ⋆U ].For the two subintervals I− and I+, the corresponding lower and upper bounds are evaluated according to (44) and (46), respectively. Let xinc denote the incumbent feasible point associated with the current global upper bound U . Define 
+
+U ⋆ = min {U, u (I−), u (I+)} . (49) The incumbent feasible point is updated as 
+
+xinc =
+
+
+
+x(I− ), if U ⋆ = u(I−),x(I+ ), if U ⋆ = u(I+),xinc , otherwise .
+
+(50) The global upper and lower bounds are then updated as 
+
+U = U ⋆, (51) 
+
+Algorithm 2 BnB based Antenna Placement for Problem (40)  
+
+> 1:
+
+Input: Feasible interval [x(t), x(t)], tolerance ε > 0. 
+
+> 2:
+
+Initialization:  
+
+> 3:
+
+Set I(0) = [ x(t), x(t)] and P = {I (0) }. 
+
+> 4:
+
+Compute ℓ(I(0) ) by (44).  
+
+> 5:
+
+Compute u(I(0) ) and x(I(0) ) by (46).  
+
+> 6:
+
+Initialize U = u(I(0) ), L = ℓ(I(0) ), and xinc = x(I(0) ). 
+
+> 7:
+
+while U − L > ε do  
+
+> 8:
+
+Select the interval I⋆ by (47), and remove I⋆ from P. 
+
+> 9:
+
+Compute the midpoint x⋆ 
+
+> M
+
+by (48).  
+
+> 10:
+
+Bisect I⋆ into I− and I+. 
+
+> 11:
+
+Compute ℓ(I−) and ℓ(I+) by (44).  
+
+> 12:
+
+Compute u(I−), x(I−), u(I+), and x(I+) by (46).  
+
+> 13:
+
+Compute U ⋆ by (49).  
+
+> 14:
+
+Update the incumbent feasible point xinc by (50).  
+
+> 15:
+
+Update the global upper bound U by (51).  
+
+> 16:
+
+for each I ∈ {I −, I+} do  
+
+> 17:
+
+if ℓ(I) < U − ε then  
+
+> 18:
+
+Add I to P. 
+
+> 19:
+
+end if  
+
+> 20:
+
+end for  
+
+> 21:
+
+Update the global lower bound L by (52).  
+
+> 22:
+
+end while  
+
+> 23:
+
+Output: xinc and U .
+
+and 
+
+L = min  
+
+> I∈P
+
+ℓ(I). (52) Moreover, any unpruned interval I ∈ P satisfying 
+
+ℓ(I) ≥ U − ε (53) can be safely pruned, where ε > 0 denotes the optimality tolerance. This pruning rule preserves global optimality, since no point in such an interval can achieve an objective value smaller than the current global upper bound by more than ε.Based on these procedures, the BnB based antenna placement algorithm is presented in Algorithm 2. 
+
+E. Properties Analysis 
+
+The convergence, optimality, and complexity of Algorithm 2 are analyzed below. 
+
+1) Convergence: The proposed algorithm follows the stan-dard BnB framework for one-dimensional global optimization. The lower bound ℓ(I) in (44) and the upper bound u(I)
+
+in (46) bound the local optimal objective value over each unpruned interval I ∈ P . During the iterations, U is non-increasing, while L is updated as the minimum lower bound among all unpruned intervals. Moreover, intervals satisfying 
+
+ℓ(I) ≥ U − ε are safely pruned, and the incumbent feasible point xinc is updated together with U . Therefore, the proposed BnB procedure progressively reduces the search space while maintaining valid global lower and upper bounds. 
+
+2) Complexity: The computational complexity of the pro-posed BnB algorithm mainly depends on the number of intervals evaluated before termination. Let Nint denote the total number of generated intervals. For each interval I,9
+
+TABLE I: Simulation Parameters                         
+
+> Parameter Value
+> Number of devices ( N)20
+> CPU cycles per sample ( μ)10 7
+> Carrier frequency ( fc)28 GHz Noise power ( σ2)−90 dBm Bandwidth ( B)10 MHz Effective refractive index ( neff )1.4
+> Waveguide height ( d)3mService area ( Dx×Dy)50 m×20 mOptimality tolerance (ε)10 −4
+
+computing the lower bound in (44) requires evaluating dn(I)
+
+for all n ∈ S t, resulting in complexity O(|S t|). Similarly, computing the upper bound in (46) requires evaluating the objective function at three feasible points, which also incurs complexity O(|S t|). Therefore, ignoring constant factors, the overall computational complexity is O(Nint |S t|).
+
+3) Optimality: By construction, L and U are valid global lower and upper bounds of problem (40), respectively. Let f ⋆
+
+denote the global optimal objective value. Then, 
+
+L ≤ f ⋆ ≤ U. (54) Algorithm 2 terminates when U − L ≤ ε, which implies 
+
+U − f ⋆ ≤ U − L ≤ ε. (55) Since U is attained by the incumbent feasible point xinc , the output solution satisfies 
+
+∑
+
+> n∈S t
+
+fn(xinc ) = U ≤ f ⋆ + ε. (56) Therefore, Algorithm 2 returns an ε-optimal solution to prob-lem (40). VI. S IMULATION RESULTS 
+
+In this section, the learning and system performance of the proposed AoI aware device selection and pinching antenna placement scheme under finite moving speed are evaluated. For comparison, several benchmark schemes are considered. For antenna placement, the midpoint based scheme places the pinching antenna at the midpoint between the minimum and maximum x-coordinates of the selected devices. For device selection, the sequential selection scheme selects devices ac-cording to a fixed order from device 1 to device N , where as many devices as possible are selected in each communication round until the latency threshold is violated. The random selection scheme generates a random ordering of devices in each round and sequentially adds devices according to this order until the latency threshold cannot be satisfied. The main simulation parameters are summarized in Table I. 
+
+A. Learning Performance 
+
+To evaluate the learning performance, MNIST and CIFAR-10 are adopted. For MNIST, 9000 non-IID training samples are distributed among N = 20 devices, where the local data size increases from 260 to 640 with a step size of 20 . Each device contains samples from only one label. For CIFAR-10, all 50000 training samples are used, and the local data size increases from 2025 to 2975 with a step size of 50 . To construct a mild non-IID distribution for CIFAR-10, 50% of each device’s local data is drawn from an IID data pool, while the remaining 50% is drawn from a single dominant label. Full-batch local training is adopted for both datasets, and each selected device performs one local epoch in each communi-cation round. The stochastic gradient descent optimizer with a learning rate of 0.1 is used for both datasets. For MNIST, a single hidden layer multilayer perceptron (MLP) with 256 
+
+hidden neurons and ReLU activation is used, followed by a softmax output layer. For CIFAR-10, a lightweight con-volutional neural network (CNN) is adopted, which consists of two 3 × 3 convolutional layers with 32 filters, one max pooling layer, one 3 × 3 convolutional layer with 64 filters, another max pooling layer, a fully connected layer with 128 
+
+neurons, and a softmax output layer. For each dataset, the simulations are conducted with 10 different initial models, and the presented learning curves are obtained by averaging the corresponding results. For better visualization, the learning curves are further smoothed using a moving average window of 20 communication rounds. Fig. 1 illustrates the impact of antenna moving speed on the learning performance under a unique device distribu-tion, where the devices are uniformly deployed below the waveguide with an interval of 2.5 m, as shown on the y-axis of Fig. 1(a). It can be observed from Fig. 1(b) that the learning performance improves as the antenna moving speed increases. Specifically, the speed limited pinching antenna with 
+
+vpin = 0 .5 m/s outperforms the fixed antenna case by about 
+
+100 communication rounds, while increasing the speed to 
+
+vpin = 1 m/s provides a further acceleration of about 100 
+
+communication rounds. The unlimited speed case achieves the fastest convergence, but its performance gain over the high-speed case is relatively small, indicating that most of the mobility gain can be obtained with a moderate moving speed. The antenna trajectories in Fig. 1(a) show that the pinching antenna tends to move closer to devices with larger indices, especially under limited antenna moving speeds. This is because these devices have more local samples, which not only leaves a smaller uploading time budget under the fixed deadline Tmax due to longer training times, but also makes their updates more important for learning performance. Meanwhile, a larger antenna moving speed enables the tra-jectory to reach a stable movement pattern more rapidly. In particular, the unlimited speed case becomes regular within about 30 communication rounds, while the high-speed and low-speed cases require approximately 90 and 130 rounds, respectively. This is consistent with Fig. 1(c), where the sum AoI also approaches a stable periodic behavior as the antenna movement becomes regular. Figs. 2 and 3 compare the learning performance and sum AoI of different device selection schemes on MNIST and CIFAR-10, respectively. To evaluate the performance under stochastic device deployments, the device locations are ran-domly regenerated in each communication round. It can be observed from Figs. 2(a) and 3(a) that the proposed AoI based device selection scheme achieves the fastest convergence and highest test accuracy on both datasets, which demonstrates 10 
+
+> (a) Antenna Position
+> (b) Test Accuracy
+> (c) Sum AoI
+
+Fig. 1: Learning performance on MNIST under different antenna moving speeds with fixed device deployment, where 
+
+Cn = 1 GHz, Dlm = 50 Mbits, Pt = 20 dBm, Tmax = 8 s, and A0 = 20 .the effectiveness of jointly considering device freshness, round latency, and antenna placement. In contrast, the sequential se-lection and random selection schemes suffer from unbalanced device participation, since they cannot explicitly optimize the freshness-latency tradeoff. The midpoint based scheme is motivated by Proposition 2, which establishes that the 
+
+> (a) Test Accuracy
+> (b) Sum AoI
+
+Fig. 2: Learning performance on MNIST under different device selection schemes with random device locations, where 
+
+vpin = 0 .5 m/s, Cn = 1 GHz, Dlm = 50 Mbits, Pt = 20 dBm, 
+
+Tmax = 7 s, and A0 = 20 .optimal antenna position lies within the interval spanned by the selected devices. Under MNIST, the relatively limited feasible antenna movement range results in a narrow selected device interval, within which the midpoint solution is close to the BnB solution. For CIFAR-10, the longer local training time enlarges the feasible movement range and allows the coalitional game based scheme to select devices spanning a wider interval, making the performance advantage of the BnB based placement more pronounced. Furthermore, Figs. 2(b) and 3(b) show that the proposed scheme achieves a lower sum AoI than both baseline schemes, confirming that maintaining fresher device participation is beneficial for learning under non-IID data distributions. Comparing Figs. 2(b) and 3(b), the sum AoI fluctuation on CIFAR-10 is less significant, since the larger local data size also allows the pinching antenna to move over a longer distance in each round, leading to more stable uploading latency and AoI evolution. 
+
+B. System Performance 
+
+For the system performance evaluation, the device data sizes follow the same unequal distribution as that used for 11 
+
+> (a) Test Accuracy
+> (b) Sum AoI
+
+Fig. 3: Learning performance on CIFAR-10 under different device selection schemes with random device locations, where 
+
+vpin = 0 .5 m/s, Cn = 2 GHz, Dlm = 200 Mbits, Pt =20 dBm, Tmax = 20 s, and A0 = 50 .MNIST in the learning performance evaluation. Specifically, 
+
+9000 training samples are distributed among N = 20 devices, where the local data size increases from 260 to 640 with a step size of 20 . To obtain statistically reliable results, Monte Carlo simulations are conducted with 10 5 independent random device deployments for each data point, where the initial antenna position in each round is set as the optimized antenna position obtained in the previous round. Fig. 4 illustrates the impact of the antenna moving speed on different schemes. As vpin increases, the feasible antenna placement region in each round is enlarged, which improves the uplink data rates and reduces the uploading latency. As a result, more devices can be selected under the fixed deadline 
+
+Tmax , leading to a lower sum AoI. The proposed coalition game with BnB based antenna placement consistently achieves the lowest sum AoI and selects the largest number of devices, demonstrating the effectiveness of the joint AoI based device selection and antenna placement design. Moreover, the perfor-mance gap between the BnB based placement and the midpoint based placement becomes more pronounced as vpin increases. This is because both schemes are strongly constrained by 
+
+Fig. 4: Impact of antenna moving speed on system per-formance under different schemes, where Cn = 1 GHz, 
+
+Dlm = 100 Mbits, Pt = 10 dBm, Tmax = 12 s, and A0 = 20 .
+
+Fig. 5: Impact of transmit power on system performance under different antenna moving speeds, where Cn = 1 GHz, Dlm =100 Mbits, Tmax = 12 s, and A0 = 20 .the limited feasible movement interval at low antenna speeds, while a larger vpin provides a wider search region, enabling the BnB based method to better exploit antenna mobility for reducing uploading latency. Fig. 5 shows the impact of the transmit power Pt on the system performance under different antenna moving speeds. As Pt increases, the sum AoI decreases significantly, since a higher transmit power improves the uplink rate and reduces the model uploading time. As a result, more devices can be selected under the fixed deadline Tmax , which is consistent with the increasing number of selected devices. Overall, a larger antenna moving speed leads to a lower sum AoI and a larger selected device set, and the gain is more pronounced in the low-power region where the uplink transmission is more sensitive to channel improvement. For the number of selected devices, the curves almost overlap when Pt is very low, 12 
+
+Fig. 6: Impact of latency deadline on system performance under different antenna moving speeds, where Cn = 1 GHz, 
+
+Dlm = 100 Mbits, Pt = 5 dBm, and A0 = 20 .because the uplink rate is severely limited and the mobility in-duced channel gain is insufficient to admit additional devices. In the medium-power region, e.g., from −5 to 10 dBm, the system becomes more sensitive to antenna placement, and thus different antenna moving speeds lead to clear differences in both device participation and sum AoI. When Pt is sufficiently high, the curves gradually converge again, indicating that uplink transmission is no longer the dominant bottleneck and the marginal benefit of antenna mobility becomes limited. Fig. 6 demonstrates the impact of the maximum latency deadline Tmax on the system performance under different antenna moving speeds. As Tmax increases, the sum AoI decreases, while the number of selected devices increases. This is because a more relaxed latency deadline allows more devices to complete local training and model uploading within each communication round, thereby improving device participation freshness. Moreover, a higher antenna moving speed consistently leads to a lower sum AoI and a larger selected device set. This confirms that antenna mobility can effectively improve the uplink channels and reduce uploading latency, enabling more devices to be selected under the same deadline. In particular, the unlimited speed case achieves the best performance, whereas the fixed antenna case performs the worst, indicating that the proposed AoI based device selection can achieve better system performance when supported by more flexible antenna placement. VII. C ONCLUSIONS 
+
+In this paper, an AoI aware federated learning framework with a mobility constrained pinching antenna was investigated. By utilizing the local training period for antenna reposition-ing, the coupling among device selection, antenna mobility, uploading latency, and AoI evolution was characterized, and an overall AoI minimization problem was formulated under a round latency deadline. To solve this problem, a coalitional game based device selection algorithm and a BnB based an-tenna placement algorithm were developed. Simulation results demonstrated that the proposed scheme improves learning convergence, reduces the sum AoI, and supports more device participation compared with baseline schemes, confirming that pinching antennas can provide an effective spatial reconfigu-ration capability for enhancing wireless federated learning. APPENDIX A: P ROOF OF PROPOSITION 1The non-saturated regime vpin < v sat ,n is first considered. In this regime, the residual horizontal distance between the pinching antenna and the projection of device n is rn(vpin ),while the corresponding horizontal distance under the fixed antenna benchmark is |xn|. Therefore, the rate gain from the fixed antenna to the speed limited pinching antenna is 
+
+∆Rn, 0→v = B log 2
+
+(
+
+1+ an
+
+r2
+
+> n
+
+(vpin )+ bn
+
+)
+
+−B log 2
+
+(
+
+1+ an
+
+x2 
+
+> n
+
++bn
+
+)
+
+= B log 2
+
+(
+
+1+ an
+
+(x2 
+
+> n
+
+− r2
+
+> n
+
+(vpin ))
+
+(r2
+
+> n
+
+(vpin )+ bn) ( x2 
+
+> n
+
++bn +an)
+
+)
+
+.
+
+(57) Since 0 ≤ rn(vpin ) ≤ | xn|, it follows that x2 
+
+> n
+
+− r2
+
+> n
+
+(vpin ) ≥ 0.By applying ln(1 + z) ≥ z 
+
+> 1+ z
+
+for z ≥ 0, the following lower bound is obtained: 
+
+∆Rn, 0→v ≥ B
+
+ln 2 
+
+an
+
+(x2 
+
+> n
+
+− r2
+
+> n
+
+(vpin ))
+
+(x2 
+
+> n
+
++ bn) ( r2
+
+> n
+
+(vpin ) + bn + an) . (58) To characterize its monotonicity with respect to vpin , define 
+
+f (r) = x2 
+
+> n
+
+− r2
+
+r2 + bn + an
+
+, (59) where 0 ≤ r ≤ | xn|. The derivative of f (r) is 
+
+df (r)
+
+dr = − 2r (x2 
+
+> n
+
++ bn + an
+
+)
+
+(r2 + bn + an)2 ≤ 0. (60) Thus, f (r) is non-increasing in r. Since rn(vpin ) is non-increasing in vpin , the lower bound of ∆Rn, 0→v is non-decreasing in vpin .Next, the rate gap from the speed limited pinching antenna to the unlimited speed benchmark is given by 
+
+∆Rn,v →∞ = B log 2
+
+(
+
+1+ an
+
+bn
+
+)
+
+−B log 2
+
+(
+
+1+ an
+
+r2
+
+> n
+
+(vpin )+ bn
+
+)
+
+= B log 2
+
+(
+
+1+ anr2
+
+> n
+
+(vpin )
+
+bn (r2
+
+> n
+
+(vpin )+ bn +an)
+
+)
+
+. (61) By applying ln(1 + z) ≤ z for z ≥ 0, one has 
+
+∆Rn,v →∞ ≤ B
+
+ln 2 
+
+anr2
+
+> n
+
+(vpin )
+
+bn (r2
+
+> n
+
+(vpin ) + bn + an) . (62) Define the speed dependent term in the above upper bound as 
+
+g(r) = r2
+
+r2 + bn + an
+
+. (63) For r ≥ 0, its derivative is 
+
+dg (r)
+
+dr = 2r(bn + an)
+
+(r2 + bn + an)2 ≥ 0. (64) Thus, g(r) is non-decreasing in r. Since rn(vpin ) is non-increasing in vpin , the upper bound of ∆Rn,v →∞ is non-increasing in vpin .13 
+
+Finally, when vpin ≥ vsat ,n , the pinching antenna reaches the projection of device n during local training, which leads to rn(vpin ) = 0 . Hence, the speed limited pinching antenna achieves the same rate as the unlimited speed benchmark, and 
+
+∆Rn,v →∞ = 0 . The proof is completed. 
+
+APPENDIX B: P ROOF OF PROPOSITION 2Based on (30), since an > 0, fn(x(t)pin ) is monotonically increasing with respect to (x(t)pin − xn)2. Consider any feasible antenna position satisfying x(t)pin < x (t)min . For any selected device n ∈ S t, it follows that 
+
+|x(t)pin − xn| > |x(t)min − xn|, (65) which implies 
+
+fn(x(t)pin ) > f n(x(t)min ). (66) Therefore, the following inequality can be obtained: 
+
+∑
+
+> n∈S t
+
+fn(x(t)pin ) > ∑
+
+> n∈S t
+
+fn(x(t)min ), (67) which indicates that no feasible antenna position satisfying 
+
+x(t)pin < x (t)min can be globally optimal. Similarly, for any feasible antenna position satisfying 
+
+x(t)pin > x (t)max , the following inequality holds for all n ∈ S t:
+
+fn(x(t)pin ) > f n(x(t)max ), (68) and hence ∑
+
+> n∈S t
+
+fn(x(t)pin ) > ∑
+
+> n∈S t
+
+fn(x(t)max ), (69) which leads to the conclusion that no feasible position satis-fying x(t)pin > x (t)max can be globally optimal. Therefore, the global optimum must lie in the intersection between the mobility constrained feasible interval [l(t), u (t)]
+
+and the span of the selected devices [x(t)min , x (t)max ]. When x(t) ≤
+
+x(t), this intersection is exactly [x(t), x(t)], which completes the proof. 
+
+REFERENCES [1] B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. A. y Arcas, “Communication-efficient learning of deep networks from decentralized data,” in Artificial intelligence and statistics . PMLR, 2017, pp. 1273– 1282. [2] K. Yang, T. Jiang, Y. Shi, and Z. Ding, “Federated learning via over-the-air computation,” IEEE Trans. Wireless Commun. , vol. 19, no. 3, pp. 2022–2035, 2020. [3] M. Chen, Z. Yang, W. Saad, C. Yin, H. V. Poor, and S. Cui, “A joint learning and communications framework for federated learning over wireless networks,” IEEE Trans. Wireless Commun. , pp. 1–1, 2020. [4] T. Gafni, N. Shlezinger, K. Cohen, Y. C. Eldar, and H. V. Poor, “Federated learning: A signal processing perspective,” IEEE Signal Process. Mag. , vol. 39, no. 3, pp. 14–41, 2022. [5] S. Niknam, H. S. Dhillon, and J. H. Reed, “Federated learning for wireless communications: Motivation, opportunities, and challenges,” 
+
+IEEE Commun. Mag. , vol. 58, no. 6, pp. 46–51, 2020. [6] L. Fu, H. Zhang, G. Gao, M. Zhang, and X. Liu, “Client selection in federated learning: Principles, challenges, and opportunities,” IEEE Internet Things J. , vol. 10, no. 24, pp. 21 811–21 819, 2023. [7] K. Wang, Z. Ding, D. K. C. So, and Z. Ding, “Exploring age-of-information weighting in federated learning under data heterogeneity,” 
+
+IEEE Trans. Wireless Commun. , vol. 24, no. 6, pp. 5023–5036, 2025. [8] Z. Ding, R. Schober, and H. Vincent Poor, “Flexible-antenna systems: A pinching-antenna perspective,” IEEE Trans. Commun. , pp. 1–1, 2025. [9] Z. Yang, N. Wang, Y. Sun, Z. Ding, R. Schober, G. K. Karagiannidis, V. W. Wong, and O. A. Dobre, “Pinching antennas: Principles, applica-tions and challenges,” IEEE Wireless Commun. , pp. 1–10, Oct. 2025. [10] Y. Liu, Z. Wang, X. Mu, C. Ouyang, X. Xu, and Z. Ding, “Pinching-antenna systems: Architecture designs, opportunities, and outlook,” 
+
+IEEE Commun. Mag. , pp. 1–7, Sept. 2025. [11] F. Fang, Z. Ding, V. Leung, and L. Hanzo, “Pinching antennas meet AI in next-generation wireless networks,” arXiv preprint arXiv:2511.07442 ,2025. [12] K. Wang, Z. Ding, and R. Schober, “Antenna activation for NOMA as-sisted pinching-antenna systems,” IEEE Wireless Commun. Lett. , vol. 14, no. 5, pp. 1526–1530, Mar. 2025. [13] Y. Xu, J. Cui, Y. Zhu, Z. Ding, T.-H. Chang, R. Schober, V. W. Wong, O. A. Dobre, G. K. Karagiannidis, H. V. Poor et al. , “Generalized pinching-antenna systems: A tutorial on principles, design strategies, and future directions,” arXiv preprint arXiv:2510.14166 , 2025. [14] K. Wang, Z. Ding, and L. Hanzo, “Generalized pinching-antenna systems: A leaky-coaxial-cable perspective,” arXiv preprint arXiv:2512.04979 , 2025. [15] Y. Lin, Z. Chen, and Z. Ding, “Pinching-antenna-enabled federated learning: Tail latency, participation, and convergence analysis,” arXiv preprint arXiv:2510.23315 , 2025. [16] B. Wu, F. Fang, M. Zeng, and X. Wang, “Straggler-resilient federated learning over a hybrid conventional and pinching antenna network,” 
+
+IEEE Trans. Veh. Technol. , pp. 1–6, 2026. [17] S. Asaad and A. Bereyhi, “Energy-efficient over-the-air federated learn-ing via pinching antenna systems,” arXiv preprint arXiv:2602.14250 ,2026. [18] S. Asaad, H. Tabassum, and P. Wang, “Pinching antennas-assisted low-latency federated learning over multi-user wireless networks,” arXiv preprint arXiv:2603.08595 , 2026. [19] Y. Lin and Z. Ding, “Tail-latency-aware federated learning with pinching antenna: Latency, participation, and placement,” Entropy , vol. 28, no. 3, p. 341, 2026. [20] Y. Xu, Z. Ding, and G. K. Karagiannidis, “Rate maximization for downlink pinching-antenna systems,” IEEE Wireless Commun. Lett. , pp. 1–1, 2025. [21] Z. Wang, C. Ouyang, X. Mu, Y. Liu, and Z. Ding, “Modeling and beamforming optimization for pinching-antenna systems,” IEEE Trans. Commun. , vol. 73, no. 12, pp. 13 904–13 919, Oct. 2025. [22] S. A. Tegos, P. D. Diamantoulakis, Z. Ding, and G. K. Karagiannidis, “Minimum data rate maximization for uplink pinching-antenna systems,” 
+
+IEEE Wireless Commun. Lett. , vol. 14, no. 5, pp. 1516–1520, Mar. 2025. [23] C. Ouyang, H. Jiang, Z. Wang, Y. Liu, and Z. Ding, “Uplink and downlink communications in segmented waveguide-enabled pinching-antenna systems (SWANs),” IEEE Trans. Commun. , pp. 1–1, 2026. [24] K. Wang, Z. Ding, and G. K. Karagiannidis, “Antenna activation and resource allocation in multi-waveguide pinching-antenna systems,” IEEE Trans. Wireless Commun. , pp. 1–1, Sept. 2025. [25] K. Wang, Z. Ding, D. K. C. So, and Z. Ding, “Age-of-information min-imization in federated learning based networks with non-IID dataset,” 
+
+IEEE Trans. Wireless Commun. , vol. 23, no. 8, pp. 8939–8953, 2024. [26] K. Wang, Y. Ma, M. B. Mashhadi, C. H. Foh, R. Tafazolli, and Z. Ding, “Convergence acceleration in wireless federated learning: A stackelberg game approach,” IEEE Trans. Veh. Technol. , vol. 74, no. 1, pp. 714–729, Jan. 2025. [27] R. D. Yates, “The age of information in networks: Moments, distri-butions, and sampling,” IEEE Trans. Inf. Theory , vol. 66, no. 9, pp. 5712–5728, 2020. [28] Z. Han, Game theory in wireless and communication networks: theory, models, and applications . Cambridge University Press, 2012. [29] S. Boyd and J. Mattingley, “Branch and bound methods,” Notes for EE364b, Stanford University , vol. 2006, p. 07, 2007.

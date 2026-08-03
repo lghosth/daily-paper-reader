@@ -18,27 +18,39 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-03
-- 运行时间：2026-08-03 04:55:55 北京时间
+- 最新运行日期：2026-08-04
+- 运行时间：2026-08-04 05:08:54 北京时间
 - 运行状态：成功
-- 本次总论文数：1
-- 精读区：1
-- 速读区：0
-- 下次更新：约 2026-08-04 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 本次总论文数：5
+- 精读区：0
+- 速读区：5
+- 下次更新：约 2026-08-05 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日精读1篇联邦多模态图学习论文，聚焦开放世界灾难性遗忘难题。  
-《FedOGL》提出针对性方法，在跨模态图数据场景下表现值得关注。  
-建议关注联邦学习与多模态图结合的持续学习策略。
-- 详情：[2026-08-03 日报](/202608/02/README)
+今日更新5篇论文，均为速读，暂无精读。  
+最值得关注的是《Age-of-Information Aware Federated Learning with Finite Speed Pinching Antenna》与《GQ-FSL: Green Quantized Federated Split Learning》，聚焦信息时效与绿色量化。  
+建议优先浏览这两篇，重点看通信与能效优化思路。
+- 详情：[2026-08-04 日报](/202608/03/README)
 
 ### 精读区论文标签
-1. [FedOGL: Combating Catastrophic Forgetting in Federated Open-World Multimodal Graph Learning](/202608/02/2607.27665v1-fedogl-combating-catastrophic-forgetting-in-federated-open-world-multimodal-graph-learning)  
-   标签：评分：8.0/10、query:dgnn-nas
-   evidence：联邦图学习在去中心化图数据上训练GNN，直接关联分布式GNN训练系统主题
+- 本次无精读推荐。
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [Age-of-Information Aware Federated Learning with Finite Speed Pinching Antenna](/202608/03/2607.23595v1-age-of-information-aware-federated-learning-with-finite-speed-pinching-antenna)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：通过信息年龄与模型上传时间优化实现无线联邦学习中的通信高效训练。
+2. [PowerScale: Energy-Efficient Geo-Distributed Model Training with Federated Datacenter Power](/202608/03/2607.25650v1-powerscale-energy-efficient-geo-distributed-model-training-with-federated-datacenter-power)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：关注地理分布式训练中的通信效率，减少同步等待和WAN更新开销
+3. [GQ-FSL: Green Quantized Federated Split Learning](/202608/03/2607.29659v1-gq-fsl-green-quantized-federated-split-learning)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：联邦拆分学习中的随机量化以降低通信与能耗
+4. [PIcsC: Partitioning-Induced Covariate Shift Correction](/202608/03/2607.25441v1-picsc-partitioning-induced-covariate-shift-correction)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：校正分布式学习中数据分区间的分布失配
+5. [Wireless Aggregation Latency in Edge Learning with Fractional Power Control](/202608/03/2607.29248v1-wireless-aggregation-latency-in-edge-learning-with-fractional-power-control)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：边缘学习中无线聚合时延分析以提升通信效率
 
 
 <div class="dpr-home-promo-card dpr-home-panel">

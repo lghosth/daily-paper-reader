@@ -1,0 +1,696 @@
+Title: GQ-FSL: Green Quantized Federated Split Learning
+
+URL Source: https://arxiv.org/pdf/2607.29659v1
+
+Published Time: Mon, 03 Aug 2026 01:11:57 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# GQ-FSL: Green Quantized Federated Split Learning 
+
+Idan Roth and Lutz Lampe 
+
+The University of British Columbia, Vancouver, BC, Canada, {idanroth, Lampe}@ece.ubc.ca 
+
+Abstract —Deploying state-of-the-art deep neural networks (DNNs) at the wireless edge is severely bottlenecked by the strict energy and resource constraints of mobile devices. While federated split learning (FSL) mitigates on-device computation by offloading workloads to an edge server, this may introduce sys-temic overheads, while the continuous exchange of cut-layer data, and submodels still incurs significant energy consumption (EC). To address this, we propose a green quantized FSL (GQ-FSL) framework that incorporates stochastic quantization for both local collaborative training and wireless transmissions. Notably, GQ-FSL supports asymmetric precision levels for the client-and server-side submodels, effectively decoupling device energy constraints from global convergence degradation. To quantify these tradeoffs, we develop parameterized energy models for the split architecture and derive a theoretical convergence bound under statistically heterogeneous data. Building on that, we formulate a joint optimization problem to configure the DNN split point and precision levels, minimizing the total system EC while satisfying a strict target accuracy constraint. Ultimately, we demonstrate that GQ-FSL enables large-scale DNN deploy-ment on resource-constrained devices, achieving superior energy efficiency compared to quantized federated learning and full-precision FSL. 
+
+Index Terms —Federated split learning, quantized neural net-works, energy efficiency, wireless edge networks. 
+
+I. I NTRODUCTION 
+
+Energy and resource limitations on mobile devices create a bottleneck for deploying state-of-the-art deep neural net-works (DNNs) at the network edge [1]. Although federated learning (FL) enables privacy-preserving distributed training [2], [3], its requirement for full on-device training renders standard FL impractical for resource-constrained devices [4], [5]. Split learning (SL)-based frameworks, notably federated split learning (FSL) [6], alleviate this burden by partitioning the DNN and offloading the primary computational workload to an edge server [5]. However, aggregating these workloads can overwhelm resource-limited edge servers, and the contin-uous exchange of large intermediate activations and gradients, alongside submodels, can substantially increase energy con-sumption (EC) [7], [8]. Recent energy-efficient FSL frame-works explored system-level optimizations, including device-specific split point adaptation to balance energy and latency [9], dynamic device clustering to address data heterogeneity [10], and joint power allocation, client scheduling, and split-layer selection for heterogeneous edge networks [11]. Despite 
+
+> This work is supported by the Natural Sciences and Engineering Research Council of Canada (NSERC) and the NATO Science for Peace and Security Programme (G7646). © 2026 IEEE. Personal use of this material is permitted. Permission from IEEE must be obtained for all other uses, in any current or future media, including reprinting/republishing this material for advertising or promotional purposes, creating new collective works, for resale or redis-tribution to servers or lists, or reuse of any copyrighted component of this work in other works.
+
+these advances, most approaches overlook the intrinsic energy footprint of the DNN’s bit-level structure and computations during training. Model compression, particularly quantization, provides a direct means to reduce these overheads. By lowering the nu-merical precision of parameters and activations [12], quantiza-tion reduces computational complexity, memory requirements, and communication payloads, thereby substantially lowering EC [1], [4]. Although recent works apply quantization to improve the energy efficiency of standard FL [4], [13], these approaches still require full on-device training and thus remain impractical for highly resource-constrained edge devices. Inte-grating quantization into FSL architectures offers a promising path to minimize the total energy footprint, yet the complex interactions among quantization precision, split architecture, and EC remain largely unexplored. Motivated by these open challenges, this paper investigates a quantized neural network (QNN)-based FSL framework de-signed for energy-efficient collaborative training on resource-constrained devices. Our primary contributions are as follows:  
+
+> •
+
+We introduce green quantized FSL (GQ-FSL), a framework that integrates stochastic quantization into local training and wireless transmission processes. By permitting distinct pre-cision levels for client and server QNNs, GQ-FSL reduces computations, memory accesses, and communication EC.  
+
+> •
+
+To quantify these savings, we derive split-based parameter-ized energy models for QNN-based local training using a generic DNN processing chip, as well as for transmissions.  
+
+> •
+
+We derive a rigorous convergence bound that characterizes the impact of stochastic quantization in the presence of sta-tistically heterogeneous data, thereby formalizing the funda-mental trade-off between energy savings and quantization-induced convergence degradation. This work refines and extends prior QNN-based FL analysis [4].  
+
+> •
+
+Building on these derivations, we jointly optimize precision levels and the split point to minimize total EC subject to a target-accuracy constraint. We demonstrate that GQ-FSL not only facilitates large-scale DNN deployment on resource-constrained devices but also achieves superior en-ergy efficiency compared to standard quantized FL. II. S YSTEM MODEL AND PROPOSED FRAMEWORK 
+
+We consider an FSL system deployed over a wireless edge network, as shown in Fig. 1. The network consists of a base station (BS) serving a set of N resource-constrained clients, denoted by N = {1, 2, . . . , N }. Each client k ∈ N holds a statistically heterogeneous local dataset Dk = {xkj , y kj }Dk
+
+> j=1
+
+,where {xkj , y kj } is an input-label pair for a classification task. arXiv:2607.29659v1 [cs.LG] 31 Jul 2026 Servers        
+
+> BS
+> Update
+> !!,#
+> $!"!,#
+> $
+> Client #
+> Client $
+> Client %
+> …
+> !!,%
+> $
+> !!,%
+> $
+> !"!,%
+> $
+> &'&,%
+> $'(
+> Activations
+> Gradients
+> &'(,%
+> $'(
+> &'),%
+> $'(Fig. 1. Illustration of quantized FSL over wireless network.
+
+The total dataset D = SNk=1 Dk has a size of D = PNk=1 Dk.The BS coordinates the split learning process via a powerful edge server and aggregates models via a non-colluding param-eter server. The complete model wk ∈ Rd is partitioned into a client-side submodel wk, c ∈ Rdc and a server-side submodel 
+
+wk, s ∈ Rds , such that d = dc + ds denotes the total number of parameters of wk.We define a loss function f (xkj , y kj ; w) to quantify the performance of a DNN with parameters w over the local data. The global FSL objective is to find the parameters 
+
+w = wT
+
+> c
+
+, wT
+
+> s
+
+T
+
+that minimize the total loss: 
+
+min  
+
+> w
+
+F (w) = 
+
+> N
+
+X
+
+> k=1
+
+Dk
+
+D Fk(w) = 1
+
+D
+
+> N
+
+X
+
+> k=1
+> Dk
+
+X
+
+> j=1
+
+f (xkj , y kj ; w), (1) which enforces global consensus wk = w for all k ∈ N .To solve (1) under strict energy limitations, our GQ-FSL framework employs a QNN architecture where weights and activations use fixed-point representations [4], [12]. Specifi-cally, the client-side submodel is quantized to qc bits, while the server-side submodel operates at qs bits. The split point and precision levels are identical across all clients and remain fixed throughout the training. 
+
+A. Quantized Neural Networks 
+
+We represent model parameters in fixed-point format [14]. Using one bit for the integer part and (q − 1) bits for the fractional part, the quantization resolution is κ = 2 −(q−1) ,yielding a dynamic range of [−1, 1 − κ]. We adopt a stochastic quantization scheme for a precision level q as [14] 
+
+Q(w) = 
+
+(
+
+⌊w⌋, with probability ⌊w⌋+κ−wκ
+
+⌊w⌋ + κ, with probability w−⌊ w⌋
+
+> κ
+
+, (2) where w ∈ R, and ⌊w⌋ is the largest integer multiple of κ not exceeding w. For a vector w = [ w1, ..., w d]T
+
+∈ Rd, we apply function (2) element-wise. Each wi can be assigned with a distinct precision level qi and quantized using Qi(·), yielding the vector quantizer Q(w) = [ Q1(w1), . . . , Q d(wd)] T
+
+. As es-tablished in [4, Lemma 1], this scalar stochastic quantization is unbiased with bounded variance E(Qi(wi) − wi)2 ≤ 122qi .Building upon these properties, we establish the quantiza-tion error bound for our proposed GQ-FSL framework. The model is partitioned into a client-side submodel wc ∈ Rdc and a server-side submodel ws ∈ Rds , quantized with precision levels qc and qs, respectively. Applying element-wise stochas-tic quantization functions Qc(·) and Qs(·), the fully quantized weights can be written as Q(w) = Qc(wc)T
+
+, Q s(ws)TT
+
+. We thus obtain the unified error bound for the split architecture 
+
+E
+
+h
+
+∥Q(w) − w∥2i
+
+≤ dc
+
+22qc + ds
+
+22qs . (3) Notably, under uniform precision level (qc = qs), Eq. (3) collapses to the quantized FL error bound derived in [4]. Training the partitioned QNN requires maintaining full-precision master weights at both the clients and the edge server. During the forward propagation (FP), these weights and the layer activations are stochastically quantized to their respective precision levels. The quantized weights of the l-th layer are given by ˜w(l) 
+
+> k
+
+= Qc(w(l) 
+
+> k
+
+) for l = 1 , . . . , ℓ c,and ˜w(l) 
+
+> k
+
+= Qs(w(l) 
+
+> k
+
+) for l = ℓc + 1 , . . . , ℓ c + ℓs, where 
+
+wk, c and wk, s comprise ℓc and ℓs layers, respectively, and 
+
+ℓ = ℓc + ℓs. Layer l output activations are then computed as 
+
+o(l) = g(l)( ˜w(l) 
+
+> k
+
+, o (l−1) ), where g(l)(·) encompasses the linear transformation, batch normalization, and activation function of layer l. The activation function output o(l) is also stochas-tically quantized before being fed into the subsequent layer as input. At the cut layer ℓc, the client transmits its quantized in-termediate activations o(ℓc) to the server to complete the FP. In contrast, backpropagation (BP) and gradient computations are executed in full precision to average out the stochastic gradient (SG) noise [12]. Cut-layer gradients are returned to the client, and both entities update their respective full-precision master weights via mini-batch stochastic gradient descent (SGD). Finally, the updated master weights are clipped to the [−1, 1] 
+
+interval and re-quantized for the subsequent FP. 
+
+B. GQ-FSL Learning Procedure 
+
+The collaborative training process in our GQ-FSL frame-work proceeds in global communication rounds. Before train-ing begins, the edge server splits the global model into a client- and sever-side submodels. At each global round t,the BS uniformly samples a subset Nt ⊆ N of K clients from the total N available devices to participate in the current training round. The BS broadcasts the current global client-side submodel to the scheduled clients in full precision over the downlink channel. Upon reception, both entities initialize their respective submodels (wt 
+
+> c
+
+and wt
+
+> s
+
+) for each selected client for the first local iteration. Following distribution, each client k ∈ N t collaborates with the edge server to perform local split training, as described in Section II-A, by running I local steps of mini-batch SGD: 
+
+wt,τ k = wt,τ −1 
+
+> k
+
+− ηt∇Fk
+
+
+
+˜wt,τ −1 
+
+> k
+
+, ξ τk
+
+
+
+, τ = 1 , ..., I, (4) with 
+
+wt,τ k =
+
+"wt,τ k, c
+
+wt,τ k, s
+
+#
+
+, ˜wt,τ k =
+
+" ˜wt,τ k, c
+
+˜wt,τ k, s
+
+#
+
+=
+
+"Qc(wt,τ k, c)
+
+Qs(wt,τ k, s)
+
+#
+
+, (5) where ηt is the learning rate at global round t, and ξτk is the data mini-batch sampled from Dk for the τ -th local iteration. After completing I local iterations, the updated local mod-els are aggregated to form the new global model for round 
+
+t + 1 via FedAvg [2]. Prior to uplink transmission, each client k ∈ Nt calculates the submodel update/differential 
+
+d t+1  
+
+> k, c
+
+= wt,I k, c − wt, 0 
+
+> k, c
+
+[15]. Since it is not practical to transmit 
+
+d t+1  
+
+> k, c
+
+in full precision for energy-constrained devices, we quantize it as ˜d t+1  
+
+> k, c
+
+= Qc(d t+1  
+
+> k, c
+
+). Concurrently, the server-side submodels differentials d t+1  
+
+> k, s
+
+= wt,I k, s − wt, 0
+
+> k, s
+
+, bypass transmission quantization entirely, since they never leave the edge server. The next global model is thus generated as 
+
+wt+1 = wt + 1
+
+> K
+
+P
+
+> k∈N t
+
+˜d t+1  
+
+> k
+
+, where the composite model update ˜d t+1  
+
+> k
+
+is a concatenation of ˜d t+1  
+
+> k, c
+
+and d t+1  
+
+> k, s
+
+. This iterative process of model distribution, split training, and aggregation repeats until the global loss function converges to a target accuracy. III. E NERGY EFFICIENT QNN-BASED FSL Having established the GQ-FSL operational mechanics, we now analyze its physical deployment cost. First, we model the energy footprint of the computational and transmission phases required in our framework. Utilizing these models, we then formulate a joint optimization problem to minimize the total system EC by optimally configuring the network split point and precision levels under a target accuracy constraint. 
+
+A. Computing and Transmission Energy Models 1) Computing Model: Following the hardware architecture used in [4], [16], each client k is equipped with a generic two-dimensional computational platform comprising an off-chip DRAM, a two-level hierarchical on-chip memory architecture with a local buffer and a main SRAM of size Sk, c bits, and a parallel neuron array with pk, c multiply-accumulate (MAC) units. To complement these resource-constrained devices, the powerful edge server allocates a dedicated processing unit to each participating client, featuring ps MAC units and S bits of main SRAM. To quantify the computational cost, we adopt precision-dependent energy models for the MAC operations and memory accesses from [4], [16]. In our FSL framework, the computational load is physically distributed between the client and the edge server based on the cut layer ℓc, which indicates the splitting point. Therefore, the client-side load up to the cut layer is parameterized by its assigned MAC operations Mc, activations Oc, and weights 
+
+dc, with intermediate activations at the cut layer of size xcut .The server handles the remaining architecture, yielding Ms =
+
+M − Mc, Os = O − Oc, and ds = d − dc, where M , O, and d
+
+are the corresponding parameters of the full DNN. Note that all these parameters are functions of ℓc, though their explicit dependence is omitted for notational simplicity. For the k-th client operating at a quantization precision level qc, the EC for the FP computation (i.e., inference) per data sample is the sum of the energy consumed by the MAC units computations EC
+
+> k, c
+
+(qc, ℓ c), weight memory ac-cesses EW
+
+> k, c
+
+(qc, ℓ c), activation memory accesses EA
+
+> k, c
+
+(qc, ℓ c),and DRAM accesses EDRAM  
+
+> k, c
+
+(qc, ℓ c), which yields [16] 
+
+EFP  
+
+> k, c
+
+(qc, ℓ c) = EC 
+
+> k, c
+
++ EW 
+
+> k, c
+
++ EA 
+
+> k, c
+
++ EDRAM  
+
+> k, c
+
+. (6) Due to space limitations, we direct the reader to [4], [16] for the expanded mathematical models of these components. The fundamental distinction in our GQ-FSL framework is that these costs are strictly driven by the split-dependent computational load ( Mc, O c, d c). Symmetrically, the server-side FP energy EFP  
+
+> k, s
+
+(qc, q s, ℓ c) follows an identical structure using the server’s designated hardware and split parameters. A critical architectural difference, however, lies in the DRAM access energy EDRAM  
+
+> k, s
+
+(qc, q s, ℓ c), where instead of fetching the raw input data xin at full precision, the server fetches the intermediate quantized activations xcut at precision qc.The BP energy models EBP  
+
+> k, c
+
+(ℓc) and EBP  
+
+> k, s
+
+(ℓc) can be de-rived using the same logic as for the FP, noting that computa-tions are executed in full precision and require approximately twice as many MAC operations as the FP [4]. Consequently, the local computation EC for a single data sample is 
+
+EC 
+
+> k
+
+(qc, q s, ℓ c) = EFP  
+
+> k
+
+(qc, q s, ℓ c) + EBP  
+
+> k
+
+(ℓc), (7) where EFP  
+
+> k
+
+(qc, q s, ℓ c) and EBP  
+
+> k
+
+(ℓc) are the sum of their respective client- and server-side contributions. 
+
+2) Transmission Model: The wireless communication over-head stems from the per-local-iteration exchange of interme-diate cut-layer data and the per-global-round submodel up-loading and broadcasting. Assuming an orthogonal frequency division multiple access (OFDMA) scheme [4], the uplink transmission rate for client k is ru 
+
+> k
+
+= B log 2
+
+
+
+1 + P tx  
+
+> k¯hk
+> N0B
+
+
+
+,where B is the bandwidth, P tx  
+
+> k
+
+is the transmit power, N0 is the noise power spectral density, and ¯hk is the average channel gain. The downlink rate rd 
+
+> k
+
+is formulated analogously using the server’s allocated power P tx s . In each local iteration, client 
+
+k transmits its quantized intermediate activations ( xcut qc bits) during FP, and the server returns the corresponding full-precision gradients ( xcut qmax bits) during BP. The transmis-sion EC for this intermediate exchange per data sample is 
+
+ET 
+
+> k
+
+(qc, ℓ c) = xcut qc
+
+ru
+
+> k
+
+P tx  
+
+> k
+
++ xcut qmax 
+
+rd
+
+> k
+
+P tx s . (8) At the conclusion of a global round t, client k uploads its quantized local submodel update ˜d t+1  
+
+> k
+
+to the server for aggregation. Following aggregation, the server broadcasts the updated global client-side submodel in full precision. The EC incurred by the client and server during the submodel upload and broadcasting phases are, respectively, 
+
+EU 
+
+> k
+
+(qc, ℓ c) = dcqc
+
+ru
+
+> k
+
+P tx  
+
+> k
+
+, EB(ℓc) = dcqmax 
+
+rb P tx  
+
+> b
+
+, (9) where the downlink broadcasting data rate rb is defined similarly to the unicast rates, utilizing broadcasting bandwidth 
+
+Bb, transmit power P tx  
+
+> b
+
+, and the weakest average channel gain among the participants ¯hmin = min k∈N t (¯hk).B. Problem Formulation and Proposed Solution 
+
+To balance the fundamental tradeoff between energy sav-ings and convergence degradation due to quantization errors [4], we formulate the joint optimization of the precision levels (qc, qs) and the splitting point ( ℓc) to satisfy a target accuracy 
+
+ϵ as follows: 
+
+min 
+
+> qc,q s,ℓ c
+
+E
+
+" TX
+
+> t=1
+
+
+
+EB(ℓc) + X
+
+> k∈N t
+
+
+
+EU 
+
+> k
+
+(qc, ℓ c)+ Ib  EC 
+
+> k
+
+(qc, q s, ℓ c) + ET 
+
+> k
+
+(qc, ℓ c)#
+
+(10a) s.t. E[F (wT )] − F (w∗) ≤ ϵ, (10b) 
+
+qc, q s ∈ { 1, . . . , q max }, ℓc ∈ { 1, . . . , ℓ } (10c) where F (wT ) is the global loss function after T global rounds, 
+
+F (w∗) is the optimal loss, and b is the mini-batch size. To evaluate the accuracy constraint (10b), we must an-alyze the convergence behavior of our proposed GQ-FSL framework. This analysis establishes an analytical relationship between the expected optimality gap and the framework pa-rameters, allowing us to explicitly derive the required number of rounds T with respect to ϵ. Following [4], [15], we assume that the loss function is L-smooth, μ-strongly convex and that the variance and the squared norm of the stochastic gradients are bounded by σ2 
+
+> k
+
+and G2. We further assume uniform local dataset sizes across all clients, and define the degree of data heterogeneity Γ as in [15]. By leveraging Eq. (3), the following theorem establishes a generalized upper bound on the convergence rate that explicitly captures the noise induced by our stochastic quantization scheme. 
+
+Theorem 1: Consider a learning rate ηt = βt+γ , where β = 
+
+> 2
+> μ
+
+and γ = max  8 Lμ − 1, I , and let α > L satisfying η1 ≤ 
+
+> α−LαL
+
+. Then, the convergence rate of the proposed GQ-FSL framework satisfies 
+
+E[F (wT )] −F (w∗) ≤ L
+
+2( T I + γ)
+
+ 4ψ2 + ( γ + 1) G2
+
+μ2
+
+
+
++ Lψ 1
+
+2μ ,
+
+(11) 
+
+where 
+
+ψ1 = ( α − μ)
+
+ dc
+
+22qc + ds
+
+22qs
+
+
+
++ 2LΓ
+
+α , (12) 
+
+ψ2 = 8α(I − 1) 2G2
+
+μ(γ + 1) + 2 LΓ + 
+
+> N
+
+X
+
+> k=1
+
+σ2
+
+> k
+
+N 2
+
++ 4I2G2(N − K)
+
+K(N − 1) + 4dcIG 2
+
+K22qc . (13) 
+
+Proof: The complete proof is omitted due to space limi-tations. The derivation integrates the split-architecture quan-tization error bounded in Eq. (3) into the quantized FL frameworks established in [4], [15]. ■
+
+The bound in (11) reveals that as T → ∞ , the expected optimality gap converges to a non-vanishing error floor dic-tated strictly by ψ1, reflecting the inherent quantization bias. Consequently, achieving a target accuracy ϵ imposes minimum threshold requirements on the precisions qc and qs. To obtain the tightest guarantee from Theorem 1, we minimize the right-hand side of (11) with respect to the tunable parameter α.Further asymptotic analysis of the precision levels demon-strates that data heterogeneity ( Γ) acts as an amplifier of this quantization bias. While employing full precision theoretically eliminates this floor, recovering standard FL convergence [17], our GQ-FSL framework actively manages this residual bias while minimizing total EC by strategically tuning the architectural split point alongside the precision levels. Since quantization precision levels and the number of DNN layers are finite, the search space for the decision variables 
+
+{qc, q s, ℓ c} is strictly discrete and bounded. Therefore, we can obtain the optimal configuration through an exhaustive search over the feasible set. To facilitate this search, we must first derive the deterministic expectation of the stochastic objective function (10a). Since the subset Nt of K clients is drawn uniformly at random without replacement from the total N
+
+clients, the expected total EC in (10a) evaluates to 
+
+T
+
+
+
+EEB + KN
+
+> N
+
+X
+
+> k=1
+
+
+
+EU 
+
+> k
+
++ Ib  EC 
+
+> k
+
++ ET
+
+> k
+
+ 
+
+. (14) To compute the expected broadcasting energy, we account for the downlink rate being bottlenecked by the scheduled client with the weakest channel. Let rb 
+
+> k
+
+= Bb log 2
+
+ 1+ P tx  
+
+> b¯hk
+> N0Bb
+
+
+
+denote the theoretical point-to-point downlink rate for client 
+
+k. Because EB(ℓc) is proportional to the maximum inverse rate max k∈N t
+
+1/r b 
+
+> k
+
+, its expected maximum value over the sampled subset is analytically tractable using standard order statistics. By combining this expected broadcast cost with the required global rounds T , derived from the equality condition of the target accuracy constraint (10b), we obtain a fully deterministic objective function that can be minimized. IV. S IMULATION RESULTS 
+
+We simulate a wireless edge network with N = 50 clients uniformly deployed across a 500 × 500 m 2 area around a central edge server, experiencing Rayleigh fading with a path loss exponent of 4 [4]. Each device trains a QNN-based ResNet-18 model on the CIFAR-10 dataset using a mini-batch size of b = 32 . Adapting the initial convolutional layer ( 3 × 3
+
+kernel, stride 1, no max-pooling) yields a baseline architecture with xin = 3072 , d ≈ 11 .2 × 10 6 weights, M ≈ 0.55 × 10 9
+
+MACs, and O ≈ 0.31 × 10 6 activations. We consider ℓ = 10 
+
+candidate splitting points as in [8], omitting split-specific parameters for brevity. Unless otherwise specified, we use 
+
+P tx  
+
+> k
+
+= P tx s = 0 .1 W, P tx  
+
+> b
+
+= 5 W, B = 4 MHz, Bb = 20 
+
+MHz, N0 = −174 dBm/Hz, K = 10 , I = 1 , qmax = 32 
+
+bits, ϵ = 0 .1, μ = 0 .05 , L = 0 .097 , σ2 
+
+> k
+
+= 1 /b , G = 0 .25 ,
+
+Γ = 0 .6 [4]. For the computing model, we use pk, c = ps = 64 ,
+
+Sk, c = 2 MB, and S = 4 MB. All statistical results are averaged over several independent settings. As benchmarks to GQ-FSL, we consider quantized FL (Q-FL) [4] where ℓc = ℓ,and full-precision FSL (FP-FSL) [6] where qc = qs = qmax .Figure 2 shows the minimum total EC for GQ-FSL, Q-FL, and FP-FSL across varying target accuracy thresholds (ϵ) with K = 10 participating clients in each global round. = 0.4 = 0.3 = 0.2 = 0.1 = 0.05 
+
+> Target Accuracy ( )
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> 70
+> Minimum Total Energy (kJ)
+> GQ-FSL
+> Q-FL
+> FP-FSL
+
+Fig. 2. Minimum total EC across varying target accuracies ϵ (K = 10 ). TABLE I OPTIMAL OPTIMIZATION PARAMETERS , M INIMUM ENERGY Emin IN JOULES AND REQUIRED ROUNDS Tmin ACROSS VARYING K (ϵ = 0 .1).                                                                  
+
+> KGQ-FSL Q-FL FP-FSL
+> ℓc, q c, q sEmin Tmin qcEmin Tmin ℓcEmin Tmin
+> 14, 21, 19 3933 479 20 6942 470 45718 459 10 5, 20, 19 23680 293 20 27994 287 434523 281 20 4, 19, 19 45393 283 19 51848 283 466774 272 30 4, 18, 19 67542 281 19 76264 281 499025 269 40 4, 19, 19 89117 278 19 99959 278 4130539 266 50 4, 18, 19 111324 278 19 124463 278 4163159 266
+
+The results confirm that GQ-FSL maintains strict energy superiority over both benchmarks at every evaluated accuracy level. This is attributed to the fact that FSL allows for burden sharing and collaborative training with a powerful edge server. Specifically, the dominant off-chip memory ac-cesses dramatically decrease, along with the communication-expensive model exchange for aggregation, which is done based on a lightweight submodel. As expected, total EC naturally increases as the target accuracy becomes more strict. A notable rise in EC occurs when tightening the threshold to ϵ = 0.05 . At this extreme precision requirement, the allowable quantization noise floor forces all frameworks to rely heavily on extended global rounds and high precision levels, which drastically amplifies the total EC. Even under these severe constraints, GQ-FSL successfully leverages its dynamic architecture and decoupled precision to mitigate the energy spike, outperforming the baselines. Table I summarizes the optimal system parameters, min-imum total EC ( Emin ), and required global rounds ( Tmin )for a target accuracy of ϵ = 0 .1 across selected K values. Once again, GQ-FSL consistently achieves the lowest total EC across all settings, significantly outperforming Q-FL and FP-FSL. Notably, the absolute minimum energy is achieved at K = 1 , effectively collapsing the parallel FSL framework into sequential SL. While seemingly counterintuitive since more participating clients accelerate convergence, this result perfectly aligns with the objective function in Eq. (14), which monotonically increases with K. Specifically, its right-hand side is linear in K, and the expected server broadcasting energy also increases with K, as transmission rate is deter-mined by the worst link of the K clients. Although Tmin 
+
+decreases as K grows, it reaches a limit of diminishing returns, plateauing towards 278 rounds for K > 10 and failing to offset the increasing per-round energy cost. To manage this energy-convergence tradeoff, GQ-FSL exploits its decoupled precision. The optimal split point predominantly settles at 
+
+ℓc = 4, strategically offloading the bulk of the DNN to the edge server ( 28 × more weights). Absorbing this large computational load, its precision ( qs) remains rigidly anchored at 19 bits, balancing between minimizing its substantial EC and preventing quantization bias from breaching the target ac-curacy. Conversely, the client precision ( qc) exhibits a general downward trend from 21 to 18 bits as K increases, actively reducing critical computation and communication EC when 
+
+Tmin decreases. Finally, the shift to ℓc = 5 at K = 10 proves that architectural flexibility outweighs rigid precision scaling. Rather than adopting a more costly qs = 20 to lower Tmin like Q-FL, GQ-FSL strategically redistributes the computational load, maintaining qs = 19 for optimal energy efficiency. V. C ONCLUSION 
+
+This paper proposed the GQ-FSL framework to advance green edge AI and overcome the resource bottlenecks of deploying large-scale DNNs at the wireless edge. By inte-grating FSL and stochastic quantization with distinct precision levels on server and client sides, our framework successfully decouples strict client resource constraints from global model accuracy. We formulated a joint optimization problem rooted in a theoretical convergence bound to strategically configure both the network split point and precision levels. Simulations validate our theoretical analysis and confirm that GQ-FSL is effective in minimizing total system EC, outperforming quantized FL and standard FSL. Ultimately, this approach pro-vides a practical framework for sustainable edge intelligence while simultaneously enabling resource-constrained devices to participate in complex collaborative training. REFERENCES [1] Y. Mao, X. Yu, K. Huang, Y.-J. A. Zhang, and J. Zhang, “Green edge AI: A contemporary survey,” Proc. IEEE , 2024. [2] B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. A. y Arcas, “Communication-efficient learning of deep networks from decentralized data,” in Int. Conf. Artif. Intell. Statist. , pp. 1273–1282, 2017. [3] W. Y. B. Lim et al. , “Federated learning in mobile edge networks: A comprehensive survey,” IEEE Commun. Surveys Tuts. , vol. 22, no. 3, pp. 2031–2063, 2020. [4] M. Kim, W. Saad, M. Mozaffari, and M. Debbah, “Green, quantized federated learning over wireless networks: An energy-efficient design,” 
+
+IEEE Trans. Wireless Commun. , vol. 23, no. 2, pp. 1386–1402, 2024. [5] Z. Lin, G. Qu, X. Chen, and K. Huang, “Split learning in 6G edge networks,” IEEE Wireless Commun. , vol. 31, no. 4, pp. 170–176, 2024. [6] C. Thapa, P. C. M. Arachchige, S. Camtepe, and L. Sun, “SplitFed: When federated learning meets split learning,” in AAAI Conf. Artif. Intell. , vol. 36, pp. 8485–8493, 2022. [7] J. Shao and J. Zhang, “Communication-computation trade-off in resource-constrained edge inference,” IEEE Commun. Mag. , vol. 58, no. 12, pp. 20–26, 2021. [8] Z. Lin et al. , “Efficient parallel split learning over resource-constrained wireless edge networks,” IEEE Trans. Mobile Comput. , vol. 23, no. 10, pp. 9224–9239, 2024. [9] E. Samikwa, A. Di Maio, and T. Braun, “ARES: adaptive resource-aware split learning for internet of things,” Comput. Netw. , vol. 218, p. 109380, 2022. [10] E. Samikwa, A. Di Maio, and T. Braun, “DFL: dynamic federated split learning in heterogeneous IoT,” IEEE Trans. Mach. Learn. Commun. Netw. , vol. 2, pp. 733–752, 2024. [11] H. Ao, H. Tian, and W. Ni, “Federated split learning for edge intelli-gence in resource-constrained wireless networks,” IEEE Trans. Consum. Electron. , vol. 71, no. 2, pp. 4451–4463, 2025. [12] I. Hubara, M. Courbariaux, D. Soudry, R. El-Yaniv, and Y. Bengio, “Quantized neural networks: Training neural networks with low preci-sion weights and activations,” J. Mach. Learn. Res. , vol. 18, no. 187, pp. 1–30, 2018. [13] R. Chen, L. Li, K. Xue, C. Zhang, M. Pan, and Y. Fang, “Energy efficient federated learning over heterogeneous mobile devices via joint design of weight quantization and wireless transmission,” IEEE Trans. Mobile Comput. , vol. 22, no. 12, pp. 7451–7465, 2023. [14] S. Gupta, A. Agrawal, K. Gopalakrishnan, and P. Narayanan, “Deep learning with limited numerical precision,” in Int. Conf. Mach. Learn. ,pp. 1737–1746, 2015. [15] S. Zheng, C. Shen, and X. Chen, “Design and analysis of uplink and downlink communications for federated learning,” IEEE J. Sel. Areas Commun. , vol. 39, no. 7, pp. 2150–2167, 2021. [16] B. Moons, K. Goetschalckx, N. Van Berckelaer, and M. Verhelst, “Min-imum energy quantized neural networks,” in Asilomar Conf. Signals, Syst., Comput. , pp. 1921–1925, 2017. [17] X. Li, K. Huang, W. Yang, S. Wang, and Z. Zhang, “On the convergence of FedAvg on Non-IID Data,” in Int. Conf. Learn. Represent. , 2020.
