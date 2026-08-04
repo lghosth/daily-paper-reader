@@ -1,0 +1,301 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-04T21:03:10.118351+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 6,
+    "quick_skim_target": 11,
+    "quick_selected": 6
+  },
+  "deep_dive": [
+    {
+      "id": "2608.02128v1",
+      "source": "arxiv",
+      "title": "CoRe-GNN: Multilevel Message passing on Coarsened graphs",
+      "abstract": "Training Graph Neural Networks on large graphs is challenged by the memory cost of storing all node representations across layers. We show that several existing scalable approaches can be written as structured modifications of the GNN propagation matrix, providing a unified perspective that exposes their respective limitations. In particular, graph coarsening replaces it by a low-rank approximation that enables spectral guarantees but assigns uniform representations to clustered nodes, while Cluster-GCN restricts the propagation matrix to intra-cluster connections that allow efficient batching but sever long-range information. These are complementary failures of the \\emph{same} decomposition of the graph into groups of nodes. To obtain the best of both worlds, we propose \\textbf{CoRe-GNN}, which performs both propagations in parallel at each layer: a coarsened inter-cluster term capturing long-range structure, and a local intra-cluster term preserving per-node discriminability. We prove that CoRe-GNN inherits analogous approximation guarantees to those of graph coarsening, and introduce a natural cluster-based \\emph{batching scheme} that scales to graphs with millions of nodes. On node classification benchmarks spanning homophilic, heterophilic, large-scale, and long-range graphs, CoRe-GNN outperforms both graph coarsening and Cluster-GCN baselines. Notably, CoRe-GNN reaches competitive accuracy on \\emph{long-range} tasks, while remaining memory-efficient through batching.",
+      "authors": [
+        "Antonin Joly",
+        "Nicolas Keriven",
+        "Aline Roumy"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-03T12:18:58+00:00",
+      "link": "https://arxiv.org/pdf/2608.02128v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "graph coarsening and cluster-based GNN training, directly related to graph partitioning strategies",
+      "llm_evidence_cn": "图粗化与基于簇的GNN训练，直接关联图划分策略",
+      "llm_evidence": "图粗化与基于簇的GNN训练，直接关联图划分策略",
+      "canonical_evidence": "图粗化与基于簇的GNN训练，直接关联图划分策略",
+      "llm_tldr_en": "CoRe-GNN proposes multilevel message passing on coarsened graphs to unify and improve scalable GNN training, balancing spectral guarantees and long-range information beyond Cluster-GCN.",
+      "llm_tldr_cn": "现有大规模GNN训练方法在可扩展性和表征质量上各有局限：图粗化虽提供谱保证但会抹平簇内节点差异，Cluster-GCN虽利于批处理但切断长程信息。CoRe-GNN提出在粗化图上进行多级消息传递，将两者优势结合并统一为对传播矩阵的结构化修改。实验表明该方法能在大规模图上更高效地训练GNN，同时保持节点表征的区分度与远程信息传播。这项工作为图划分与粗化策略在分布式GNN训练中的应用提供了新视角。",
+      "llm_tldr": "现有大规模GNN训练方法在可扩展性和表征质量上各有局限：图粗化虽提供谱保证但会抹平簇内节点差异，Cluster-GCN虽利于批处理但切断长程信息。CoRe-GNN提出在粗化图上进行多级消息传递，将两者优势结合并统一为对传播矩阵的结构化修改。实验表明该方法能在大规模图上更高效地训练GNN，同时保持节点表征的区分度与远程信息传播。这项工作为图划分与粗化策略在分布式GNN训练中的应用提供了新视角。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.29071v1",
+      "source": "arxiv",
+      "title": "Federated Foundation Models Fine-Tuning with Heterogeneous Compressed Clients",
+      "abstract": "Federated learning of foundation models faces a fundamental resource-asymmetry challenge: the institutions holding the most valuable domain-specific data cannot host billion-parameter models. Existing heterogeneous federated approaches attempt to bridge this gap through parameter-efficient tuning, model pruning, or knowledge distillation, yet each trades away a critical property, whether full-model memory reduction, architectural self-containedness, or representational fidelity, leaving the core tension unresolved. We propose FedSLM, a parameter-centric framework for federated fine-tuning with heterogeneous compressed clients. FedSLM uses SVD-based decomposition to produce self-contained client models, whose low-rank subspaces form nested manifolds that are structurally compatible for aggregation. It then applies a two-stage protocol that synchronizes lightweight adapters within compression groups and fuses full-rank reconstructions across groups via structural alignment. Finally, a weak-to-strong elicitation step with auxiliary confidence loss transfers the aggregated knowledge to the full-scale server, while an explicit bias--variance trade-off mitigates compression artifacts. We provide theoretical guarantees for adapter-level aggregation, subspace-alignment bounds for cross-group fusion, and a characterization of how the confidence loss mitigates weak-supervision noise. Experiments on natural language and vision--language benchmarks show that FedSLM outperforms existing federated baselines under both IID and non-IID partitions, while client models operate at roughly 50% of the GPU memory required by the full model.",
+      "authors": [
+        "Shengkun Zhu",
+        "Jinshan Zeng",
+        "Zhihua Allen-Zhao",
+        "Mayi Xu",
+        "Quanqing Xu",
+        "Wei Ren",
+        "Qiang Yang",
+        "Yang Liu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-31T06:45:56+00:00",
+      "link": "https://arxiv.org/pdf/2607.29071v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "SVD-based client compression for communication-efficient federated fine-tuning",
+      "llm_evidence_cn": "基于SVD的客户端压缩实现通信高效联邦微调",
+      "llm_evidence": "基于SVD的客户端压缩实现通信高效联邦微调",
+      "canonical_evidence": "基于SVD的客户端压缩实现通信高效联邦微调",
+      "llm_tldr_en": "FedSLM is a parameter-centric federated fine-tuning framework for heterogeneous compressed clients, using SVD decomposition to create self-contained low-rank client models for communication-efficient training of foundation models.",
+      "llm_tldr_cn": "联邦学习基础模型面临资源不对称挑战：拥有重要数据的机构往往无法承载十亿参数模型。现有方法牺牲了内存减少、架构自包含或表示保真度。论文提出FedSLM，利用SVD分解生成自包含的低秩客户端模型，其低秩子空间满足嵌套流形结构，从而在联邦微调中实现压缩和高效通信，缓解客户端异构性。该方法为资源受限场景下的基础模型联邦训练提供了新途径。",
+      "llm_tldr": "联邦学习基础模型面临资源不对称挑战：拥有重要数据的机构往往无法承载十亿参数模型。现有方法牺牲了内存减少、架构自包含或表示保真度。论文提出FedSLM，利用SVD分解生成自包含的低秩客户端模型，其低秩子空间满足嵌套流形结构，从而在联邦微调中实现压缩和高效通信，缓解客户端异构性。该方法为资源受限场景下的基础模型联邦训练提供了新途径。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.00491v1",
+      "source": "arxiv",
+      "title": "HP-JEPA: Hierarchical Partitioning for Multi-Resolution Graph Joint-Embedding Predictive Learning",
+      "abstract": "Graph self-supervised learning aims to learn transferable representations from large-scale unlabeled graph data. Joint-embedding predictive architectures (JEPAs) avoid explicit negative-pair construction and raw-input reconstruction by predicting masked targets directly in latent space. However, existing graph JEPAs typically rely on a single predefined graph partition, biasing the learned representations toward one structural granularity and limiting their ability to capture complementary patterns at different graph scales. To address this limitation, we propose HP-JEPA, a hierarchical partitioning framework for multi-resolution graph joint-embedding prediction. HP-JEPA organizes each graph into an ordered bank of coarse-to-fine partition resolutions and performs context-target latent prediction separately at each resolution using an online encoder, an exponential-moving-average target encoder, and a latent predictor. The resulting resolution-specific graph representations are subsequently integrated through concatenation or task-specific resolution weighting, allowing downstream models to combine complementary local, regional, and global structural information. Experiments on seven graph classification benchmarks and one graph regression benchmark show that HP-JEPA outperforms the fixed-resolution Graph-JEPA baseline on 6 of 8 tasks, improving upon Graph-JEPA on most evaluated benchmarks. Size-stratified analyses further show that HP-JEPA achieves higher accuracy than Graph-JEPA in most evaluated graph-size quartiles on three representative datasets. These results highlight the effectiveness of hierarchical multi-resolution partitioning for transferable graph representation learning.",
+      "authors": [
+        "Ruichen Xu",
+        "Jingxiang Qu",
+        "Wenhan Gao",
+        "Jiaxing Zhang",
+        "Linsey Pang",
+        "Ravid Shwartz-Ziv",
+        "Yann LeCun",
+        "Yuefan Deng"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-01T07:28:39+00:00",
+      "link": "https://arxiv.org/pdf/2608.00491v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "hierarchical graph partitioning for multi-resolution graph representation learning",
+      "llm_evidence_cn": "用于多分辨率图表示学习的层次化图划分",
+      "llm_evidence": "用于多分辨率图表示学习的层次化图划分",
+      "canonical_evidence": "用于多分辨率图表示学习的层次化图划分",
+      "llm_tldr_en": "HP-JEPA introduces a hierarchical partitioning framework that organizes graphs into coarse-to-fine partitions for multi-resolution joint-embedding predictive learning, avoiding reliance on a single predefined graph partition.",
+      "llm_tldr_cn": "现有图联合嵌入预测架构通常使用单一预定义图划分，导致表示偏向一种结构粒度，难以捕捉不同尺度模式。为此提出HP-JEPA，构建从粗到细的有序图划分库，实现多分辨率图自监督学习。该方法在无负样本和原始输入重构的前提下学习更丰富的层次化表示，为图表示学习提供了一种新的多尺度框架。",
+      "llm_tldr": "现有图联合嵌入预测架构通常使用单一预定义图划分，导致表示偏向一种结构粒度，难以捕捉不同尺度模式。为此提出HP-JEPA，构建从粗到细的有序图划分库，实现多分辨率图自监督学习。该方法在无负样本和原始输入重构的前提下学习更丰富的层次化表示，为图表示学习提供了一种新的多尺度框架。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.00623v1",
+      "source": "arxiv",
+      "title": "Towards Effective Federated Multimodal Graph Learning via Navigating Multifaceted Heterogeneity",
+      "abstract": "Multimodal-attributed graphs (MAGs), where nodes carry heterogeneous semantic content across multiple modalities while edges encode relational dependencies, have been widely adopted across diverse domains. Federated multimodal graph learning (FMGL) extends federated graph learning (FGL) to MAGs, enabling collaborative optimization across decentralized MAGs without exposing raw data. However, naively applying existing FGL methods to FMGL is insufficient, as they fail to navigate the multifaceted heterogeneity inherent in decentralized MAGs, including task heterogeneity across diverse client objectives, modality heterogeneity from discrepant modality quality and semantic domains, and topology heterogeneity arising from divergent topological patterns with low cross-modality correlation. To address these challenges, we propose Federated multimodal graph learning with Topology-aware Cross-modal Routing (FedTCR), the first systematic algorithm designed for FMGL. To handle task heterogeneity, FedTCR employs a two-stage paradigm that comprises federated task-agnostic pre-training followed by isolated task-oriented fine-tuning. To jointly address modality and topology heterogeneity, FedTCR introduces a topology-aware cross-modal routing mechanism. Concretely, each client distills modality-specific knowledge into compact prototypes via topology-aware importance-weighted aggregation informed by graph structure; the server then evaluates cross-client cross-modal relationships among these structure-informed prototypes and routes informative ones as contrastive references, driving a tri-level cross-modal contrastive learning scheme that jointly aligns cross-client modalities while preserving discrimination. Experiments across 7 domains demonstrate that FedTCR outperforms state-of-the-art baselines on both graph-centric and modality-centric tasks.",
+      "authors": [
+        "Yinlin Zhu",
+        "Di Wu",
+        "Yi Zhang",
+        "Xunkai Li",
+        "Wang Luo",
+        "Wei-Jin Huang",
+        "Miao Hu",
+        "Guocong Quan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-01T12:29:38+00:00",
+      "link": "https://arxiv.org/pdf/2608.00623v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "federated graph learning over decentralized multimodal graphs as a distributed GNN training setup",
+      "llm_evidence_cn": "面向去中心化多模态图数据的联邦图学习，属于分布式图神经网络训练场景",
+      "llm_evidence": "面向去中心化多模态图数据的联邦图学习，属于分布式图神经网络训练场景",
+      "canonical_evidence": "面向去中心化多模态图数据的联邦图学习，属于分布式图神经网络训练场景",
+      "llm_tldr_en": "This paper studies federated multimodal graph learning, addressing task, modality and topology heterogeneity across decentralized graphs, contributing to distributed GNN training systems.",
+      "llm_tldr_cn": "现有联邦图学习在面向多模态属性图时难以应对任务、模态与拓扑等多维异构性，简单沿用已有方法效果不佳。本文提出面向高效联邦多模态图学习的方法，通过显式建模和适应多客户端异构性来协作优化去中心化多模态图。实验证明该方法在多类联邦图学习基准上优于现有基线，为分布式图神经网络训练系统提供了有前景的方向。",
+      "llm_tldr": "现有联邦图学习在面向多模态属性图时难以应对任务、模态与拓扑等多维异构性，简单沿用已有方法效果不佳。本文提出面向高效联邦多模态图学习的方法，通过显式建模和适应多客户端异构性来协作优化去中心化多模态图。实验证明该方法在多类联邦图学习基准上优于现有基线，为分布式图神经网络训练系统提供了有前景的方向。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "distributed training systems for graph neural networks",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.01707v1",
+      "source": "arxiv",
+      "title": "On Topology's Role in ML Training Performance",
+      "abstract": "Modern machine learning training workloads run on large-scale networks of compute accelerators. The networks commonly deployed in these systems are typically variations of two basic topologies: the fat-tree Clos and the torus. In this paper, we derive analytical results the elucidate how the choice of topology shapes achievable performance for the small set of collective communication operations that underlies modern machine learning workloads. We also consider how these results change when we include additional factors such as network failures and job placement strategies. Overall, we find that one topology does not dominate in all cases, but that the Clos achieves better collective completion time in most cases and provides benefits in resilience and flexibility.",
+      "authors": [
+        "Sarah McClure",
+        "Tegan Wilson",
+        "Brad Karp",
+        "Michael Mitzenmacher",
+        "Sylvia Ratnasamy",
+        "Scott Shenker",
+        "Minlan Yu"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI"
+      ],
+      "published": "2026-08-03T05:14:08+00:00",
+      "link": "https://arxiv.org/pdf/2608.01707v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "analyzes how network topology shapes collective communication completion time, relevant to communication-efficient distributed training",
+      "llm_evidence_cn": "分析网络拓扑如何影响集合通信完成时间，与通信高效分布式训练密切相关",
+      "llm_evidence": "分析网络拓扑如何影响集合通信完成时间，与通信高效分布式训练密切相关",
+      "canonical_evidence": "分析网络拓扑如何影响集合通信完成时间，与通信高效分布式训练密切相关",
+      "llm_tldr_en": "Derives analytical results showing how fat-tree Clos and torus network topologies shape collective communication performance in ML training, and that Clos generally achieves better completion time and resilience.",
+      "llm_tldr_cn": "大规模机器学习训练依赖集群网络中的集合通信，而网络拓扑对通信性能影响显著。本文对常见Clos与torus拓扑进行理论分析，给出拓扑选择如何影响训练通信完成时间。研究表明Clos在多数情况下能获得更优的集合通信完成时间，并在故障恢复和灵活性上具有优势。该分析为通信高效的分布式训练网络设计提供了理论基础。",
+      "llm_tldr": "大规模机器学习训练依赖集群网络中的集合通信，而网络拓扑对通信性能影响显著。本文对常见Clos与torus拓扑进行理论分析，给出拓扑选择如何影响训练通信完成时间。研究表明Clos在多数情况下能获得更优的集合通信完成时间，并在故障恢复和灵活性上具有优势。该分析为通信高效的分布式训练网络设计提供了理论基础。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.01160v1",
+      "source": "arxiv",
+      "title": "Differentiable Lifting for Topological Neural Networks",
+      "abstract": "Topological neural networks (TNNs) enable leveraging high-order structures on graphs (e.g., cycles and cliques) to boost the expressive power of message-passing neural networks. In turn, however, these structures are typically identified a priori through an unsupervised graph lifting operation. Notwithstanding, this choice is crucial and may have a drastic impact on a TNN's performance on downstream tasks. To circumvent this issue, we propose $\\partial$lift (DiffLift), a general framework for learning graph liftings to hypergraphs and cellular- and simplicial complexes in an end-to-end fashion. In particular, our approach leverages learned vertex-level latent representations to identify and parameterize distributions over candidate higher-order cells for inclusion. This results in a scalable model which can be readily integrated into any TNN. Our experiments show that $\\partial$lift outperforms existing lifting methods on multiple benchmarks for graph and node classification across different TNN architectures. Notably, our approach leads to gains of up to 45% over static liftings, including both connectivity- and feature-based ones.",
+      "authors": [
+        "Jorge Luiz Franco",
+        "Gabriel Duarte",
+        "Alexander Nikitin",
+        "Moacir Ponti",
+        "Diego Mesquita",
+        "Amauri H. Souza"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.SI"
+      ],
+      "published": "2026-08-02T11:30:09+00:00",
+      "link": "https://arxiv.org/pdf/2608.01160v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "differentiable search over graph liftings for topological neural networks",
+      "llm_evidence_cn": "针对拓扑神经网络的可微图提升搜索",
+      "llm_evidence": "针对拓扑神经网络的可微图提升搜索",
+      "canonical_evidence": "针对拓扑神经网络的可微图提升搜索",
+      "llm_tldr_en": "Introduces DiffLift, a general differentiable framework for learning graph liftings to hypergraphs and cellular and simplicial complexes in an end-to-end fashion, replacing unsupervised a priori lifting in topological neural networks.",
+      "llm_tldr_cn": "拓扑神经网络通常通过无监督的图提升操作预先确定高阶结构，但这种选择对性能影响很大。为此提出DiffLift，一种端到端可微分框架，能够学习到超图、胞腔复形和单纯复形的图提升。该方法利用学习到的顶点级潜在表示识别和参数化候选高阶单元分布，从而让结构适应下游任务。实验表明该框架可提升拓扑神经网络的表达能力，为图结构的自动学习提供了通用范式。",
+      "llm_tldr": "拓扑神经网络通常通过无监督的图提升操作预先确定高阶结构，但这种选择对性能影响很大。为此提出DiffLift，一种端到端可微分框架，能够学习到超图、胞腔复形和单纯复形的图提升。该方法利用学习到的顶点级潜在表示识别和参数化候选高阶单元分布，从而让结构适应下游任务。实验表明该框架可提升拓扑神经网络的表达能力，为图结构的自动学习提供了通用范式。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.02222v1",
+      "source": "arxiv",
+      "title": "CRIP: Channel Level Representation Injection for Personalized One-Shot Federated Learning",
+      "abstract": "One-shot federated learning (OSFL) has emerged as a promising collaborative model learning framework with only a single round of communication, offering significant advantages in communication efficiency and privacy preservation. However, OSFL often faces inherent limitations under severe domain heterogeneity across clients due to the lack of iterative knowledge exchange. Most existing OSFL methods require an auxiliary public dataset for knowledge distillation or leverage statistical information for parameter-level aggregation, overlooking feature shift caused by domain heterogeneity. To address these challenges, we propose CRIP, a personalized OSFL framework that operates in the representation space via channel-level feature alignment. To achieve this, each client uploads its feature extractor to the server, which broadcasts all extractors back to every client. Since not all source clients share compatible feature distributions with the target client, indiscriminate fusion of cross-client features would introduce domain-specific noise. Therefore, CRIP effectively measures the channel-wise representational similarity between the target client and each source client on a small local mini-batch, and selectively fuses only the most compatible features. Extensive experiments on domain-heterogeneous benchmarks such as DomainNet, PACS, and Office-Home demonstrate that CRIP consistently outperforms local models and state-of-the-art baselines, validating the effectiveness of representation-space personalization under extreme domain heterogeneity.",
+      "authors": [
+        "Zijian Jiang",
+        "Chaoli Sun",
+        "Handing Wang",
+        "Xilu Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-03T13:41:07+00:00",
+      "link": "https://arxiv.org/pdf/2608.02222v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "one-shot federated learning explicitly reduces training communication to a single round",
+      "llm_evidence_cn": "单轮联邦学习将训练通信压缩到一轮，直接满足通信高效训练需求",
+      "llm_evidence": "单轮联邦学习将训练通信压缩到一轮，直接满足通信高效训练需求",
+      "canonical_evidence": "单轮联邦学习将训练通信压缩到一轮，直接满足通信高效训练需求",
+      "llm_tldr_en": "Proposes CRIP for one-shot federated learning, reducing training communication to a single round and improving personalization under domain heterogeneity via channel-level representation alignment without auxiliary public data.",
+      "llm_tldr_cn": "单轮联邦学习仅需一轮通信，能显著降低通信开销，但在域异构下缺少迭代知识交换，现有方法常依赖公共数据集或参数级聚合。本文提出CRIP，在表征空间通过通道级特征对齐实现个性化联邦学习，无需辅助公共数据。实验表明CRIP能有效缓解域差异带来的特征偏移，在保持通信效率的同时提升个性化性能。该工作为通信高效的协作训练提供了新思路。",
+      "llm_tldr": "单轮联邦学习仅需一轮通信，能显著降低通信开销，但在域异构下缺少迭代知识交换，现有方法常依赖公共数据集或参数级聚合。本文提出CRIP，在表征空间通过通道级特征对齐实现个性化联邦学习，无需辅助公共数据。实验表明CRIP能有效缓解域差异带来的特征偏移，在保持通信效率的同时提升个性化性能。该工作为通信高效的协作训练提供了新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
