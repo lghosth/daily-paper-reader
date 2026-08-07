@@ -18,33 +18,23 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-06
-- 运行时间：2026-08-06 05:44:03 北京时间
+- 最新运行日期：2026-08-07
+- 运行时间：2026-08-07 09:53:40 北京时间
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：2
-- 速读区：2
-- 下次更新：约 2026-08-07 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 本次总论文数：0
+- 精读区：0
+- 速读区：0
+- 下次更新：约 2026-08-08 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日精读4篇论文（2精读+2速读），聚焦分布式训练与图聚类、联邦学习优化。最值得关注的是《Configurable and Hierarchical Allreduce》与《TAOT》两篇8.0分工作，分别针对通信优化和MoE专家副本放置。建议优先阅读Allreduce的可配置分层设计，对理解大规模训练通信瓶颈很有帮助。
-- 详情：[2026-08-06 日报](/202608/05/README)
+> 今日无新推荐，系统未产出可展示论文。
+- 详情：[2026-08-07 日报](/202608/07/README)
 
 ### 精读区论文标签
-1. [Configurable and Hierarchical Allreduce](/202608/05/2608.02884v1-configurable-and-hierarchical-allreduce)  
-   标签：评分：8.0/10、query:dgnn-nas
-   evidence：优化Allreduce集合通信，为分布式机器学习训练降低通信开销
-2. [TAOT: Topology-Aware Optimal Transport for Dynamic Expert Replica Placement in MoE Training](/202608/05/2608.03676v1-taot-topology-aware-optimal-transport-for-dynamic-expert-replica-placement-in-moe-training)  
-   标签：评分：8.0/10、query:dgnn-nas
-   evidence：通过拓扑感知副本放置实现通信高效分布式训练
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [GPU-Accelerated Multilevel Graph Clustering: A Parallel Perspective on Louvain and Leiden](/202608/05/2608.01503v1-gpu-accelerated-multilevel-graph-clustering-a-parallel-perspective-on-louvain-and-leiden)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：提出Louvain与Leiden的GPU并行实现，用于大规模图聚类，为分布式图划分提供方法
-2. [Cluster-Aware Over-the-Air Federated Learning with Energy-Harvesting Devices: From Global Training to Model Personalization](/202608/05/2608.01426v1-cluster-aware-over-the-air-federated-learning-with-energy-harvesting-devices-from-global-training-to-model-personalization)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：面向集群的空中联邦学习，处理通信与能量约束，提升分布式训练效率
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card dpr-home-panel">
