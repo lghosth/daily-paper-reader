@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-08 <!--dpr-date:20260807-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/07/2608.06046v1-ml-for-ml" data-sidebar-item="{&quot;title&quot;: &quot;ML-for-ML&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.06046v1-ml-for-ml&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;联合优化网络侧与机器学习侧的通信参数以加快训练收敛&quot;}">ML-for-ML</a>
   * 2026-08-06 <!--dpr-date:20260805-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/05/2608.02884v1-configurable-and-hierarchical-allreduce" data-sidebar-item="{&quot;title&quot;: &quot;Configurable and Hierarchical Allreduce&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.02884v1-configurable-and-hierarchical-allreduce&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;优化Allreduce集合通信，为分布式机器学习训练降低通信开销&quot;}">Configurable and Hierarchical Allreduce</a>

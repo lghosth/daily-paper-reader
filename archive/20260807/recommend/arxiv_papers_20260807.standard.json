@@ -1,16 +1,56 @@
 {
   "mode": "standard",
-  "generated_at": "2026-08-07T01:53:40.359292+00:00",
+  "generated_at": "2026-08-07T20:24:27.056395+00:00",
   "stats": {
     "mode": "standard",
     "tag_count": 1,
-    "deep_divecandidates": 0,
+    "deep_divecandidates": 1,
     "deep_cap": 6,
-    "deep_selected": 0,
+    "deep_selected": 1,
     "quick_candidates": 0,
     "quick_skim_target": 11,
     "quick_selected": 0
   },
-  "deep_dive": [],
+  "deep_dive": [
+    {
+      "id": "2608.06046v1",
+      "source": "arxiv",
+      "title": "ML-for-ML",
+      "abstract": "AI training workloads are growing rapidly, making their time, energy, and infrastructure costs increasingly important. In shared cloud clusters, training and fine-tuning jobs compete with co-running workloads for network resources, while network mechanisms and ML training choices are typically optimized separately: networking controls how bytes move, whereas ML systems control when and how much communication occurs. We argue that this separation leaves end-to-end performance on the table.   We present ML-for-ML, a cross-layer perspective in which network-side and ML-side knobs are selected jointly under a shared time-to-target-loss objective. Our preliminary prototype shows that by co-optimizing the ML and network parameters, we reach the target loss up to 42% faster.",
+      "authors": [
+        "Yutong Zhao",
+        "Noga H. Rotman",
+        "Gianni Antichi",
+        "Ran Ben Basat"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI",
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-08-06T13:57:23+00:00",
+      "link": "https://arxiv.org/pdf/2608.06046v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Jointly optimizes network-side and ML-side communication knobs to speed up training convergence",
+      "llm_evidence_cn": "联合优化网络侧与机器学习侧的通信参数以加快训练收敛",
+      "llm_evidence": "联合优化网络侧与机器学习侧的通信参数以加快训练收敛",
+      "canonical_evidence": "联合优化网络侧与机器学习侧的通信参数以加快训练收敛",
+      "llm_tldr_en": "This paper argues that separating network and ML training optimization wastes efficiency, and presents a cross-layer approach that co-optimizes communication and training parameters to reach target loss 42% faster.",
+      "llm_tldr_cn": "现有AI训练中网络传输与机器学习训练参数通常是分离优化的，导致端到端训练效率受损。本文提出ML-for-ML跨层协同优化视角，在统一的到达目标损失时间目标下联合选择网络侧与ML侧参数。初步原型表明，该协同优化可使达到目标损失的速度最高提升42%。这项工作为通信高效的分布式训练系统设计提供了新的系统优化思路。",
+      "llm_tldr": "现有AI训练中网络传输与机器学习训练参数通常是分离优化的，导致端到端训练效率受损。本文提出ML-for-ML跨层协同优化视角，在统一的到达目标损失时间目标下联合选择网络侧与ML侧参数。初步原型表明，该协同优化可使达到目标损失的速度最高提升42%。这项工作为通信高效的分布式训练系统设计提供了新的系统优化思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
   "quick_skim": []
 }
