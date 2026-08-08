@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-09 <!--dpr-date:20260808-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/08/2608.05127v1-sstqprivacy-preserving-vector-quantization-via-subsampled-stochastic-turboquant" data-sidebar-item="{&quot;title&quot;: &quot;SSTQ:Privacy-Preserving Vector Quantization via Subsampled Stochastic TurboQuant&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.05127v1-sstqprivacy-preserving-vector-quantization-via-subsampled-stochastic-turboquant&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;面向分布式优化中的低通信成本问题，提出向量量化方案&quot;}">SSTQ:Privacy-Preserving Vector Quantization via Subsampled Stochastic TurboQuant</a>
   * 2026-08-08 <!--dpr-date:20260807-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/07/2608.06046v1-ml-for-ml" data-sidebar-item="{&quot;title&quot;: &quot;ML-for-ML&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.06046v1-ml-for-ml&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;联合优化网络侧与机器学习侧的通信参数以加快训练收敛&quot;}">ML-for-ML</a>
