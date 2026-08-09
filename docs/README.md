@@ -18,27 +18,25 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-09
-- 运行时间：2026-08-09 04:35:52 北京时间
+- 最新运行日期：2026-08-10
+- 运行时间：2026-08-10 04:34:22 北京时间
 - 运行状态：成功
 - 本次总论文数：1
-- 精读区：1
-- 速读区：0
-- 下次更新：约 2026-08-10 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 精读区：0
+- 速读区：1
+- 下次更新：约 2026-08-11 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日精读1篇论文，聚焦隐私保护的矢量量化新方法。  
-最值得关注的是《SSTQ》通过子采样随机涡轮量化，在压缩与隐私间取得平衡（8.0/10）。  
-建议对隐私计算感兴趣的读者深入研读此方法，后续可关注其部署效率验证。
-- 详情：[2026-08-09 日报](/202608/08/README)
+今日仅速读1篇论文，关注图神经网络在归纳任务中的表现。值得留意的是《Benchmarking Sheaf Neural Networks for Inductive Tasks》（6.0分），其基准测试结果或可参考。若时间有限，建议先浏览该文的实验设置与基线对比，再决定是否深读。
+- 详情：[2026-08-10 日报](/202608/09/README)
 
 ### 精读区论文标签
-1. [SSTQ:Privacy-Preserving Vector Quantization via Subsampled Stochastic TurboQuant](/202608/08/2608.05127v1-sstqprivacy-preserving-vector-quantization-via-subsampled-stochastic-turboquant)  
-   标签：评分：8.0/10、query:dgnn-nas
-   evidence：面向分布式优化中的低通信成本问题，提出向量量化方案
+- 本次无精读推荐。
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [Benchmarking Sheaf Neural Networks for Inductive Tasks](/202608/09/2608.02558v1-benchmarking-sheaf-neural-networks-for-inductive-tasks)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：系统评估Sheaf GNN架构设计空间，直接为图神经网络架构搜索的搜索空间设计提供依据。
 
 
 <div class="dpr-home-promo-card dpr-home-panel">

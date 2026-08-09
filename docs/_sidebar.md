@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-10 <!--dpr-date:20260809-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/09/2608.02558v1-benchmarking-sheaf-neural-networks-for-inductive-tasks" data-sidebar-item="{&quot;title&quot;: &quot;Benchmarking Sheaf Neural Networks for Inductive Tasks&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.02558v1-benchmarking-sheaf-neural-networks-for-inductive-tasks&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;系统评估Sheaf GNN架构设计空间，直接为图神经网络架构搜索的搜索空间设计提供依据。&quot;}">Benchmarking Sheaf Neural Networks for Inductive Tasks</a>
   * 2026-08-09 <!--dpr-date:20260808-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/08/2608.05127v1-sstqprivacy-preserving-vector-quantization-via-subsampled-stochastic-turboquant" data-sidebar-item="{&quot;title&quot;: &quot;SSTQ:Privacy-Preserving Vector Quantization via Subsampled Stochastic TurboQuant&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.05127v1-sstqprivacy-preserving-vector-quantization-via-subsampled-stochastic-turboquant&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;面向分布式优化中的低通信成本问题，提出向量量化方案&quot;}">SSTQ:Privacy-Preserving Vector Quantization via Subsampled Stochastic TurboQuant</a>

@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-10",
+  "date": "2026-08-09",
+  "generated_at": "2026-08-09T20:34:26",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/09/2608.02558v1-benchmarking-sheaf-neural-networks-for-inductive-tasks",
+      "section": "quick",
+      "title_en": "Benchmarking Sheaf Neural Networks for Inductive Tasks",
+      "authors": "Stefano Fiorini, Edoardo Coppola, Pietro Liò",
+      "date": "2026-08-03",
+      "pdf": "https://arxiv.org/pdf/2608.02558v1",
+      "score": "6.0",
+      "evidence": "系统评估Sheaf GNN架构设计空间，直接为图神经网络架构搜索的搜索空间设计提供依据。",
+      "tldr": "现有Sheaf神经网络（SNN）的评估几乎局限于传导节点分类，归纳场景下的行为尚属空白。本文构建了首个系统基准，在无需组装Sheaf拉普拉斯的消息传递重公式下，扫描三种扩散机制、三种限制映射、三种stalk维度和六种GNN组件，共1890个受控实验。结果表明：限制映射是主导设计，一般映射更优；增大stalk只增容量不增长程；架构组件比sheaf算子本身更能解释性能差异。SNN可迁移至归纳设置，但未超越最强基线，差距数据集相关；实际部署中应优先调节周围架构。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Sheaf Neural Networks (SNNs) generalize message passing by replacing scalar edge weights of standard Graph Neural Networks (GNNs) with learnable, edge-dependent restriction maps between node stalks. Despite their strong theoretical foundations and promising transductive results, SNNs have been evaluated almost exclusively on transductive node classification, leaving their behaviour under inductive protocols unknown. We address this gap through the first systematic benchmark of the sheaf design space, evaluating three diffusion mechanisms (neural sheaf diffusion, sheaf attention, and sheaf attention with Graph Attention Network v2), three restriction-map parameterizations, three stalk dimensions, and six modern GNN architectural components, within a message-passing reformulation that never assembles the heavy sheaf Laplacian, making the full design space trainable under cross-graph batching. Across $1{,}890$ controlled experiments on 14 inductive datasets, multiple insights emerge: restriction maps are the dominant design choice and general maps are preferable, larger stalks add capacity but not long-range reach, architectural components explain more performance variation than the entire sheaf-specific design space itself. Under a matched protocol, SNNs transfer to inductive settings but do not reach the strongest baselines, with gaps being dataset-dependent. Practically, a single sheaf configuration can generalize across datasets, so effort is better spent tuning the surrounding architectural recipe than the sheaf operator itself.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
