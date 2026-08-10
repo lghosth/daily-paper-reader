@@ -1,0 +1,251 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-10T19:52:46.728428+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2608.06441v1",
+      "source": "arxiv",
+      "title": "SNI-GNN: SmartNIC-Assisted Full-Graph GNN Training with In-Network Embedding Prediction",
+      "abstract": "Full-graph GNN training delivers high accuracy but scales poorly on multi-server clusters due to heavy, irregular inter-node embedding exchanges. We present SNI-GNN, a SmartNIC-assisted full-graph training system that reduces communication while preserving accuracy by predicting remote embeddings in-network. SNI-GNN deploys a lightweight linear-trend predictor on SmartNICs to refine cached historical embeddings, coupled with an importance-based boundary-node sampling policy and an asynchronous DPU--GPU data pipeline with intermediate-result reuse. We provide error and convergence bounds showing that predictor bias remains controlled under bounded second-order dynamics and yields standard non-convex convergence with inexact gradients. Implemented on NVIDIA BlueField-3, SNI-GNN integrates with state-of-the-art full-graph systems, cuts communication by 21--45\\%, achieves 1.3--3.6$\\times$ end-to-end speedups over BNS-GCN and up to 1.29$\\times$ over baseline SANCUS, with accuracy loss $\\leq 0.01$, and scales efficiently to 16 GPUs on graphs with up to tens of millions of edges. These results indicate SmartNIC-based in-network prediction is a practical complement to partitioning and compression techniques for communication-efficient full-graph GNN training at scale.",
+      "authors": [
+        "Guofan Yu",
+        "Sitian Chen",
+        "Zhenheng Tang",
+        "Xiaowen Chu",
+        "Amelie Chi Zhou"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "published": "2026-08-06T11:03:36+00:00",
+      "link": "https://arxiv.org/pdf/2608.06441v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "SmartNIC-assisted full-graph GNN training with in-network embedding prediction to reduce inter-node communication, directly matching communication-efficient graph learning systems.",
+      "llm_evidence_cn": "利用智能网卡预测嵌入以减少节点间通信，直接对应通信高效图学习系统。",
+      "llm_evidence": "利用智能网卡预测嵌入以减少节点间通信，直接对应通信高效图学习系统。",
+      "canonical_evidence": "利用智能网卡预测嵌入以减少节点间通信，直接对应通信高效图学习系统。",
+      "llm_tldr_en": "SNI-GNN reduces inter-node embedding exchange in full-graph GNN training by predicting remote embeddings on SmartNICs with an asynchronous data pipeline, achieving communication reduction and accuracy preservation.",
+      "llm_tldr_cn": "全图GNN训练在集群上因节点间嵌入交换频繁而扩展性差。SNI-GNN在智能网卡上部署轻量线性趋势预测器，结合历史嵌入缓存和重要边界节点采样，减少通信开销，同时采用异步DPU-GPU流水线与中间结果复用。理论给出了误差与收敛界，实验表明在保持精度的同时大幅降低通信量，为分布式GNN训练提供了高效的网内计算方案。",
+      "llm_tldr": "全图GNN训练在集群上因节点间嵌入交换频繁而扩展性差。SNI-GNN在智能网卡上部署轻量线性趋势预测器，结合历史嵌入缓存和重要边界节点采样，减少通信开销，同时采用异步DPU-GPU流水线与中间结果复用。理论给出了误差与收敛界，实验表明在保持精度的同时大幅降低通信量，为分布式GNN训练提供了高效的网内计算方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "find papers on communication efficient graph learning systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.06563v1",
+      "source": "arxiv",
+      "title": "Theoretical Foundations of Communication-Efficient, Robust, and Practical Distributed and Federated Optimization",
+      "abstract": "Machine learning and optimization have advanced together, with practical demands motivating new theory and theoretical breakthroughs enabling new applications. Modern large-scale training relies on classical optimization principles, but the constraints of distributed systems require these foundations to be reconsidered. This thesis addresses seven challenges at the intersection of theory and practice, focusing on key bottlenecks in federated learning and distributed optimization. First, we introduce ProxSkip and prove that local gradient steps can accelerate communication, providing a theoretical foundation for this widely used heuristic. Second, we develop Variance Reduced ProxSkip, which eliminates the neighborhood error of stochastic local updates while balancing communication and local computation. Third, we show that local steps retain their communication acceleration under partial client participation. Fourth, we prove that server-side stepsizes and sampling without replacement improve convergence in heterogeneous settings. Fifth, for Random Reshuffling, we demonstrate that compressing gradient differences rather than gradients yields better theoretical and practical performance. Sixth, we establish that Byzantine robustness and partial participation can be achieved simultaneously using gradient-difference clipping. Finally, we develop the first theoretical framework for low-rank adaptation based on randomized asymmetric chains, providing new insights into fine-tuning large models. Across these contributions, we introduce novel algorithmic frameworks, establish sharp guarantees under realistic assumptions, and support the theory with numerical experiments.",
+      "authors": [
+        "Grigory Malinovsky"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math.OC"
+      ],
+      "published": "2026-08-06T20:20:52+00:00",
+      "link": "https://arxiv.org/pdf/2608.06563v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Directly studies communication-efficient training; introduces ProxSkip and proves local gradient steps can accelerate communication",
+      "llm_evidence_cn": "直接研究通信高效训练，提出ProxSkip并证明局部梯度步骤可加速通信",
+      "llm_evidence": "直接研究通信高效训练，提出ProxSkip并证明局部梯度步骤可加速通信",
+      "canonical_evidence": "直接研究通信高效训练，提出ProxSkip并证明局部梯度步骤可加速通信",
+      "llm_tldr_en": "A thesis on the theory of communication-efficient distributed and federated optimization, introducing ProxSkip and showing that local gradient steps can accelerate communication, plus robust and practical extensions.",
+      "llm_tldr_cn": "该论文系统研究分布式与联邦优化中通信高效的理论基础。核心是提出ProxSkip算法，证明在局部计算中周期性跳过通信可以加速收敛、减少通信轮数；随后发展方差缩减ProxSkip以消除邻居复杂度问题。整体为本地梯度步骤这一广泛使用的启发式方法提供了严格理论支撑，并扩展了鲁棒性与实用性。",
+      "llm_tldr": "该论文系统研究分布式与联邦优化中通信高效的理论基础。核心是提出ProxSkip算法，证明在局部计算中周期性跳过通信可以加速收敛、减少通信轮数；随后发展方差缩减ProxSkip以消除邻居复杂度问题。整体为本地梯度步骤这一广泛使用的启发式方法提供了严格理论支撑，并扩展了鲁棒性与实用性。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.03605v1",
+      "source": "arxiv",
+      "title": "FraQ: Efficient Coordinate-Space Recompression for Federated Low-Rank Adaptation",
+      "abstract": "Federated fine-tuning with Low-Rank Adaptation (LoRA) enables efficient collaborative adaptation of Large Language Models (LLMs) without centralizing private data. However, LoRA's two-factor parameterization creates an aggregation mismatch across clients: naively averaging the factors does not recover the average of their induced updates. This mismatch can be avoided by forming the exact aggregate in the full weight space and then recompressing it, but decomposing the resulting dense matrix is computationally expensive and memory-intensive. We propose FraQ, an efficient coordinate-space recompression method for federated LoRA. Starting from stacked factors that exactly represent the aggregate, FraQ factorizes it into an orthonormal basis and a compact coordinate matrix. It then recovers the singular spectrum from a small Gram matrix, selects the smallest rank satisfying a prescribed energy threshold, and maps the selected coordinate subspace back through the basis to construct the global adapter. Experiments on text classification and commonsense reasoning benchmarks show that FraQ achieves accuracy close to uncompressed baselines while substantially reducing downlink communication with low server-side recompression overhead.",
+      "authors": [
+        "Shenghui Li",
+        "Thiemo Voigt"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-04T12:57:08+00:00",
+      "link": "https://arxiv.org/pdf/2608.03605v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Federated LoRA with efficient coordinate-space recompression reduces communication overhead in distributed fine-tuning",
+      "llm_evidence_cn": "联邦LoRA通过高效坐标空间重压缩降低分布式微调的通信开销",
+      "llm_evidence": "联邦LoRA通过高效坐标空间重压缩降低分布式微调的通信开销",
+      "canonical_evidence": "联邦LoRA通过高效坐标空间重压缩降低分布式微调的通信开销",
+      "llm_tldr_en": "FraQ is an efficient coordinate-space recompression method for federated LoRA that resolves aggregation mismatch and cuts communication cost, enabling faster federated LLM fine-tuning.",
+      "llm_tldr_cn": "联邦微调中LoRA的分解参数聚合存在不匹配问题，直接在完整权重空间聚合再分解又计算昂贵。FraQ提出一种高效的坐标空间重压缩方法，从堆叠因子精确重构聚合结果并正交分解，从而降低通信开销与计算成本。实验表明该方法在保持精度的同时显著提升联邦微调效率，为大规模联邦大模型训练提供了实用方案。",
+      "llm_tldr": "联邦微调中LoRA的分解参数聚合存在不匹配问题，直接在完整权重空间聚合再分解又计算昂贵。FraQ提出一种高效的坐标空间重压缩方法，从堆叠因子精确重构聚合结果并正交分解，从而降低通信开销与计算成本。实验表明该方法在保持精度的同时显著提升联邦微调效率，为大规模联邦大模型训练提供了实用方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.06838v1",
+      "source": "arxiv",
+      "title": "StateFlow: Sequence Pipeline Parallelism for Long-Context Modeling with Linear Recurrence",
+      "abstract": "Long-context training is increasingly important for large language models, and linear attention and state space models have become popular for improving long-context efficiency. However, efficiently parallelizing long-sequence training for recurrent and hybrid models remains challenging.   We present StateFlow, a sequence pipeline parallelism system for models with linear recurrence. StateFlow partitions each sequence into chunks and schedules their execution while propagating boundary states and gradients across chunks, thereby reducing activation lifetimes and improving training throughput. StateFlow further uses profile-guided nonuniform chunking to balance recurrence and softmax attention computation in hybrid models, and overlaps state transitions that expose limited parallelism with surrounding computation. Applying StateFlow to models with up to 32B parameters and 256K context length, we achieve up to \\(2.22\\times\\) throughput improvements and \\(2.45\\times\\) memory reduction compared to conventional pipeline parallelism, enabling otherwise infeasible configurations.",
+      "authors": [
+        "Wenxuan Zhao",
+        "Yingfa Chen",
+        "Xu Han",
+        "Wenjing Han",
+        "Tianbo Huang",
+        "Zhiyu Li",
+        "Ao Sun",
+        "Jingheng Xu",
+        "Lin Gan",
+        "Guangwen Yang"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-07T05:58:14+00:00",
+      "link": "https://arxiv.org/pdf/2608.06838v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Sequence pipeline parallelism for efficient long-context training, reducing activation memory and overlapping communication",
+      "llm_evidence_cn": "面向高效长上下文训练的序列流水线并行，降低激活内存并重叠通信",
+      "llm_evidence": "面向高效长上下文训练的序列流水线并行，降低激活内存并重叠通信",
+      "canonical_evidence": "面向高效长上下文训练的序列流水线并行，降低激活内存并重叠通信",
+      "llm_tldr_en": "StateFlow presents sequence pipeline parallelism for recurrent/hybrid long-context models, partitioning sequences into chunks and scheduling execution to reduce activation memory and boost training throughput.",
+      "llm_tldr_cn": "长序列训练对线性递归与混合模型并行化困难。StateFlow将序列切分为块，通过流水线调度传播边界状态与梯度，降低激活生命周期，提升训练吞吐；并利用轮廓引导的非均匀分块平衡计算，同时实现计算与通信重叠。",
+      "llm_tldr": "长序列训练对线性递归与混合模型并行化困难。StateFlow将序列切分为块，通过流水线调度传播边界状态与梯度，降低激活生命周期，提升训练吞吐；并利用轮廓引导的非均匀分块平衡计算，同时实现计算与通信重叠。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.06946v1",
+      "source": "arxiv",
+      "title": "Stream Learning: Partition-Fair Gossip Learning Without Tokens",
+      "abstract": "In gossip learning, a network of nodes trains a shared model collaboratively, without a central coordinator, by repeatedly exchanging parts of their local models. The state-of-the-art protocol, Partitioned Token Gossip Learning (PTGL) of Heged{ü}s et al., splits the weight matrix into S fixed partitions and disseminates them using a token-based fairness mechanism coupled with per-neighbor metadata exchange. We revisit partition scheduling by analogy with peer-to-peer live streaming, where model partitions act as video chunks and partition age acts as chunk scarcity. The analogy yields a design space of two-stage selection strategies (partition first, or neighbor first), from which we instantiate ten concrete protocols collectively called Stream Learning. Our main finding is that the simplest of these protocols, which transmits the locally least-trained partition to a uniformly random neighbor (Ri), matches PTGL on fault-free workloads while requiring neither token counters nor metadata exchange. Under an adversarial 30% permanent crash of the best-performing nodes, Ri matches or outperforms PTGL across all complete-graph configurations tested, with the gap reaching 5.53% on HAR and 5.41% on MNIST in the most heterogeneous regime (Dirichlet $β$ = 0.1). In our experiments, partition fairness, captured by a single local rule on partition age, accounts for the gap; token-based rate control and utility maximization do not improve over this rule and, under heterogeneity, sit below it.",
+      "authors": [
+        "Fabien Mathieu",
+        "Alexandre Pham",
+        "Maria Gradinariu Potop-Butucaru",
+        "S{é}bastien Tixeuil"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-08-07T08:22:37+00:00",
+      "link": "https://arxiv.org/pdf/2608.06946v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Partition scheduling in gossip learning improves communication fairness and efficiency for asynchronous decentralized training",
+      "llm_evidence_cn": "闲聊学习中的分区调度提升通信公平性与效率，支持异步去中心化训练",
+      "llm_evidence": "闲聊学习中的分区调度提升通信公平性与效率，支持异步去中心化训练",
+      "canonical_evidence": "闲聊学习中的分区调度提升通信公平性与效率，支持异步去中心化训练",
+      "llm_tldr_en": "Stream Learning revisits partition scheduling in gossip learning by analogy to P2P live streaming, instantiating ten partition-first or neighbor-first protocols that improve model convergence and communication efficiency.",
+      "llm_tldr_cn": "去中心化闲聊学习通过交换模型分区协作训练，但分区调度影响公平性与收敛。受P2P直播启发，将模型分区视为视频块、分区年龄视为稀缺度，提出分区优先或邻居优先的两阶段选择策略，并实例化为十种Stream Learning协议，显著提升通信效率与模型准确性。",
+      "llm_tldr": "去中心化闲聊学习通过交换模型分区协作训练，但分区调度影响公平性与收敛。受P2P直播启发，将模型分区视为视频块、分区年龄视为稀缺度，提出分区优先或邻居优先的两阶段选择策略，并实例化为十种Stream Learning协议，显著提升通信效率与模型准确性。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.07007v1",
+      "source": "arxiv",
+      "title": "FedLBW: A Loss-Based Weighting Strategy for Federated Learning on Non-IID Data in Wireless Networks",
+      "abstract": "Federated Learning (FL) enables collaborative machine learning (ML) across distributed clients while preserving privacy. However, efficient model convergence in FL remains challenging, especially in wireless networks where non-independent and identically distributed (non-IID) data and frequent client dropouts are common. Traditional FL algorithms, such as FedAvg, rely solely on dataset size to weight client updates. This introduces biases towards clients with larger datasets and makes the process sensitive to non-IID data, outliers, and client dropouts. To address these challenges, we propose Federated Learning with Loss-Based Weighting (FedLBW), a novel aggregation method that assigns each client's update a weight proportional to the inverse of its validation loss, computed using a small proxy dataset on the server, rather than its dataset size. This ensures that lower-loss models exert greater influence during aggregation, prioritizing the most reliable updates and boosting overall performance. Through extensive experiments across multiple datasets, including FashionMNIST (CNN), CIFAR-10 (ResNet-18), and CIFAR-100 (ResNet-34), we demonstrate that FedLBW achieves higher accuracy and faster convergence compared to baseline algorithms such as FedAvg, FedAvgM, FedProx, FedNova, FedLAW and FedDkw, with notable improvements of up to 7.6 % higher accuracy on CIFAR-10 in extreme non-IID cases. Moreover, FedLBW showcases exceptional resilience to increasing dropout probabilities, consistently maintaining significantly higher accuracy even in challenging conditions. These results establish FedLBW as an effective and resilient solution for FL in wireless network environments, offering marked improvements in model accuracy, convergence speed, and robustness to non-IID data and client dropouts.",
+      "authors": [
+        "Majid Kundroo",
+        "Tinku Singh",
+        "Taehong Kim"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.DC",
+        "cs.ET",
+        "cs.LG"
+      ],
+      "published": "2026-08-07T09:21:37+00:00",
+      "link": "https://arxiv.org/pdf/2608.07007v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Federated learning weighting strategy for robust and efficient distributed training under non-IID data and dropouts",
+      "llm_evidence_cn": "面向非独立同分布与掉线场景的联邦学习加权策略，提升分布式训练效率与鲁棒性",
+      "llm_evidence": "面向非独立同分布与掉线场景的联邦学习加权策略，提升分布式训练效率与鲁棒性",
+      "canonical_evidence": "面向非独立同分布与掉线场景的联邦学习加权策略，提升分布式训练效率与鲁棒性",
+      "llm_tldr_en": "FedLBW proposes a loss-based client update weighting strategy for federated learning that mitigates dataset-size bias and improves robustness to non-IID data and client dropouts.",
+      "llm_tldr_cn": "联邦学习在无线网络中面临非独立同分布数据与客户端掉线挑战，传统FedAvg仅按数据量加权存在偏差。FedLBW提出基于损失值的客户端更新加权聚合策略，按客户端损失自适应分配更新权重，以缓解大数据集客户端的主导地位并增强对异常值与掉线的鲁棒性。",
+      "llm_tldr": "联邦学习在无线网络中面临非独立同分布数据与客户端掉线挑战，传统FedAvg仅按数据量加权存在偏差。FedLBW提出基于损失值的客户端更新加权聚合策略，按客户端损失自适应分配更新权重，以缓解大数据集客户端的主导地位并增强对异常值与掉线的鲁棒性。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
