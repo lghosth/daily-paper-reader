@@ -18,41 +18,36 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-11
-- 运行时间：2026-08-11 04:01:55 北京时间
+- 最新运行日期：2026-08-12
+- 运行时间：2026-08-12 04:40:08 北京时间
 - 运行状态：成功
-- 本次总论文数：6
+- 本次总论文数：5
 - 精读区：2
-- 速读区：4
-- 下次更新：约 2026-08-12 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 速读区：3
+- 下次更新：约 2026-08-13 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日聚焦图神经网络训练加速与分布式优化理论两大核心。  
-最值精读：SNI-GNN以网内嵌入预测突破全图训练瓶颈；分布式优化理论兼顾通信效率与稳健性。  
-建议优先消化这两篇，速读可关注联邦低秩压缩与无令牌流式学习。
-- 详情：[2026-08-11 日报](/202608/10/README)
+今日精读5篇论文，聚焦大模型与图神经网络训练优化，其中2篇精读、3篇速读。最值得关注的是满分论文《LGNNIC》用智能网卡加速大规模GNN训练，以及《SwiftQK》优化查询键归一化的张量并行通信。下一步建议普通读者优先精读这两篇，重点了解硬件卸载与通信效率提升的实际收益。
+- 详情：[2026-08-12 日报](/202608/11/README)
 
 ### 精读区论文标签
-1. [SNI-GNN: SmartNIC-Assisted Full-Graph GNN Training with In-Network Embedding Prediction](/202608/10/2608.06441v1-sni-gnn-smartnic-assisted-full-graph-gnn-training-with-in-network-embedding-prediction)  
+1. [LGNNIC: Acceleration of Large-Scale GNN Training using SmartNICs](/202608/11/2608.07733v1-lgnnic-acceleration-of-large-scale-gnn-training-using-smartnics)  
    标签：评分：10.0/10、query:dgnn-nas
-   evidence：利用智能网卡预测嵌入以减少节点间通信，直接对应通信高效图学习系统。
-2. [Theoretical Foundations of Communication-Efficient, Robust, and Practical Distributed and Federated Optimization](/202608/10/2608.06563v1-theoretical-foundations-of-communication-efficient-robust-and-practical-distributed-and-federated-optimization)  
-   标签：评分：9.0/10、query:dgnn-nas
-   evidence：直接研究通信高效训练，提出ProxSkip并证明局部梯度步骤可加速通信
+   evidence：利用智能网卡减少分布式图神经网络训练中的节点间通信开销
+2. [SwiftQK: Fast and Communication-Efficient Tensor Parallelism for Query-Key Normalization](/202608/11/2608.09160v1-swiftqk-fast-and-communication-efficient-tensor-parallelism-for-query-key-normalization)  
+   标签：评分：8.0/10、query:dgnn-nas
+   evidence：面向LLM QK-Norm的通信高效张量并行内核，仅交换标量统计量并重叠点对点规约
 
 ### 速读区论文标签
-1. [FraQ: Efficient Coordinate-Space Recompression for Federated Low-Rank Adaptation](/202608/10/2608.03605v1-fraq-efficient-coordinate-space-recompression-for-federated-low-rank-adaptation)  
+1. [FEAST: Federated Shared-Space Training for Resource-Heterogeneous Clients](/202608/11/2608.09250v1-feast-federated-shared-space-training-for-resource-heterogeneous-clients)  
    标签：评分：7.0/10、query:dgnn-nas
-   evidence：联邦LoRA通过高效坐标空间重压缩降低分布式微调的通信开销
-2. [Stream Learning: Partition-Fair Gossip Learning Without Tokens](/202608/10/2608.06946v1-stream-learning-partition-fair-gossip-learning-without-tokens)  
+   evidence：联邦超级网络训练结合稀疏聚合，融合通信高效训练与神经网络架构搜索
+2. [Distributed Optimization with Streaming Data: A Temporal Weighting Perspective](/202608/11/2608.09565v1-distributed-optimization-with-streaming-data-a-temporal-weighting-perspective)  
    标签：评分：7.0/10、query:dgnn-nas
-   evidence：闲聊学习中的分区调度提升通信公平性与效率，支持异步去中心化训练
-3. [StateFlow: Sequence Pipeline Parallelism for Long-Context Modeling with Linear Recurrence](/202608/10/2608.06838v1-stateflow-sequence-pipeline-parallelism-for-long-context-modeling-with-linear-recurrence)  
+   evidence：面向流式数据与通信约束的分布式梯度下降分析
+3. [F2STNet: Fair and Federated Spectral-Temporal Modeling for Graph Forecasting](/202608/11/2608.09082v1-f2stnet-fair-and-federated-spectral-temporal-modeling-for-graph-forecasting)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：面向高效长上下文训练的序列流水线并行，降低激活内存并重叠通信
-4. [FedLBW: A Loss-Based Weighting Strategy for Federated Learning on Non-IID Data in Wireless Networks](/202608/10/2608.07007v1-fedlbw-a-loss-based-weighting-strategy-for-federated-learning-on-non-iid-data-in-wireless-networks)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：面向非独立同分布与掉线场景的联邦学习加权策略，提升分布式训练效率与鲁棒性
+   evidence：面向去中心化客户端、基于联邦聚合的图预测框架
 
 
 <div class="dpr-home-promo-card dpr-home-panel">

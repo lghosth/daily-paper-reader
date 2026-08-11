@@ -1,0 +1,218 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-11T20:35:12.966632+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2608.07733v1",
+      "source": "arxiv",
+      "title": "LGNNIC: Acceleration of Large-Scale GNN Training using SmartNICs",
+      "abstract": "Graph Neural Networks (GNNs) are widely used across domains such as natural sciences, social network analysis, chip design, and recommendation systems. However, as graph sizes grow, storing and processing them entirely on a single-node CPU-GPU system becomes increasingly impractical. A promising approach is to distribute the graph across multiple remote memory nodes, though this introduces a major bottleneck: inter-node network congestion during training. To address this, we propose LGNNIC, a novel inter-node system architecture that leverages SmartNICs co-located with remote memory nodes-a configuration already available in modern systems-to reduce communication overhead in distributed GNN training. LGNNIC offloads key preprocessing tasks to SmartNICs, reducing the volume of data transferred to computational (training) nodes and alleviating network congestion. We introduce two complementary techniques executed on the SmartNICs during the preprocessing phase: Neighbor Sampling, which performs mini-batch sampling, and Quantization of the sampled batches. To evaluate LGNNIC under different communication infrastructures, we designed both an optimized low-overhead DMA-based synchronization mechanism and a high-overhead socket-based alternative used as a benchmark. We evaluate the core SmartNIC offloading mechanisms across standard GNN workloads and sampling hyperparameters using a proof-of-concept (PoC) system comprising one remote-memory node with an NVIDIA BlueField-2 SmartNIC and one compute node with an A100 GPU. Both Neighbor Sampling and Quantization on the remote node demonstrated substantial training speedups in most configurations. Neighbor Sampling achieved up to 62.4x and 17.5x speedups with Sockets and DOCA-DMA, respectively, primarily due to reduced data transaction time. Quantization provided additional speedups of up to 3.6x and 1.3x, respectively, by reducing data transfer.",
+      "authors": [
+        "Liad Gerstman",
+        "Aditya Dhakal",
+        "Dejan Milojicic",
+        "Avi Mendelson"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.AR",
+        "cs.LG",
+        "cs.PF"
+      ],
+      "published": "2026-08-07T19:55:45+00:00",
+      "link": "https://arxiv.org/pdf/2608.07733v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Reduces inter-node communication overhead in distributed GNN training using SmartNICs",
+      "llm_evidence_cn": "利用智能网卡减少分布式图神经网络训练中的节点间通信开销",
+      "llm_evidence": "利用智能网卡减少分布式图神经网络训练中的节点间通信开销",
+      "canonical_evidence": "利用智能网卡减少分布式图神经网络训练中的节点间通信开销",
+      "llm_tldr_en": "LGNNIC accelerates large-scale GNN training by offloading preprocessing to SmartNICs co-located with remote memory nodes, alleviating inter-node network congestion, a key bottleneck in distributed memory architectures.",
+      "llm_tldr_cn": "大规模图神经网络训练面临单节点存储与计算瓶颈，通常需要将图分布到多个远程内存节点，但节点间网络拥塞成为主要瓶颈。本文提出LGNNIC，利用现代系统中已有的与远程内存节点共置的智能网卡，将关键预处理任务卸载到网卡上，从而降低分布式训练过程中的通信开销。实验结果验证了该方法能有效缓解网络拥塞并加速大规模GNN训练，为分布式图学习系统提供了新的架构设计思路。",
+      "llm_tldr": "大规模图神经网络训练面临单节点存储与计算瓶颈，通常需要将图分布到多个远程内存节点，但节点间网络拥塞成为主要瓶颈。本文提出LGNNIC，利用现代系统中已有的与远程内存节点共置的智能网卡，将关键预处理任务卸载到网卡上，从而降低分布式训练过程中的通信开销。实验结果验证了该方法能有效缓解网络拥塞并加速大规模GNN训练，为分布式图学习系统提供了新的架构设计思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "find papers on communication efficient graph learning systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09160v1",
+      "source": "arxiv",
+      "title": "SwiftQK: Fast and Communication-Efficient Tensor Parallelism for Query-Key Normalization",
+      "abstract": "Query-Key Normalization (QK-Norm) improves the training stability and quality of modern Large Language Models (LLMs). However, under Tensor Parallelism (TP), layerwise QK-Norm introduces additional cross-GPU communication because the normalization factor depends on the full hidden vector. We present SwiftQK, a multi-GPU RMSNorm kernel that exchanges only scalar normalization statistics and overlaps the remaining Peer-to-Peer reduction with independent element-wise computation in a deadlock-safe persistent kernel. Evaluations on recent LLMs show that SwiftQK reduces QK-Norm latency by 81.4--93.9% relative to the standard TP QK-Norm using full-vector All-Gather. In end-to-end serving, SwiftQK reduces TPOT on average by 29.5% over the All-Gather-based baseline and by 14.3% over an optimized scalar-aggregation implementation.",
+      "authors": [
+        "Gyudong Kim",
+        "Wonjun Han",
+        "Young Geun Kim"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "published": "2026-08-10T06:16:24+00:00",
+      "link": "https://arxiv.org/pdf/2608.09160v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Communication-efficient tensor parallelism kernel for QK-Norm in LLMs, exchanging only scalar statistics and overlapping p2p reduction",
+      "llm_evidence_cn": "面向LLM QK-Norm的通信高效张量并行内核，仅交换标量统计量并重叠点对点规约",
+      "llm_evidence": "面向LLM QK-Norm的通信高效张量并行内核，仅交换标量统计量并重叠点对点规约",
+      "canonical_evidence": "面向LLM QK-Norm的通信高效张量并行内核，仅交换标量统计量并重叠点对点规约",
+      "llm_tldr_en": "Focused on QK-Norm in tensor parallel training, SwiftQK presents a multi-GPU RMSNorm kernel that reduces communication to scalar statistics exchange and overlaps reduction with computation, cutting QK-Norm latency by 81-94% and TPOT by 29.5%.",
+      "llm_tldr_cn": "大语言模型中QK归一化能提升训练稳定性与质量，但在张量并行下其归一化因子依赖完整隐藏向量，引入额外跨GPU通信。SwiftQK提出多GPU RMSNorm内核，仅交换标量归一化统计量，并以无死锁的常驻内核将点对点规约与独立逐元素计算重叠。评测显示与标准全向量All-Gather方案相比，SwiftQK将QK-Norm延迟降低81.4%–93.9%，端到端服务TPOT平均减少29.5%。该方法为分布式训练中的通信压缩与计算重叠提供了通用思路。",
+      "llm_tldr": "大语言模型中QK归一化能提升训练稳定性与质量，但在张量并行下其归一化因子依赖完整隐藏向量，引入额外跨GPU通信。SwiftQK提出多GPU RMSNorm内核，仅交换标量归一化统计量，并以无死锁的常驻内核将点对点规约与独立逐元素计算重叠。评测显示与标准全向量All-Gather方案相比，SwiftQK将QK-Norm延迟降低81.4%–93.9%，端到端服务TPOT平均减少29.5%。该方法为分布式训练中的通信压缩与计算重叠提供了通用思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.09250v1",
+      "source": "arxiv",
+      "title": "FEAST: Federated Shared-Space Training for Resource-Heterogeneous Clients",
+      "abstract": "Federated learning (FL) must serve devices with varying computational capabilities. A fixed model cannot suit all devices, while training one model per deployment limit is costly. Federated supernet training instead learns one elastic model with differently sized subnetworks, then deploys a suitable one to each device. When client inference budgets differ, however, parameters exclusive to high-cost subnetworks are reachable by fewer clients. We propose FEAST, a federated shared-space training framework that counters this imbalance by jointly training multiple subnetworks within each client's limit. Budget-tailored sub-supernet routing sends only the relevant supernet portion, and sparse aggregation merges the returned parameter slices. The trained supernet directly serves the subnetworks used during federation and supports post-hoc extraction of additional subnetworks without federated retraining. We further show that independently assigning clients' training-data volumes and inference budgets can distort accuracy--inference-cost comparisons in heterogeneous FL simulations, and introduce a one-parameter $γ$-allocation protocol to control this coupling. In our experimental setup, the SuperFedNAS and DeepFedNAS supernet training procedures remain near chance at 25M and reach at most $17.09\\%$ at $596$M inference MACs; FEAST reaches $71.06\\%$ at $596$M, $2.4$ points above the strongest model-heterogeneous weight-sharing baseline at its largest tier. Across CIFAR-100, CINIC-10, and TinyImageNet-200, FEAST achieves the highest population-averaged accuracy among the evaluated weight-sharing methods when each client receives its largest affordable subnetwork. Sub-supernet routing reduces aggregate model-parameter traffic by $6.8\\times$ relative to full-supernet transmission.",
+      "authors": [
+        "Bostan Khan",
+        "Masoud Daneshtalab"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "published": "2026-08-10T08:10:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.09250v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "federated supernet training with sparse aggregation combines communication-efficient training and NAS",
+      "llm_evidence_cn": "联邦超级网络训练结合稀疏聚合，融合通信高效训练与神经网络架构搜索",
+      "llm_evidence": "联邦超级网络训练结合稀疏聚合，融合通信高效训练与神经网络架构搜索",
+      "canonical_evidence": "联邦超级网络训练结合稀疏聚合，融合通信高效训练与神经网络架构搜索",
+      "llm_tldr_en": "FEAST jointly trains multiple subnetworks within each client budget, using budget-tailored routing and sparse aggregation to enable communication-efficient federated supernet learning.",
+      "llm_tldr_cn": "联邦学习需要服务不同算力设备，固定模型无法通配，而为每种部署单独训练成本过高。FEAST提出联邦共享空间训练框架，在每个客户端限制内联合训练多个子网络，并通过预算定制的子超网路由与稀疏聚合只传输相关参数切片。该方法克服了高成本子网络参数参与客户端过少的不平衡问题，训练出的超级网络可为异构客户端分配合适子网络。这为联邦学习与神经网络架构搜索的结合提供了高效通信的训练范式。",
+      "llm_tldr": "联邦学习需要服务不同算力设备，固定模型无法通配，而为每种部署单独训练成本过高。FEAST提出联邦共享空间训练框架，在每个客户端限制内联合训练多个子网络，并通过预算定制的子超网路由与稀疏聚合只传输相关参数切片。该方法克服了高成本子网络参数参与客户端过少的不平衡问题，训练出的超级网络可为异构客户端分配合适子网络。这为联邦学习与神经网络架构搜索的结合提供了高效通信的训练范式。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.09082v1",
+      "source": "arxiv",
+      "title": "F2STNet: Fair and Federated Spectral-Temporal Modeling for Graph Forecasting",
+      "abstract": "Spatiotemporal prediction on graph-structured data is central to traffic forecasting and environmental monitoring, yet decentralized and heterogeneous data complicate both sequence modeling and collaborative training. We propose F$^2$STNet, a federated forecasting framework that combines truncated graph-Fourier features, a lightweight diagonal state-space temporal encoder, graph convolution, and Fairness-aware Federated Aggregation (FFA). The spectral branch exposes graph-frequency structure, while the state-space layer models long temporal dependencies with linear complexity in the sequence length. FFA adjusts the FedAvg prior using client validation losses and an increasing fairness schedule. Experiments on PeMS04, HZMetro, and KnowAir show favorable forecasting accuracy relative to the evaluated baselines; federated experiments on PeMS04 additionally improve worst-client and client-dispersion metrics.",
+      "authors": [
+        "Jiayi Zhang",
+        "Jinfeng Xu",
+        "Hewei Wang",
+        "Siyuan Cen",
+        "Haidong Huang",
+        "Yiyao Zhan",
+        "Zheyu Chen",
+        "Jinjiang You",
+        "Ai Jian",
+        "Edith C. H. Ngai"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-10T03:29:15+00:00",
+      "link": "https://arxiv.org/pdf/2608.09082v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Federated graph forecasting framework with fairness-aware aggregation over decentralized clients",
+      "llm_evidence_cn": "面向去中心化客户端、基于联邦聚合的图预测框架",
+      "llm_evidence": "面向去中心化客户端、基于联邦聚合的图预测框架",
+      "canonical_evidence": "面向去中心化客户端、基于联邦聚合的图预测框架",
+      "llm_tldr_en": "F2STNet proposes a federated forecasting framework for decentralized graph-structured time series, integrating truncated graph-Fourier features, a lightweight state-space encoder, graph convolution, and fairness-aware federated aggregation, validated on traffic and air-quality datasets.",
+      "llm_tldr_cn": "图结构时空预测在交通流量与环境监测中至关重要，但数据分散在多个客户端且分布异构，给序列建模与协作训练带来挑战。为此F2STNet提出联邦预测框架，使用截断图傅里叶特征捕获图频率结构，以轻量对角状态空间编码器建模长时依赖，并通过公平性感知联邦聚合机制调整客户端权重。在PeMS04、HZMetro和KnowAir数据集上的实验表明该框架能有效处理联邦异质数据下的时空预测任务，为图学习系统的分布式训练提供了具有公平性约束的聚合方案。",
+      "llm_tldr": "图结构时空预测在交通流量与环境监测中至关重要，但数据分散在多个客户端且分布异构，给序列建模与协作训练带来挑战。为此F2STNet提出联邦预测框架，使用截断图傅里叶特征捕获图频率结构，以轻量对角状态空间编码器建模长时依赖，并通过公平性感知联邦聚合机制调整客户端权重。在PeMS04、HZMetro和KnowAir数据集上的实验表明该框架能有效处理联邦异质数据下的时空预测任务，为图学习系统的分布式训练提供了具有公平性约束的聚合方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "find papers on communication efficient graph learning systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.09565v1",
+      "source": "arxiv",
+      "title": "Distributed Optimization with Streaming Data: A Temporal Weighting Perspective",
+      "abstract": "Optimization theory is a widely used tool for intelligent decision-making. While classical optimization deals with fixed, time-invariant objective functions, many modern applications operate in dynamic environments where data arrive sequentially, and the learning objective evolves over time, often under decentralized data and communication constraints. Motivated by these trends, we study decentralized optimization from streaming data through a structured time-varying formulation in which the global objective is a temporally weighted average of losses observed across the network. We analyze multi-iteration decentralized first-order methods, including decentralized gradient descent. For strongly convex and smooth losses, we develop guarantees for the Euclidean-norm \\emph{tracking error} through a contraction-mapping viewpoint. The resulting bounds decompose the tracking error into a fixed-point tracking component and a bias term induced by decentralization and data heterogeneity. We specialize our analysis to uniform and exponentially discounted weights, as well as their finite-memory \\emph{windowed} counterparts. The bounds explicitly characterize the roles of the temporal weighting rule, per-step iteration budget, step size, and network connectivity. Uniform weighting yields a vanishing fixed-point tracking contribution of order $\\mathcal O(1/t)$, whereas discounted and windowed strategies generally induce non-vanishing tracking floors governed by the discount factor and effective memory, respectively. In all cases, decentralization induces an additional non-zero bias floor under a constant step size. Numerical experiments illustrate the predicted trends.",
+      "authors": [
+        "Muhammad Faraz Ul Abrar",
+        "Nicolò Michelusi",
+        "Erik G. Larsson"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP",
+        "cs.AI",
+        "cs.LG",
+        "eess.SY",
+        "math.OC"
+      ],
+      "published": "2026-08-10T13:02:58+00:00",
+      "link": "https://arxiv.org/pdf/2608.09565v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "decentralized gradient descent under communication constraints for streaming data",
+      "llm_evidence_cn": "面向流式数据与通信约束的分布式梯度下降分析",
+      "llm_evidence": "面向流式数据与通信约束的分布式梯度下降分析",
+      "canonical_evidence": "面向流式数据与通信约束的分布式梯度下降分析",
+      "llm_tldr_en": "This paper analyzes decentralized first-order methods for streaming data with time-varying objectives and communication constraints, providing convergence guarantees for strongly convex smooth losses.",
+      "llm_tldr_cn": "该论文针对动态数据流与通信约束下的分布式优化问题，提出时间加权平均损失的结构化时变公式，并分析多轮去中心化一阶方法包括去中心化梯度下降。在强凸光滑损失下建立了收敛保证，为通信受限的分布式训练提供了理论基础。",
+      "llm_tldr": "该论文针对动态数据流与通信约束下的分布式优化问题，提出时间加权平均损失的结构化时变公式，并分析多轮去中心化一阶方法包括去中心化梯度下降。在强凸光滑损失下建立了收敛保证，为通信受限的分布式训练提供了理论基础。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
