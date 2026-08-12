@@ -18,36 +18,33 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-12
-- 运行时间：2026-08-12 04:40:08 北京时间
+- 最新运行日期：2026-08-13
+- 运行时间：2026-08-13 04:59:02 北京时间
 - 运行状态：成功
-- 本次总论文数：5
+- 本次总论文数：4
 - 精读区：2
-- 速读区：3
-- 下次更新：约 2026-08-13 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 速读区：2
+- 下次更新：约 2026-08-14 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日精读5篇论文，聚焦大模型与图神经网络训练优化，其中2篇精读、3篇速读。最值得关注的是满分论文《LGNNIC》用智能网卡加速大规模GNN训练，以及《SwiftQK》优化查询键归一化的张量并行通信。下一步建议普通读者优先精读这两篇，重点了解硬件卸载与通信效率提升的实际收益。
-- 详情：[2026-08-12 日报](/202608/11/README)
+今日精读2篇、速读2篇，聚焦联邦学习与稀疏MoE系统优化。最值得关注：异构客户端下的联邦低秩适配（SeFoRA）与MoE算力分配的系统级观点。建议优先了解联邦学习效率与MoE集群部署的平衡思路。
+- 详情：[2026-08-13 日报](/202608/12/README)
 
 ### 精读区论文标签
-1. [LGNNIC: Acceleration of Large-Scale GNN Training using SmartNICs](/202608/11/2608.07733v1-lgnnic-acceleration-of-large-scale-gnn-training-using-smartnics)  
-   标签：评分：10.0/10、query:dgnn-nas
-   evidence：利用智能网卡减少分布式图神经网络训练中的节点间通信开销
-2. [SwiftQK: Fast and Communication-Efficient Tensor Parallelism for Query-Key Normalization](/202608/11/2608.09160v1-swiftqk-fast-and-communication-efficient-tensor-parallelism-for-query-key-normalization)  
+1. [SeFoRA: Sketch-Aggregated Federated Low-Rank Adaptation with Heterogeneous Client Ranks](/202608/12/2608.10144v1-sefora-sketch-aggregated-federated-low-rank-adaptation-with-heterogeneous-client-ranks)  
    标签：评分：8.0/10、query:dgnn-nas
-   evidence：面向LLM QK-Norm的通信高效张量并行内核，仅交换标量统计量并重叠点对点规约
+   evidence：通过本地更新的线性草图实现通信高效的联邦训练
+2. [Compute-Optimal Is Not Cluster-Optimal: Systems-Aware Scaling for Sparse Mixture-of-Experts](/202608/12/2608.10605v1-compute-optimal-is-not-cluster-optimal-systems-aware-scaling-for-sparse-mixture-of-experts)  
+   标签：评分：8.0/10、query:dgnn-nas
+   evidence：面向分布式训练的系统感知扩展，将通信成本和并行布局与架构设计联合优化，对通信高效训练有强方法借鉴
 
 ### 速读区论文标签
-1. [FEAST: Federated Shared-Space Training for Resource-Heterogeneous Clients](/202608/11/2608.09250v1-feast-federated-shared-space-training-for-resource-heterogeneous-clients)  
+1. [FedA2L: Adaptive layer-wise learning rate adjustment in decentralized federated learning](/202608/12/2608.09208v1-feda2l-adaptive-layer-wise-learning-rate-adjustment-in-decentralized-federated-learning)  
    标签：评分：7.0/10、query:dgnn-nas
-   evidence：联邦超级网络训练结合稀疏聚合，融合通信高效训练与神经网络架构搜索
-2. [Distributed Optimization with Streaming Data: A Temporal Weighting Perspective](/202608/11/2608.09565v1-distributed-optimization-with-streaming-data-a-temporal-weighting-perspective)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：面向流式数据与通信约束的分布式梯度下降分析
-3. [F2STNet: Fair and Federated Spectral-Temporal Modeling for Graph Forecasting](/202608/11/2608.09082v1-f2stnet-fair-and-federated-spectral-temporal-modeling-for-graph-forecasting)  
+   evidence：去中心化联邦学习中的自适应逐层学习率调整
+2. [LEED: Local Embedding Evolution Distance for over-smoothing estimation and virtual node selection in GNN](/202608/12/2608.09596v1-leed-local-embedding-evolution-distance-for-over-smoothing-estimation-and-virtual-node-selection-in-gnn)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：面向去中心化客户端、基于联邦聚合的图预测框架
+   evidence：节点级过平滑度量与虚拟节点选择可支持GNN架构设计
 
 
 <div class="dpr-home-promo-card dpr-home-panel">
