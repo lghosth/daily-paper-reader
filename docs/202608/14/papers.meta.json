@@ -1,0 +1,39 @@
+{
+  "label": "2026-08-15",
+  "date": "2026-08-14",
+  "generated_at": "2026-08-14T21:10:39",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202608/14/2608.11431v1-autograble-what-is-a-good-graph-for-a-table",
+      "section": "quick",
+      "title_en": "AutoGrable: What Is a Good Graph for a Table?",
+      "authors": "Tamara Cucumides, Floris Geerts",
+      "date": "2026-08-11",
+      "pdf": "https://arxiv.org/pdf/2608.11431v1",
+      "score": "7.0",
+      "evidence": "自动选择适合GNN的表格图结构，属于图结构/架构自动搜索",
+      "tldr": "表格数据没有天然图结构，GNN应用需手工或启发式构造图，但缺乏评判标准。本文基于1-WL给出无需训练图模型的判据：好图的行划分应分离不同标签、不拆分同标签。AutoGrable将建图转为选择列，用标签对齐风险评分并进行贪心搜索。实验表明它能丢弃大量候选图、恢复标签生成列，优于多种构造器且能拒绝无效图。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Graph learning presupposes a graph, and tables and relational databases do not come with one. Applying a GNN to them requires deciding which entities become nodes, which of them to connect, and through which relations---a decision made by hand, by schema heuristics, or by training a model on every candidate graph and keeping the best. We give a criterion that requires no trained graph model. In the minimal table-to-graph abstraction each row is a node, so a message-passing GNN, bounded by 1-WL, sees a construction only as a partition of the rows into colour-refinement classes: a construction is good for a task when that partition separates rows with different labels and does not split rows that share one. AutoGrable turns this criterion into a construction procedure. For incidence constructions the partition is fixed by the selected columns, so building a graph reduces to choosing them, and we score a candidate subset by a label-alignment risk: the held-out risk of the best predictor constant on its blocks, penalised by an occupancy term measuring how thinly the blocks are populated. The score materialises no graph and trains no GNN, so AutoGrable can search the space of subsets greedily and cheaply, and returns the resulting grable for single tables and for foreign-key schemas alike. Our experiments show that over a space of candidate graphs the score discards a large fraction while retaining the best; that AutoGrable recovers the columns that generate the label on controlled tasks and outperforms fixed, random, and task-aware constructors on real tasks under a fixed predictor; and that it is the only method compared that can decline to build a graph when none helps.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/14/2608.12710v1-federated-compositional-muon-optimizer-for-matrix-wise-models",
+      "section": "quick",
+      "title_en": "Federated Compositional Muon Optimizer for Matrix-Wise Models",
+      "authors": "Wang Yan, Feihu Huang",
+      "date": "2026-08-13",
+      "pdf": "https://arxiv.org/pdf/2608.12710v1",
+      "score": "6.0",
+      "evidence": "面向分布式矩阵优化的联邦组合优化器，与通信高效训练相关",
+      "tldr": "Muon优化器虽在矩阵模型上表现优异，但不适用层次化结构与联邦分布式场景。为此，提出联邦组合Muon优化器FedCoMuon，通过组合梯度跟踪和正交化动量解决分布式矩阵组合优化问题；进一步提出方差缩减变体FedCoMuon-VR，采用动量方差缩减技术降低样本复杂度。理论证明在非独立同分布非凸环境下，FedCoMuon-VR的样本复杂度为O(ε\\^{-3})，优于现有FedMuon方法。在鲁棒联邦学习和风险敏感元学习任务上，所提方法达到最佳精度，彰显实际价值。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Muon, a more recently developed optimizer, is useful for matrix-wise models in AI areas. Although many works have studied Muon and its variants, these methods are still not particularly well-suited for hierarchical structured problems. To fill this gap, we propose an effective federated compositional Muon (FedCoMuon) optimizer to solve distributed matrix-wise compositional optimization problems. Specifically, our FedCoMuon optimizer builds on compositional gradient tracking and orthogonalized momentum. Moreover, we propose a variance reduced variant of FedCoMuon (FedCoMuon-VR) based on a momentum-based variance reduced technique. In theory, we analyze the convergence properties of our algorithms under the non-i.i.d. and non-convex settings. In particular, we prove that our FedCoMuon-VR obtains a lower sample complexity of $O(ε^{-3})$ for finding an $ε$-stationary solution than the existing FedMuon algorithms. Extensive numerical experiments on robust federated learning and task-distributed risk-sensitive meta learning show that our proposed methods are competitive with existing compositional baselines and achieve the best reported accuracy in several settings.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
