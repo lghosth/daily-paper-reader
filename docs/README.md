@@ -18,30 +18,27 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-15
-- 运行时间：2026-08-15 05:10:34 北京时间
+- 最新运行日期：2026-08-16
+- 运行时间：2026-08-16 04:20:05 北京时间
 - 运行状态：成功
-- 本次总论文数：2
+- 本次总论文数：1
 - 精读区：0
-- 速读区：2
-- 下次更新：约 2026-08-16 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 速读区：1
+- 下次更新：约 2026-08-17 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日速读2篇论文，重点关注表格到图的结构学习与矩阵模型联邦优化方向。  
-最值得看的是7分的《AutoGrable》，探讨如何为表格数据构建合适的图结构，对表格建模有启发。  
-建议优先精读该文，可结合自身表格任务验证其图构造方法。
-- 详情：[2026-08-15 日报](/202608/14/README)
+今日仅速读1篇论文，暂无精读，整体工作量较精简。  
+最值得关注的是《HOPPER》提出的可学习跳取提取方法，面向线性化图序列模型，得分6.0/10。  
+建议可先精读该文验证思路，或顺藤摸瓜查找其引用的图序列建模工作。
+- 详情：[2026-08-16 日报](/202608/15/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [AutoGrable: What Is a Good Graph for a Table?](/202608/14/2608.11431v1-autograble-what-is-a-good-graph-for-a-table)  
-   标签：评分：7.0/10、query:dgnn-nas
-   evidence：自动选择适合GNN的表格图结构，属于图结构/架构自动搜索
-2. [Federated Compositional Muon Optimizer for Matrix-Wise Models](/202608/14/2608.12710v1-federated-compositional-muon-optimizer-for-matrix-wise-models)  
+1. [HOPPER: Learnable Hop Extraction for Linearized Graph Sequence Models](/202608/15/2608.09031v1-hopper-learnable-hop-extraction-for-linearized-graph-sequence-models)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：面向分布式矩阵优化的联邦组合优化器，与通信高效训练相关
+   evidence：可学习图传播算子；可迁移至图神经网络架构搜索
 
 
 <div class="dpr-home-promo-card dpr-home-panel">

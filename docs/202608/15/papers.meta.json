@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-16",
+  "date": "2026-08-15",
+  "generated_at": "2026-08-15T20:20:15",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/15/2608.09031v1-hopper-learnable-hop-extraction-for-linearized-graph-sequence-models",
+      "section": "quick",
+      "title_en": "HOPPER: Learnable Hop Extraction for Linearized Graph Sequence Models",
+      "authors": "Isuru Herath, Arin Gopakumar, Sharan Sahu",
+      "date": "2026-08-10",
+      "pdf": "https://arxiv.org/pdf/2608.09031v1",
+      "score": "6.0",
+      "evidence": "可学习图传播算子；可迁移至图神经网络架构搜索",
+      "tldr": "图神经网络的重复消息传递使信息传播距离与非线性层数耦合，引发过平滑、过挤压和长程信息丢失。线性化图序列模型(LGSM)将节点传播状态作为序列，但使用固定图算子提取跳数。本文提出HOPPER，在状态空间模型前可学习地提取跳序列，支持特征条件、结构感知和图自适应传播，且保持置换等变性，标准邻接和非回溯LGSM是特例。在ECHO-Synth上达到最先进性能，在LRIM物理基准中调整结构记忆窗口可优化精度，证明可学习序列提取对长程图表示学习有效。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Graph neural networks typically propagate information through repeated message-passing layers, coupling the distance over which information travels with the number of nonlinear transformations applied. This coupling can make deep architectures difficult to optimize and can lead to over-smoothing, over-squashing, and the loss of long-range information. Linearized Graph Sequence Models (LGSMs) address this issue by separating information depth from processing depth and treating the successive propagation states of each node as a sequence. However, existing LGSMs construct these sequences using fixed graph operators, limiting their ability to adapt propagation to the input graph, node features, and downstream task. We introduce HOPPER, an end-to-end learnable extension of LGSM that learns how hop sequences should be extracted before they are processed by a modern state-space model. Our framework supports feature-conditioned, structure-aware, graph- and hop-adaptive propagation mechanisms while preserving permutation equivariance. Standard adjacency-based and non-backtracking LGSM sequences arise as special cases of our proposed extractor family. We show that HOPPER is state-of-the-art or competitive across the ECHO-Synth benchmark, and that varying the maximum neighborhood size of message backtracking cancellation (i.e. structural memory window) can optimize accuracy on the LRIM physics-based long-range dependency benchmark. These results demonstrate that learnable sequence extraction provides a flexible and effective approach to long-range graph representation learning.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

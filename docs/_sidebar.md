@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-16 <!--dpr-date:20260815-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/15/2608.09031v1-hopper-learnable-hop-extraction-for-linearized-graph-sequence-models" data-sidebar-item="{&quot;title&quot;: &quot;HOPPER: Learnable Hop Extraction for Linearized Graph Sequence Models&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.09031v1-hopper-learnable-hop-extraction-for-linearized-graph-sequence-models&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;可学习图传播算子；可迁移至图神经网络架构搜索&quot;}">HOPPER: Learnable Hop Extraction for Linearized Graph Sequence Models</a>
   * 2026-08-15 <!--dpr-date:20260814-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/14/2608.11431v1-autograble-what-is-a-good-graph-for-a-table" data-sidebar-item="{&quot;title&quot;: &quot;AutoGrable: What Is a Good Graph for a Table?&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.11431v1-autograble-what-is-a-good-graph-for-a-table&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;自动选择适合GNN的表格图结构，属于图结构/架构自动搜索&quot;}">AutoGrable: What Is a Good Graph for a Table?</a>
