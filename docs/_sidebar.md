@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-18 <!--dpr-date:20260817-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/17/2608.13961v1-polar-code-based-federated-learning-convergence-analysis-and-resource-allocation" data-sidebar-item="{&quot;title&quot;: &quot;Polar Code Based Federated Learning: Convergence Analysis and Resource Allocation&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.13961v1-polar-code-based-federated-learning-convergence-analysis-and-resource-allocation&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;基于不等差错保护的通信高效联邦学习&quot;}">Polar Code Based Federated Learning: Convergence Analysis and Resource Allocation</a>
   * 2026-08-16 <!--dpr-date:20260815-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/15/2608.09031v1-hopper-learnable-hop-extraction-for-linearized-graph-sequence-models" data-sidebar-item="{&quot;title&quot;: &quot;HOPPER: Learnable Hop Extraction for Linearized Graph Sequence Models&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.09031v1-hopper-learnable-hop-extraction-for-linearized-graph-sequence-models&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;可学习图传播算子；可迁移至图神经网络架构搜索&quot;}">HOPPER: Learnable Hop Extraction for Linearized Graph Sequence Models</a>

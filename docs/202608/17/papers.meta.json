@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-18",
+  "date": "2026-08-17",
+  "generated_at": "2026-08-17T20:32:49",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/17/2608.13961v1-polar-code-based-federated-learning-convergence-analysis-and-resource-allocation",
+      "section": "quick",
+      "title_en": "Polar Code Based Federated Learning: Convergence Analysis and Resource Allocation",
+      "authors": "Han Xiao, Wei Kang, Nan Liu",
+      "date": "2026-08-14",
+      "pdf": "https://arxiv.org/pdf/2608.13961v1",
+      "score": "7.0",
+      "evidence": "基于不等差错保护的通信高效联邦学习",
+      "tldr": "联邦学习在实际部署中面临通信瓶颈和信道损伤，现有方案要么假设信道理想，要么对模型更新施加等错误保护，忽略量化比特的重要性差异。本文提出跨层极化码FL方案，利用极化码的UEP特性保护高比特位，并提供收敛性上界，联合优化量化比特数和码长。实验表明该方案在信道变差时优于未编码和LDPC基准，增强FL鲁棒性。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated learning (FL) enables collaborative model training across distributed devices without sharing raw data; however, it faces significant communication bottlenecks and channel impairments in practice. Conventional network layer treatments either idealize the channel as error free or apply equal error protection (EEP) to transmitted model updates, failing to account for the inherently unequal importance of quantization bits within a single local model. To address this limitation, we propose a cross layer polar code based FL scheme that leverages the unequal error protection (UEP) property of polar codes under finite block lengths. Specifically, the proposed design selectively protects more significant quantization bits, thereby mitigating the detrimental effects of channel noise. We further provide a rigorous convergence analysis of the proposed scheme, deriving an upper bound on the convergence gap, which we then jointly optimize over the number of quantization bits and the polar code block length across all training iterations. Experimental results demonstrate that both constant and variable block length configurations of our polar code based scheme consistently achieve substantial performance gains over uncoded and LDPC-based EEP benchmarks, with the advantage becoming increasingly pronounced as the channel quality deteriorating. These findings confirm the efficacy of our cross-layer design in enhancing FL robustness and efficiency under realistic channel conditions.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
