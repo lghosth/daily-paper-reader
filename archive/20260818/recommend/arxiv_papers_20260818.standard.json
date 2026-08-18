@@ -1,0 +1,295 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-18T20:26:42.752931+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2608.16305v1",
+      "source": "arxiv",
+      "title": "DepTGL: A Parallel Framework for Memory-based TGNN Training with Adaptive Temporal Data Dependency Management",
+      "abstract": "Memory-based Temporal Graph Neural Networks (M-TGNNs) maintain recursively updated node states to capture fine-grained temporal interactions. However, existing distributed frameworks lack effective mechanisms for managing the temporal data dependencies inherent in these models. As a result, they must enforce strict chronological updates, incur substantial remote synchronization overhead, and experience severe load imbalance when temporal event streams are skewed. We propose DepTGL, a scalable distributed training framework that restructures temporal-dependency management for M-TGNNs from a data-centric perspective. First, DepTGL introduces a hybrid temporal-dependency management scheme that explicitly balances communication and caching overhead via temporal-event caching, supplemented by selective dependency-driven communication. Next, DepTGL incorporates a gradient-aware cache-synchronization policy that adaptively suppresses boundary updates as model optimization stabilizes, thereby reducing redundant synchronization. Finally, DepTGL integrates a load-aware temporal-pruning strategy that eliminates auxiliary replay events under skew-induced load spikes, reducing redundant data processing and mitigating straggler effects. Experiments on six real-world temporal graphs show that DepTGL achieves an average speedup of 4.99x over state-of-the-art baselines, while maintaining comparable accuracy.",
+      "authors": [
+        "Linfang Chen",
+        "Zhen Song",
+        "Lei Liu",
+        "Yu Gu",
+        "Yushuai Li",
+        "Yanfeng Zhang",
+        "Lizhen Cui",
+        "Ge Yu",
+        "Tianyi Li"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-17T09:16:00+00:00",
+      "link": "https://arxiv.org/pdf/2608.16305v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Distributed GNN training framework with temporal dependency management",
+      "llm_evidence_cn": "面向分布式GNN训练的时序依赖管理并行框架",
+      "llm_evidence": "面向分布式GNN训练的时序依赖管理并行框架",
+      "canonical_evidence": "面向分布式GNN训练的时序依赖管理并行框架",
+      "llm_tldr_en": "Memory-based temporal GNNs suffer strict chronological updates and high sync overhead; DepTGL introduces hybrid temporal-dependency management and data-centric parallelism, improving scalability and load balance.",
+      "llm_tldr_cn": "基于内存的时序图神经网络依赖递归更新的节点状态，现有分布式框架因严格时序约束导致大量远程同步和负载不均。DepTGL从数据视角重构时序依赖管理，提出混合时序依赖管理方案以显式平衡计算与通信，并设计自适应调度。该框架在保持模型精度的同时提升了并行训练效率、可扩展性和负载均衡，为分布式TGNN训练提供了新的数据依赖管理思路。",
+      "llm_tldr": "基于内存的时序图神经网络依赖递归更新的节点状态，现有分布式框架因严格时序约束导致大量远程同步和负载不均。DepTGL从数据视角重构时序依赖管理，提出混合时序依赖管理方案以显式平衡计算与通信，并设计自适应调度。该框架在保持模型精度的同时提升了并行训练效率、可扩展性和负载均衡，为分布式TGNN训练提供了新的数据依赖管理思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "distributed training systems for graph neural networks",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.15118v1",
+      "source": "arxiv",
+      "title": "Collective Communication for Distributed LLM Systems: Planning, Runtime Adaptation, and Computation Coordination",
+      "abstract": "Distributed large language model (LLM) systems increasingly rely on collective communication primitives such as AllReduce (AR), ReduceScatter (RS), AllGather (AG), and AlltoAll (A2A). In modern LLM training and serving clusters, heterogeneous GPU interconnects, multi-NIC networking, mixed parallelism strategies, low-latency inference requests, and high-throughput training pipelines have motivated increasingly diverse ways to plan, execute, and overlap collective communication. This paper presents a tutorial-style, collective-centric taxonomy for collective communication. We organize recent advances into three layers: communication planning, which generates topology-aware collective schedules; communication execution and adaptation, which maps these schedules onto GPU runtimes and hardware in real clusters; and computation-communication coordination, which turns collective optimization into end-to-end training and inference benefits. We further discuss open challenges and future opportunities for collective communication in distributed LLM systems.",
+      "authors": [
+        "Xuebin Song",
+        "Menghao Zhang",
+        "Yuezheng Liu",
+        "Jinyi Xia",
+        "Shucan Yang",
+        "Xiaohe Hu",
+        "Chunming Hu",
+        "Mingwei Xu"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-15T08:40:01+00:00",
+      "link": "https://arxiv.org/pdf/2608.15118v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Collective communication taxonomy for distributed training systems, directly addressing communication-efficient training",
+      "llm_evidence_cn": "面向分布式训练的集合通信规划与优化，直接涉及通信高效训练",
+      "llm_evidence": "面向分布式训练的集合通信规划与优化，直接涉及通信高效训练",
+      "canonical_evidence": "面向分布式训练的集合通信规划与优化，直接涉及通信高效训练",
+      "llm_tldr_en": "Presents a tutorial-style taxonomy of collective communication in distributed LLM systems, covering communication planning, runtime adaptation, and computation coordination to improve communication efficiency.",
+      "llm_tldr_cn": "现代分布式大模型训练与服务依赖多种集合通信原语，其规划和执行方式直接影响通信开销。论文以教程形式提出集合通信三层分类体系，覆盖拓扑感知的通信规划、运行时自适应和计算通信重叠。该工作为分布式系统的通信高效训练提供了系统性方法与设计参考，可迁移到图神经网络等场景。",
+      "llm_tldr": "现代分布式大模型训练与服务依赖多种集合通信原语，其规划和执行方式直接影响通信开销。论文以教程形式提出集合通信三层分类体系，覆盖拓扑感知的通信规划、运行时自适应和计算通信重叠。该工作为分布式系统的通信高效训练提供了系统性方法与设计参考，可迁移到图神经网络等场景。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.15639v1",
+      "source": "arxiv",
+      "title": "When Is Shallow Enough? Adaptive Split Federated Learning with Client-Specific Sufficiency Estimation",
+      "abstract": "\\textit{Split Federated Learning} (SFL) enables distributed model training by splitting networks between the server and clients. However, under client heterogeneity, the conventional static split strategy may be suboptimal because clients can differ in data distributions, adaptation dynamics, and representation learning progress, making a single split point insufficient to accommodate client-specific training states. In this paper, we propose \\textsc{FedSGA}, a \\textbf{S}ufficiency-\\textbf{G}uided \\textbf{A}daptive split \\textbf{Fed}erated learning framework that addresses this question through client-specific shallow sufficiency estimation. First, we introduce a client-specific adaptation channel based on private prompt tokens, which tracks local adaptation dynamics separately from the shared backbone and provides a lightweight signal for detecting whether client adaptation remains active. To further avoid repeated online probing over multiple candidate depths, we design a shallow sufficiency estimator that combines cross-client semantic alignment, temporal interface stability, and prompt-state variation to estimate whether the shallowest split is already sufficient. Finally, we introduce a split-compatible interface harmonization module that projects activations from different split depths into a shared semantic space, improving the comparability of heterogeneous client interfaces before server-side prediction. Extensive experiments on multiple heterogeneous benchmarks demonstrate the effectiveness of \\textsc{FedSGA} in improving model performance compared with state-of-the-art methods while reducing unnecessary client-side computation.",
+      "authors": [
+        "Wenhao Yuan",
+        "Chenchen Lin",
+        "Wenhao Hu",
+        "Jian Chen",
+        "Jinfeng Xu",
+        "Shujie Li",
+        "Edith Cheuk Han Ngai"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-08-16T09:06:28+00:00",
+      "link": "https://arxiv.org/pdf/2608.15639v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "adaptive split federated learning for communication-efficient distributed training",
+      "llm_evidence_cn": "自适应分割联邦学习，减少通信开销",
+      "llm_evidence": "自适应分割联邦学习，减少通信开销",
+      "canonical_evidence": "自适应分割联邦学习，减少通信开销",
+      "llm_tldr_en": "Split federated learning adapts split points per client via sufficiency estimation, using private prompts to handle heterogeneity, reducing communication while maintaining accuracy.",
+      "llm_tldr_cn": "分割联邦学习通过在服务器与客户端间划分网络实现分布式训练，但客户端异构使得静态切分并非最优。本文提出FedSGA框架，通过客户端特定浅层充分性估计自适应确定切分点，并加入基于私有提示的适配通道。实验证明该方法能根据客户端数据与训练进度动态调整，在降低通信开销的同时保持模型性能，为异构环境下的分布式训练提供了新思路。",
+      "llm_tldr": "分割联邦学习通过在服务器与客户端间划分网络实现分布式训练，但客户端异构使得静态切分并非最优。本文提出FedSGA框架，通过客户端特定浅层充分性估计自适应确定切分点，并加入基于私有提示的适配通道。实验证明该方法能根据客户端数据与训练进度动态调整，在降低通信开销的同时保持模型性能，为异构环境下的分布式训练提供了新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.15660v1",
+      "source": "arxiv",
+      "title": "Adaptive Heterogeneous Compression for Resource-Efficient Federated Knowledge Distillation",
+      "abstract": "Federated learning (FL) enables privacy-preserving distributed model training but faces challenges from heterogeneous model architectures and limited communication resources at the network edge. Federated knowledge distillation (FedKD) alleviates model heterogeneity by combining prototype-wise parameter aggregation and knowledge transfer across heterogeneous models. However, transmitting gradients still introduces considerable communication overhead, while existing compression approaches typically apply a uniform strategy across clients and ignore their diverse model characteristics and resource capacities. To address this issue, we propose a heterogeneous compression framework for FedKD that enables each client to select a compression strategy from a candidate strategy set. We formulate the compression strategy selection problem as a non-stationary stochastic multi-armed bandit (MAB), where each arm corresponds to a compression strategy. An efficiency-aware reward is designed by jointly considering local optimization improvement, global knowledge alignment, and execution time. Based on this formulation, we develop an Adaptive heterogeneouS Compression algorithm for fEderated kNowledge Distillation (ASCEND), which employs an exponential moving average (EMA)-enhanced $ε$-greedy policy to balance exploration and exploitation. Experimental results on multiple datasets demonstrate that ASCEND effectively adapts to heterogeneous model and resource settings, reducing communication overhead and training time while maintaining competitive model accuracy.",
+      "authors": [
+        "Chenwang Liu",
+        "Yijun Liu",
+        "Chang Liu",
+        "Xu Zhang",
+        "Pengchao Han"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-08-16T10:08:26+00:00",
+      "link": "https://arxiv.org/pdf/2608.15660v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Heterogeneous communication compression for federated training",
+      "llm_evidence_cn": "面向联邦训练的异构通信压缩",
+      "llm_evidence": "面向联邦训练的异构通信压缩",
+      "canonical_evidence": "面向联邦训练的异构通信压缩",
+      "llm_tldr_en": "Federated learning faces communication overhead; the paper proposes a heterogeneous compression framework for FedKD, allowing each client to select compression adaptively, reducing communication while preserving model heterogeneity.",
+      "llm_tldr_cn": "联邦知识蒸馏中传输梯度仍带来较大通信开销，而现有压缩方法通常对所有客户端采用统一策略，忽略了其模型多样性和资源差异。该文提出一种面向FedKD的异构压缩框架，使各客户端可根据自身特征与资源能力自适应选择压缩策略，在缓解模型异构的同时降低通信成本。实验表明该方法在保持模型性能前提下显著减少通信开销，为资源受限边缘场景下的联邦学习提供了高效压缩方案。",
+      "llm_tldr": "联邦知识蒸馏中传输梯度仍带来较大通信开销，而现有压缩方法通常对所有客户端采用统一策略，忽略了其模型多样性和资源差异。该文提出一种面向FedKD的异构压缩框架，使各客户端可根据自身特征与资源能力自适应选择压缩策略，在缓解模型异构的同时降低通信成本。实验表明该方法在保持模型性能前提下显著减少通信开销，为资源受限边缘场景下的联邦学习提供了高效压缩方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.13910v1",
+      "source": "arxiv",
+      "title": "Deterministic Spectral Sparsification in Almost-Linear Time for Dense Graphs",
+      "abstract": "A spectral sparsifier of a weighted graph is a reweighted subgraph whose Laplacian quadratic form approximates that of the original graph. Let $G$ be a positively weighted $n$-vertex, $m$-edge multigraph, let $0<\\varepsilon\\le1/2$. Assuming $m,\\varepsilon^{-1}\\le n^{O(1)}$ and the ratio of maximum to minimum weight is polynomially bounded, we deterministically construct a $(1\\pm\\varepsilon)$-spectral sparsifier with \\[   O\\!\\left(n\\varepsilon^{-2}\\log^{24+o(1)}n\\right) \\] edges in \\[   m^{1+o(1)}+O\\!\\left(n^2\\varepsilon^{-9/2}\\log^{113/2+o(1)}n\\right) \\] time.   The construction has two main ingredients. First, we sparsify an approximately regular expander by partitioning its edges into few matchings and viewing their normalized Laplacians as an isotropic family of positive semidefinite matrices. Rather than sample from this family and apply matrix Chernoff, we select matchings deterministically using a pessimistic estimator. We evaluate the resulting conditional-expectation scores in two ways to produce two algorithms: using dense matrix multiplication and sparsely using polynomial approximations to the inverse square root and matrix exponential. Deterministic expander decomposition, along with replacing vertices by fixed expander graphs to achieve approximate regularity, extends these algorithms to general graphs. Second, a recursive blocking scheme applies the dense algorithm to smaller subgraphs and the sparse algorithm to their union, balancing their costs. Reusing the resulting algorithm as the dense algorithm gives $α_{r+1}=3-1/(α_r-1)$, starting from $α_0=ω$. After $O(\\log n)$ levels, the exponent is $2+O(1/\\log n)$, yielding $m^{1+o(1)}+\\widetilde O_{\\varepsilon}(n^2)$ time.",
+      "authors": [
+        "Jason Li",
+        "Trevor Vaughn"
+      ],
+      "primary_category": "cs.DS",
+      "categories": [
+        "cs.DS"
+      ],
+      "published": "2026-08-14T03:27:49+00:00",
+      "link": "https://arxiv.org/pdf/2608.13910v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Deterministic spectral sparsification; enabling method for graph partitioning and communication reduction in distributed GNN.",
+      "llm_evidence_cn": "确定性谱稀疏化，可为分布式GNN划分与通信缩减提供使能方法。",
+      "llm_evidence": "确定性谱稀疏化，可为分布式GNN划分与通信缩减提供使能方法。",
+      "canonical_evidence": "确定性谱稀疏化，可为分布式GNN划分与通信缩减提供使能方法。",
+      "llm_tldr_en": "Deterministic spectral sparsification for dense graphs in almost-linear time, producing edge-reduced sparsifiers. The technique, based on edge matching and expander sparsification, can enable efficient graph partitioning and reduce communication in distributed GNN training.",
+      "llm_tldr_cn": "该论文提出一种确定性算法，在近线性时间内为稠密图构造保持谱性质的稀疏子图，将边数大幅减少。方法通过将边划分为匹配并结合扩展器稀疏化实现，可作为图划分和分布式GNN训练的前置步骤，以降低通信与计算开销。",
+      "llm_tldr": "该论文提出一种确定性算法，在近线性时间内为稠密图构造保持谱性质的稀疏子图，将边数大幅减少。方法通过将边划分为匹配并结合扩展器稀疏化实现，可作为图划分和分布式GNN训练的前置步骤，以降低通信与计算开销。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.15311v1",
+      "source": "arxiv",
+      "title": "MoE Router-Guided Clustering for Heterogeneous Federated Instruction Tuning",
+      "abstract": "Federated instruction fine-tuning enables Large Language Models (LLMs) to adapt to decentralized, privacy-sensitive data without requiring data sharing. Recent Mixture-of-Experts (MoE) LLMs are particularly attractive for federated learning because their sparse activation reduces computation and communication while scaling model capacity. However, existing federated MoE methods primarily focus on parameter aggregation and personalization, overlooking the routing behavior of MoE models as a source of information for client collaboration. Under heterogeneous instruction distributions, indiscriminate aggregation can lead to negative transfer, highlighting the need to identify which clients should collaborate during federated optimization. We propose ClientMorpher, a routing-aware, personalized federated instruction fine-tuning framework that leverages routing signatures from pretrained MoE models to organize client collaboration prior to aggregation. We investigate two complementary clustering strategies: ClientMorpher-C, which directly clusters clients using expert activation profiles, and ClientMorpher-E, which first clusters experts based on their cross-client usage signatures and then derives client collaboration groups. We evaluate ClientMorpher for federated instruction fine-tuning on the Databricks Dolly-15K dataset, using pathological and Dirichlet-based heterogeneous client distributions across multiple instruction-following tasks. Experimental results show that routing-aware collaboration consistently improves personalized performance compared to conventional federated averaging and local training, while maintaining the same communication cost. Furthermore, our study shows that client-centric and expert-centric clustering provides an effective and scalable approach for personalized federated instruction fine-tuning of sparse MoE LLMs.",
+      "authors": [
+        "Ankita Sharma",
+        "Bahar Farahani",
+        "Sanaz Rahimi Moosavi",
+        "Amir Rrahmani",
+        "Farshad Firouzi",
+        "Krishnendu Chakrabarty"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-15T16:35:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.15311v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Federated MoE training reducing communication via sparse activation and router-guided client collaboration",
+      "llm_evidence_cn": "联邦MoE训练利用稀疏激活降低通信，并通过路由器引导客户端协作",
+      "llm_evidence": "联邦MoE训练利用稀疏激活降低通信，并通过路由器引导客户端协作",
+      "canonical_evidence": "联邦MoE训练利用稀疏激活降低通信，并通过路由器引导客户端协作",
+      "llm_tldr_en": "Proposes MoE router-guided clustering for heterogeneous federated instruction tuning, using routing behavior to identify clients that should collaborate, reducing communication and improving personalized federated LLM adaptation.",
+      "llm_tldr_cn": "论文针对异构指令分布下联邦MoE微调中无差别聚合导致负迁移的问题，提出利用MoE路由器行为指导客户端聚类的方法。稀疏激活虽能降低计算和通信开销，但现有方法忽略了路由信息对协作的指导意义。该方法根据路由模式识别应协作的客户端，减少通信并提升异构场景下的指令微调效果。这为通信高效的联邦学习提供了新的客户端协作与通信优化思路。",
+      "llm_tldr": "论文针对异构指令分布下联邦MoE微调中无差别聚合导致负迁移的问题，提出利用MoE路由器行为指导客户端聚类的方法。稀疏激活虽能降低计算和通信开销，但现有方法忽略了路由信息对协作的指导意义。该方法根据路由模式识别应协作的客户端，减少通信并提升异构场景下的指令微调效果。这为通信高效的联邦学习提供了新的客户端协作与通信优化思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.16271v1",
+      "source": "arxiv",
+      "title": "Stochastic Gradient Tracking over Time-Varying Networks: One-Step Lyapunov Analysis",
+      "abstract": "We study decentralized stochastic gradient tracking over a time-varying network of $N$ agents under a uniform window-mixing condition. Products of $τ$ consecutive doubly stochastic mixing matrices contract disagreement by a factor $λ<1$, although individual matrices need not contract disagreement strictly and individual communication graphs may be disconnected. We construct a time-varying quadratic norm that turns this window contraction into an exact one-step Lyapunov identity. This leads to coupled one-step recursions for the centroid and disagreement errors, without unrolling the dynamics over communication windows. For smooth strongly convex objectives, the leading stochastic term is $\\widetilde{\\mathcal O}(1/(NK))$; for smooth convex objectives, it is $\\mathcal O(1/\\sqrt{NK})$. Both match their centralized mini-batch counterparts and yield linear speedup after a network-dependent transient.",
+      "authors": [
+        "Sulaiman A. Alghunaim"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC",
+        "cs.DC",
+        "eess.SY"
+      ],
+      "published": "2026-08-17T08:44:34+00:00",
+      "link": "https://arxiv.org/pdf/2608.16271v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "decentralized stochastic gradient tracking over time-varying networks for communication-efficient distributed optimization",
+      "llm_evidence_cn": "时变网络上的分散式随机梯度跟踪，可用于通信高效的分布式优化",
+      "llm_evidence": "时变网络上的分散式随机梯度跟踪，可用于通信高效的分布式优化",
+      "canonical_evidence": "时变网络上的分散式随机梯度跟踪，可用于通信高效的分布式优化",
+      "llm_tldr_en": "This paper analyzes decentralized stochastic gradient tracking over time-varying networks and proposes a one-step Lyapunov framework that avoids unrolling the dynamics over communication windows, achieving improved convergence guarantees.",
+      "llm_tldr_cn": "该文研究时变网络上的分散式随机梯度跟踪算法。作者构造时变二次范数，将窗口收缩转化为精确的单步Lyapunov恒等式，从而无需展开多轮通信即可统一分析质心与不一致误差。在强凸目标下得到O~(1/(NK))的随机主导项，为分布式训练的收敛性提供了更紧的刻画。该方法对分布式GNN等网络化训练系统具有理论参考价值。",
+      "llm_tldr": "该文研究时变网络上的分散式随机梯度跟踪算法。作者构造时变二次范数，将窗口收缩转化为精确的单步Lyapunov恒等式，从而无需展开多轮通信即可统一分析质心与不一致误差。在强凸目标下得到O~(1/(NK))的随机主导项，为分布式训练的收敛性提供了更紧的刻画。该方法对分布式GNN等网络化训练系统具有理论参考价值。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
