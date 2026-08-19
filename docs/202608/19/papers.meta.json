@@ -1,0 +1,54 @@
+{
+  "label": "2026-08-20",
+  "date": "2026-08-19",
+  "generated_at": "2026-08-19T19:52:45",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202608/19/2608.14443v1-designing-compact-neural-architectures-via-neuron-gating-and-mixed-activation",
+      "section": "quick",
+      "title_en": "Designing Compact Neural Architectures via Neuron Gating and Mixed Activation",
+      "authors": "Abhishek Shukla, Ankur Sinha, Faiz Hamid",
+      "date": "2026-08-14",
+      "pdf": "https://arxiv.org/pdf/2608.14443v1",
+      "score": "6.0",
+      "evidence": "通用神经架构搜索框架，连续松弛方法可迁移到图神经架构搜索",
+      "tldr": "针对神经架构搜索因离散决策与组合搜索空间导致计算昂贵的问题，提出基于神经元门控与混合激活的通用双层优化框架，将离散神经元和激活层选择松弛为连续变量，实现可微优化。在MNIST和CIFAR-10上，该方法以更少参数获得有竞争力的准确率，并优于DARTS，验证了松弛双层优化作为离散NAS可扩展替代方案的有效性。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Neural Architecture Search (NAS) is naturally formulated as a bilevel optimization problem, where the upper-level optimizes the architecture using validation performance and the lower-level trains network parameters using training loss. However, NAS is computationally expensive due to discrete architectural decisions, exponentially growing search spaces, and the high cost of training candidate architectures. This work develops a general bilevel optimization framework for NAS across diverse architectures, including MLPs, CNNs, RNNs, and Transformers, to identify compact architectures with strong predictive performance. We propose three scalable formulations that replace discrete neuron- and activation-level decisions with continuous relaxations, enabling differentiable optimization over otherwise combinatorial architecture spaces. These formulations give rise to three NAS methods: NAS based on Neuron Gating (NAS-NG), NAS based on Mixed Activation (NAS-MA), and NAS based on Neuron Gating and Mixed Activation (NAS-NGMA). Experiments on MLPs and CNNs using MNIST and CIFAR-10 show that the proposed methods consistently identify compact architectures with competitive or improved predictive performance. On MNIST, NAS-NGMA achieves 98.68% test accuracy with 7.69M MLP parameters, while NAS-NG achieves 99.63% accuracy with only 0.26M CNN parameters. On CIFAR-10, the proposed methods consistently outperform vanilla DARTS. Further experiments demonstrate that NAS-NG can optimize substantially over-parameterized and literature-optimal architectures, improving accuracy while reducing parameters. These results establish relaxed bilevel optimization as a scalable alternative to discrete NAS and provide a general framework for efficient neuron- and activation-level architecture optimization.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/19/2608.16097v1-unifying-graph-neural-networks-through-a-common-layer-equation",
+      "section": "quick",
+      "title_en": "Unifying Graph Neural Networks Through a Common Layer Equation",
+      "authors": "Sai Karthik Navuluru, Siddhartha Shankar Das, Bo Ni, Hongjie Chen, Yu Wang, Baris Coskunuzer, Nesreen K. Ahmed, Franck Dernoncourt, Mahantesh Halappanavar, Tyler Derr, Ryan A. Rossi, Lakshman Tamil",
+      "date": "2026-08-17",
+      "pdf": "https://arxiv.org/pdf/2608.16097v1",
+      "score": "6.0",
+      "evidence": "统一GNN层方程可作为NAS搜索空间表示",
+      "tldr": "图神经网络常以族系专属方程描述，符号差异掩盖了共享计算与结构区别。本文提出统一层方程，用更新域、通道集、传播库、逐通道消息映射、通道融合算子、自环/残差映射及更新映射七个组件覆盖多种架构。其核心分解将信息传播位置（传播库）与传播内容（消息映射）分离，并以函数值填充统一局部消息传递、注意力、谱滤波、全局通信、关系通道、高阶域与几何消息。该框架组织超200种架构，支持组件级比较与生成，并联系过平滑、过挤压、异配性与表达能力。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Graph neural networks are commonly described through family-specific equations whose notation obscures shared computations and structural differences. We introduce a common layer equation that represents covered architectures through seven components: an update domain, channel set, propagation bank, per-channel message maps, channel-fusion operator, ego/residual map, and update map. The central factorization separates where information moves, encoded by the propagation bank, from what moves, encoded by the message maps. Function-valued fillings extend the same equation across local message passing, attention, spectral filtering, global communication, relation-specific channels, higher-order domains, and geometric messages.   We make this unification explicit and checkable through worked reductions of canonical layers and component assignments spanning seven nonexclusive architectural families. A fixed slot discipline assigns operations by computational role and defines the framework's coverage boundary. The decomposition also yields component-level theoretical insights: under endpoint-local messages and node-local updates, operator support bounds one-layer dependencies, and one-layer global mixing requires a full effective operator row under the stated hypotheses.   The resulting framework organizes more than 200 architectures in a common design space, enables component-wise comparison and generation of structurally consistent architectures, and connects propagation choices to oversmoothing, oversquashing, heterophily, and expressivity. It further exposes the empirical inverse problem of mapping measurable graph and task properties to validated component choices.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/19/2608.17849v1-efficient-resource-optimization-for-split-federated-learning",
+      "section": "quick",
+      "title_en": "Efficient Resource Optimization for Split Federated Learning",
+      "authors": "Wei Wei, Xianhao Chen",
+      "date": "2026-08-18",
+      "pdf": "https://arxiv.org/pdf/2608.17849v1",
+      "score": "6.0",
+      "evidence": "分割联邦学习中的模型切分与资源分配联合优化，降低通信与训练成本",
+      "tldr": "分裂联邦学习（SFL）在资源受限网络中需联合优化模型分割与资源分配，但离散变量导致混合整数问题，现有方案或启发式或计算低效。本文提出高效优化框架，将训练成本定义为时延与能耗加权和，并分别求解：分割问题获得多项式时间全局最优算法，联合问题转化为二维主问题并设计(1+ε)-近似算法。实验表明该方法在能量-时延权衡上接近最优，同时支持大规模用户群体。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Split federated learning (SFL) has emerged as a powerful paradigm for model training at the edge. However, SFL inherently involves discrete decision variables for model splitting and resource allocation, resulting in a challenging mixed-integer problem. Consequently, prior optimization schemes for SFL are either \\textit{heuristic} or \\textit{computationally inefficient}, which cannot handle large-scale user populations. To address this limitation, this work establishes an efficient optimization framework for SFL under resource-constrained networks. Our framework jointly optimizes model splitting and resource allocation to minimize training cost, which is defined as the weighted sum of latency and energy costs. We first study the model splitting problem and develop a polynomial-time algorithm that achieves the global optimum. Then, we extend the approach to the joint model splitting and resource allocation problem. In this case, we formulate it as a two-dimensional master problem and develop an efficient approximation method with a $(1+ε)$-approximation guarantee. Extensive experiments show that the proposed approach provides efficient solutions to strike the optimal energy--latency tradeoff.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

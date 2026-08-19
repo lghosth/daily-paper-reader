@@ -1,0 +1,137 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-19T19:46:57.277831+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.14443v1",
+      "source": "arxiv",
+      "title": "Designing Compact Neural Architectures via Neuron Gating and Mixed Activation",
+      "abstract": "Neural Architecture Search (NAS) is naturally formulated as a bilevel optimization problem, where the upper-level optimizes the architecture using validation performance and the lower-level trains network parameters using training loss. However, NAS is computationally expensive due to discrete architectural decisions, exponentially growing search spaces, and the high cost of training candidate architectures. This work develops a general bilevel optimization framework for NAS across diverse architectures, including MLPs, CNNs, RNNs, and Transformers, to identify compact architectures with strong predictive performance. We propose three scalable formulations that replace discrete neuron- and activation-level decisions with continuous relaxations, enabling differentiable optimization over otherwise combinatorial architecture spaces. These formulations give rise to three NAS methods: NAS based on Neuron Gating (NAS-NG), NAS based on Mixed Activation (NAS-MA), and NAS based on Neuron Gating and Mixed Activation (NAS-NGMA). Experiments on MLPs and CNNs using MNIST and CIFAR-10 show that the proposed methods consistently identify compact architectures with competitive or improved predictive performance. On MNIST, NAS-NGMA achieves 98.68% test accuracy with 7.69M MLP parameters, while NAS-NG achieves 99.63% accuracy with only 0.26M CNN parameters. On CIFAR-10, the proposed methods consistently outperform vanilla DARTS. Further experiments demonstrate that NAS-NG can optimize substantially over-parameterized and literature-optimal architectures, improving accuracy while reducing parameters. These results establish relaxed bilevel optimization as a scalable alternative to discrete NAS and provide a general framework for efficient neuron- and activation-level architecture optimization.",
+      "authors": [
+        "Abhishek Shukla",
+        "Ankur Sinha",
+        "Faiz Hamid"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-08-14T16:28:32+00:00",
+      "link": "https://arxiv.org/pdf/2608.14443v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "general neural architecture search framework with continuous relaxation, transferable to graph NAS",
+      "llm_evidence_cn": "通用神经架构搜索框架，连续松弛方法可迁移到图神经架构搜索",
+      "llm_evidence": "通用神经架构搜索框架，连续松弛方法可迁移到图神经架构搜索",
+      "canonical_evidence": "通用神经架构搜索框架，连续松弛方法可迁移到图神经架构搜索",
+      "llm_tldr_en": "This paper presents a bilevel NAS framework that relaxes discrete neuron and activation decisions into continuous ones, enabling efficient search for compact MLPs, CNNs, RNNs, and Transformers, a methodology transferable to GNN architecture search.",
+      "llm_tldr_cn": "神经架构搜索通常因离散决策、巨大搜索空间和高昂候选训练成本而难以扩展。本文提出通用双层优化框架，通过连续松弛神经元门控与混合激活，在MLP、CNN、RNN和Transformer等架构上搜索紧凑且强预测性能的模型。该方法可显著降低搜索开销并保持性能，其连续化处理方式也可迁移到图神经架构搜索中。",
+      "llm_tldr": "神经架构搜索通常因离散决策、巨大搜索空间和高昂候选训练成本而难以扩展。本文提出通用双层优化框架，通过连续松弛神经元门控与混合激活，在MLP、CNN、RNN和Transformer等架构上搜索紧凑且强预测性能的模型。该方法可显著降低搜索开销并保持性能，其连续化处理方式也可迁移到图神经架构搜索中。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.16097v1",
+      "source": "arxiv",
+      "title": "Unifying Graph Neural Networks Through a Common Layer Equation",
+      "abstract": "Graph neural networks are commonly described through family-specific equations whose notation obscures shared computations and structural differences. We introduce a common layer equation that represents covered architectures through seven components: an update domain, channel set, propagation bank, per-channel message maps, channel-fusion operator, ego/residual map, and update map. The central factorization separates where information moves, encoded by the propagation bank, from what moves, encoded by the message maps. Function-valued fillings extend the same equation across local message passing, attention, spectral filtering, global communication, relation-specific channels, higher-order domains, and geometric messages.   We make this unification explicit and checkable through worked reductions of canonical layers and component assignments spanning seven nonexclusive architectural families. A fixed slot discipline assigns operations by computational role and defines the framework's coverage boundary. The decomposition also yields component-level theoretical insights: under endpoint-local messages and node-local updates, operator support bounds one-layer dependencies, and one-layer global mixing requires a full effective operator row under the stated hypotheses.   The resulting framework organizes more than 200 architectures in a common design space, enables component-wise comparison and generation of structurally consistent architectures, and connects propagation choices to oversmoothing, oversquashing, heterophily, and expressivity. It further exposes the empirical inverse problem of mapping measurable graph and task properties to validated component choices.",
+      "authors": [
+        "Sai Karthik Navuluru",
+        "Siddhartha Shankar Das",
+        "Bo Ni",
+        "Hongjie Chen",
+        "Yu Wang",
+        "Baris Coskunuzer",
+        "Nesreen K. Ahmed",
+        "Franck Dernoncourt",
+        "Mahantesh Halappanavar",
+        "Tyler Derr",
+        "Ryan A. Rossi",
+        "Lakshman Tamil"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-17T04:37:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.16097v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Common GNN layer equation can serve as a NAS search space representation",
+      "llm_evidence_cn": "统一GNN层方程可作为NAS搜索空间表示",
+      "llm_evidence": "统一GNN层方程可作为NAS搜索空间表示",
+      "canonical_evidence": "统一GNN层方程可作为NAS搜索空间表示",
+      "llm_tldr_en": "This paper introduces a common layer equation that represents many GNN architectures via seven components, separating propagation from message computation; this unification provides a useful representation for graph neural architecture search.",
+      "llm_tldr_cn": "现有图神经网络常以各自家族方程描述，掩盖了共享计算与结构差异。本文提出一种通用层方程，通过更新域、通道集、传播库、消息映射等七个组件统一表达多种GNN架构，并将信息传播与消息计算解耦。该统一视角可为图神经架构搜索提供通用搜索空间表示，有助于系统化比较与设计新GNN架构。",
+      "llm_tldr": "现有图神经网络常以各自家族方程描述，掩盖了共享计算与结构差异。本文提出一种通用层方程，通过更新域、通道集、传播库、消息映射等七个组件统一表达多种GNN架构，并将信息传播与消息计算解耦。该统一视角可为图神经架构搜索提供通用搜索空间表示，有助于系统化比较与设计新GNN架构。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.17849v1",
+      "source": "arxiv",
+      "title": "Efficient Resource Optimization for Split Federated Learning",
+      "abstract": "Split federated learning (SFL) has emerged as a powerful paradigm for model training at the edge. However, SFL inherently involves discrete decision variables for model splitting and resource allocation, resulting in a challenging mixed-integer problem. Consequently, prior optimization schemes for SFL are either \\textit{heuristic} or \\textit{computationally inefficient}, which cannot handle large-scale user populations. To address this limitation, this work establishes an efficient optimization framework for SFL under resource-constrained networks. Our framework jointly optimizes model splitting and resource allocation to minimize training cost, which is defined as the weighted sum of latency and energy costs. We first study the model splitting problem and develop a polynomial-time algorithm that achieves the global optimum. Then, we extend the approach to the joint model splitting and resource allocation problem. In this case, we formulate it as a two-dimensional master problem and develop an efficient approximation method with a $(1+ε)$-approximation guarantee. Extensive experiments show that the proposed approach provides efficient solutions to strike the optimal energy--latency tradeoff.",
+      "authors": [
+        "Wei Wei",
+        "Xianhao Chen"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-18T14:44:46+00:00",
+      "link": "https://arxiv.org/pdf/2608.17849v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "split federated learning resource and model splitting optimization for communication-efficient training",
+      "llm_evidence_cn": "分割联邦学习中的模型切分与资源分配联合优化，降低通信与训练成本",
+      "llm_evidence": "分割联邦学习中的模型切分与资源分配联合优化，降低通信与训练成本",
+      "canonical_evidence": "分割联邦学习中的模型切分与资源分配联合优化，降低通信与训练成本",
+      "llm_tldr_en": "This paper addresses the mixed-integer resource optimization problem in split federated learning, jointly optimizing model splitting and resource allocation to minimize latency-plus-energy training cost with a scalable framework.",
+      "llm_tldr_cn": "分割联邦学习中的模型切分与资源分配存在离散变量，形成难解混合整数问题，以往启发式或低效方法难以扩展到大用户规模。本文建立高效优化框架，联合优化模型切分和资源分配，以最小化时延与能量加权训练成本。通过先研究模型切分再推导分配策略，在资源受限网络中实现可扩展的求解。该工作为边缘分布式训练的通信与能耗优化提供了系统化方案。",
+      "llm_tldr": "分割联邦学习中的模型切分与资源分配存在离散变量，形成难解混合整数问题，以往启发式或低效方法难以扩展到大用户规模。本文建立高效优化框架，联合优化模型切分和资源分配，以最小化时延与能量加权训练成本。通过先研究模型切分再推导分配策略，在资源受限网络中实现可扩展的求解。该工作为边缘分布式训练的通信与能耗优化提供了系统化方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
