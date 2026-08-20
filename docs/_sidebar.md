@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-21 <!--dpr-date:20260820-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/20/2608.16339v1-a-simple-active-set-method-for-pagerank-based-local-graph-clustering" data-sidebar-item="{&quot;title&quot;: &quot;A Simple Active-Set Method for PageRank-Based Local Graph Clustering&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.16339v1-a-simple-active-set-method-for-pagerank-based-local-graph-clustering&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;高效的PageRank近似用于局部图聚类，可作为图划分策略的工具&quot;}">A Simple Active-Set Method for PageRank-Based Local Graph Clustering</a>
   * 2026-08-20 <!--dpr-date:20260819-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/19/2608.14443v1-designing-compact-neural-architectures-via-neuron-gating-and-mixed-activation" data-sidebar-item="{&quot;title&quot;: &quot;Designing Compact Neural Architectures via Neuron Gating and Mixed Activation&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.14443v1-designing-compact-neural-architectures-via-neuron-gating-and-mixed-activation&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;通用神经架构搜索框架，连续松弛方法可迁移到图神经架构搜索&quot;}">Designing Compact Neural Architectures via Neuron Gating and Mixed Activation</a>

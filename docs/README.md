@@ -18,31 +18,29 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-20
-- 运行时间：2026-08-20 03:52:41 北京时间
+- 最新运行日期：2026-08-21
+- 运行时间：2026-08-21 04:24:10 北京时间
 - 运行状态：成功
-- 本次总论文数：3
+- 本次总论文数：1
 - 精读区：0
-- 速读区：3
-- 下次更新：约 2026-08-21 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 速读区：1
+- 下次更新：约 2026-08-22 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日速读3篇论文，主题聚焦高效AI模型设计，涵盖紧凑神经网络、图神经网络统一方程与联邦学习资源优化。值得关注图神经网络统一层方程的理论整合，以及紧凑网络中的神经元门控与混合激活思路。下一步可优先精读其中任一方向，深入验证方法细节与实验效果。
-- 详情：[2026-08-20 日报](/202608/19/README)
+今日聚焦1篇速读论文，主题为基于PageRank的局部图聚类方法，精读空缺，整体推荐力度中等。
+
+最值得关注的是该文提出的简单有效集方法（Active-Set Method），为局部图聚类提供了一种更简洁的求解思路。
+
+建议对图算法感兴趣的读者可将其作为入门参考，后续再深入对比其他局部聚类方法的效果。
+- 详情：[2026-08-21 日报](/202608/20/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Designing Compact Neural Architectures via Neuron Gating and Mixed Activation](/202608/19/2608.14443v1-designing-compact-neural-architectures-via-neuron-gating-and-mixed-activation)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：通用神经架构搜索框架，连续松弛方法可迁移到图神经架构搜索
-2. [Unifying Graph Neural Networks Through a Common Layer Equation](/202608/19/2608.16097v1-unifying-graph-neural-networks-through-a-common-layer-equation)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：统一GNN层方程可作为NAS搜索空间表示
-3. [Efficient Resource Optimization for Split Federated Learning](/202608/19/2608.17849v1-efficient-resource-optimization-for-split-federated-learning)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：分割联邦学习中的模型切分与资源分配联合优化，降低通信与训练成本
+1. [A Simple Active-Set Method for PageRank-Based Local Graph Clustering](/202608/20/2608.16339v1-a-simple-active-set-method-for-pagerank-based-local-graph-clustering)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：高效的PageRank近似用于局部图聚类，可作为图划分策略的工具
 
 
 <div class="dpr-home-promo-card dpr-home-panel">

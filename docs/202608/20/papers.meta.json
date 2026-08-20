@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-21",
+  "date": "2026-08-20",
+  "generated_at": "2026-08-20T20:24:15",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/20/2608.16339v1-a-simple-active-set-method-for-pagerank-based-local-graph-clustering",
+      "section": "quick",
+      "title_en": "A Simple Active-Set Method for PageRank-Based Local Graph Clustering",
+      "authors": "Zhewei Wei, Mingji Yang",
+      "date": "2026-08-17",
+      "pdf": "https://arxiv.org/pdf/2608.16339v1",
+      "score": "7.0",
+      "evidence": "高效的PageRank近似用于局部图聚类，可作为图划分策略的工具",
+      "tldr": "局部图聚类需从种子节点快速找到稠密簇，经典ACL算法用局部推送近似PageRank，复杂度为O(1/(αε))。本文提出新算法，以高概率在Õ(1/ε²)时间内计算ACL ε-近似PageRank，与图规模无关，对1/α仅多对数依赖。方法基于增长活动集与SDD线性系统求解，获得聚类运行时间新折中，并改进ℓ1正则化PageRank的复杂度。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Local graph clustering aims to find a well-connected cluster near a given seed node without exploring the entire graph. A key step in the classic local clustering algorithm of Andersen, Chung, and Lang (ACL; Internet Math. 2007) is to approximate the PageRank vector from the seed node. Their local push method computes an ACL $\\varepsilon$-approximate PageRank vector with teleportation parameter $α$ in $O\\bigl(1/(α\\varepsilon)\\bigr)$ time.   We give an algorithm that computes an ACL $\\varepsilon$-approximate PageRank vector in $\\widetilde{O}\\bigl(1 / \\varepsilon^2\\bigr)$ time with high probability. This bound is independent of the graph size and has only a polylogarithmic dependence on $1 / α$, albeit with a quadratic dependence on $1 / \\varepsilon$. As a direct consequence, we obtain a new running-time tradeoff between the target conductance and target volume in local graph clustering. Our method also applies to the optimization problem of $\\ell_1$-regularized PageRank and computes an additive approximate minimizer with a polylogarithmic dependence on $1/α$, improving the $1/\\sqrtα$ dependence in the previous bound of Martínez-Rubio, Wirth, and Pokutta (COLT 2023).   Our algorithm is based on an intuitive process that maintains a growing active set of nodes: it performs push operations on the current set until convergence and then expands the set and repeats the process if necessary. We show that for each active set, the corresponding limiting state is the solution to a symmetric diagonally dominant (SDD) linear system on the set. We apply nearly-linear-time SDD solvers to these systems and prove that the approximation preserves the properties of the push process.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
