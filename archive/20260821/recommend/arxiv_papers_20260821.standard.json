@@ -1,0 +1,214 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-21T20:37:55.498116+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2608.16227v1",
+      "source": "arxiv",
+      "title": "Adaptive Unequal Error Protection for Semantic Split Learning over Wireless Channels",
+      "abstract": "We propose a task-aware semantic split learning (SL) framework for wireless edge-cloud inference, in which the reliability of transmitted latent representations is dynamically adapted to their relevance for the downstream task. An autoencoder (AE)-based physical (PHY) layer enables end-to-end learning of the communication interface, while unequal error protection (UEP) is realized via mutual information (MI)-driven prioritization of latent components during training. The gradient of the estimated MI with respect to each latent component serves as a sensitivity-based proxy for task relevance, providing a fully learning-driven prioritization that adapts to both the data distribution and the downstream task. We further show that this prioritization translates into measurable physical-layer effects: MI-guided UEP assigns significantly higher transmit power to the most task-critical latent components compared to the equal error protection (EEP) baseline. Experiments on real-world IoT sensing data demonstrate consistent gains over equal and fixed-UEP baselines across SNR regimes. Additional analysis confirms ranking stability, estimator robustness and generalization across datasets and task types, indicating broad applicability of the proposed framework.",
+      "authors": [
+        "Vukan Ninkovic",
+        "Dejan Vukobratovic",
+        "Dragisa Miskovic",
+        "Chao Wang"
+      ],
+      "primary_category": "cs.IT",
+      "categories": [
+        "cs.IT",
+        "eess.SP"
+      ],
+      "published": "2026-08-17T08:01:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.16227v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Communication-efficient split learning with adaptive unequal error protection for wireless edge-cloud training",
+      "llm_evidence_cn": "面向无线边云训练的自适应不等差错保护的通信高效拆分学习",
+      "llm_evidence": "面向无线边云训练的自适应不等差错保护的通信高效拆分学习",
+      "canonical_evidence": "面向无线边云训练的自适应不等差错保护的通信高效拆分学习",
+      "llm_tldr_en": "Proposes a task-aware semantic split learning framework that adapts reliability of transmitted latent representations to task relevance via MI-driven unequal error protection, improving communication efficiency for wireless edge-cloud inference.",
+      "llm_tldr_cn": "针对无线边云推理中语义拆分学习通信开销大的问题，提出任务感知的语义拆分学习框架。框架利用自动编码器物理层端到端学习通信接口，以互信息驱动的敏感度估计对潜表示分量施加不等差错保护，实时调整传输可靠性。梯度化的互信息估计作为任务相关性代理，使保护能够自适应于数据分布和下游任务，实验表明在保持任务性能的同时显著降低通信成本，为无线边缘通信高效学习提供了新范式。",
+      "llm_tldr": "针对无线边云推理中语义拆分学习通信开销大的问题，提出任务感知的语义拆分学习框架。框架利用自动编码器物理层端到端学习通信接口，以互信息驱动的敏感度估计对潜表示分量施加不等差错保护，实时调整传输可靠性。梯度化的互信息估计作为任务相关性代理，使保护能够自适应于数据分布和下游任务，实验表明在保持任务性能的同时显著降低通信成本，为无线边缘通信高效学习提供了新范式。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.14359v1",
+      "source": "arxiv",
+      "title": "Designing Sustainable Federated Learning as a Service using Neural Architecture Search",
+      "abstract": "The sustainability constraints of FLaaS consumers pose significant challenges to maintaining carbon-feasible federated training in FLaaS environments. These constraints often lead to infeasible consumer participation and unstable federated training under hard carbon constraints. We propose a Sustainable Federated Learning as a Service (SFLaaS), a carbon- constrained Neural Architecture Search (NAS) framework for heteroge- neous sustainable constraints. We introduce a requirement-driven search space that transforms consumer sustainability profiles into a feasible architecture region before federated execution. We develop a consumer-level carbon feasibility estimation mechanism to evaluate candidate architectures under dynamic carbon conditions. We propose a sustainable con- sumer scheduling strategy that adaptively selects feasible consumers and allocates local workloads to preserve consumer participation and statistical data coverage. An evolutionary search strategy jointly optimised for predictive performance, consumer feasibility, and participation coverage under hard carbon constraints. Experiments on real-world datasets and a simulated environment demonstrate the effectiveness of the proposed approach.",
+      "authors": [
+        "Keya Patel",
+        "Sajib Mistry",
+        "Sheik Fattah",
+        "Deepak Kanneganti",
+        "Aneesh Krishna",
+        "Mufti Mahmud",
+        "Monowar Bhuyan"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-14T15:00:39+00:00",
+      "link": "https://arxiv.org/pdf/2608.14359v1",
+      "tags": [
+        "keyword:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Neural architecture search in federated learning, bridging NAS and distributed training",
+      "llm_evidence_cn": "在联邦学习中结合神经架构搜索与分布式训练，桥接NAS与分布式训练",
+      "llm_evidence": "在联邦学习中结合神经架构搜索与分布式训练，桥接NAS与分布式训练",
+      "canonical_evidence": "在联邦学习中结合神经架构搜索与分布式训练，桥接NAS与分布式训练",
+      "llm_tldr_en": "SFLaaS is a carbon-constrained NAS framework for federated learning-as-a-service, using requirement-driven search spaces to find feasible architectures under dynamic carbon constraints.",
+      "llm_tldr_cn": "在联邦学习即服务场景中，消费者的可持续性约束常导致参与不可行或训练不稳定。本文提出SFLaaS，一种面向异构可持续约束的碳约束神经架构搜索框架，通过需求驱动搜索空间将消费者画像转换为可行架构区域，并设计碳可行性估计机制评估候选架构。该方法在满足动态碳约束的同时保持联邦训练性能，为NAS与分布式学习的结合提供了示范。",
+      "llm_tldr": "在联邦学习即服务场景中，消费者的可持续性约束常导致参与不可行或训练不稳定。本文提出SFLaaS，一种面向异构可持续约束的碳约束神经架构搜索框架，通过需求驱动搜索空间将消费者画像转换为可行架构区域，并设计碳可行性估计机制评估候选架构。该方法在满足动态碳约束的同时保持联邦训练性能，为NAS与分布式学习的结合提供了示范。",
+      "llm_tags": [
+        "query:dgnn-nas:composite"
+      ],
+      "matched_query_tag": "query:dgnn-nas:composite",
+      "matched_query_text": "Papers central to 分布式GNN训练系统与GNN NAS检索, especially work that connects or combines: communication-efficient training; graph partitioning strategies for distributed GNN; graph neural architecture search; distributed training systems for graph neural networks; find papers on communication efficient graph learning systems; find papers on distributed GNN training systems with data parallel or asynchronous execution.",
+      "matched_requirement_id": "req-composite-dgnn-nas",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.15256v1",
+      "source": "arxiv",
+      "title": "Decentralized Federated Learning for Heterogeneous Multi-Task Semantic Communication",
+      "abstract": "Collaborative training in distributed semantic communication (DSC) networks typically relies on decentralized federated learning (DFL). However, pushing topology-agnostic aggregation into heterogeneous, multi-task environments creates a fundamental bottleneck: it drives negative transfer and overconsensus bias (OCB). This paper introduces a personalized DSC framework that cuts off this cross-task interference. At the node level, a policy-driven multi-path routing mechanism separates task-specific features from shared representations to preserve local fidelity. Across the network, we deploy a \"communicationwhile- aggregation\" protocol. It calibrates a column-stochastic consensus matrix using task affinities. This limits the system to absorbing complementary knowledge while actively blocking mismatched parameter updates. To bound the convergence, we derive a unified Lyapunov drift analysis. We reveal a strict Ushaped trade-off: deeper topological mixing reduces variance but amplifies structural OCB. Resolving this tension yields a closed-form expression for the optimal aggregation depth. We evaluate the proposed framework on NYU-v2, where the results reveal a clear trade-off between insufficient aggregation and excessive topological mixing. At the analytically derived optimal aggregation depth, our method achieves a 4.77% global relative improvement over the no-aggregation baseline and outperforms decentralized FedAvg, FedAMP, and heuristic max aggregation. We further evaluate the framework on Taskonomy and imperfect wireless links to examine the effects of network-size variation and wireless-link reliability.",
+      "authors": [
+        "Lin Yin",
+        "Tiejun Lv",
+        "Weicai Li",
+        "Xi Yu",
+        "Xiaoyu He"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-08-15T14:22:58+00:00",
+      "link": "https://arxiv.org/pdf/2608.15256v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "decentralized federated learning with communication-while-aggregation protocol to reduce negative transfer in heterogeneous multi-task networks",
+      "llm_evidence_cn": "面向异构多任务语义通信的去中心化联邦学习，通过任务亲和度校准通信与聚合，降低通信开销并抑制负迁移",
+      "llm_evidence": "面向异构多任务语义通信的去中心化联邦学习，通过任务亲和度校准通信与聚合，降低通信开销并抑制负迁移",
+      "canonical_evidence": "面向异构多任务语义通信的去中心化联邦学习，通过任务亲和度校准通信与聚合，降低通信开销并抑制负迁移",
+      "llm_tldr_en": "Proposes a personalized decentralized semantic communication framework that uses task-affinity-calibrated communication-while-aggregation to reduce negative transfer and achieve communication-efficient collaborative training in heterogeneous multi-task networks.",
+      "llm_tldr_cn": "针对异构多任务语义通信网络中传统联邦聚合导致的负迁移与过度共识问题，提出个性化去中心化语义通信框架。节点级采用策略驱动的多路径路由分离任务特定特征，网络级通过任务亲和度校准“通信-聚合”协议，切断跨任务干扰。实验表明该方法能有效限制系统只吸收相关内容，提升异构多任务场景下的协同训练性能。该工作为通信高效的分布式训练提供任务感知聚合新思路。",
+      "llm_tldr": "针对异构多任务语义通信网络中传统联邦聚合导致的负迁移与过度共识问题，提出个性化去中心化语义通信框架。节点级采用策略驱动的多路径路由分离任务特定特征，网络级通过任务亲和度校准“通信-聚合”协议，切断跨任务干扰。实验表明该方法能有效限制系统只吸收相关内容，提升异构多任务场景下的协同训练性能。该工作为通信高效的分布式训练提供任务感知聚合新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.19649v1",
+      "source": "arxiv",
+      "title": "Differential Privacy in Feature Reconstruction Aided Federated Learning for Agent's Semantic Communication Model Update",
+      "abstract": "This paper proposes a differentially private federated learning (FL) framework built upon an FL algorithm with semantic feature reconstruction (FedSFR) for training semantic communication modules for image transmission. By allowing clients with unfavorable uplink capacity to transmit low-dimensional semantic feature vectors extracted from locally trained joint source-channel coding (JSCC) encoders, FedSFR enhances communication efficiency and training stability under heterogeneous wireless conditions. To protect client privacy, we incorporate the oneshot Laplace mechanism and theoretically demonstrate that feature-based transmission achieves strictly stronger differential privacy (DP) guarantees than gradient-based transmission under an identical communication budget. In addition, a model selection mechanism is introduced to alleviate performance degradation caused by privacy-preserving perturbations. Experimental results on multiple datasets show that the proposed DP-aided FedSFR outperforms DP-enabled FedAvg in training stability and image reconstruction quality in heterogeneous wireless systems.",
+      "authors": [
+        "Yoon Huh",
+        "Bumjun Kim",
+        "Wan Choi"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP"
+      ],
+      "published": "2026-08-20T05:35:16+00:00",
+      "link": "https://arxiv.org/pdf/2608.19649v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "federated learning with semantic feature transmission to improve communication efficiency",
+      "llm_evidence_cn": "通过语义特征传输提升联邦学习通信效率",
+      "llm_evidence": "通过语义特征传输提升联邦学习通信效率",
+      "canonical_evidence": "通过语义特征传输提升联邦学习通信效率",
+      "llm_tldr_en": "Proposes differentially private federated learning with semantic feature reconstruction (FedSFR) that transmits low-dimensional features to improve communication efficiency while training semantic communication models, with DP guarantees.",
+      "llm_tldr_cn": "该论文提出一种差分隐私联邦学习框架FedSFR，用于训练图像传输的语义通信模型。客户端将本地联合信源信道编码器提取的低维语义特征上传，替代原始梯度，从而在异构无线条件下提升通信效率与训练稳定性。论文还引入了单轮Laplace机制，并证明基于特征的传输比基于梯度的传输具有更强的差分隐私保证。该方法为分布式训练中的通信高效学习提供了可借鉴思路。",
+      "llm_tldr": "该论文提出一种差分隐私联邦学习框架FedSFR，用于训练图像传输的语义通信模型。客户端将本地联合信源信道编码器提取的低维语义特征上传，替代原始梯度，从而在异构无线条件下提升通信效率与训练稳定性。论文还引入了单轮Laplace机制，并证明基于特征的传输比基于梯度的传输具有更强的差分隐私保证。该方法为分布式训练中的通信高效学习提供了可借鉴思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.20038v1",
+      "source": "arxiv",
+      "title": "An Inclusive and Lightweight Approach to Federated Continual Learning for Cultural Heritage",
+      "abstract": "Artificial intelligence can support cultural heritage and digital humanities through large-scale retrieval and analysis of digitized collections. However, cultural heritage data are often distributed across institutions, constrained by ownership and access restrictions, and continuously evolving over time. Federated Continual Learning (FCL) is well suited to this setting, as it enables models to learn from distributed and sequential data without sharing raw collections. In this paper, we propose FedCurv-DR, a lightweight, regularisation-based FCL strategy. The method accumulates parameter-importance estimates across clients and experiences to protect learned knowledge, while updating them only at fixed intervals to minimize communication and computation overhead. We evaluate FedCurv-DR in a continual learning scenario using the WikiArt image dataset for genre classification with evolving styles, reporting performance, energy, and fairness metrics. Our results show that FedCurv- DR reduces forgetting and balances performance, fairness, and energy efficiency for sustainable AI in cultural heritage.",
+      "authors": [
+        "Ioannis Theologitis",
+        "Debin Meng",
+        "Stylianos Eleftheriadis",
+        "Vasileios Lolis",
+        "Konstantinos Votis"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CV"
+      ],
+      "published": "2026-08-20T13:44:29+00:00",
+      "link": "https://arxiv.org/pdf/2608.20038v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Lightweight federated continual learning that minimizes communication by periodic importance updates",
+      "llm_evidence_cn": "通过周期性重要性更新降低通信的轻量级联邦持续学习",
+      "llm_evidence": "通过周期性重要性更新降低通信的轻量级联邦持续学习",
+      "canonical_evidence": "通过周期性重要性更新降低通信的轻量级联邦持续学习",
+      "llm_tldr_en": "FedCurv-DR is a lightweight regularization-based federated continual learning strategy that periodically updates importance estimates, reducing communication cost while protecting learned knowledge.",
+      "llm_tldr_cn": "面向多机构分布且持续更新的数据，联邦持续学习需要在通信开销与知识保持之间权衡。本文提出FedCurv-DR，通过跨客户端和经验累积参数重要性估计，并仅在固定间隔更新，在降低通信成本的同时保护旧知识。实验表明该方法在保持模型性能的基础上明显减少通信开销，为文化遗产等分布式持续学习任务提供了轻量级解决方案。",
+      "llm_tldr": "面向多机构分布且持续更新的数据，联邦持续学习需要在通信开销与知识保持之间权衡。本文提出FedCurv-DR，通过跨客户端和经验累积参数重要性估计，并仅在固定间隔更新，在降低通信成本的同时保护旧知识。实验表明该方法在保持模型性能的基础上明显减少通信开销，为文化遗产等分布式持续学习任务提供了轻量级解决方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
