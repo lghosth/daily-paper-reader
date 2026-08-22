@@ -18,38 +18,27 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-22
-- 运行时间：2026-08-22 04:40:28 北京时间
+- 最新运行日期：2026-08-23
+- 运行时间：2026-08-23 03:58:43 北京时间
 - 运行状态：成功
-- 本次总论文数：5
-- 精读区：1
-- 速读区：4
-- 下次更新：约 2026-08-23 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 本次总论文数：1
+- 精读区：0
+- 速读区：1
+- 下次更新：约 2026-08-24 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-今日聚焦5篇论文，精读1篇、速读4篇，核心围绕无线语义通信与联邦学习的效率与隐私。  
-最值得关注的是精读的《自适应不等差错保护》——在无线信道上为语义分割学习动态分配保护强度，显著提升传输鲁棒性；速读方向则集中在可持续联邦学习、异构多任务语义及差分隐私更新。  
-建议普通读者优先从“语义通信+自适应保护”切入，再结合联邦学习的隐私与异构问题横向对比，能快速把握当前两大热点。
-- 详情：[2026-08-22 日报](/202608/21/README)
+今日速读1篇论文，聚焦分布式模型预测控制（DMPC）中的通信压缩问题。
+值得关注的方向：利用基于语义的编码结合LSTM来减少控制通信开销，论文评分6.0/10。
+建议可进一步了解语义通信在控制场景中的潜力，并对比其他压缩方法的效果。
+- 详情：[2026-08-23 日报](/202608/22/README)
 
 ### 精读区论文标签
-1. [Adaptive Unequal Error Protection for Semantic Split Learning over Wireless Channels](/202608/21/2608.16227v1-adaptive-unequal-error-protection-for-semantic-split-learning-over-wireless-channels)  
-   标签：评分：8.0/10、query:dgnn-nas
-   evidence：面向无线边云训练的自适应不等差错保护的通信高效拆分学习
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Designing Sustainable Federated Learning as a Service using Neural Architecture Search](/202608/21/2608.14359v1-designing-sustainable-federated-learning-as-a-service-using-neural-architecture-search)  
+1. [Communication Reduction via Semantic-Based Encoding in DMPC Using LSTMs](/202608/22/2608.17592v1-communication-reduction-via-semantic-based-encoding-in-dmpc-using-lstms)  
    标签：评分：6.0/10、query:dgnn-nas
-   evidence：在联邦学习中结合神经架构搜索与分布式训练，桥接NAS与分布式训练
-2. [Decentralized Federated Learning for Heterogeneous Multi-Task Semantic Communication](/202608/21/2608.15256v1-decentralized-federated-learning-for-heterogeneous-multi-task-semantic-communication)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：面向异构多任务语义通信的去中心化联邦学习，通过任务亲和度校准通信与聚合，降低通信开销并抑制负迁移
-3. [Differential Privacy in Feature Reconstruction Aided Federated Learning for Agent's Semantic Communication Model Update](/202608/21/2608.19649v1-differential-privacy-in-feature-reconstruction-aided-federated-learning-for-agents-semantic-communication-model-update)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：通过语义特征传输提升联邦学习通信效率
-4. [An Inclusive and Lightweight Approach to Federated Continual Learning for Cultural Heritage](/202608/21/2608.20038v1-an-inclusive-and-lightweight-approach-to-federated-continual-learning-for-cultural-heritage)  
-   标签：评分：6.0/10、query:dgnn-nas
-   evidence：通过周期性重要性更新降低通信的轻量级联邦持续学习
+   evidence：基于LSTM的语义编码压缩分布式智能体通信，可迁移至通信高效训练
 
 
 <div class="dpr-home-promo-card dpr-home-panel">

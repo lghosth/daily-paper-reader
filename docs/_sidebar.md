@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-23 <!--dpr-date:20260822-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/22/2608.17592v1-communication-reduction-via-semantic-based-encoding-in-dmpc-using-lstms" data-sidebar-item="{&quot;title&quot;: &quot;Communication Reduction via Semantic-Based Encoding in DMPC Using LSTMs&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.17592v1-communication-reduction-via-semantic-based-encoding-in-dmpc-using-lstms&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;基于LSTM的语义编码压缩分布式智能体通信，可迁移至通信高效训练&quot;}">Communication Reduction via Semantic-Based Encoding in DMPC Using LSTMs</a>
   * 2026-08-22 <!--dpr-date:20260821-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/21/2608.16227v1-adaptive-unequal-error-protection-for-semantic-split-learning-over-wireless-channels" data-sidebar-item="{&quot;title&quot;: &quot;Adaptive Unequal Error Protection for Semantic Split Learning over Wireless Channels&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.16227v1-adaptive-unequal-error-protection-for-semantic-split-learning-over-wireless-channels&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;面向无线边云训练的自适应不等差错保护的通信高效拆分学习&quot;}">Adaptive Unequal Error Protection for Semantic Split Learning over Wireless Channels</a>

@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-23",
+  "date": "2026-08-22",
+  "generated_at": "2026-08-22T19:58:48",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/22/2608.17592v1-communication-reduction-via-semantic-based-encoding-in-dmpc-using-lstms",
+      "section": "quick",
+      "title_en": "Communication Reduction via Semantic-Based Encoding in DMPC Using LSTMs",
+      "authors": "Torben Schiz, Pedro H. J. Nardelli, Henrik Ebel",
+      "date": "2026-08-18",
+      "pdf": "https://arxiv.org/pdf/2608.17592v1",
+      "score": "6.0",
+      "evidence": "基于LSTM的语义编码压缩分布式智能体通信，可迁移至通信高效训练",
+      "tldr": "分布式模型预测控制（DMPC）中，智能体需高频交换大量状态与控制信息，极易压垮无线通信网络。为降低通信负载，本文在分布式优化中引入基于长短期记忆（LSTM）的编码器-解码器结构，发送端发布压缩语义表示，接收端重构原始消息。在移动机器人编队实验中，即使通信量大幅削减，训练后的网络仍保持满意控制性能，且在信道拥塞条件下比完整通信更可靠。该工作表明LSTM可实现高精度消息重构，并适应不同预测时域而无需重训，为语义通信在DMPC中的应用提供了新思路。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "The communication demands of distributed model prediction control (DMPC) can overwhelm even advanced wireless communication technologies as agents must exchange a significant amount of information at least once per time step. To semantically reduce communication demands, this work employs encoder-decoder networks built around long-short term memory (LSTM) cells in a distributed optimization algorithm. Agents publish a reduced representation of a message and receivers reconstruct the original message upon reception. In tests with reduced communication using formations of mobile robots, trained networks retain satisfactory performance and work reliably under conditions overwhelming full communication. As the results show, the usage of LSTMs either allows unprecedented reconstruction accuracy or the usage of different prediction-horizon lengths without the necessity to retrain.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
