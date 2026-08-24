@@ -1,0 +1,868 @@
+Title: ESR-HGNN: Eliminating Semantic Redundancy for Efficient Mini-batch HGNN Inference
+
+URL Source: https://arxiv.org/pdf/2608.17865v1
+
+Published Time: Wed, 19 Aug 2026 01:05:09 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+> IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 1
+
+# ESR-HGNN: Eliminating Semantic Redundancy for Efficient Mini-batch HGNN Inference 
+
+Dengke Han, Mingyu Yan, Senior Member, IEEE , Duo Wang, Wenming Li, Xiaochun Ye, and Dongrui Fan, Senior Member, IEEE 
+
+Abstract —Heterogeneous graph neural networks (HGNNs) are highly effective in processing heterogeneous graph data and have been widely adopted in critical domains. As real-world graph data continues to scale, performing direct inference on entire graphs becomes increasingly infeasible, making mini-batch methods the standard approach. However, in end-to-end HGNN inference, metapath-based mini-batch sampling constitutes asignificant performance bottleneck due to the extensive random memory accesses induced by the irregular traversal of graph structures. Existing sampling paradigms suffer from excessive redundant traversals caused by inherent semantic redundancy, severely degrading sampling efficiency and, consequently, leading to suboptimal mini-batch inference performance. In this work, we propose a redundancy-aware HGNN sampling paradigm that leverages a metapath trie to reuse traversal paths, effectively eliminating redundant memory accesses. We then map it onto a multi-channel hardware sampling unit denominated ESR-HGNN. Furthermore, we introduce a reusability-driven metapath grouping technique that optimally clusters metapaths to maximize reusable traversal paths within hardware channels, enhancing efficiency in scenarios with semantic parallelism. Extensive experimental results demonstrate that ESR-HGNN achieves an average sampling performance improvement of one order of magnitude over CPU and GPU, accompanied by significant energy savings. Additionally, it delivers substantial speedup in end-to-end mini-batch inference when integrated with GPU and state-of-the-art HGNN inference accelerator. 
+
+Index Terms —Heterogeneous Graph Neural Network, Mini-batch Sampling, HGNN Accelerator, Redundancy Elimination 
+
+I. I NTRODUCTION 
+
+Graph Neural Networks (GNNs) have demonstrated re-markable power in processing non-Euclidean data in recent years, leading to their widespread application across critical domains. Early advancements in GNNs centered on homoge-neous graphs (HomoGs), consisting of a single type of vertex and edge. However, much real-world data naturally takes the form of heterogeneous graphs (HetGs), which contain multi-ple types of vertices and edges. Unlike GNNs designed for HomoGs, Heterogeneous Graph Neural Networks (HGNNs) can extract not only structural information but also semantic 
+
+This work was supported in part by the Beijing Nova Program under Grant No. 20250484774, the CAS Project for Young Scientists in Basic Research under Grant No. YSBR-029, and the CAS Project for Youth Innovation Promotion Association. Dengke Han, Mingyu Yan, Duo Wang, Wenming Li, Xiaochun Ye, and Dongrui Fan are with the State Key Lab of Processors, Institute of Computing Technology, Chinese Academy of Sciences, Beijing 100045, China, and the University of Chinese Academy of Sciences, Beijing 101408, China (e-mail: handengke21s, yanmingyu, wangduo, liwenming, yexiaochun, fandr@ict.ac.cn). Mingyu Yan is the corresponding author. 
+
+insights embedded in diverse relations. With their robust rep-resentational capabilities, HGNNs have become indispensable in various fields, including recommendation systems [3], [45], cybersecurity [8], [42], electronic design automation [40], [48], and many others. As real-world graph data continues to scale rapidly, per-forming HGNN inference on entire graphs has become in-creasingly impractical due to hardware limitations, necessitat-ing the adoption of the mini-batch execution paradigm [11], [22], [24]. This paradigm involves sampling the neighbors of target vertices from the original graph, which determines the workload for subsequent inference. As many leading HGNN models [9], [19], [34] utilize metapaths to capture diverse semantic information, HGNN sampling requires multi-semantic neighbor traversal, where each traversal path follows a specific sequence of distinct relations. This process exhibits highly irregular memory access patterns, resulting in signif-icant performance bottlenecks across a variety of scenarios including both single-node and distributed systems [14]. The expanding scale of graph data, coupled with an in-creasing diversity of vertex types, has naturally led to the more frequent adoption of longer metapaths. Additionally, previous work [41] demonstrates that longer metapaths ef-fectively expand the receptive field, thus improving the accu-racy of HGNN models. However, the incorporation of longer metapaths introduces increased complexity in the sampling process, accentuating the irregularity of memory access pat-terns. Specifically, longer metapaths necessitate the traversal of a greater number of distinct adjacency relations, amplifying random memory access during the sampling process. As the length of metapaths increases, the overlap between longer metapaths and their shorter counterparts becomes more pro-nounced, a phenomenon referred to as semantic redundancy. This redundancy leads to a higher frequency of redundant traversal paths across various metapaths during mini-batch sampling, rendering a substantial redundant memory accesses. Traditional computational platforms, such as CPUs and GPUs, are inherently ill-suited for the highly irregular memory access patterns associated with HGNN sampling, rendering them inefficient for these tasks. The primary challenge stems from the non-sequential memory accesses required during multi-semantic neighbor traversals. CPUs, optimized for se-quential memory accesses, struggle to handle these irregular memory accesses, resulting in significant latency and sub-optimal performance. While GPUs excel at parallel process-ing, they are primarily optimized for regular and predictable memory access patterns typically seen in conventional deep arXiv:2608.17865v1 [cs.AR] 18 Aug 2026 IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 2
+
+learning tasks such as matrix multiplications. As a result, the irregular memory access patterns inherent in HGNN sampling prevent the efficient utilization of GPU parallelism. Existing HGNN accelerators [6], [12], [13], [36], [37] primarily op-timize inference while overlooking the increasingly critical metapath-based sampling process. Consequently, inference-only optimization is insufficient to substantially improve end-to-end mini-batch performance. To address these challenges, this work introduces a novel solution that eliminates semantic redundancy to reduce ran-dom memory accesses during the sampling process, thereby improving the overall performance of end-to-end mini-batch HGNN inference. We first propose a novel redundancy-aware sampling paradigm that dynamically records and retrieves traversal paths, enabling the efficient reuse of previously accessed paths. Subsequently, we design a multi-channel sampling unit specifically tailored for efficient hardware im-plementation. Furthermore, we introduce a reusability-driven semantic grouping strategy to maximize the reuse of traversal paths within groups, while simultaneously exploiting semantic parallelism to enhance the parallel execution of the sampling process. We summarize our contributions as follows: 
+
+• We conduct a quantitative analysis of the mini-batch HGNN inference, revealing the acceleration opportunity brought by semantic redundancy. 
+
+• We propose a redundancy-aware HGNN sampling paradigm to reuse redundant traversal paths and design a multi-channel sampling unit named ESR-HGNN to support the sampling method efficiently. 
+
+• We present a reusability-driven grouping method for meta-paths to enhance the efficacy of the sampling method in scenarios with semantic parallelism. 
+
+• Our comprehensive experiments demonstrate that ESR-HGNN achieves an average sampling performance improve-ment of 39.66 × over the CPU and 13.94 × over the GPU, while reducing energy consumption by 98.45% and 86.41%, respectively. Leveraging ESR-HGNN, the GPU and the state-of-the-art (SOTA) HGNN accelerator HiHGNN [36] achieve a 2.78 × and 5.70 × speedup in end-to-end mini-batch inference compared with the CPU+GPU framework. II. B ACKGROUND AND RELATED WORK 
+
+A. Heterogeneous Graph and Metapath 
+
+In contrast to HomoGs, HetGs encompass multiple types of vertices and edges, embodying both structural and semantic information. A HetG is defined as G = ( V, E, Sv , Se) [28], [41] using notations in Table I, where V is the set of vertices with a vertex type mapping function ϕ : V → S v , and E
+
+is the set of edges with an edge type mapping function ψ :
+
+E → S e. Each vertex vi∈V is attached with a vertex type 
+
+Tv =ϕ(vi)∈S v . Each edge eu,v ∈E is attached with a relation 
+
+Rcu,c v =ψ(eu,v )∈S e, starting from the source vertex u to the target vertex v. A graph is heterogeneous when |S v |+|S e| > 2,otherwise it is homogeneous. Fig. 1(a) illustrates a simple example of a HetG from the ACM dataset, which includes three types of vertices, A (Author), P (Paper), and S (Subject), along with three TABLE I: Notations and corresponding explanations. 
+
+Notation Explanation Notation Explanation 
+
+G heterogeneous graph V vertex set 
+
+E edge set Sv vertex type set 
+
+Se edge type set u, v vertex e ( eu,v ) edge (from u to v) Ri relations 
+
+Tv vertex type Nv neighboring set 
+
+types of adjacency relations between them: author writes 
+
+−−−−→paper, paper cites 
+
+−−−→paper, and paper belongs to 
+
+−−−−−−→subject (abbreviated as AP, PP and PS). Each type of relation represents a unique semantic information between the two endpoints connected. Building upon direct relations such as PS, various combina-tions of them can form higher-order relations, referred to as metapaths. A metapath is defined as a path in the form of 
+
+T 1
+
+> vR1
+
+−−→ T 2
+
+> vR2
+
+−−→ . . . Rl−1
+
+−−−→ T lv , abbreviated as T 1 
+
+> v
+
+T 2 
+
+> v
+
+. . . T lv ,where T iv denotes the vertex type at the i-th position, Ri
+
+denotes the relation between T iv and T i+1  
+
+> v
+
+, and l denotes the metapath length under our notation. A metapath represents a composite relation R = R1 ◦ R2 ◦ · · · ◦ Rl−1 between the endpoint types T 1 
+
+> v
+
+and T lv , where ◦ denotes relation composition. For example, in Fig. 1, PSP consists of PS and SP, indicating that two papers share a subject and are thus likely related to the same research area. In general, metapaths capture richer semantic information than direct relations. 
+
+B. Heterogeneous Graph Sampling 
+
+Graph sampling was initially introduced to enhance the convergence speed of models during GNN training and to reduce the on-the-fly hardware demands. This technique can primarily be classified into three categories: node-wise sam-pling, layer-wise sampling, and subgraph-wise sampling [24]. Among these, RandomWalk [26] is a widely used and com-monly applied sampling method. It constructs a walk path by traversing neighboring vertices based on predefined traversal criteria, ultimately generating a sampled mini-batch. Metapath2Vec [7] is the first to incorporate the Ran-domWalk [26] method into HetG sampling. This technique is a simple yet effective metapath-based sampling approach that captures complex semantic dependencies between different types of vertices and has since become the de facto standard method for metapath-based HGNN sampling. Specifically, given a metapath T 1 
+
+> v
+
+T 2 
+
+> v
+
+. . . T lv , for a target vertex v with 
+
+ϕ(v) = T 1 
+
+> v
+
+, we generate n sampling paths. Let vij denote the vertex at the i-th position of the j-th sampling path, where v1 
+
+> j
+
+= v for j = 1, . . . , n . The valid neighbors at the next position are defined as Ni+1 (vij ) = {u | evij ,u ∈
+
+E, ψ (evij ,u ) = Ri, ϕ (u) = T i+1  
+
+> v
+
+}. At each step i, a valid neighbor is selected uniformly from this set. The transition probability is defined as follows: 
+
+p(vi+1  
+
+> j
+
+= u | vij ) = 
+
+( 1  
+
+> |Ni+1 (vij)|
+
+u ∈ Ni+1 (vij )0 otherwise. This formulation follows the relation and vertex-type sequence specified by the metapath and selects each valid neighbor with IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 3PA1                  
+
+> A2
+> S1
+> P2
+> PA write PP cite SPbelong
+> P4
+> P Paper A Author S Subject
+> P1
+> S2P3
+> P2S1PP2A2PP4A2PP4A2P1PS2
+> P4A2P3PS2
+> (a) (b)
+> PAP PAPSP PSP PP2
+> PP2
+> P4
+> PP1
+> P3
+> PA1
+> A2
+> S1
+> P2
+> P4
+> P1
+> S2P3
+> PP2
+> PP2
+> P4
+> PP1
+> P3
+> PP2
+> PP2
+> P4
+> PP1
+> P3
+
+Feature Projecon Neighbor Aggregaon Semanc Fusion 
+
+Fig. 1: The illustration of HetG sampling process and HGNNs. equal probability. This formula essentially indicates that each step of the HetG sampling process follows the relations of the pre-defined metapath, which is quite more complex than traditional GNN sampling [24], [25]. To give an example, as illustrated in Fig. 1(a), we perform neighbor sampling for the highlighted target vertex P in the graph using three metapaths: PSP, PAP, and PAPSP, generating the traversal paths depicted in the figure, where the endpoint of each sequence represents the neighbor sampled according to the corresponding metapath. The mini-batch is constructed based on the sampled neighbors to support the subsequent inference process. The main differences between metapath-based HGNN sam-pling and traditional GNN sampling are as follows: (a) Multi-ple Semantics : Different metapaths represent distinct complex semantics. The sampling tasks of different semantics have no data dependencies and therefore exhibit semantic parallelism. 
+
+(b) Multiple Adjacency Relations : Each traversal sequence under a specific semantic needs to consider various adjacency relations, significantly increasing both the complexity and workload of random memory access operations. In contrast, traditional GNN sampling involves only a single type of semantic and adjacency relation. 
+
+C. Heterogeneous Graph Neural Network 
+
+To capture both the structural and semantic information in HetGs, most prevalent HGNN models contain four primary execution stages [35], [39] as illustrated in Fig. 1(b). 1
+
+Semantic Graph Build stage builds semantic graphs for the following stages by partitioning the original HetG into a set of semantic graphs based on predefined semantics. However, in the mini-batch inference paradigm, since inference does not require processing the entire semantic graph, this execution stage is effectively substituted by the sampling process and has been omitted in the figure. 2 Feature Projection stage transformes the feature vector of each vertex to a new one using a multi-layer perceptron within each semantic graph. 
+
+3 Neighbor Aggregation stage performs the aggregation of features from neighbors within each semantic graph. 4 Se-mantic Fusion stage fuses the semantic information obtained from all semantic graphs, aiming to combine the results of the 
+
+Neighbor Aggregation stage across different semantic graphs. 
+
+D. Mini-batch HGNN Inference 
+
+As real-world graph scales, performing inference on the entire graph simultaneously becomes impractical due to hard-ware constraints. As illustrated in Fig. 2, mini-batch inference 1 32...  
+
+> Sampling
+> ...
+> 2112
+
+... 
+
+> HetG Feature Mini-batch Extracted Features HGNN Inference Embeddgins
+
+... ... Data Loading CPU GPU 
+
+Fig. 2: Workflow of HGNN mini-batch inference. addresses this challenge by partitioning target vertices into multiple groups. Each group undergoes sampling, followed by inference on the corresponding mini-batch. This process constitutes a single iteration, and after multiple iterations, inference for all target vertices is completed. The mini-batch inference paradigm not only mitigates hardware resource de-mands but also reduces inference latency for individual target vertices. Contemporary mini-batch inference platforms primarily em-ploy heterogeneous architectures consisting of a host CPU and a GPU as the computational nodes as in Fig. 2. Within this framework, the host CPU first performs sampling on the original HetGs based on predefined metapaths, generating mini-batches of target vertices. It then extracts the features corresponding to these vertices from the sampling results and transfers both the features and the mini-batch structure to the GPU via a bus, a process referred to as data loading. The GPU then executes the complete inference process of the HGNN model and returns the computed vertex embeddings. Furthermore, due to its robust parallel processing capabilities and high bandwidth, the use of GPUs for sampling has also increasingly become a widely adopted execution paradigm. 
+
+E. Related Work 1) GNN Accelerators: Owing to the widespread adoption of GNNs across critical domains, GNN accelerators have attracted significant interest from the architecture community in recent years [5], [10], [17], [18], [21], [30], [31], [38], [43], [46], [47]. Among these efforts, CoGNN [46] enhances mini-batch inference in traditional GNNs by utilizing reuse-aware sampling, which strategically prioritizes target vertices with a higher number of common neighbors to optimize data reuse. However, the sampling process in HGNNs involves multi-semantic neighbor traversal across various adjacency relations, resulting in a fundamentally different workflow compared with traditional GNNs. Consequently, CoGNN, along with other efforts optimized for traditional GNN sampling, is not directly IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 4
+
+applicable to the sampling process in HGNNs due to the distinct characteristics of the latter’s multi-semantic neighbor traversal and complex adjacency relations. 
+
+2) HGNN Accelerators: Only a limited number of work [6], [13], [36], [37] have addressed inference acceleration for emerging HGNNs, and none have specifically targeted the critical mini-batch inference scenario, where the sampling pro-cess serves as the primary performance bottleneck. Therefore, existing HGNN acceleration efforts can only achieve marginal performance improvements in the mini-batch inference sce-nario. In contrast, this work capitalizes on the unique multi-semantic characteristics of HGNNs to eliminate semantic re-dundancy, leading to significant performance enhancements in both the sampling process and end-to-end mini-batch HGNN inference. III. M OTIVATION 
+
+This section first presents a quantitative analysis to identify the sampling phase as the primary performance bottleneck in end-to-end mini-batch inference. We further examine the exe-cution behavior characteristics of the sampling phase, investi-gate opportunities for accelerating this phase through the elim-ination of semantic redundancy, and highlight the challenges encountered within traditional computational platforms. The experimental configurations are identical to those described in Section V-A. The CPU sampling baseline employs 32 worker threads, one per physical core. A larger thread count is not adopted because additional threads increase shared-cache and memory-access contention, which does not necessarily improve sampling performance. 
+
+A. Time-intensive Sampling in Mini-batch Inference 
+
+As shown in Fig. 3(a), we conduct experiments break-ing down the execution time of each phase in mini-batch HGNN inference across several prominent HGNN models and datasets. The results demonstrate that, in end-to-end mini-batch HGNN inference, mini-batch sampling accounts for an average (geometric mean, GM) of 66.85% of the total execution time, whereas the inference process itself contributes only 8.87% on average. On the largest dataset OGBN-MAG (MAG), the sampling phase even accounts for more than 90% of the total execution time. This significant time disparity emphasizes that mini-batch sampling constitutes the key per-formance bottleneck, underscoring the necessity to optimize this phase to accelerate the overall end-to-end mini-batch inference process. 
+
+B. Memory-bound Characteristic of Sampling Phase 
+
+The execution behavior of the sampling phase is funda-mentally a graph traversal process, wherein the algorithm iteratively explores the neighborhood of target vertices and subsequently the neighborhoods of their neighbors. This pro-cess is characterized by extensive irregular memory access and low computational density, resulting in a memory-bound characteristic in nature. As presented in Table II, the Last Level Cache (LLC) hit rate during the sampling phase re-mains consistently low across various datasets, averaging only 0% 20% 40% 60% 80% 100% ACM IMDB MAG ACM IMDB MAG ACM IMDB MAG ACM IMDB MAG HAN HPN MAGNN GM Sampling Data Loading Inference 
+
+(a)  (b)  
+
+> 0% 20% 40% 60% 80% 100% ACM IMDB MAG GM Redundant Others
+
+Fig. 3: Breakdown of mini-batch HGNN inference: (a) Time breakdown by phase; (b) Measured prefix-overlap ratio of reuse-eligible sampled path instances. 34.03%, reflecting the direct impact of irregular memory access patterns. Moreover, the negligible operation-to-byte ratios for both integer and floating-point operations indicate that the sampling phase is highly memory-bound with minimal computation. Floating-point operations are primarily used for transition-probability computation, while most integer instruc-tions perform non-arithmetic operations, such as identifier comparisons and index computations. These findings indicate that the sampling phase is fundamentally memory-bound, with memory access being the principal performance bottleneck, rather than computational tasks. TABLE II: Profiling results of mini-batch sampling across different datasets.          
+
+> Dataset LLC Hit Rate (%) Integer Ops./Byte FLOPs/Byte
+> ACM 41.23 00.0027 IMDB 39.71 00.0011 MAG 24.08 00.0008
+
+C. Acceleration Opportunity from Semantic Redundancy 
+
+As introduced by Section II-B, unlike traditional GNN sampling, in metapath-based HGNN sampling process, each neighbor is obtained through traversal paths that involve vari-ous combinations of adjacency relations. Induced by semantic redundancy between longer and shorter metapaths, an inclu-sion relationship exists among the sampling traversal paths as in Fig. 1(a). We quantify this redundancy using the prefix-overlap ratio of reuse-eligible sampled path instances. For each longer metapath, we compare the prefixes of its sampled path instances with the independently sampled path instances of its longest reusable prefix. The prefix-overlap ratio is the percent-age of longer-path instances whose prefixes exactly match the corresponding sampled path instances of the reusable prefix. Considering only the longest reusable prefix ensures that each reusable path instance is counted only once. Fig. 3(b) shows a geometric mean prefix-overlap ratio of 66.93% across ACM, IMDB, and MAG. This finding highlights the prevalence of semantic redundancy and identifies a significant opportunity to mitigate it, thereby expediting the sampling process and enhancing the overall performance of end-to-end mini-batch HGNN inference. IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 5
+
+D. Challenges Faced by Traditional Platforms 
+
+Both CPUs and GPUs are inefficient for HGNN sampling due to the irregular memory access patterns inherent in this process. CPUs, optimized for sequential tasks, struggle with the non-linear memory access required, leading to frequent cache misses and high memory latency. While GPUs excel in parallel processing for tasks like matrix multiplication, they perform poorly in HGNN sampling, which involves traversing complex, multi-semantic paths with varying relations, result-ing in poor memory locality and underutilization of paral-lelism. Thus, both architectures face significant bottlenecks in handling the non-sequential, high-memory-demand nature of HGNN sampling, making them suboptimal for this task. IV. D ESIGN 
+
+This section first provides an overview of ESR-HGNN, fol-lowed by a detailed introduction to the proposed redundancy-aware HGNN sampling paradigm designed to reduce irregular memory accesses. Subsequently, we present the architecture of the corresponding sampling unit and propose an end-to-end pipelined scheduling method to maximize execution parallelism within a single processing channel. Finally, we introduce a reusability-driven semantic grouping strategy to further enhance the efficacy of the redundancy-aware sampling approach in scenarios that leverage semantic parallelism. 
+
+A. Overview 
+
+In Section III, we identify the sampling phase as the pri-mary performance bottleneck in end-to-end mini-batch HGNN inference, characterized by a pronounced memory-bound na-ture and substantial semantic redundancy. ESR-HGNN ad-dresses these challenges through three coordinated optimiza-tions. First, redundancy-aware sampling eliminates redundant DRAM accesses by reusing the sampled results of matched metapath prefixes. Second, a specialized sampling unit and optimized pipeline overlap trie management with sampling to reduce exposed online overhead. Third, reusability-driven semantic grouping maximizes the effectiveness of prefix reuse when semantic parallelism is available. Fig. 4 presents the end-to-end workflow of ESR-HGNN. Its core mechanism is the redundancy-aware sampling paradigm shown in Fig. 4(b), which leverages a trie to identify shared metapath prefixes. Using the PAP and PAPSP example, PAP is first inserted and sampled. PAPSP then matches the PAP prefix, retrieves the reusable result from the Semantic Paths Cache , and samples only the remaining suffix. The lower part of this panel illustrates the specialized sampling architecture and the pipeline overlap between trie management and sam-pling. In the metapath-based setting considered here, sampling tasks for different metapaths are data-independent, enabling semantic parallelism. To exploit this property while preserving the effectiveness of redundancy-aware sampling, reusability-driven semantic grouping is performed once on the host CPU as a preprocessing step as shown in Fig. 4(a). The resulting groups are then assigned to parallel sampling channels. Finally, Fig. 4(c) shows that the sampled mini-batches are transferred to a GPU or HiHGNN for data loading and HGNN inference. 
+
+Algorithm 1: Redundancy-aware Sampling Paradigm 
+
+Input : Heterogeneous graph G = ( V, E ),Target vertices batch VB ,Metapaths M = ( m1, m 2, . . . , m k),Metapath Trie T ,Number of sampled neighbors n
+
+Output: Mini-batch g = {gm1 ∪ gm2 ∪ . . . ∪ gmk }
+
+Initial : T ← ∅ , (gmi f or g mi in g ) ← ∅  
+
+> 1
+
+for each target vertices v ∈ VB do  
+
+> 2
+
+for each m ∈ M do  
+
+> 3
+
+▷ vertex-wise sampling  
+
+> 4
+
+N mv ← { v} 
+
+> 5
+
+if m has a reusable prefix m′ in T then  
+
+> 6
+
+▷ trie-based redundancy detection  
+
+> 7
+
+concurrently for (v, m ) 
+
+> 8
+
+T ← ExtendTrie (T, m ′, m ) 
+
+> 9
+
+for each neighbor vn ∈ N m′ 
+
+> v
+
+do  
+
+> 10
+
+N mv ← Sample (G, v n, m − m′, 1)  
+
+> 11
+
+end  
+
+> 12
+
+end  
+
+> 13
+
+end  
+
+> 14
+
+else  
+
+> 15
+
+concurrently for (v, m ) 
+
+> 16
+
+T ← Insert (m) 
+
+> 17
+
+N mv ← Sample (G, v, m, n ) 
+
+> 18
+
+end  
+
+> 19
+
+end  
+
+> 20
+
+gm ← N mv , gm ← { e|e(v,N mv ) ∈ E}) 
+
+> 21
+
+end  
+
+> 22
+
+end  
+
+> 23
+
+return g
+
+B. Redundancy-aware Sampling 
+
+In metapath-based HGNN sampling, the semantic redun-dancy between multiple metapaths directly leads to massive redundant traversal paths, thereby limiting the performance of the sampling process. To efficiently reuse the traversal paths sampled from shorter metapaths, we propose a redundancy-aware sampling paradigm, as shown in Algorithm 1. It records sampled metapaths in a Metapath Trie and reuses the sampled result of a matched prefix, so that only the unmatched suffix of a longer metapath is traversed. For each target vertex, the metapaths are processed in nondecreasing length order, ensuring that a reusable shorter prefix is available before a longer metapath is considered. Algorithm 1 adopts a vertex-wise traversal order in the outer loop (lines 1-22). For each target vertex v, the inner loop iterates over every metapath m and initializes its sampled neighborhood N mv (lines 2-4). The Metapath Trie encodes each metapath as a root-to-leaf sequence of typed trie nodes, enabling longest-prefix matching. The trie representation and hardware implementation are described in Section IV-C. If the current metapath m matches a reusable prefix m′ in the trie (line 5), the algorithm reuses the corresponding sampled result and transforms the original sampling task into new one. Using the PAP and PAPSP example in Fig. 4(b), PAP is IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 6Reusability-driven Semantic Grouping (Section IV-D)     
+
+> PAP, PSP, PAPP, PSPP PAPSP, PSPAP...
+> PAP, PAPP, PAPSP
+> PSP, PSPP, PSPAP
+> Channel 0 Channel 1
+> PP
+> AA
+> SS
+> \\
+> AA
+> PP
+> SS
+> SS
+> AA
+> PP
+> PP
+> PP
+> \\
+> AA
+> SS
+> PP
+> ...
+> ...
+> Basic Relations Sampling PAP Sampling PAPSP
+> insert
+> SS
+> PP
+> PP
+> AA
+> SS
+> \\
+> AA
+> PP
+> SS
+> SS
+> AA
+> PP
+> Reusable Path
+> Actual Sampling Path
+> match
+> extend extend
+
+Redundancy-aware Sampling (Section IV-B)   
+
+> Semantic Redundancy Detector
+> Semantic Paths Cache
+> Insert Insert
+> Sampling Sampling
+> Matching Matching
+> Extend Extend
+> Sampling Sampling
+> Matching Matching
+> Channel 3 Channel 4
+> Scheduler Scheduler Neighbor Sampler
+> Neighbor Sampler
+> HBM HBM HBM
+> Memory Access Handler
+> Memory Access Handler
+
+ESR-HGNN Architecture and Optimized Pipeline (Section IV-C) 
+
+> Metapath Trie
+
+Data Loading Data Loading 
+
+Feature Projection Feature Projection 
+
+Neighbor Aggregation Neighbor Aggregation 
+
+Semantic Fusion Semantic Fusion 
+
+Output Embeddings Output Embeddings 
+
+Sampling Sampling 
+
+> On GPU / HiHGNN
+> On CPU
+
+End-to-end Inference 
+
+(a)  (b) (c) 
+
+> ... ...
+
+Fig. 4: End-to-end workflow of ESR-HGNN. (a) One-time reusability-driven semantic grouping and channel assignment. (b) Redundancy-aware sampling with PAP-prefix reuse for PAPSP, together with the specialized sampling architecture and intra-task pipeline overlap. (c) Transfer of sampled mini-batches for HGNN inference on a GPU or HiHGNN. first inserted and sampled. PAPSP then matches PAP, retrieves 
+
+N m′ 
+
+> v
+
+from the Semantic Paths Cache, and extends each reused endpoint by sampling the residual suffix m − m′ (lines 9-11), thereby avoiding resampling the matched prefix. ExtendTrie in line 8 extends, rather than replaces m′. It preserves child trie nodes with matching type codes, allocates new nodes only for missing suffix segments, and marks the terminal node of m with end flag while preserving the terminal marker of 
+
+m′. If no reusable prefix is found, lines 14-19 insert m into the trie and sample the complete metapath from v. Finally, line 20 adds the sampled vertices and their associated edges to the corresponding metapath-specific mini-batch. Note that the concurrent blocks in lines 7-12 and lines 15-18 operate only within a fixed target-metapath pair (v, m ). They overlap the independent trie-management operation ( ExtendTrie in line 8 or Insert in line 16) with the corresponding neighbor sam-pling, rather than parallelizing iterations over target vertices or metapaths. Our sampling paradigm differs from traditional approaches in two key aspects. First , we employ a metapath trie to record previously sampled metapaths and dynamically adjust sam-pling tasks based on matching results. This mechanism enables the direct reuse of previously traversed paths, thereby elimi-nating a substantial number of unnecessary irregular memory accesses. Second , traditional sampling paradigms prioritize metapath-wise processing for the simplicity of workflow, per-forming sampling for all target vertices within each metapath. Our approach instead utilizes a vertex-wise manner, which sequentially samples the same target vertex across multiple metapaths. This design offers two primary advantages. On one hand, it reduces the storage overhead for sampling paths of shorter prefix metapaths, as the cached sampling sequences for a given target vertex can be quickly reused when sampling other metapaths for the same vertex, eliminating the need for further storage. On the other hand, it allows the adjacency information of the same target vertex across different relations to remain on-chip for an extended period, thereby further reducing off-chip memory accesses, as the adjacency data is reused multiple times for different metapaths. This method targets the standard metapath-guided neighbor-sampling workflow, in which sampling paths are indepen-dently extended according to their predefined metapaths. Prefix reuse does not change the per-hop sampling rule for the residual suffix. In this work, we instantiate the design with the RandomWalk sampler [26], following the metapath-guided random-walk paradigm of Metapath2Vec [7]. 
+
+C. Architecture of ESR-HGNN 
+
+To efficiently map the redundancy-aware sampling method, we design a novel specialized HGNN sampling unit named ESR-HGNN, as illustrated in Fig. 5. We adopt a multi-channel design to leverage the inherent parallelism between different semantics, as the sampling processes for different metapaths are entirely independent and free from data dependencies. 
+
+1) Hardware Components: The hardware architecture of ESR-HGNN is divided into three main components, including the Semantic Redundancy Detector , the Neighbor Sampler and the storage component. The Semantic Redundancy Detector mainly includes a meta-path trie for recording previously sampled metapaths. A trie is a tree-like data structure that efficiently stores and retrieves sequences like strings, with each node representing a character and paths from the root to the leaves corresponding to different strings or prefixes. It performs prefix matching for subsequent metapaths, and if a complete path is matched, the traversal paths of the matched metapath are directly reused. To enable efficient prefix matching, we utilize binary encoding for meta-paths and design a matching unit based on a 4-bit XOR tree, as 4-bit encoding is generally sufficient for typical HetGs. This design facilitates metapath node matching with exceptionally low latency and energy consumption, and it can be modularly scaled to accommodate longer metapath encodings, supporting broader matching operations. Unlike linear comparison and hash-based lookup, the trie natively represents shared prefixes and identifies the longest reusable prefix without sequential comparisons or repeated prefix lookups. Although CAM-based matching supports parallel lookup, replicating its storage and comparison logic across sampling channels incurs significantly higher hardware cost. Therefore, the trie-based design offers a more favorable functionality-cost tradeoff for the short metapaths considered in this work. IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 7Semantic Decoder Semantic Decoder    
+
+> Semantic Redundancy Dectector
+> ...
+> Node
+> ...
+> Node
+> ...
+> Node
+> ...
+> Node
+> ...
+> Node
+> ...
+> Node
+> ...
+> ...
+> Metapath Trie Type Matcher
+> Local Controller Local Controller
+> 4-bit XOR Tree 4-bit XOR Tree
+> ...
+> code
+> data_addr
+> end_flag
+> next_addr ...
+> code
+> data_addr
+> end_flag
+> next_addr
+> mcode dst_id
+> ... ... ...
+> 01
+> Neighbor Sampler
+> Neighbor Selector Neighbor Selector
+> Neighbor Loader
+> Local Controller Local Controller
+> Neighbor Sampler
+> Neighbor Selector
+> Neighbor Loader
+> Local Controller
+> ...
+> Node
+> ...
+> Node
+> Target Selector
+> Channel 0 Channel 0
+> Channel 1 Channel 1
+> Channel 2 Channel 2
+> Channel 3 Channel 3
+> Memory Access
+> Handler
+> Memory Access
+> Handler
+> Scheduler Scheduler
+> HBM HBM HBM
+> neighbor_id
+> P
+> A
+> A
+> \
+
+Fig. 5: Architecture of ESR-HGNN. Specifically, each channel stores its trie in private on-chip memory as fixed-format node records. The next addr vector holds the addresses of valid child records, with invalid entries denoting absent children. During traversal, the Local Con-troller follows this vector to fetch the candidate child records, and the Semantic Decoder sends the requested vertex-type code to the XOR-based Type Matcher . The matcher compares this code with the code field of each candidate and returns the matching child address. Therefore, trie traversal is determined by explicit links and type codes, rather than by the physical placement order of node records. After a complete metapath is matched, its data addr descriptor which is not involved in type matching identifies the corresponding sampled-result block for retrieval from the Semantic Paths Cache .Only completed metapaths whose terminal trie nodes are marked with end flag generate reusable result blocks; inter-mediate trie nodes do not occupy the Semantic Paths Cache. When the cache is full, FIFO replacement writes evicted blocks back to HBM and reloads them on demand. Because metapaths are processed in nondecreasing length order, this policy naturally retains recently sampled, typically longer prefixes that are more likely to be reused by subsequent longest-prefix matches. Another main component is the Neighbor Sampler , which traverses neighbors in compressed sparse row format for target vertex and repeats this process according to the semantic sequence until a sufficient number of neighbors are sam-pled as required. It mainly consists of a Neighbor Loader 
+
+responsible for loading the neighbor list of the current target vertex from memory, and a Neighbor Selector constituted by linear-feedback shift registers (LFSR) that randomly select neighboring vertices. The private Adjacency List Cache is used to store the vertex’s neighbors for reuse. It is a frequency-aware cache that retains adjacency data of frequently accessed vertices for longer. Since it cannot hold the entire graph, evicted or low-frequency adjacency data are fetched from HBM on demand. Note that each channel contains multiple basic Neighbor Sampler s to support the parallel sampling of different target vertices or different metapaths for the same target vertex. The storage component is primarily composed of a Vertex Buffer and a Semantic Path Cache . The Vertex Buffer is chiefly responsible for pre-caching the target vertices within the batch to be processed. The primary function of the Semantic Path Cache is to store traversal paths derived from the sampled neighbors of various vertex types, facilitating the replace-ment of the original target vertex with a new one upon the identification of redundancy. Specifically, when the Semantic Redundancy Detector identifies that the current metapath being processed has a reusable sub-metapath that has already been sampled through metapath matching, the Semantic Redun-dancy Detector sets the control signal of the target selector to 1, and directly retrieves the neighbors sampled based on the matched sub-metapath from the Semantic Paths Cache , using them as the new starting points for sampling thus eliminating redundant traversals. For the metapaths remaining after prefix matching (metapath m − m′ in line 10 of Algorithm 1), no further prefix matching is performed. Instead, matching is based solely on the target vertex and the metapath itself in the cache, and reuse occurs only if the Semantic Path Cache 
+
+contains the corresponding entry. 
+
+2) Optimized Pipeline: Building on the aforementioned hardware components, we present a fine-grained pipeline dataflow to maximize execution parallelism within a single channel in end-to-end mini-batch HGNN inference. Consider an end-to-end mini-batch inference process with two metapaths m1, m 2 and three target vertices v1, v 2, v 3, as illustrated in Fig. 6(a), on traditional platforms, HGNN mini-batch inference is typically executed in a sequential manner, where the sampling phase precedes the loading and inference phase. During sampling, a metapath-wise sampling paradigm is employed. Although this approach is straightforward to implement and does not introduce additional scheduling over-head, it lacks the ability to leverage parallelism across multiple dimensions, leading to suboptimal execution performance. A straightforward optimization approach is to pipeline the sampling and inference processes for each metapath, allowing the sampling process of the next metapath to execute in parallel with the inference process of the previous metapath, as illustrated in Fig. 6(b). However, this method has two key limitations. First, this execution order fails to exploit the available parallelism among sampling tasks associated with different metapaths. Second, after sampling the neighborhood of only one metapath, the resulting input remains semantically incomplete because representations from the remaining se-mantic graphs are unavailable. Consequently, semantic fusion (Inf erence S in Fig. 6(b)) cannot be initiated or overlapped with the sampling and per-semantic-graph inference of the remaining metapaths. For each target vertex, Inf erence S
+
+can start only after the per-semantic-graph inference stage IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 8
+
+(Inf erence N in Fig. 6(b)) has been completed for all meta-paths. Time 
+
+(b) 
+
+(c)   
+
+> v1Inference C
+> v1Sampling
+> Sampling Matching
+
+(d)   
+
+> Reus
+> e
+> v1
+> v2
+> v3
+> m1Sampling m1Sampling
+> Inference S
+> Time
+
+(a) 
+
+(b)       
+
+> m2Sampling m2Sampling
+> m1Sampling m1Sampling
+> m2Sampling m2Sampling
+
+(c)   
+
+> v1Inference C
+> v1Sampling
+> Sampling Matching
+
+(d)    
+
+> Reuse v1
+> v2
+> v3
+> Data Loading Data Loading Inference Inference
+> Loading Inference N
+> Loading Inference N
+> Insert
+> Extend
+
+Fig. 6: End-to-End pipeline: (a) Original execution paradigm; (b) Naive pipeline; (c) Optimized pipeline; (d) intra-task overlap between trie management and sampling for a fixed target-metapath pair (v, m ).Leveraging our novel sampling paradigm and specialized structural design, we realize a finer-grained parallelization approach in load scheduling from two key perspectives. First ,the sampling process for the same target vertex across different metapaths is structured as a pipelined execution, which is divided into two distinct stages: prefix metapath matching and the actual sampling process, as shown in Fig.6 (d). Moreover, both the sampling process and the insertion and updating procedures of the metapath trie are fully parallelizable as lines 7-12 and 15-18 in Algorithm 1. This parallelism is an intra-task overlap between trie management and sampling for a fixed (v, m ) instead of parallel iterations over target vertices or metapaths. Therefore, the matching, insertion, and extending processes of the metapath trie required for detecting and eliminating semantic redundancy can be effectively over-lapped with other execution processes, significantly reducing the associated overhead. Second , our vertex-wise sampling paradigm completes the neighborhoods of all metapaths for a target vertex before its inference is launched. The resulting semantically complete input enables Inf erence C , including neighbor aggregation and semantic fusion, and thereby allows the semantic fusion stage to be parallelized. This fine-grained pipelined execution maximizes parallelism across various ex-ecution stages within a single channel, thereby substantially enhancing the overall end-to-end mini-batch inference perfor-mance. 
+
+D. Reusability-driven Semantic Grouping 
+
+The sampling tasks associated with different metapaths exhibit semantic parallelism because they have no data depen-dencies. To further optimize mini-batch sampling performance, the proposed redundancy-aware paradigm must support this se-mantic parallelism across hardware channels. However, meta-paths must be grouped according to the number of available channels. Random grouping often reduces reusable semantic paths within a single channel, limiting the efficacy of the redundancy-aware paradigm and overall performance. To ad-dress this challenge, we propose a reusability-driven semantic grouping method that serves as data preprocessing to enhance redundancy within each group, maximizing performance in parallel settings. PSP PAP PAPP PSPP PAPSP PSPAP      
+
+> (a) (b) (c)
+> PAP PSP PAPP PSPP PAPSP PSPAP Group 1 Group 2 w1w2
+> PSP PAP PAPP PSPP PAPSP PSPAP
+
+Fig. 7: A toy example of metapath grouping: (a) original metapaths; (b) weighted metapath-reuse graph; (c) resulting metapath groups. Given a set of metapaths M , as illustrated in Fig. 7(a), we model each metapath as a vertex v ∈ VM . An edge e ∈
+
+EM is established between two vertices if their corresponding metapaths exhibit a reuse relationship. The resulting weighted metapath-reuse graph GM = ( VM , E M ), shown in Fig. 7(b), explicitly captures the reusability among metapaths. Moreover, the degree of reusability varies among prefix metapaths for the same target metapath. For example, in the case of PAPSP, the prefix metapath PAP demonstrates higher reusability than PSP, as both PAP and PAPSP initiate sampling from the same target vertices. However, when PAPSP extends its traversal to PSP, the starting vertices for PSP-based traversal are mostly no longer the original target vertices. To quantify this, we assign a weight to each edge, representing its degree of reusability. It’s calculated as w = 1 −id sm /l lm , where id sm is the starting position where the shorter metapath aligns within the longer metapath, and llm is the length of the longer target metapath. This metric captures the reusability degree of metapath vertices within the hypergraph, with higher weights indicating greater reusability. Based on this definition, in the given example, the weight w1 is greater than w2, signifying that PAP has higher reusability with respect to PAPSP than PSP. Building on the constructed weighted metapath-reuse graph and the defined reusability weight metric, the problem of optimal metapath grouping is formulated as a community detection task within this graph, as illustrated in Fig. 7(c). The objective is to maximize the total sum of edge weights within each detected group. Inspired by the classical Lou-vain algorithm [4], we present a reusability-driven semantic grouping method as shown in Algorithm 2, incorporating the proposed reusability weight metric into the calculation of group reusability. It consists of two main parts: the Reusability-improving and the Group-merging steps. In the reusability-improving step, for each metapath vertex, the algorithm attempts to add it to each neighboring group and calculates the reusability gain for each (line 6). It identifies the neighbor with the highest reusability gain (lines 7-9), and if this maximum gain is greater than 0, the vertex is added to that neighbor’s group (lines 11-13); otherwise, it remains in its original group. In the group-merging stage, further merging is required based on the maximum number of channels supported by the hardware. Specifically, if the number of groups generated in Phase 1 exceeds the number of available hardware channels, the groups are reconstructed into a new weighted metapath-reuse graph, and Phase 1 is repeated until the number of groups fits within IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 9
+
+Algorithm 2: Reusability-driven Semantic Grouping 
+
+Input : Weighted metapath-reuse graph 
+
+GM = ( VM , E M ), number of hardware channels n
+
+Output: At most n metapath groups 
+
+Initial : Initialize groups C ← { v f or v in V M }
+
+Set improved ← True 
+
+Set num groups ← | C|
+
+◁ Phase 1: Reusability-improving Step  
+
+> 1
+
+while improved is True do  
+
+> 2
+
+Set improved ← False  
+
+> 3
+
+for each vertex v ∈ VM do  
+
+> 4
+
+∆Qmax ← 0, Ct ← ϕ 
+
+> 5
+
+for each neighbor group C′ of v do  
+
+> 6
+
+∆Q ← ComputeReusabilityGain (v, C ′) 
+
+> 7
+
+if ∆Q > ∆Qmax then  
+
+> 8
+
+∆Qmax ← ∆Q, Ct ← C′ 
+
+> 9
+
+end  
+
+> 10
+
+end  
+
+> 11
+
+if ∆Qmax > 0 then  
+
+> 12
+
+Move v to Ct, Set improved ← True  
+
+> 13
+
+end  
+
+> 14
+
+end  
+
+> 15
+
+end 
+
+◁ Phase 2: Group-merging Step  
+
+> 16
+
+while num groups > n do  
+
+> 17
+
+G′ 
+
+> M
+
+← BuildGraph (C) 
+
+> 18
+
+Reapply Phase 1 to G′ 
+
+> M
+> 19
+
+Set num groups ← | C| 
+
+> 20
+
+end  
+
+> 21
+
+return C
+
+the available channels (lines 16–20). This strategy facilitates metapath grouping to maximize reusable paths within each group while exploiting the in-herent semantic parallelism of metapath-based sampling. By colocating metapaths with shared prefixes, it increases prefix reuse and reduces redundant sampling and off-chip memory accesses, thereby enabling the redundancy-aware sampling method to fully realize its performance potential through parallel execution. The grouping algorithm is executed only once on the host before mini-batch inference, and its cost is amortized across all subsequent mini-batches, as quantified in Section V-E. Community partitioning may result in imbal-anced channel loads because the grouping objective explicitly prioritizes prefix reuse over metapath-count balance. However, enforcing strict load balance may distribute metapaths with shared prefixes across different channels, preventing sampled results from being reused and consequently increasing redun-dant HBM traffic. For the targeted memory-bound sampling workload, reducing off-chip memory traffic and the resulting post-reuse critical-path latency is more beneficial than equaliz-ing nominal channel loads. Therefore, ESR-HGNN prioritizes prefix reuse over strict load balance to maximize overall sampling performance, while accepting moderate channel-load imbalance as a favorable trade-off. V. E VALUATION 
+
+In this section, we first describe the experimental setup and present a comprehensive evaluation of the overall performance. We then validate the effectiveness of the proposed optimiza-tions through detailed ablation studies. Finally, we evaluate the impact of ESR-HGNN on inference accuracy, quantify the overhead introduced by each optimization, and investigate its sensitivity and scalability. 
+
+A. Experiment Setup 
+
+Methodology. The performance and energy efficiency of ESR-HGNN are assessed utilizing the following tools. 
+
+Cycle-accurate Simulator. We implement ESR-HGNN within a cycle-accurate simulator to assess its performance in terms of execution cycles, and integrate Ramulator [20] to precisely model off-chip memory accesses to HBM. 
+
+CAD Tools. The Synopsys Design Compiler with the TSMC 12 nm standard VT library is employed for synthesizing the RTL implementation of each module. Power consumption is estimated using Synopsys PrimeTime PX. The module with the longest critical path delay measures 0.84 ns, enabling ESR-HGNN to reliably operate at a 1.0 GHz clock frequency. 
+
+Memory Measurements. The access latency, energy con-sumption, and area of on-chip memory components are es-timated using Cacti 6.5 [1]. Four distinct scaling factors are applied to adjust these estimates to the 12nm technology node, following the approach in work [32]. The latency and energy consumption of HBM1.0 are simulated via Ramulator and estimated at 7 pJ/bit as in work [29]. 
+
+Benchmarks. Experiments are conducted on three promi-nent HGNN models, including HAN [34], HPN [19], and MAGNN [44], implemented using the DGL 1.0.2 frame-work [33]. We use the ACM, IMDB, and MAG datasets pro-vided by the OpenHGNN toolkit [15], as detailed in Table III. Among them, the largest dataset, MAG, contains edges at the billion scale under the given metapaths. The traditional 
+
+RandomWalk [26] neighbor sampling method is utilized as the foundational sampling technique. Unless specified, for the ACM and IMDB datasets, the batch size for sampling is configured to 128, with the number of sampled neighbors set to 20. For the MAG dataset, the batch size is set to 1024, and the number of sampled neighbors is configured to 1000 considering its large scale. TABLE III: Information of HetG datasets.        
+
+> Dataset #Vertex #Edge of Relations Metapaths
+> ACM Paper: 3025 PP: 5343 -PP:5343 AP: 9936 PA: 9936 PS: 3025 SP: 3025 PAP / PSP PAPP / PSPP PAPSP / PSPAP Author: 5912 Subject: 56 Term:1902 IMDB Movie: 4278 AM: 12828 DM: 4278 MA: 12828 MD: 4278 KM: 23610 MK: 23610 MDM / MAM / MKM MDMAM / MAMDM MDMKM / MKMDM MAMKM / MKMAM Director:2081 Actor:5257 Keyword:7971 MAG Author:1134649 PP: 5416271 -PP: 5416271 AI: 1043998 IA: 1043998 AP: 7145660 PA: 7145660 PF: 7505078 FP: 7505078 PAP / PAPP PFP / PAPFP PFPAP / PAIAP Paper: 736389 Field: 59965 Institute:8740 IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 10
+
+TABLE IV: Hardware configurations of the baseline platforms and ESR-HGNN.                      
+
+> CPU GPU ESR-HGNN
+> Compute resources 32 cores / 64 threads 108 SMs / 6912 CUDA cores 221,184 max. concurrent threads 4 sampling channels CPU sampling workers 32 (one per physical core) ––Clock frequency 2.6 GHz 1.4 GHz 1.0 GHz On-chip caches (total) L1: 1.5 MB; L2: 40 MB L3: 48 MB (shared) L1: 20.25 MB; L2: 40 MB (shared) Semantic Paths Cache: 4 MB Adjacency List Cache: 2 MB Off-chip memory 8-channel DDR4-3200 80 GB HBM2e 2 GB HBM1.0 Peak memory bandwidth 204.8 GB/s (theoretical) 2039 GB/s 512 GB/s Host interface –PCIe 4.0 ×16, 64 GB/s
+
+(a)  (b)                                 
+
+> 2.09 2.13 6.24 1.99 1.95 5.80 1.78 1.81 4.96 1.95 1.96 5.64 4.90 4.51 7.92 5.00 4.71 7.64 5.20 4.92 7.92 5.03 4.71 7.83
+> 0246810 ACM IMDB MAG ACM IMDB MAG ACM IMDB MAG ACM IMDB MAG HAN HPN MAGNN GM Speedup ESR-HGNN + GPU CPU + HiHGNN ESR-HGNN + HiHGNN
+> 2.16 1.56
+> 12.30
+> 2.85 41.04 40.78 37.90 39.66
+> 0
+> 10
+> 20 30 40 50 ACM IMDB MAG GM Speedup GPU ESR-HGNN
+
+Fig. 8: Speedup: (a) Pure sampling process over CPU; (b) End-to-end mini-batch HGNN inference over CPU+GPU. 
+
+Platforms. Performance evaluations are carried out on an Intel ® Xeon ® Platinum 8350C CPU and an NVIDIA A100 GPU. CPU is used solely for sampling, while the GPU mainly serves as the inference platform, and is also used as a comparison baseline for sampling performance due to DGL’s support for GPU-based sampling. The CPU-related performance metrics are obtained through Perf, Intel VTune and Intel Advisor, while the GPU-related performance metrics are collected using NVIDIA Nsight Compute, with all experi-ments conducted in Float32 precision. Additionally, the SOTA HGNN inference accelerator, HiHGNN [36], is also introduced as the baseline inference platform. Table IV summarizes the hardware configurations used for the CPU and GPU baselines and for ESR-HGNN simulation. 
+
+B. Overall Results 1) Speedup: As illustrated in Fig. 8(a), ESR-HGNN achieves an average speedup of 39.66 × over the CPU and 13.94 × over the GPU in terms of metapath-based sampling. Furthermore, when integrated with the SOTA HGNN infer-ence accelerator HiHGNN, ESR-HGNN+HiHGNN delivers an average end-to-end mini-batch inference speedup of 5.70 ×
+
+compared with the CPU+GPU setup, as shown in Fig. 8(b). When combined with a GPU, ESR-HGNN+GPU achieves an average speedup of 2.78 ×. Notably, CPU+HiHGNN delivers only a 1.15 × average speedup in end-to-end performance over the CPU+GPU setup, highlighting that solely accelerating the inference phase is insufficient to substantially improve overall mini-batch inference performance. ESR-HGNN’s performance gains in sampling stem from three main factors. First, the novel redundancy-aware sampling paradigm significantly reduces redundant traversals, thereby minimizing unnecessary irregular memory accesses. Second, the specialized hardware design and optimized data flow eliminate redundant operations typical of general-purpose plat-forms and boost the parallelism between execution phases. Fi-nally, the reusability-driven grouping method exploits semantic parallelism via multi-channel support and maximizes path reuse within individual channels. The end-to-end acceleration also comes from the optimized pipeline, which reduces the overhead by overlapping the data loading process. 
+
+2) Reduction of DRAM Access and Energy Consumption: 
+
+As depicted in Fig. 9(a), ESR-HGNN achieves average DRAM access savings of 92.35% and 96.75% compared with CPU and GPU, respectively. The reduction in memory access is attributed to our proposed redundancy-aware sampling method as well as the fine-grained memory access brought about by the customized hardware structure and data path. Fig. 9(b) illustrates that ESR-HGNN reduces energy consumption by 98.45% and 86.41% compared with CPU and GPU, respec-tively. The reduction in energy consumption, in addition to the decrease in memory access, also results from the structural design that eliminates the overhead of general-purpose plat-forms, such as maintaining the operating system and software programming frameworks. 
+
+3) Area and Power: As presented in Table V, ESR-HGNN incorporates 6.53 MB of on-chip SRAM, 128 4-bit XOR trees, 2048 LFSRs, and additional control logic, occupying a total area of 5.01 mm 2 and consuming 559.62 mW of power. Its area and power consumption account for only 23.47% and 4.66%, respectively, of those of HiHGNN, while achieving significant speedup in end-to-end mini-batch HGNN inference. 
+
+C. Effects of Optimizations 
+
+Since our optimization approaches are hardware-software co-design solutions and cannot independently yield mean-ingful impact, we adopt a cumulative evaluation approach IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 11 1.47% 1.60% 1.59% 1.55%   
+
+> 0% 5% 10% 15% 20% ACM IMDB MAG GM Energy Consumption GPU ESR-HGNN
+
+(a)  (b)      
+
+> 6.78 8.14 8.10 7.65
+> 110 100 1000 ACM IMDB MAG GM DRAM Access (Norm.)(%) GPU ESR-HGNN
+
+Fig. 9: Results of sampling process normalized to CPU: (a) DRAM access; (b) Energy consumption. TABLE V: Characteristics of ESR-HGNN (TSMC 12 nm ).                                  
+
+> Component or Block Area ( mm 2)%Power ( mW )%
+> ESR-HGNN 5.01 100 559.62 100
+> Breakdown by Functional Block
+> Semantic Paths Cache 2.95 58.80 332.62 59.44 Adjacency List Cache 1.47 29.40 166.31 29.72 Vertex Buffer 0.37 7.35 41.58 7.43 Metapath Trie 0.02 0.46 2.60 0.46 LFSR Array 0.01 0.14 0.20 0.04 Others 0.19 3.85 16.31 2.91
+
+rather than an ablation study to demonstrate their effectiveness. Fig. 10(b) and (c) shows the impact of incrementally applying the optimizations. The -B configuration represents a baseline single-channel ESR-HGNN with naive sampling. The -R con-figuration introduces redundancy-aware sampling. The -O con-figuration adds the optimized pipeline. The -P configuration includes a 4-channel setup with random metapath grouping. The fully optimized configuration integrates reusability-based semantic grouping, demonstrating the cumulative performance improvements achieved. 
+
+Effects of Redundancy-aware Sampling. Since the redundancy-aware sampling paradigm can, in theory, be im-plemented in software, we evaluate its effectiveness by im-plementing it on both CPU and GPU platforms. As shown in Fig.10(a), the software-based approach yields limited benefits, achieving only a 1.12 × speedup on the CPU, while actually increasing sampling time on the GPU due to diminished memory coalescing. In contrast, on the ESR-HGNN platform, the fine-grained memory access enabled by the customized hardware architecture and data path, along with the enhanced on-chip data locality provided by the dedicated cache, allows 
+
+-R to significantly reduce DRAM access by an average of 71.56% compared with -B , leading to a 2.94 × improvement in sampling performance, as illustrated in Fig.10(b) and (c). 
+
+Effects of Optimized Pipeline. As shown in Fig.10(b), -O 
+
+exhibits no significant change in memory access volume com-pared with -R since fine-grained pipelined execution preserves the original neighbor traversal behavior while enabling phase-overlapping execution. This optimization effectively paral-lelizes the management operations of the metapath trie with the sampling process, resulting in a 1.11 × improvement in sampling performance, as illustrated in Fig.10(c). 
+
+Effects of Reusability-driven Semantic Grouping. While 
+
+-P enables parallel sampling and has the potential to improve performance over -O , it reduces the number of reusable traversal paths within groups, diminishing the effectiveness of redundancy-aware sampling and yielding only marginal gains. On the MAG dataset, -P even leads to a 10.31% performance drop, as shown in Fig. 10(c). In contrast, our reusability-driven grouping method enhances redundancy within groups, significantly reducing DRAM access and fully leveraging the benefits of redundancy-aware sampling. When combined with semantic parallelism, it achieves a 3.21 × performance improvement over the non-parallel -O version. 
+
+D. The Impact on Accuracy 
+
+Reusing previously sampled traversal paths reduces partial traversal randomness, potentially affecting inference accuracy. Fig.11 shows its impact across datasets and number of sampled neighbor settings on HAN model. On average, our method incurs only a 1.05% accuracy drop compared with Ran-domWalk [26], a minor trade-off given the significant sampling efficiency gains. This minimal impact stems from two factors. First, prior studies [16], [23] have demonstrated that GNNs exhibit robustness to partial information loss, a property that extends to HGNNs as well. Second, the reuse mechanism is restricted to prefix matching, ensuring that randomness is preserved in the subsequent sampling steps. 
+
+E. Overhead Analysis 
+
+This section quantifies the online overhead of redundancy-aware sampling and the one-time preprocessing overhead of reusability-driven semantic grouping. 
+
+Online Overhead of Redundancy-aware Sampling. Ta-ble VI reports the overhead relative to pure neighbor sampling, including adjacency list retrieval and random neighbor selec-tion. Total online overhead represents the latency of metapath trie insertion, matching, and extending, Semantic Paths Cache lookup and access, and scheduling. It accounts for 21.14% of pure sampling latency on average across the evaluated datasets. TABLE VI: Online overhead of redundancy-aware sampling.              
+
+> Dataset Pure Neighbor Sampling Total Online Overhead Visible Online Overhead
+> ACM 100% 18.01% 5.42% IMDB 100% 21.0% 7.1% MAG 100% 25.0% 12.6% GM 100% 21.14% 7.86%
+
+As introduced in Section IV-C, the optimized pipeline over-laps online management operations with the post-matching sampling process. Consequently, the visible online overhead is reduced to only 7.86% of pure sampling latency. This overhead is a worthwhile tradeoff for the substantial reduction in DRAM accesses achieved by redundancy-aware sampling paradigm. Note that the overhead ratio is larger on MAG, since its larger graph, batch size, and sampling fanout, i.e., the number of sampled neighbors per target vertex, enlarge the working set. Under the fixed Semantic Paths Cache capacity, the cache hit rate decreases and the retrieval latency of matched sampling paths increases. 
+
+One-time Overhead of Reusability-driven Semantic Grouping. We further assess the overhead of reusability-driven semantic grouping, which is a one-time preprocess-ing step on the host CPU. Table VII shows results for IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 12 ESR-HGNN-B  ESR-HGNN-R  ESR-HGNN-O  ESR-HGNN 
+
+(b)  (c)             
+
+> 0510 15 ACM IMDB MAG GM
+> Speedup
+> 0% 20% 40% 60%
+> 80%
+> 100% 120% ACM IMDB MAG GM DRAM Access
+> ESR-HGNN-P
+> 2.94x
+> 3.21x
+> 1.11x
+> 0
+> 0.5 11.5 2ACM IMDB MAG GM Sampling Time (Norm.) CPU CPU-R GPU GPU-R
+
+(a) 
+
+Fig. 10: Effects of optimizations: (a) Software implementation of redundancy-aware sampling on CPU and GPU; (b) Number of DRAM access on ESR-HGNN; (c) Speedup on ESR-HGNN. 0.75 0.8 0.85 0.9 0.95           
+
+> 10 20 40 80
+> Accuracy
+> 0.56 0.6 0.64 0.68 0.72
+> 10 20 40 80
+> 0.3 0.38 0.46 0.54 0.62
+> 100 500 1000 2000
+> ACM IMDB MAG
+> Original ESR-HGNN
+> #Neighbors
+
+Fig. 11: Averaged inference accuracy. the IMDB dataset, which uses the most metapaths. On the ESR-HGNN+GPU platform, a single-batch inference is 29.52 × the preprocessing time, and it is 12.29 × on ESR-HGNN+HiHGNN. Because grouping is executed only once before all mini-batches are processed, its impact on total execution time is negligible while enabling significant perfor-mance gains. TABLE VII: Metapath Grouping overhead (normalized time). 
+
+Model Metapath Grouping + GPU + HiHGNN 
+
+HAN 1 24.67 11.65 HPN 1 29.35 12.21 MAGNN 1 35.51 13.32 
+
+F. Sensitivity and Scalability Exploration 
+
+We conduct exploratory experiments on two key parameters in metapath-based sampling: batch size and the number of sampled neighbors on the largest dataset MAG, as shown in Fig.12(a), where the bar chart represents the speedup, and the line chart represents the proportion of sampling time. Overall, ESR-HGNN is more sensitive to the number of sampled neighbors, with the sampling time increasing more significantly as the number of sampled neighbors grows. This is because a higher number of sampled neighbors directly results in a multiplicative increase in traversal paths. It also increases the size of each reusable result block and thus the pressure on the capacity-bounded Semantic Paths Cache .When the cache overflows, FIFO replacement writes older result blocks back to HBM; later reuse then incurs a sequential HBM refill rather than repeated random traversal of the matched prefix. Accordingly, as the sampled-neighbor count increases from 500 to 4000, the speedup of ESR-HGNN over the GPU decreases from 4.09 × to 2.43 ×, while its speedup over the CPU continues to increase. The narrowed advantage over the GPU reflects both the additional result refills and the improved utilization of GPU threads at larger fanouts. In contrast, ESR-HGNN exhibits limited sensitivity to variations in batch size. This can be attributed to its adoption of a vertex-wise sampling paradigm as the underlying processing occurs on a per-vertex basis. For each channel, the Semantic Paths Cache only needs to retain the completed, reusable metapath results of the current target vertex; increasing the batch size does not increase this peak resident working set when the fanout is fixed. The sampling time varies very little as long as the total number of target vertices remains the same. #Sampled Neighbors Batch Size  (a)     
+
+> GPU ESR-HGNN CPU GPU ESR-HGNN
+
+(b)        
+
+> 024
+> 6
+> 810 12 612 24 48 612 24 48 612 24 48 CPU GPU ESR-HGNN Sampling Time (Norm.)
+> 0510 15 110 100 1000 512 1024 2048 4096 Speedup
+> 0510 15 20 110 100 500 1000 2000 4000 Sampling Time (Norm.)
+
+Fig. 12: Exploration on MAG dataset: (a) Sensitivity regarding batch size and number of sampled neighbors for each target vertex; (b) Scalability across various number of metapaths. In Fig. 12(b), we increase the number of metapaths to investigate the scalability of ESR-HGNN on larger datasets. The experimental results reveal that, compared with both the CPU and GPU, the sampling time of ESR-HGNN grows at a considerably slower rate as the number of metapaths increases. Consequently, a higher number of metapaths in larger datasets results in a more pronounced speedup. This is attributed to the introduction of additional semantic redundancy, which facilitates greater reuse of traversal paths. These findings underscore the excellent scalability of ESR-HGNN. IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 13 
+
+VI. D ISCUSSION 
+
+Near-Memory Processing. Processing-in-Memory (PIM) and Near-Memory Processing (NMP) reduce the data-movement cost of each remaining adjacency access [2], [6], whereas ESR-HGNN reduces the number of irregular accesses by eliminating redundant prefix traversals. Redundancy-aware sampling reduces DRAM accesses by 71.56% on average (Fig. 10(b)). The two approaches are therefore complementary, although their integration requires coordinating trie and cache states across memory partitions. 
+
+Higher-Bandwidth HBM. We use HBM1.0 to align with HiHGNN [36] and the validated HBM1.0 timing configuration in our Ramulator-based evaluation. A sensitivity study using Ramulator 2.1 [27] shows that HBM2 and HBM3 reduce the normalized sampling time of ESR-HGNN to 0.77 × and 0.69 ×,respectively. The nonlinear, diminishing gains arise from hop-wise dependence, limited request-level parallelism, random-access latency, bank contention, and limited request coa-lescing. Nevertheless, newer HBM generations do not affect ESR-HGNN’s access-reduction mechanism, as it eliminates redundant prefix traversals and thus reduces the number of DRAM requests regardless of the service rate of the remaining requests. VII. C ONCLUSION 
+
+This work accelerates mini-batch HGNN inference by eliminating semantic redundancy, proposing a redundancy-aware sampling paradigm to reuse traversal paths and de-signing a multi-channel sampling unit named ESR-HGNN. A reusability-driven semantic grouping method is also introduced to effectively grouping the metapaths. Experiments show sig-nificant improvements in both sampling and end-to-end mini-batch inference performance. REFERENCES [1] Cacti. [Online]. Available: http://www.hpl.hp.com/research/cacti/ [2] J. Ahn, S. Hong, S. Yoo, O. Mutlu, and K. Choi, “A scalable processing-in-memory accelerator for parallel graph processing,” in Proceedings of the 42nd Annual International Symposium on Computer Architecture ,2015, pp. 105–117. [3] B. Altaf, U. Akujuobi, L. Yu, and X. Zhang, “Dataset recommendation via variational graph autoencoder,” in 2019 IEEE International Confer-ence on Data Mining (ICDM) , 2019, pp. 11–20. [4] V. D. Blondel, J.-L. Guillaume, R. Lambiotte, and E. Lefebvre, “Fast unfolding of communities in large networks,” Journal of statistical mechanics: theory and experiment , vol. 2008, no. 10, p. P10008, 2008. [5] C. Chen, K. Li, Y. Li, and X. Zou, “Regnn: A redundancy-eliminated graph neural networks accelerator,” in 2022 IEEE International Sympo-sium on High-Performance Computer Architecture (HPCA) , 2022, pp. 429–443. [6] D. Chen, H. He, H. Jin et al. , “Metanmp: Leveraging cartesian-like prod-uct to accelerate hgnns with near-memory processing,” in Proceedings of the 50th Annual International Symposium on Computer Architecture , ser. ISCA ’23. New York, NY, USA: Association for Computing Machinery, 2023. [7] Y. Dong, N. V. Chawla, and A. Swami, “metapath2vec: Scalable rep-resentation learning for heterogeneous networks,” in Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining , ser. KDD ’17. New York, NY, USA: Association for Computing Machinery, 2017, p. 135–144. [8] S. Fan, C. Shi, and X. Wang, “Abnormal event detection via heteroge-neous information network embedding,” in Proceedings of the 27th ACM International Conference on Information and Knowledge Management ,ser. CIKM ’18. New York, NY, USA: Association for Computing Machinery, 2018, p. 1483–1486. [9] X. Fu, J. Zhang, Z. Meng, and I. King, “Magnn: Metapath aggregated graph neural network for heterogeneous graph embedding,” in Proceed-ings of The Web Conference 2020 , 2020, pp. 2331–2341. [10] T. Geng, C. Wu, Y. Zhang et al. , “I-gcn: A graph convolutional network accelerator with runtime locality enhancement through islandization,” in MICRO-54: 54th Annual IEEE/ACM International Symposium on Microarchitecture , ser. MICRO ’21. New York, NY, USA: Association for Computing Machinery, 2021, p. 1051–1063. [11] W. Hamilton, Z. Ying, and J. Leskovec, “Inductive representation learning on large graphs,” Advances in neural information processing systems , vol. 30, 2017. [12] D. Han, D. Wang, M. Yan, X. Ye, and D. Fan, “Tlv-hgnn: Thinking like a vertex for memory-efficient hgnn inference,” in 2025 IEEE 43rd International Conference on Computer Design (ICCD) , 2025, pp. 730– 737. [13] D. Han, M. Wu, R. Xue, M. Yan, X. Ye, and D. Fan, “Ade-hgnn: Accelerating hgnns through attention disparity exploitation,” in Euro-Par 2024: Parallel Processing: 30th European Conference on Parallel and Distributed Processing, Madrid, Spain, August 26–30, 2024, Pro-ceedings, Part II . Berlin, Heidelberg: Springer-Verlag, 2024, p. 91–106. [14] D. Han, M. Yan, X. Ye, and D. Fan, “Characterizing and understanding hgnn training on gpus,” ACM Trans. Archit. Code Optim. , vol. 22, no. 1, Mar. 2025. [Online]. Available: https://doi.org/10.1145/3703356 [15] H. Han, T. Zhao, C. Yang, H. Zhang, Y. Liu, X. Wang, and C. Shi, “Openhgnn: An open source toolkit for heterogeneous graph neural network,” in Proceedings of the 31st ACM International Conference on Information & Knowledge Management , ser. CIKM ’22. New York, NY, USA: Association for Computing Machinery, 2022, p. 3993–3997. [16] G. E. Hinton, N. Srivastava, A. Krizhevsky, I. Sutskever, and R. R. Salakhutdinov, “Improving neural networks by preventing co-adaptation of feature detectors,” 2012. [17] Y. Huang, L. Zheng, P. Yao et al. , “Accelerating graph convolutional networks using crossbar-based processing-in-memory architectures,” in 
+
+IEEE International Symposium on High-Performance Computer Archi-tecture, HPCA 2022, Seoul, South Korea, April 2-6, 2022 . IEEE, 2022, pp. 1029–1042. [18] R. Hwang, M. Kang, J. Lee, D. Kam, Y. Lee, and M. Rhu, “GROW: A row-stationary sparse-dense GEMM accelerator for memory-efficient graph convolutional neural networks,” in IEEE International Symposium on High-Performance Computer Architecture, HPCA 2023, Montreal, QC, Canada, February 25 - March 1, 2023 . IEEE, 2023, pp. 42–55. [19] H. Ji, X. Wang, C. Shi, B. Wang, and P. S. Yu, “Heterogeneous graph propagation network,” IEEE Transactions on Knowledge and Data Engineering , vol. 35, no. 1, pp. 521–532, 2023. [20] Y. Kim, W. Yang, and O. Mutlu, “Ramulator: A fast and extensible dram simulator,” IEEE Computer architecture letters , vol. 15, no. 1, pp. 45–49, 2015. [21] K. Kiningham, P. Levis, and C. R´ e, “Grip: A graph neural network accelerator architecture,” IEEE Transactions on Computers , vol. 72, no. 4, pp. 914–925, 2023. [22] H. Lin, M. Yan, X. Ye, D. Fan, S. Pan, W. Chen, and Y. Xie, “A comprehensive survey on distributed training of graph neural networks,” 
+
+Proceedings of the IEEE , vol. 111, no. 12, pp. 1572–1606, 2023. [23] M. Liu, H. Gao, and S. Ji, “Towards deeper graph neural networks,” in Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining , ser. KDD ’20. New York, NY, USA: Association for Computing Machinery, 2020, p. 338–348. [Online]. Available: https://doi.org/10.1145/3394486.3403076 [24] X. Liu, M. Yan, L. Deng, G. Li, X. Ye, and D. Fan, “Sampling meth-ods for efficient training of graph convolutional networks: A survey,” 
+
+IEEE/CAA Journal of Automatica Sinica , vol. 9, no. 2, pp. 205–234, 2022. [25] X. Liu, M. Yan, S. Song, Z. Lv, W. Li, G. Sun, X. Ye, and D. Fan, “Gnnsampler: Bridging the gap between sampling algorithms of gnn and hardware,” in Joint European Conference on Machine Learning and Knowledge Discovery in Databases . Springer, 2022, pp. 498–514. [26] L. Lov´ asz, “Random walks on graphs,” Combinatorics, Paul erdos is eighty , vol. 2, no. 1-46, p. 4, 1993. [27] H. Luo, F. N. Bostancı, A. Olgun, M. Makeenkova, Z. Malik, I. Akdeniz, and O. Mutlu, “Ramulator 2.1: A composable memory system simulator for modern dram systems,” 2026. [Online]. Available: https://arxiv.org/abs/2606.13844 [28] Q. Lv, M. Ding, Q. Liu et al. , “Are we really making much progress? revisiting, benchmarking and refining heterogeneous graph neural net-works,” in Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery & Data Mining , 2021, pp. 1150–1160. IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS 14 
+
+[29] M. O’Connor, “Highlights of the high-bandwidth memory (hbm) stan-dard,” in Memory forum workshop , vol. 3, 2014. [30] R. Sarkar, S. Abi-Karam, Y. He, L. Sathidevi, and C. Hao, “Flowgnn: A dataflow architecture for real-time workload-agnostic graph neural network inference,” in 2023 IEEE International Symposium on High-Performance Computer Architecture (HPCA) . Los Alamitos, CA, USA: IEEE Computer Society, mar 2023, pp. 1099–1112. [31] G. Sun, M. Yan, D. Wang et al. , “Multi-node acceleration for large-scale gcns,” IEEE Transactions on Computers , vol. 71, no. 12, pp. 3140–3152, 2022. [32] O. Villa, D. R. Johnson, M. Oconnor et al. , “Scaling the power wall: A path to exascale,” in SC ’14: Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis , Nov 2014, pp. 830–841. [33] M. Y. Wang, “Deep graph library: Towards efficient and scalable deep learning on graphs,” in ICLR workshop on representation learning on graphs and manifolds , 2019. [34] X. Wang, H. Ji, C. Shi et al. , “Heterogeneous graph attention network,” in The world wide web conference , 2019, pp. 2022–2032. [35] M. Wu, M. Yan, W. Li, X. Ye, D. Fan, and Y. Xie, “Survey on characterizing and understanding gnns from a computer architecture perspective,” IEEE Transactions on Parallel and Distributed Systems ,2025. [36] R. Xue, D. Han, M. Yan, M. Zou, X. Yang, D. Wang, W. Li, Z. Tang, J. Kim, X. Ye, and D. Fan, “Hihgnn: Accelerating hgnns through parallelism and data reusability exploitation,” IEEE Transactions on Parallel and Distributed Systems , vol. 35, no. 7, pp. 1122–1138, 2024. [37] R. Xue, M. Yan, D. Han, Y. Teng, Z. Tang, X. Ye, and D. Fan, “Gdr-hgnn: A heterogeneous graph neural networks accelerator frontend with graph decoupling and recoupling,” in Proceedings of the 61st ACM/IEEE Design Automation Conference , ser. DAC ’24. New York, NY, USA: Association for Computing Machinery, 2024. [38] M. Yan, L. Deng, X. Hu et al. , “Hygcn: A gcn accelerator with hybrid architecture,” in 2020 IEEE International Symposium on High Performance Computer Architecture (HPCA) . IEEE, 2020, pp. 15–29. [39] M. Yan, M. Zou, X. Yang et al. , “Characterizing and understanding hgnns on gpus,” IEEE Computer Architecture Letters , vol. 21, no. 2, pp. 69–72, 2022. [40] S. Yang, Z. Yang, D. Li, Y. Zhang, Z. Zhang, G. Song, and J. Hao, “Versatile multi-stage graph neural network for circuit representation,” 
+
+Advances in Neural Information Processing Systems , vol. 35, pp. 20 313–20 324, 2022. [41] X. Yang, M. Yan, S. Pan, X. Ye, and D. Fan, “Simple and efficient heterogeneous graph neural network,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 37, 2023. [42] Y. Ye, S. Hou, L. Chen, J. Lei, W. Wan, J. Wang, Q. Xiong, and F. Shao, “Out-of-sample node representation learning for heterogeneous graph in real-time android malware detection,” in Proceedings of the 28th International Joint Conference on Artificial Intelligence , ser. IJCAI’19. AAAI Press, 2019, p. 4150–4156. [43] B. Zhang, H. Zeng, and V. K. Prasanna, “Graphagile: An fpga-based overlay accelerator for low-latency gnn inference,” IEEE Transactions on Parallel and Distributed Systems , vol. 34, no. 9, pp. 2580–2597, 2023. [44] C. Zhang, D. Song, C. Huang, A. Swami, and N. V. Chawla, “Heteroge-neous graph neural network,” in Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining , ser. KDD ’19. New York, NY, USA: Association for Computing Machinery, 2019, p. 793–803. [45] A. Zhao and Y. Yu, “Context aware sentiment link prediction in heterogeneous social network,” Cognitive Computation , vol. 14, pp. 300 – 309, 2021. [46] K. Zhong, S. Zeng, W. Hou, G. Dai, Z. Zhu, X. Zhang, S. Xiao, H. Yang, and Y. Wang, “Cognn: An algorithm-hardware co-design approach to accelerate gnn inference with minibatch sampling,” IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems , vol. 42, no. 12, pp. 4883–4896, 2023. [47] H. Zhou, B. Zhang, R. Kannan, C. Busart, and V. K. Prasanna, “Vitegnn: Towards versatile inference of temporal graph neural networks on fpga,” 
+
+IEEE Transactions on Parallel and Distributed Systems , vol. 36, no. 3, pp. 502–519, 2025. [48] X. Zhou, J. Ye, C.-W. Pui, K. Shao, G. Zhang, B. Wang, J. Hao, G. Chen, and P. A. Heng, “Heterogeneous graph neural network-based imitation learning for gate sizing acceleration,” in Proceedings of the 41st IEEE/ACM International Conference on Computer-Aided Design ,ser. ICCAD ’22. New York, NY, USA: Association for Computing Machinery, 2022. 
+
+VIII. B IOGRAPHY SECTION 
+
+Dengke Han He is currently a Ph.D. candidate at the Institute of Computing Technology, Chinese Academy of Sciences, Beijing, China. His research interests include graph-based hardware accelerators, algorithm performance analysis and optimization, and high-throughput computer architecture. 
+
+Mingyu Yan received his Ph.D. degree from Uni-versity of Chinese Academy of Sciences, Beijing, China in 2020. He is currently an associate profes-sor in Institute of Computing Technology, Chinese Academy of Sciences, Beijing, China. His current research interests include graph processing algo-rithm, graph-based hardware accelerator, and high-throughput computer architecture. 
+
+Duo Wang received his Ph.D. degree from Univer-sity of Chinese Academy of Sciences, Beijing, China in 2024. His current research interests include pro-cessor design space exploration, high-performance computer architecture and software simulation. 
+
+Wenming Li received the Ph.D. degree in computer architecture from Institute of Computing Technol-ogy, Chinese Academy of Sciences, Beijing, in 2016. He is currently an associate professor in Institute of Computing Technology, Chinese Academy of Sci-ences, Beijing. His main research interests include high-throughput processor architecture, dataflow ar-chitecture and software simulation. 
+
+Xiaochun Ye received his Ph.D. degree in com-puter architecture from Institute of Computing Tech-nology, Chinese Academy of Sciences, Beijing, in 2010. He is currently a professor and Ph.D. supervi-sor in Institute of Computing Technology, Chinese Academy of Sciences, Beijing. His main research interests include high-performance computer archi-tecture and software simulation. 
+
+Dongrui Fan received his Ph.D. degree in com-puter architecture from Institute of Computing Tech-nology, Chinese Academy of Sciences, Beijing, in 2005. He is currently a professor and Ph.D. supervi-sor in Institute of Computing Technology, Chinese Academy of Sciences, Beijing. His main research interests include high-throughput computer architec-ture and high-performance computer architecture.

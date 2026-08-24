@@ -18,23 +18,30 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-24
-- 运行时间：2026-08-24 04:06:56 北京时间
+- 最新运行日期：2026-08-25
+- 运行时间：2026-08-25 03:30:24 北京时间
 - 运行状态：成功
-- 本次总论文数：0
-- 精读区：0
-- 速读区：0
-- 下次更新：约 2026-08-25 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
+- 本次总论文数：3
+- 精读区：1
+- 速读区：2
+- 下次更新：约 2026-08-26 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）
 
 ### 今日简报（AI）
-> 今日无新推荐，系统未产出可展示论文。
-- 详情：[2026-08-24 日报](/202608/23/README)
+今日共读3篇论文，精读1篇、速读2篇，覆盖联邦学习与图神经网络优化。最值得关注的是《FL-MAESTRO》提出的多智能体编排方案（8.0分），以及《FlatLand》在个性化联邦图学习上的创新（7.0分）。建议优先阅读前者，并留意联邦学习与图神经网络结合的前沿方向。
+- 详情：[2026-08-25 日报](/202608/24/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [FL-MAESTRO: Multi-Agent LLM Orchestration for Resource-Constrained Federated Learning](/202608/24/2608.20518v1-fl-maestro-multi-agent-llm-orchestration-for-resource-constrained-federated-learning)  
+   标签：评分：8.0/10、query:dgnn-nas
+   evidence：联合优化联邦学习的通信拓扑、资源分配与聚合规则，直接面向通信高效训练
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [FlatLand: Personalized Graph Federated Learning via Tailored Lorentz Space](/202608/24/2608.21096v1-flatland-personalized-graph-federated-learning-via-tailored-lorentz-space)  
+   标签：评分：7.0/10、query:dgnn-nas
+   evidence：跨异构客户端的分布式图联邦学习
+2. [ESR-HGNN: Eliminating Semantic Redundancy for Efficient Mini-batch HGNN Inference](/202608/24/2608.17865v1-esr-hgnn-eliminating-semantic-redundancy-for-efficient-mini-batch-hgnn-inference)  
+   标签：评分：6.0/10、query:dgnn-nas
+   evidence：改进异构图神经网络的迷你批采样，支持高效图学习流程
 
 
 <div class="dpr-home-promo-card dpr-home-panel">
