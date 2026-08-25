@@ -3,7 +3,7 @@
 覆盖：
 - main.resolve_sidebar_date_label / build_sidebar_date_label（北京日期）
 - 6.generate_docs.next_run_beijing_label（下次名义运行时刻）
-- 6.generate_docs.build_latest_report_section（首页含"下次更新"/"北京时间"，详情链接用标签文本）
+- 6.generate_docs.build_latest_report_section（首页四卡含"下次更新"/"北京时间"，标签作为卡片 kicker 展示，卡片不提供跳转链接）
 """
 import importlib.util
 import sys
@@ -122,16 +122,15 @@ class Gen6LatestReportSectionTest(unittest.TestCase):
 
     def test_detail_link_uses_label_not_token_path(self):
         out = self._section(date_str="20260629", date_label="2026-06-30")
-        # href 仍是 token 路径
-        self.assertIn("(/202606/29/README)", out)
-        # 可见文本用北京标签
-        self.assertIn("[2026-06-30 日报](/202606/29/README)", out)
-        # 不应再把路径当文本展示
-        self.assertNotIn("[/202606/29/README]", out)
+        # 上游新约定：首页四卡只承担静态概览，不得提供任何跳转链接或点击行为；
+        # 论文详情统一从左侧 Sidebar 进入。
+        self.assertNotIn("href", out)
+        self.assertNotIn("/202606/29/README", out)
 
     def test_label_shown_when_passed(self):
         out = self._section(date_str="20260629", date_label="2026-06-30")
-        self.assertIn("最新运行日期：2026-06-30", out)
+        # 标签作为今日汇总卡的 kicker 文本展示
+        self.assertIn('>2026-06-30</span>', out)
 
 
 if __name__ == "__main__":
