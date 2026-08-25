@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-08",
+  "date": "2026-08-07",
+  "generated_at": "2026-08-07T20:26:03",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/07/2608.06046v1-ml-for-ml",
+      "section": "deep",
+      "title_en": "ML-for-ML",
+      "authors": "Yutong Zhao, Noga H. Rotman, Gianni Antichi, Ran Ben Basat",
+      "date": "2026-08-06",
+      "pdf": "https://arxiv.org/pdf/2608.06046v1",
+      "score": "9.0",
+      "evidence": "联合优化网络侧与机器学习侧的通信参数以加快训练收敛",
+      "tldr": "随着AI训练负载迅速增长，其时间、能源和基础设施成本成为重要课题。在共享云集群中，训练与微调任务常和并发工作负载争抢网络资源，但网络机制与训练参数选择通常被独立优化，两者脱节导致整体性能潜力未充分释放。为此，我们提出ML-for-ML——一种跨层协同视角，将网络侧控制与ML侧通信时机、规模等参数联合起来，在到达目标损失所需耗时的统一目标下共同调优。初步实验表明，该方案可使到达目标损失的速度加快最高42%，展现出跨层优化对降低训练成本、提升集群效率的重要价值。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "AI training workloads are growing rapidly, making their time, energy, and infrastructure costs increasingly important. In shared cloud clusters, training and fine-tuning jobs compete with co-running workloads for network resources, while network mechanisms and ML training choices are typically optimized separately: networking controls how bytes move, whereas ML systems control when and how much communication occurs. We argue that this separation leaves end-to-end performance on the table.   We present ML-for-ML, a cross-layer perspective in which network-side and ML-side knobs are selected jointly under a shared time-to-target-loss objective. Our preliminary prototype shows that by co-optimizing the ML and network parameters, we reach the target loss up to 42% faster.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

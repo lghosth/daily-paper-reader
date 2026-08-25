@@ -1,0 +1,39 @@
+{
+  "label": "2026-07-27",
+  "date": "2026-07-26",
+  "generated_at": "2026-07-26T20:14:42",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202607/26/2607.20739v1-pipelined-gradient-coding",
+      "section": "deep",
+      "title_en": "Pipelined Gradient Coding",
+      "authors": "Xian Su, Jun Li",
+      "date": "2026-07-22",
+      "pdf": "https://arxiv.org/pdf/2607.20739v1",
+      "score": "8.0",
+      "evidence": "流水线梯度编码减少分布式训练中的通信开销",
+      "tldr": "分布式训练常受掉队者拖累，传统梯度编码通过复制数据让worker评估多个分区来补救，但增加了每步计算负担。本文提出流水线梯度编码，将梯度评估分段至多步，每个worker每步只处理一个分区。针对常见数据放置方案开发了流水线版本并证明收敛。实验表明，该方法显著减少训练时间并加速收敛，为解决掉队者问题提供了高效方案。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "In large-scale machine learning, distributed training commonly involves multiple workers evaluating the gradients of the model on different dataset partitions. A common challenge is the presence of straggling workers, which may significantly slow down training. Traditional gradient coding (GC) addresses this by duplicating dataset partitions across workers, allowing for the replacement of missing gradients from stragglers. However, GC requires workers to evaluate gradients on multiple dataset partitions in each step, potentially increasing overall training time. In this paper, we propose to pipeline GC, such that gradient evaluation is segmented across multiple steps and each worker evaluates gradients on just a single dataset partition per step. We develop the pipelined version for fractional repetition (FR) and cyclic repetition (CR), two representative dataset placement schemes in GC, and prove convergence guarantees for both. Through extensive simulations and experiments on cloud infrastructure, our schemes not only significantly reduce training time but also accelerate convergence compared to GC and other baselines.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/26/2607.20145v1-slai-t-rex-full-parameter-post-training-of-the-deepseek-v4-family-on-ascend-superpod",
+      "section": "quick",
+      "title_en": "SLAI T-Rex: Full-Parameter Post-training of the DeepSeek-V4 Family on Ascend SuperPOD",
+      "authors": "Dongfang Li, Xiaodong Luo, Ruoyu Sun, Xuhui Chen, Linyuan Qiu, Jian Meng, Zhengxuan Lu, Yiting Wang, Yucheng Xie, Tao Guo, Tianxiang Fang, Jing Li, Sihang Chen, Shihao Hong, Chang Liu, Weihua Dai, Zirong Zeng, Ziwei Zhu, Zhuohan Wang, Zhengjun Yue, Igor Vasilyev, Min Liu, Weijian Sun, Xin Chen, Yingmeng Gao, Jinhua Zhou, Taolue Chen, Chenwei Wu, Dong Zhang, Wenlong Jin, Jinmin Xiang, Barkova Maria, Ushakov Anton, Xianfei Jin, Tian Ding, Zhihang Lin, Qian Chen, Linxin Yang, Mingzhe Yang, Bingwei Zhang, Hongzhang Yang, Fangxue Zhang, Shijun Qin, Jie Yu, Cuihua Hu, Tolstykh Vasiliy, Nosov Ivan, Abdullin Amir, Zhichen Zhou, Xin Zhang, Zhixiong Ning, Xutong Zhao, Junjie Huang, Jiajun Liu, Weiyan Kong, Zheng Zhang, Wenhan Luo, Lin Hu, Yangbo Guo, Li Zeng, Shihao Zeng, Baotian Hu, Min Zhang, Haizhou Li, Zhiquan Luo",
+      "date": "2026-07-22",
+      "pdf": "https://arxiv.org/pdf/2607.20145v1",
+      "score": "6.0",
+      "evidence": "端到端优化通信高效的大规模分布式训练",
+      "tldr": "针对万亿参数MoE模型在昇腾NPU集群上全参数后训练面临的内存压力、通信开销和内核执行低效问题，提出分层优化框架，涵盖模型并行、计算通信协同和底层内核优化，实现34.22% MFU并提升2.93倍。在此基础上构建面向运筹学的CPT和SFT工作流，数据集含10K高质量样本，模型零样本Pass@1达71.81%，超过GPT-5.4-Mini。展示了从高效训练到领域专精模型的全栈路径。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Full-parameter post-training of trillion-parameter-scale MoE models introduces substantial system-level challenges for large-scale distributed training, including severe memory pressure, non-overlapped communication overhead, and inefficient kernel execution. While most large-scale LLM training systems are built around GPU-based clusters, this report presents an end-to-end optimization practice on the Ascend NPU SuperPOD. Using the DeepSeek-V4 model family as the target workload, we develop a hierarchical optimization framework spanning model-level parallelism, computation-communication orchestration, and low-level kernel execution. The resulting system achieves 34.22% Model FLOPs Utilization (MFU) with a 2.93x improvement over the open-source baseline recipe while maintaining training stability. Building on this optimized infrastructure, we further establish a CPT and SFT workflow for complex Operations Research (OR) tasks. We refer to the integrated framework as SLAI T-Rex. Using DeepSeek-V4-Flash, we develop OR-oriented CPT and SFT data pipelines that combine collected domain resources with solver-verified synthetic optimization documents. The resulting dataset contains 10K high-quality SFT samples spanning four task categories and three problem representations. The specialized model achieves the highest average zero-shot Pass@1 score among the evaluated models, reaching 71.81% and outperforming GPT-5.4-Mini and the base DeepSeek-V4-Flash model by 3.98 and 11.27 percentage points, respectively. Overall, this work demonstrates a full-stack pathway from efficient trillion-parameter model post-training on Ascend infra to domain-specialized Flash models for solver-grounded mathematical modeling, advancing frontier-model systems for complex reasoning.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

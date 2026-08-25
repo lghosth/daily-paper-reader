@@ -1,0 +1,69 @@
+{
+  "label": "2026-08-13",
+  "date": "2026-08-12",
+  "generated_at": "2026-08-12T20:59:08",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202608/12/2608.10144v1-sefora-sketch-aggregated-federated-low-rank-adaptation-with-heterogeneous-client-ranks",
+      "section": "deep",
+      "title_en": "SeFoRA: Sketch-Aggregated Federated Low-Rank Adaptation with Heterogeneous Client Ranks",
+      "authors": "Yue Xia, Tayyebeh Jahani-Nezhad, Mayank Bakshi, Rawad Bitar",
+      "date": "2026-08-10",
+      "pdf": "https://arxiv.org/pdf/2608.10144v1",
+      "score": "8.0",
+      "evidence": "通过本地更新的线性草图实现通信高效的联邦训练",
+      "tldr": "联邦参数高效微调结合LoRA时，客户端异构秩导致因子矩阵维度不兼容，且因子均值存在双线性不匹配。提出SeFoRA，客户端传输本地更新的线性sketch，联邦器在低维子空间直接聚合，缓解双线性不匹配，并给出同质秩版本SeFoRA-Ho。理论证明同质秩下收敛到一阶驻点邻域，速率O(1/T)，在RoBERTa-Large的GLUE任务上超越现有方法。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "We consider federated parameter efficient fine-tuning of large neural networks with low-rank adaptation (LoRA,~Hu et al.\\ 2022). Combining LoRA with federated PEFT introduces challenges absent from either setting alone: clients may use different LoRA ranks, making their factor matrices dimension-incompatible, and factor-wise averaging suffers from a bilinear mismatch. We propose SeFoRA, a sketch-aggregated federated LoRA algorithm in which each client transmits a linear sketch of its local updates, enabling direct aggregation at the federator. As a result, SeFoRA alleviates the bilinear mismatch, and allows for aggregation in a small subspace of the full model. We introduce a rank-homogeneous version called SeFoRA-Ho which allows for direct adapter aggregation in this setting. We prove convergence to a neighborhood of the first-order stationary point at rate $\\cO(1/T)$ for the rank-homogeneous setting. Numerical experiments on fine-tuning RoBERTa-Large on GLUE datasets show how our algorithms outperform the state-of-the-art.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/12/2608.10605v1-compute-optimal-is-not-cluster-optimal-systems-aware-scaling-for-sparse-mixture-of-experts",
+      "section": "deep",
+      "title_en": "Compute-Optimal Is Not Cluster-Optimal: Systems-Aware Scaling for Sparse Mixture-of-Experts",
+      "authors": "Soumajyoti Sarkar, Yuxin Tang, Sheng Zha",
+      "date": "2026-08-11",
+      "pdf": "https://arxiv.org/pdf/2608.10605v1",
+      "score": "8.0",
+      "evidence": "面向分布式训练的系统感知扩展，将通信成本和并行布局与架构设计联合优化，对通信高效训练有强方法借鉴",
+      "tldr": "大规模预训练通常分阶段决策：先选架构与训练策略，再优化硬件实现，造成架构和系统脱节。本文提出MOSAIC，将模型架构与系统协同设计形式化为优化问题，耦合预测缩放定律与性能模型。在稀疏MoE模型上拟合含稀疏度维度的缩放定律，发现若不考虑系统效率，模型FLOPs预算下不存在最优稀疏度，而是位于边界；加入集群系统约束后，最优稀疏度才真正出现。这呼吁转向统一架构与系统的协同设计。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "In large-scale pretraining, the algorithm, architecture, and systems decisions are conventionally made in disconnected stages. A scaling law stage selects an architecture and training recipe, optimizing loss under compute constraints, and a separate systems stage then optimizes the implementation for hardware efficiency. In this work, we develop MOSAIC, which formulates model architecture and systems co-design as an optimization problem. MOSAIC couples a predictive scaling law with a calibrated performance model that estimates Model FLOPs Utilization (MFU), communication cost, memory footprint, and the best parallel layout. We instantiate the framework for sparse Mixture-of-Experts (MoE) language models, where expert count, routing sparsity, and other MoE layer dimensions affect both the loss and systems efficiency. We fit a scaling law on sparse MoE models trained on text data, whose scaling dimensions include the sparsity factor, which is the fraction of model parameters inactive per token in a forward pass. The scaling law sweeps in our work span active parameters from $104$ million to $2.7$ billion and total model sizes reaching $79$ billion parameters. We show that, within the calibrated sparsity range, an efficiency-agnostic model-FLOPs budget admits no interior optimal sparsity. The fitted loss decreases monotonically with sparser models and the compute optimum lies at the upper boundary of the data support. An optimal sparsity in MoE models instead emerges under the cluster's systems constraints, as captured by MOSAIC. Our results argue for a shift towards unified architecture and systems co-design for frontier language model training.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/12/2608.09208v1-feda2l-adaptive-layer-wise-learning-rate-adjustment-in-decentralized-federated-learning",
+      "section": "quick",
+      "title_en": "FedA2L: Adaptive layer-wise learning rate adjustment in decentralized federated learning",
+      "authors": "Van Truong Vo, Khoa Nguyen, Taehong Kim",
+      "date": "2026-08-10",
+      "pdf": "https://arxiv.org/pdf/2608.09208v1",
+      "score": "7.0",
+      "evidence": "去中心化联邦学习中的自适应逐层学习率调整",
+      "tldr": "去中心化联邦学习在数据异构下因统一学习率忽略层间差异而收敛缓慢。本文提出FedA2L，依据模型发散信号动态调整各层学习率，结合局部更新强度与网络共识约束，无需额外通信即可嵌入现有协议。实验表明其收敛速度最高提升4.94倍，通信轮次最多减少59%，且对严重异构、大规模网络与稀疏拓扑稳健，适用于边缘与物联网场景。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Decentralized intelligence systems with heterogeneous devices and limited coordination increasingly rely on decentralized federated learning (DFL). However, DFL suffers from convergence inefficiency under data heterogeneity due to the use of a uniform learning rate (LR) that ignores layer-specific optimization needs. Foundational layers are responsible for maintaining network consensus, while specialized layers adapt to local data characteristics, leading to conflicting gradients and degraded performance under non-IID conditions. To address this fundamental tension, this work introduces FedA2L, a method that dynamically adjusts layer-wise LRs based on model divergence signals. By leveraging local update intensity and network consensus constraints, FedA2L seamlessly integrates into existing DFL protocols without additional communication or coordination. Extensive evaluations across DFL algorithms, various model architectures, and datasets demonstrate that FedA2L achieves up to 4.94 times faster convergence than vanilla DFL and reduces communication rounds by up to 59% compared to scheduler-based baselines. Furthermore, FedA2L exhibits resilience to severe data heterogeneity, larger network sizes, and sparse topologies, reducing communication overhead and establishing it as a versatile optimization tool for resource-constrained or large-scale distributed learning in edge and IoT deployments. The code is released at https://github.com/nclabteam/FedA2L.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/12/2608.09596v1-leed-local-embedding-evolution-distance-for-over-smoothing-estimation-and-virtual-node-selection-in-gnn",
+      "section": "quick",
+      "title_en": "LEED: Local Embedding Evolution Distance for over-smoothing estimation and virtual node selection in GNN",
+      "authors": "Killian Cressant, Pedro B. Velloso",
+      "date": "2026-08-10",
+      "pdf": "https://arxiv.org/pdf/2608.09596v1",
+      "score": "6.0",
+      "evidence": "节点级过平滑度量与虚拟节点选择可支持GNN架构设计",
+      "tldr": "GNN面临过平滑与过挤压问题，现有全局度量如Dirichlet能量缺乏节点级分辨率，难以发现异质退化模式。本文提出LEED局部嵌入演化距离，通过追踪单节点嵌入跨层变化来量化过平滑，并由此生成嵌入驱动的中心性分数。LEED被用作虚拟节点选择的唯一准则，以缓解过挤压。实验证明LEED较能量度量更具诊断力，能提升GNN在多种数据集上的性能。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Graph Neural Networks (GNNs) suffer from two fundamental limitations: over-smoothing, where node representations become indistinguishable with depth, and over-squashing, where long-range information is compressed through limited message-passing channels. Existing metrics such as Dirichlet energy provide global characterizations of over-smoothing but lack the resolution to analyze node-level behavior and guide architectural improvements. In this paper, we propose LEED (Local Embedding Evolution Distance), a novel local metric that quantifies over-smoothing by tracking the evolution of individual node embeddings across layers. By operating at the node level, LEED enables fine-grained analysis of representation dynamics during training, revealing heterogeneous over-smoothing patterns that are invisible to global energy-based measures. This locality induces informative node importance scores, interpreted as embedding-driven centrality measures. We leverage LEED to design a more efficient strategy for virtual node selection. Unlike existing approaches that depend on multiple heuristic centrality measures, our method uses LEED as a unique criterion to guide the construction of Local Virtual Nodes to mitigate over-squashing. Experiments show that LEED provides more informative diagnostics than Dirichlet energy while preserving global evaluation, and enables more effective virtual node integration, improving GNN performance across datasets.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

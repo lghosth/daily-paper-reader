@@ -1,0 +1,58 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-22T19:57:47.697004+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.17592v1",
+      "source": "arxiv",
+      "title": "Communication Reduction via Semantic-Based Encoding in DMPC Using LSTMs",
+      "abstract": "The communication demands of distributed model prediction control (DMPC) can overwhelm even advanced wireless communication technologies as agents must exchange a significant amount of information at least once per time step. To semantically reduce communication demands, this work employs encoder-decoder networks built around long-short term memory (LSTM) cells in a distributed optimization algorithm. Agents publish a reduced representation of a message and receivers reconstruct the original message upon reception. In tests with reduced communication using formations of mobile robots, trained networks retain satisfactory performance and work reliably under conditions overwhelming full communication. As the results show, the usage of LSTMs either allows unprecedented reconstruction accuracy or the usage of different prediction-horizon lengths without the necessity to retrain.",
+      "authors": [
+        "Torben Schiz",
+        "Pedro H. J. Nardelli",
+        "Henrik Ebel"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY",
+        "cs.DC",
+        "cs.LG",
+        "cs.MA",
+        "cs.RO"
+      ],
+      "published": "2026-08-18T09:58:03+00:00",
+      "link": "https://arxiv.org/pdf/2608.17592v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "LSTM-based semantic encoder-decoder compresses inter-agent messages in distributed control, a transferable approach for communication-efficient training",
+      "llm_evidence_cn": "基于LSTM的语义编码压缩分布式智能体通信，可迁移至通信高效训练",
+      "llm_evidence": "基于LSTM的语义编码压缩分布式智能体通信，可迁移至通信高效训练",
+      "canonical_evidence": "基于LSTM的语义编码压缩分布式智能体通信，可迁移至通信高效训练",
+      "llm_tldr_en": "Uses LSTM encoder-decoder networks to semantically compress messages exchanged between agents in distributed model predictive control, reducing communication demands while retaining performance and reliability under heavy load.",
+      "llm_tldr_cn": "分布式模型预测控制中智能体每步需交换大量信息，对无线通信造成压力。本文采用围绕LSTM单元构建的编码器-解码器网络，对消息进行语义压缩，接收端再重构原始信息。在移动机器人编队实验中，压缩通信下仍保持满意的控制性能，并在通信过载条件下可靠工作。实验表明该方法可显著降低通信需求，为分布式系统中基于学习的消息压缩提供了示范。",
+      "llm_tldr": "分布式模型预测控制中智能体每步需交换大量信息，对无线通信造成压力。本文采用围绕LSTM单元构建的编码器-解码器网络，对消息进行语义压缩，接收端再重构原始信息。在移动机器人编队实验中，压缩通信下仍保持满意的控制性能，并在通信过载条件下可靠工作。实验表明该方法可显著降低通信需求，为分布式系统中基于学习的消息压缩提供了示范。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -1,0 +1,1431 @@
+Title: Joint Channel Estimation and Dynamics-Aware Grouping for Time-Varying RIS-Assisted OTA Federated Learning
+
+URL Source: https://arxiv.org/pdf/2607.17169v1
+
+Published Time: Tue, 21 Jul 2026 01:14:43 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+> 1
+
+# Joint Channel Estimation and Dynamics-Aware Grouping for Time-Varying RIS-Assisted OTA Federated Learning 
+
+Ziqi Li, Shuangzhi Li, Uchechukwu Awada, and Jiankang Zhang 
+
+Abstract —Reconfigurable intelligent surface (RIS)-assisted over-the-air federated learning (OTA-FL) enables efficient dis-tributed intelligence but suffers from time-varying channels, imperfect channel state information (CSI), and strong user heterogeneity, which jointly degrade aggregation accuracy and cause severe model update cancellation. To address these issues, we propose a unified framework for joint channel estimation and dynamics-aware user grouping in RIS-assisted OTA-FL systems, enabling reliable learning under imperfect CSI and heterogeneous dynamics. The framework integrates gated re-current unit (GRU) for temporal modeling to capture time-varying CSI evolution, OTA-based federated aggregation with personalization, and RIS-aware physical-layer optimization in a closed loop. In addition, we design a dynamics-aware grouping strategy based on long-term path-loss and short-term channel dynamics to reduce inter-user conflicts under heterogeneous conditions. Simulation results show that the proposed method achieves substantial gains in CSI estimation accuracy and OTA aggregation performance in low-pilot and high-mobility regimes, while improving convergence speed and robustness under strong user heterogeneity. 
+
+Index Terms —Personalized federated learning, over-the-air computation, reconfigurable intelligent surfaces, cascaded chan-nel estimation, dynamic grouping. 
+
+I. I NTRODUCTION 
+
+As 6G wireless networks evolve toward edge intelligence, federated learning (FL) has emerged as a promising paradigm for distributed model training without sharing raw data. By enabling local training at devices and transmitting only model updates, FL significantly reduces communication overhead and preserves data privacy compared with conventional central-ized learning [1]–[6]. However, its iterative training process introduces substantial uplink communication bottlenecks, es-pecially in large-scale wireless networks [7]. To address this limitation, over-the-air federated learning (OTA-FL) has been proposed by exploiting the superposition property of wireless channels, allowing simultaneous trans-mission of model updates and direct aggregation at the base station [8]–[10]. Despite its communication efficiency, OTA-FL is highly sensitive to channel state information (CSI) accu-racy. In practice, imperfect CSI inevitably induces aggregation          
+
+> Ziqi Li is with the School of Electrical and Information Engineering, Zhengzhou University, Zhengzhou 450001, China, and also with the Depart-ment of Electrical and Computer Engineering, The University of Hong Kong, Hong Kong SAR, China (Email:ziqili0901@connect.hku.hk). Shuangzhi Li is with the School of Electrical and Information Engineering, Zhengzhou University, Zhengzhou 450001, China (Email:ielsz@zzu.edu.cn). Uchechukwu Awada is with the School of Software, Henan Institute of Sci-ence and Technology, Xinxiang, 453003, China (E-mail: awada@hist.edu.cn). Jiankang Zhang is with the School of Computing and Engineering, Bournemouth University, UK (Email: jzhang3@bournemouth.ac.uk) Shuangzhi Li is the corresponding author (Email: ielsz@zzu.edu.cn).
+
+distortion, which in turn degrades learning performance [11], [12]. This issue is further exacerbated in time-varying wireless environments, where channel dynamics fundamentally compli-cate reliable aggregation. Reconfigurable intelligent surfaces (RIS) provide a promis-ing solution by reshaping wireless propagation environments through controllable phase shifts, thereby improving link quality and mitigating aggregation errors [13]–[17]. [18] derived an upper bound on the aggregation error of RIS-assisted OTA systems, and subsequent studies further verified the tangible performance gains brought by RIS to over-the-air aggregation [14], [15]. Nevertheless, RIS-assisted OTA-FL introduces tightly coupled challenges, including cascaded channel estimation, pilot overhead limitation, and time-varying channel dynamics [19]–[21]. Moreover, heterogeneous channel conditions across users lead to so-called tail devices, whose poor link quality and dynamic behavior significantly degrade aggregation reliability while remaining essential for maintain-ing data diversity and fairness [22]. To address these challenges, recent studies have explored device selection, clustered federated learning, and meta-learning-based personalization. For instance, [8] excluded straggling users from model aggregation to reduce commu-nication errors, while [23] jointly considered device selection and communication error, developing a Gibbs-sampling-based strategy to improve overall system performance. However, existing device selection methods often sacrifice weak users to improve learning efficiency. While this design is commonly adopted in application-layer federated learning, it may in-troduce fairness concerns in wireless CSI acquisition, where reliable channel information should be collected across diverse propagation conditions rather than only from strong-link users. Moreover, retaining weak users can provide additional benefits for channel modeling, as their CSI captures rich propagation diversity under low-SNR and non-line-of-sight conditions. This diversity can potentially enhance the robustness of chan-nel estimation models under dynamic wireless environments. Clustering methods also achieved more stable region-specific channel modeling [24]–[27], but suffer from high overhead and poor adaptability in dynamic wireless environments, due to their static and initialization-sensitive design. Meanwhile, per-sonalized FL methods, including multi-task federated learning [28] and meta-learning approaches such as Per-FedAvg [29], FedMeta [30] and pFedMe [31], improve personalization in federated learning. However, these methods, along with most existing FL optimization frameworks, commonly assume ideal or static wireless channels and thus overlook the coupling between time-varying channel dynamics and federated opti-mization. This mismatch limits their applicability in wireless-arXiv:2607.17169v1 [cs.IT] 19 Jul 2026 2
+
+enabled FL systems, where communication reliability and learning performance are jointly affected by channel dynamics. Despite these advances, a fundamental challenge remains: in RIS-assisted OTA-FL systems, channel estimation, RIS config-uration, and federated learning optimization are tightly coupled under time-varying wireless conditions, making separate or sequential design fundamentally suboptimal. This coupling creates a critical gap between communication reliability and learning stability, which cannot be effectively bridged by existing decoupled approaches. Motivated by this observation, we study time-varying RIS-assisted OTA-FL under imperfect cascaded CSI, and propose a unified framework that jointly addresses channel estima-tion, communication distortion, and user heterogeneity. The framework integrates GRU-based temporal modeling for CSI prediction, personalized OTA-FL aggregation, and RIS-aware physical-layer optimization in a closed-loop design. Further-more, we introduce a dynamics-aware grouping strategy to adaptively mitigate heterogeneity across users. The main con-tributions of this paper are summarized as follows:  
+
+> •
+
+We propose a system-level closed-loop RIS-assisted OTA-FL framework that jointly optimizes channel esti-mation, RIS phase control, and federated aggregation un-der imperfect CSI, explicitly incorporating OTA-induced distortion into the learning process.  
+
+> •
+
+We design a personalized federated learning architecture that employs gated recurrent units (GRUs) as the temporal backbone, enabling accurate prediction of time-varying cascaded CSI while supporting heterogeneous local adap-tation.  
+
+> •
+
+We develop a dynamics-aware grouping strategy that exploits long-term path-loss and short-term channel dy-namics to improve aggregation stability under strong user heterogeneity. We use R and C to denote the sets of real and complex num-bers, respectively. Lowercase letters, bold lowercase letters, and bold uppercase letters are used to denote scalars, vectors, and matrices, respectively. Calligraphic letters are used to denote sets, groups, filtrations, or operators, depending on the context. L denotes the loss function. The cardinality of a set 
+
+D is denoted by |D| . r denotes the time index corresponding to the r-th federated learning round, and k ∈ 1, . . . , K denotes the user index. The operators (·)T , (·)H , (·)∗, ⊙, ℜ· , ℑ· ,
+
+[·; ·], and I(·) denote the transpose, Hermitian transpose, com-plex conjugate, Hadamard product, real part, imaginary part, vertical concatenation, and indicator function, respectively, where I(·) equals one if the enclosed condition holds and zero otherwise. diag( x) denotes a diagonal matrix whose diagonal entries are given by x. We use | · | 2 to denote the Euclidean norm, E[·] to denote the expectation operator, IN to denote the N × N identity matrix, CN (μ, σ 2) for a scalar circularly symmetric complex Gaussian distribution with mean μ and variance σ2, and CN (μ, Σ) for its vector counterpart with mean vector μ and covariance matrix Σ.II. S YSTEM MODEL 
+
+A. Federated Learning System 
+
+We consider a wireless federated learning (FL) system consisting of one multi-antenna base station (BS) that also serves as the parameter server, one reconfigurable intelligent surface (RIS), and K single-antenna edge users. The BS broadcasts the global model and aggregates the local model updates uploaded by the users, while each user performs local training using its own data. The RIS is deployed to assist the underlying wireless transmission. Let the global model parameter (or its shared compo-nent) be w ∈ RD , where D denotes the dimension of the model parameters. User k holds a local dataset Dk =
+
+{(xk,i , zk,i ) : 1 ≤ i ≤ Qk}, where Qk = |D k| is the number of local samples of user k, xk,i denotes the input feature, and zk,i denotes the corresponding label. The total number of samples across all users is Q = PKk=1 Qk.The overall FL task can be formulated as the following empirical risk minimization problem: 
+
+min 
+
+> w∈RD
+
+F (w) = 1
+
+Q
+
+> K
+
+X
+
+> k=1
+
+QkFk(w; Dk), (1) where 
+
+Fk(w; Dk) ≜ 1
+
+Qk
+
+X
+
+> (xk,i ,zk,i )∈D k
+
+ℓ(w; xk,i , zk,i )
+
+is the local empirical loss function of user k, and ℓ(·) denotes the per-sample loss function. The FL training procedure consists of R iterative rounds. In the r-th round, the BS first broadcasts the current global model 
+
+wr to all users. Each user k then performs local training on its local data and obtains the updated local model: 
+
+wrk, loc = Uk(wr ; Drk), (2) where Uk(·) denotes the local training operator of user k, and 
+
+Drk is the set of local samples used in the r-th round. After local training, user k computes the model update 
+
+∆wrk = wrk, loc − wr . (3) Since the number of local samples may vary across users, model aggregation is typically weighted by the sample size. We define the user weight in the r-th round as ωrk = 
+
+> Qrk
+> 1
+> K
+> PKi=1 Qri
+
+, where Qrk = |D rk| is the number of local samples used by user k in the r-th round. The global weighted update that the BS expects to recover under ideal conditions is 
+
+rr ≜
+
+> K
+
+X
+
+> k=1
+
+ωrk∆wrk. (4) Let the estimated value of the global update recovered at the receiver be ˆrr . The global model update is then updated as 
+
+wr+1 = wr + 1
+
+PKk=1 ωrk
+
+ˆrr . (5) In summary, the FL process in this system follows a stan-dard closed-loop procedure: model broadcasting, local train-ing, wireless aggregation, and global update. The underlying 3 
+
+> Fig. 1. RIS-assisted cascaded-channel OTA-FL system model and per-round procedure, where PHY denotes the physical layer (detailed in Section III-C). The direct link is assumed blocked or weak.
+
+wireless channel only affects the recovery accuracy of ˆrr with respect to rr .
+
+B. RIS-Assisted Pilot Observation Model 
+
+The FL system described above operates in an RIS-assisted wireless environment. The BS is equipped with M antennas, the RIS consists of N reflecting elements, and all users are single-antenna devices. Let the BS-to-RIS channel matrix be HBR ∈ CN ×M , the RIS-to-user channel for user k be 
+
+hrRU,k ∈ CN ×1, and the direct BS-to-user channel vector be 
+
+hrBU,k ∈ CM ×1. The superscript r denotes the discrete time index corresponding to the r-th FL iteration. To align with the subsequent model aggregation stage, we denote the receive beamforming vector at the BS in the r-th round as f r ∈ CM ×1,and the RIS phase-shift vector as θr ∈ CN ×1. The system model is illustrated in Fig 1. To characterize the time-varying channel induced by user mobility, we adopt a decomposition model of large-scale path loss and small-scale fast fading. Let the position of user 
+
+k in the r-th round be Prk ∈ R2, and let the positions of the RIS and the BS be PR and PB , respectively. The distances from the user to the RIS and the BS are given by lrRU,k = ∥Prk − PR∥2 , lrBU,k = ∥Prk − PB ∥2. The corresponding large-scale path loss coefficients are 
+
+βrRU,k =   max( lrRU,k , d min )−2,βrBU,k =   max( lrBU,k , d min )−αd . (6) where dmin > 0 is the minimum distance threshold and αd >
+
+0 is the path loss exponent of the direct link. The complete channel is then expressed as 
+
+hrx,k =
+
+q
+
+βrx,k 
+
+s0
+
+grx,k , x ∈ { RU, BU }, (7) where s0 is a normalized reference scale, and grx,k denotes the normalized small-scale fading. The small-scale fading evolves with user mobility. Let vk
+
+be the velocity of user k and fc the carrier frequency. The Doppler shift is fD,k = vk fc 
+
+> c
+
+, where c is the speed of light. The temporal correlation is characterized by the Jakes model 
+
+αk(∆) = J0(2 πf D,k ∆) , where J0(·) is the zero-order Bessel function of the first kind. The small-scale fast fading is then modeled as a first-order AR( 1) process: 
+
+gr+1  
+
+> x,k
+
+= αk(∆ T )grx,k +
+
+q
+
+1 − α2
+
+> k
+
+(∆ T ) ξrx,k ,
+
+ξrx,k ∼ CN (0, I).
+
+(8) where ∆T is the time interval between adjacent FL rounds. This model ensures that the Jakes correlation structure is preserved while providing a discrete-time implementation via the AR(1) recursion. The pilot observation time generally differs from the uplink aggregation time. We define the uplink time of the r-th round as τr = tr + ρ∆T, 0 < ρ < 1. The small-scale correlation coefficient between the current time tr and the uplink time τr
+
+is αk,τ = J0(2 πf D,k ρ∆T ). The channel at the uplink time is then generated as 
+
+gr,τ x,k = αk,τ grx,k +
+
+q
+
+1 − α2 
+
+> k,τ
+
+ξr,τ x,k , (9) where ξr,τ x,k ∼ CN (0, I). After reincorporating the large-scale fading at the corresponding time, we obtain hr,τ RU,k and 
+
+hr,τ BU,k . This modeling approach provides controllable temporal correlation between the pilot observation at the current time and the subsequent uplink aggregation instant. Let χd ∈ { 0, 1} indicate whether the direct link is enabled. Define the effective cascaded channel vector for user k at uplink time in the r-th round as urk ≜ (HBR f r )∗ ⊙ hr,τ RU,k ∈
+
+CN ×1. Define drk ≜ f rH hr,τ BU,k as the projection of the direct link under the receive beamforming. The corresponding effective scalar channel is 
+
+crk ≜ (θr )T urk + χd drk. (10) During the pilot phase, the RIS applies a phase vector θrp ∈
+
+CN in the p-th pilot time slot of the r-th round. The effective scalar channel in that slot is crk,p = ( θrp)T urk + χd drk. Let 
+
+prk = [ prk, 1, . . . , p rk,P ]T ∈ CP denote the pilot sequence of user k in the r-th round, drawn from a DFT-based pilot phase codebook. The received pilot signal at the p-th slot is 
+
+yrk,p = prk,p crk,p + nrk,p , (11) where nrk,p ∼ CN (0 , σ 2 
+
+> p
+
+) is the pilot noise. Stacking the RIS phase vectors (θrp)T over p = 1 , . . . , P , we define Θr =(θr
+
+> 1
+
+)T ; · · · ; ( θrP )T  ∈ CP ×N . The received pilot vector can be written as 
+
+yrk = diag( prk)( Θr urk + χd drk1P ) + nrk, (12) where 1P is an all-one vector of length P , and nrk =[nrk, 1, . . . , n rk,P ]T . In this system, the RIS not only improves the quality of the subsequent OTA aggregation link, but also directly determines the generation and statistical structure of the pilot observations. 
+
+C. Over-the-Air Model Aggregation 
+
+In the r-th FL training round (shown in Fig 1), all users share the same time-frequency resource to upload their local model updates {∆wrk}Kk=1 , and the BS performs wireless ag-gregation of their weighted sum via over-the-air computation 4
+
+(AirComp). Let the d-th element of the update vector ∆wrk
+
+be ∆wrk[d], where 1 ≤ d ≤ D.In the AirComp procedure, user k first computes the mean and variance of its local updates: μrk =
+
+> 1
+> D
+
+PDd=1 ∆wrk[d], (νrk )2 = 1
+
+> D
+
+PDd=1 
+
+ ∆wrk[d] − μrk
+
+2. The original updates are then normalized to zero-mean, unit-variance normalized symbols srk[d] = ∆wrk [d]−μrk
+
+> νrk
+
+, 1 ≤ d ≤ D.The transmit equalization factor of user k is set to 
+
+prk = ωrk
+
+√ηr νrk
+
+(crk)∗
+
+|crk|2 ∈ C, (13) where ηr > 0 is the receiver-side recovery scaling factor (detailed in Section III-C). This design ensures that the transmit power satisfies E|xrk[d]|2 = |prk|2 ≤ Pt, where 
+
+Pt is the transmission power limit, thereby enabling direct power control while counteracting wireless fading via prk. The AirComp signal transmitted by user k in the d-th time slot is 
+
+xrk[d] = prksrk[d]. The signal received at the BS in the d-th aggregation time slot is 
+
+yr [d] = 
+
+> K
+
+X
+
+> k=1
+
+crkprksrk[d] + nr [d], (14) where nr [d] ∼ CN (0 , σ 2
+
+> n
+
+) is the additive Gaussian noise. The BS employs a linear reconstructor to estimate the global weighted sum rr [d] ≜ PKk=1 ωrk∆wrk[d] from yr [d]. With inverse compensation of the local mean, the reconstruction is given by 
+
+ˆrr [d] = 1
+
+√ηr yr [d] + ¯ μr , (15) where ¯μr = PKk=1 ωrkμrk is the weighted mean compensation term. Stacking the reconstructions over all D time slots yields the aggregated vector estimate ˆrr = [ˆ rr [1] , . . . , ˆrr [D]] T .The AirComp aggregation distortion is measured by the distortion metric NMSE r 
+
+> agg
+
+= ∥ˆrr − rr ∥22 / ∥rr ∥22, which serves as the foundation for the subsequent physical-layer design and system analysis. III. P ROPOSED FRAMEWORK AND ALGORITHM DESIGN 
+
+In this section, we present the key components of our proposed framework. The system is composed of three tightly interacting modules: (i) GRU-based cascaded channel esti-mation, (ii) Reptile-based personalized federated aggregation, and (iii) dynamics-aware user grouping. These modules are connected through low-dimensional dynamic variables rather than full CSI exchange, ensuring scalability in time-varying RIS-assisted OTA-FL systems. We first introduce the GRU-driven channel estimator in Section III-A, followed by the personalization mechanism in Section III-B. The per-round FL procedure is then described in Section III-C. Finally, the dy-namic grouping strategy is developed in Section III-D, forming a closed-loop design across estimation, communication, and learning. 
+
+A. GRU-Based Local Channel Estimation 
+
+The GRU, introduced in [32], uses update and reset gates to retain low complexity temporal memory, making it suitable for mobility-induced channel dynamics. Under f r and Θr , the complex pilot observation is transformed as xrk = ℜyrk; ℑyrk
+
+
+
+and then fed into the neural estimator. To improve the physical interpretability of the learning-based estimator, we explicitly embed wireless propagation structure into the model design. Specifically, the channel representation is decomposed into a slowly varying large-scale component and a fast-varying small-scale fading component. This decomposition prevents the entanglement of spatial geometry-induced variations with Doppler-driven temporal fluctuations, which may otherwise degrade temporal consistency in standard autoregressive mod-eling. To implement this design, we adopt a shared Conv1D–GRU backbone to extract temporal representations from normalized channel observations, while a user-specific head captures in-dividual large-scale characteristics. Let ϕr denote the shared parameters, ψr−1 
+
+> k
+
+the personalized head, and qr−1 
+
+> k
+
+the recur-rent hidden state. The estimator is expressed as 
+
+(ˆhrk,t , ∆ˆhrk,τ , ˆβrk) = F(xrk; ϕr , ψr−1 
+
+> k
+
+, qr−1 
+
+> k
+
+),
+
+ˆhrk,τ = ˆhrk,t + ∆ ˆhrk,τ , (16) where ˆβrk serves as a path-loss proxy for downstream grouping, capturing macroscopic geometric effects.  
+
+> Fig. 2. Structure of the adopted GRU-based estimator.
+
+To bridge the gap between training supervision and online deployment, the learning procedure is divided into an offline calibration stage and an online inference stage. 
+
+Offline calibration stage: The model is trained using reference CSI obtained from linear MMSE (LMMSE) [33]. Let ˜hrk,t and ˜hrk,τ denote the reference channels. The model is optimized via supervised learning over these calibrated datasets. 
+
+Online inference stage: After deployment, reference labels are removed. The trained model operates directly on noisy pilot observations xrk to predict instantaneous CSI, which is then used for over-the-air aggregation and RIS optimization. 5
+
+The training objective for user k in round r is defined as 
+
+Lrk = 12 ˆhrk,t − ˜hrk,t  
+
+> 22
+
++ λrα,k 
+
+2 ∆ˆhrk,τ − (˜hrk,τ − ˜hrk,t ) 22
+
++ λβ Lrβ,k ,
+
+(17) where Lrβ,k enforces accurate estimation of large-scale path-loss, and λrα,k and λβ control the relative weighting between fast and slow fading components. We emphasize that the estimator targets the reflection-induced cascaded channel, as RIS chiefly benefits weak or blocked direct links [34], while the stable BS–RIS link makes the user-dependent cascaded part the key estimation burden [20]. 
+
+B. Shared-Backbone Personalized Federated Updating 
+
+We adopt a personalized FL architecture where the model is decomposed into a shared backbone ϕr and a user-specific head ψrk. The backbone captures transferable temporal rep-resentations, while the head absorbs user-specific statistical heterogeneity. Each user performs local optimization: 
+
+(ϕrk, loc , ψrk) = arg min 
+
+> ϕ,ψk
+
+Lrk(ϕ, ψk). (18) Only the backbone update is transmitted: 
+
+∆ϕrk = ϕrk, loc − ϕr . (19) The server adopts a Reptile-style meta-update: 
+
+ϕr+1 = ϕr + βR ˆrr
+
+> ϕ
+
+, (20) where ˆrr 
+
+> ϕ
+
+is the AirComp-recovered aggregate. The Reptile-based design is adopted due to its lightweight computation and compatibility with communication-constrained OTA aggrega-tion scenarios, where full gradient exchange is infeasible. 
+
+C. Physical Layer Optimization and Training Flow 
+
+The uplink aggregation is performed via AirComp using the predicted CSI ˆcrk obtained from Section III-A. The transmit scaling factor is: 
+
+prk = ωrk
+
+√ηr νrk
+
+(ˆ crk)∗
+
+|ˆcrk|2 , (21) where ˆcrk denotes estimated effective channel. We define: 
+
+ηrk = Pt|ˆcrk|2
+
+(ωrk)2(νrk )2 , ηr = min  
+
+> k
+
+ηrk, (22) and the corresponding proxy aggregation distortion: 
+
+NMSE r 
+
+> proxy
+
+= σ2
+
+> n
+
+Pt
+
+ηr (P 
+
+> k
+
+ωrk)2 . (23) This formulation explicitly reveals the coupling between CSI accuracy and aggregation reliability: improved channel prediction directly enhances ηr , thereby reducing OTA distor-tion. The RIS and beamforming are optimized via: 
+
+max    
+
+> fr,θr
+
+min  
+
+> k
+
+ηrk s.t. ∥f r ∥22 = 1 , |θrn| = 1 , ∀n. (24) The problem is solved using successive convex approx-imation (SCA) or DC-based alternating optimization, both 
+
+Algorithm 1 Per-Round Training Procedure  
+
+> 1:
+
+Initialize ϕ0, {ψ0
+
+> k
+
+, q0
+
+> k
+
+}Kk=1 , f 0, and θ0 
+
+> 2:
+
+for r = 0 , 1, . . . , R − 1 do  
+
+> 3:
+
+Generate Θrp and {hrRU,k , hr,τ RU,k , hr,τ BU,k }Kk=1  
+
+> 4:
+
+for each user k in parallel do  
+
+> 5:
+
+Construct xrk from pilot observation yrk 
+
+> 6:
+
+Update (ϕrk, loc , ψrk) by local training  
+
+> 7:
+
+Obtain ∆ϕrk = ϕrk, loc − ϕr and ˆh r,τ RU,k  
+
+> 8:
+
+Update hidden state qr+1  
+
+> k
+> 9:
+
+end for  
+
+> 10:
+
+Compute {ωrk, ν rk , ˆcrk}Kk=1  
+
+> 11:
+
+Recover ˆrr 
+
+> ϕ
+
+via AirComp  
+
+> 12:
+
+Update 
+
+ϕr+1 = ϕr + βRˆrr 
+
+> ϕ
+> 13:
+
+Optimize (f r+1 , θr+1 ) 
+
+> 14:
+
+end for  
+
+> 15:
+
+return ϕR, {ψRk }Kk=1 , f R, and θR
+
+ensuring monotonic improvement. The formulation remains computationally tractable despite non-convexity. Algorithm 1 summarizes round-wise procedure of the train-ing framework under the FL system in Section II-A. 
+
+D. Dynamic Risk Grouping 
+
+To mitigate heterogeneity-induced aggregation cancellation, we introduce a dynamics-aware grouping mechanism. The system initially performs global aggregation and switches to grouping once stability is achieved, ensuring fast early convergence and stable late-stage training. We define dynamics proxies: 
+
+ˆδrk ≜ ∥∆ˆhrk,τ ∥2
+
+∥ˆhrk,t ∥2
+
+≥ 0, ˆβrk > 0. (25) These form a feature vector: 
+
+φrk =
+
+ − log ˆβrk
+
+log(1 + ˆδrk)
+
+
+
+, (26) To incorporate RIS-induced correlation, we define the ef-fective signature of user k as ark = ( f r
+
+> prev
+
+HBR )∗ ⊙ ˆhrk,τ ,where f r 
+
+> prev
+
+is the previous-round beamformer. The pairwise compatibility is then 
+
+ρrij = arH i arj
+
+∥ari ∥2∥arj ∥2
+
+, 0 ≤ ρrij ≤ 1, (27) which favors grouping users with correlated RIS signatures and acts as a structural prior for subsequent grouped physical-layer optimization. We now construct a robust grouping objective. Define a nominal risk score ¯rrk = − log ˆβrk + λδ log(1 + ˆδrk). To ensure robustness against temporal fluctuations, we further define an uncertainty radius: 
+
+ϵrk = γβ (− log ˆβrk) − (− log ˆβr, EMA  
+
+> k
+
+)
+
++ γδ log(1 + ˆδrk) − log(1 + ˆδr, EMA  
+
+> k
+
+) ,
+
+(28) 6
+
+where the baselines are updated via exponential moving aver-age as ˆβr, EMA  
+
+> k
+
+= λ ˆβr−1,EMA  
+
+> k
+
++ (1 − λ) ˆβrk, and similarly for 
+
+ˆδr, EMA  
+
+> k
+
+.Let xk ∈ [0 , 1] denote the soft membership of user k to the high-risk group G2, with 1 − xk corresponding to the low-risk group G1. The optimization problem is: 
+
+min 
+
+> x,μ 1,μ 2
+> K
+
+X
+
+> k=1
+
+(1 − xk)
+
+
+
+|¯rk − μ1| + ϵk
+
+2
+
++
+
+> K
+
+X
+
+> k=1
+
+xk
+
+
+
+|¯rk − μ2| + ϵk
+
+2
+
+− ζ1(μ2 − μ1)+ ζ2
+
+X
+
+> i<j
+
+(1 − | xi − xj |)(1 − ρij )+ ζ3
+
+> K
+
+X
+
+> k=1
+
+|xk − xk, prev | + ζ4
+
+> K
+
+X
+
+> k=1
+
+xk(1 − xk)
+
+s.t. 0 ≤ xk ≤ 1, ∀k, Kmin ≤
+
+> K
+
+X
+
+> k=1
+
+xk ≤ K − Kmin ,μ2 ≥ μ1.
+
+(29) followed by hard assignment x⋆k = I(xk ≥ 12 ). The coefficients ζi weight group separation, RIS compatibility, temporal stability, and binary regularization, respectively. This problem is solved via successive convex approximation. To determine when to trigger grouping, we monitor the stability of the dynamic proxies at the population level. Define the population-average dynamic proxy at round r as 
+
+¯φri = 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+φrk,i , i = 1 , 2, (30) where φrk,i denotes the i-th component of φrk. The correspond-ing exponentially smoothed aggregate proxy is updated as 
+
+φr, EMA  
+
+> i
+
+= λφφr−1,EMA  
+
+> i
+
++ (1 − λφ) ¯ φri , (31) with λφ ∈ (0 , 1) being the smoothing factor. Grouping is activated only when, for both i ∈ { 1, 2} and thresholds ςi,
+
+|φr, EMA  
+
+> i
+
+− φr−1,EMA  
+
+> i
+
+||φr−1,EMA  
+
+> i
+
+| ≤ ςi (32) holds for several consecutive rounds after a prescribed mini-mum round index. That is, dynamic grouping begins only after the aggregate dynamic proxies have stabilized. Once activated, each group runs independent OTA-FL and RIS optimization. Beyond reducing aggregation cancellation, the proxies decouple long-range path-loss from short-term dynamics, allowing the shared backbone to focus on scale-free temporal structures. The overall training procedure is summarized in Algorithm 2. IV. P ERFORMANCE ANALYSIS 
+
+In this section, we analyze the proposed closed-loop frame-work along three dimensions: (i) convergence behavior of the Reptile-based shared backbone under OTA distortion, (ii) 
+
+Algorithm 2 Overall Training Procedure With Dynamic Risk Grouping 
+
+Require: { ˆβrk, ˆδrk}Kk=1 
+
+Ensure: {G rg }2 
+
+> g=1
+> 1:
+
+for round r = 0 , 1, . . . , R − 1 do  
+
+> 2:
+
+if (32) is not satisfied then  
+
+> 3:
+
+Run 3–13 of Algorithm 1 for all users  
+
+> 4:
+
+else  
+
+> 5:
+
+Solve (29) and obtain {G rg }2 
+
+> g=1
+> 6:
+
+for g = 1 , 2 do  
+
+> 7:
+
+Run 3–13 of Algorithm 1 for users in Grg 
+
+> 8:
+
+end for  
+
+> 9:
+
+end if  
+
+> 10:
+
+end for 
+
+statistical convergence of GRU-driven dynamic proxies, and (iii) convergence of the SCA-based grouping solver. These components jointly characterize the learning–communication– optimization coupling in RIS-assisted OTA-FL systems. 
+
+A. Convergence of the Reptile Algorithm for the Shared Back-bone 
+
+We analyze the recursion of the shared backbone ϕr in Section III-B, where the OTA-recovered update ˆrr 
+
+> ϕ
+
+is obtained via AirComp (Section III-C). We decompose the OTA-recovered update as 
+
+ˆrr 
+
+> ϕ
+
+= rr 
+
+> ϕ
+
++ er
+
+> OTA
+
+, (33) where er 
+
+> OTA
+
+captures CSI misalignment and receiver noise. The RIS and beamforming design controls this term through the reliability metric ηr and the distortion proxy NMSE r
+
+> proxy
+
+(defined in Section III-C). We impose the following standard assumptions for the first-order meta/FL descent analysis: 
+
+A1. F (ϕ) is L-smooth. 
+
+A2. The ideal update rr 
+
+> ϕ
+
+satisfies a descent alignment condition up to bounded heterogeneity bias. 
+
+A3. The OTA perturbation er 
+
+> OTA
+
+has bounded second mo-ment. 
+
+Lemma 1: Let Hr denote the filtration up to round r. Under the AirComp model in Section III-C, we have 
+
+E∥er
+
+> OTA
+
+∥22 | H r
+
+ ≤ Cr NMSE r
+
+> proxy
+
+, (34) where 
+
+Cr = Dϕ
+
+(P 
+
+> k
+
+ωrk)2
+
+Pt
+
+(1 + Ξ r
+
+> CSI
+
+) , (35) and 
+
+Ξr 
+
+> CSI
+
+≜ Pt
+
+σ2
+
+> n
+> K
+
+X
+
+> k=1
+
+|ˆcrk|2
+
+! KX
+
+> k=1
+
+|ϑrk|2
+
+!
+
+, ϑrk ≜ crk(ˆ crk)∗
+
+|ˆcrk|2 − 1.
+
+(36) 
+
+Remark: Ξr 
+
+> CSI
+
+quantifies multiplicative distortion induced by CSI misalignment in AirComp pre-equalization. Under per-fect CSI, Ξr 
+
+> CSI
+
+= 0 . Furthermore, if boundedness conditions hold, there exists a constant C such that 
+
+E∥er
+
+> OTA
+
+∥22 | H r
+
+ ≤ C NMSE r
+
+> proxy
+
+, ∀r. (37) 7
+
+Proof: See Appendix A. In particular, increasing ηr reduces NMSE r 
+
+> proxy
+
+and tight-ens the OTA perturbation bound. While global convergence remains unproven for general nonlinear neural estimators, they act as bounded-error operators within their intended operating regimes. In this work, the resulting mismatch is absorbed into 
+
+Ξr
+
+> CSI
+
+, which scales only the multiplicative constant Cr ; hence, if uniformly bounded, it does not alter the descent structure or stationarity guarantee, but merely enlarges the steady-state neighborhood. Define the meta increment ∆ϕr ≜ ϕr+1 − ϕr induced by the Reptile update in Section III-B. Under L-smoothness, the descent lemma gives 
+
+F (ϕr+1 ) ≤ F (ϕr ) + ⟨∇ F (ϕr ), ∆ϕr ⟩ + L
+
+2 ∥∆ϕr ∥22. (38) Since ∆ϕr is proportional to ˆrr
+
+> ϕ
+
+, (33) allows us to interpret 
+
+∆ϕr as the sum of an ideal descent term and an OTA perturba-tion term. Taking conditional expectation given ϕr , the inner-product term contributes a negative descent component up to a bounded heterogeneity/personalization penalty, while the quadratic term contributes an O(β2
+
+> R
+
+) disturbance containing both local stochasticity and OTA perturbation energy. Invoking Lemma 1 then yields the following convergence statement. 
+
+Theorem 1: Under the above regularity conditions, there exist positive constants ci determined by the smoothness constant L, C and the second-moment growth constant, and the Young’s inequality parameter such that 
+
+EF (ϕr+1 ) | ϕr  ≤ F (ϕr ) − c1∥∇ F (ϕr )∥22
+
++ c2βR Br
+
+> het
+
+|{z} 
+
+> bounded
+
++ c3β2 
+
+> R
+
+σ2,r 
+
+> loc
+
+|{z} 
+
+> bounded
+
++ c4β2 
+
+> R
+
+NMSE r
+
+> proxy
+
+,
+
+(39) where Br 
+
+> het
+
+and σ2,r  
+
+> loc
+
+denote the personalization bias bound, caused by the Reptile-style meta-updating, and the local stochasticity bound determined by the user-side training data, respectively. Consequently, summing (39) over r implies that P 
+
+> r
+
+E∥∇ F (ϕr )∥22 is bounded up to an additive term propor-tional to the cumulative disturbance power. For a constant meta step size, the sequence {ϕr } therefore remain within a stable neighborhood of the stationary set of F , with the neighborhood radius scaling with the compounded effect of heterogeneity, local stochasticity, and OTA aggregation distor-tion. In particular, a positive c1 ensures that gradient descent drives the learning process. The shared backbone improves FL aggregation consistency and, together with risk grouping, mitigates βRBr
+
+> het
+
+. Meanwhile, improving ηr and reducing 
+
+NMSE r 
+
+> proxy
+
+tighten the steady-state neighborhood. 
+
+Proof: See Appendix B. Once risk grouping is activated (Section III-D), each group runs the OTA-FL procedure on a more homogeneous user subset, which reduces cross-user update cancellation and ef-fectively decreases the heterogeneity-related disturbance terms in Theorem 1. This explains the empirically observed “fast warmup then stable refinement” behavior described in Sec-tion III-D. 
+
+B. Statistical Convergence of the GRU-Driven Dynamic Prox-ies 
+
+Due to the nonlinear nature of GRU-based estimators, direct analytical convergence is intractable. Instead, we adopt astatistical convergence perspective by tracking dynamic proxy stability. We analyze three indicators: (i) path-loss proxy stabilization, (ii) mobility proxy consistency, and (iii) cross-user separability. As shown in Fig. 3, all proxies converge after approximately 
+
+20 rounds, indicating stable representation learning. In partic-ular, mobile and static users become clearly separable in the learned embedding space. This stabilization directly enables reliable activation of the grouping module in Section III-D. These diagnostics complement theoretical convergence by em-pirically verifying representation stability under time-varying wireless conditions. 
+
+C. Convergence of the SCA Grouping Solver 
+
+Let J(x, μ 1, μ 2) denote the relaxed grouping objective in Section III-D, and define z ≜ (x, μ 1, μ 2). The SCA grouping solver generates a sequence {z(m)} by solving, at each iteration, a convex surrogate ˆJ(m)(z) constructed at the current point z(m). The nonconvexity of J arises from the bilinear group-fitting terms, the RIS-compatibility coupling involving |xi−xj |, and the binary-pushing regularizer 
+
+xk(1 − xk). Following the standard majorization and first-order consistency principles of SCA/BSUM methods [35], the surrogate is chosen as a valid upper approximation of 
+
+J that is tight at the current iterate and gradient-consistent with the smooth components of the original objective. Under standard regularity conditions, including compact feasibility and a suitable constraint qualification, the resulting objective sequence {J(z(m))} is monotonically nonincreasing and con-vergent. Moreover, every accumulation point of {z(m)} is a stationary (KKT) point of the original constrained grouping problem [36]. Since the relaxed grouping problem remains nonconvex, the above guarantee should be interpreted as convergence to a local KKT-stationary solution rather than a globally optimal partition. This suffices for the proposed system de-sign: the hysteresis term and the binary-pushing regularizer are introduced not to convexify the problem, but to make the obtained stationary grouping solution temporally stable and robust against oscillatory regrouping, thereby supporting reliable late-stage grouped aggregation. V. N UMERICAL RESULTS 
+
+A. Simulation Settings 
+
+We construct the simulation code based on the foregoing content and settings below 1. We consider a RIS-assisted uplink system where the BS is equipped with M = 32 antennas, the 
+
+> 1Available at https://github.com/Riko-Neko/gru-meta-aircomp-fl. 8
+
+(a) (b) (c)  
+
+> Fig. 3. Dynamic/physical proxies across users. (a) Path-loss proxy heatmap. (b) Short-range dynamics proxy norm heatmap. (c) Converged short-range dynamics proxy scatter.
+
+RIS consists of N = 64 reflecting elements, and K = 10 users fully participate in each communication round. For the GRU-based estimator, each training task is constructed over a sliding time window of length W = 8 , and the default pilot length is P = 8 . The time-varying channel follows the AR(1) Jakes-correlated model in Section II-B with carrier frequency fc =3.5 GHz and inter-round sampling interval ∆T = 10 −3 s. The uplink instant within each round is set to ρ = 0 .5, and the pilot SNR is fixed to 30 dB. Reference supervision labels are generated using pilot symbols Pref = 64 by LMMSE. Unless otherwise specified, reference labels are used instead of perfect labels, and only the reflected link is enabled. For federated training, we run up to R = 100 communica-tion rounds. Each user performs E = 3 local epochs per round with batch size B = 8 , local learning rate βloc = 10 −3, and Reptile outer step size βR = 0 .2. For OTA aggregation, the uplink SNR is set to 0 dB and the transmit power is Pt = 0 .1.On the server side, the receive beamformer and RIS phase shifts are updated using the SCA-based solvers with at most 
+
+20 iterations per round. We construct two scene layouts and three mobility settings to model heterogeneous spatial-temporal conditions. The BS and RIS are located at (0 , 0) and (30 , 0) m, respectively. Users are distributed around reference points with random offsets up to ±10 m. The scene layout, illustrated in Fig. 4, controls large-scale heterogeneity:  
+
+> •
+
+Scene 1 (homogeneous user distribution): All users are located around (50 , 0) m, resulting in relatively small path-loss variation.  
+
+> •
+
+Scene 2 (near/far heterogeneity): Users are divided into near and far groups located around (40 , 8) m and 
+
+(80 , −12) m, respectively, producing significant large-scale channel disparity. The mobility settings control temporal dynamics:  
+
+> •
+
+Setting 1 (mild mobility): Half of users move at 0.5–
+
+1.5 m/s; others are static.  
+
+> •
+
+Setting 2 (tail-user mobility): Two far users move at 
+
+2.5–5 m/s; others are static.  
+
+> •
+
+Setting 3 (high mobility): Random users move at 5–
+
+10 m/s, and tail users move at 10 –20 m/s.  
+
+> Fig. 4. Scene-distribution designs.
+
+We evaluate the uplink channel prediction accuracy using the round-wise uplink NMSE r 
+
+> up
+
+=
+
+> PKk=1
+
+∥ˆh r,τ RU,k −hr,τ RU,k ∥22
+
+> PKk=1
+
+∥hr,τ RU,k ∥22
+
+,and aggregation quality using NMSE r 
+
+> agg
+
+and proxy distortion 
+
+NMSE r
+
+> proxy
+
+. We apply a common-reference normalization for the proxy distortion to ensure fair comparison. 
+
+B. Compared Methods 
+
+We compare the following baselines:  
+
+> •
+
+GRU (proposed): Conv1D + GRU backbone (hidden size 32) with personalized head for CSI prediction.  
+
+> •
+
+CNN-arch: Replaces the GRU backbone with a non-recurrent CNN backbone while keeping the same FL/OTA pipeline, using Conv1D, FC (32), and last-step temporal pooling.  
+
+> •
+
+CNN-base: Pure CNN-based federated CSI estimator following [4], using latest-step input with Conv1D and FC layers.  
+
+> •
+
+LMMSE: Classical LMMSE estimator. 
+
+C. Main Results 
+
+We first evaluate uplink prediction performance under Scene 1 with Setting 1 and Scene 2 with Setting 2. As shown in Fig. 5, GRU consistently achieves the lowest NMSE across both scenarios. It is observed that under near/far heterogeneity and tail mobility, the convergence NMSE is higher than in the mild scenario. This indicates that temporal dynamics and user heterogeneity jointly increase the difficulty of CSI prediction in non-stationary environments. 9                             
+
+> Fig. 5. Round-wise uplink true NMSE in Scene 1 with Setting 1 and Scene 2 with Setting 2 (without grouping). TABLE I STEADY -STATE NMSE UNDER THE BEST LEARNING RATE
+> Method Best learning rate Mean NMSE (Rounds 50–100) GRU βloc = 1 .05 ×10 −33.26 ×10 −3
+> CNN-arch βloc = 1 .05 ×10 −33.66 ×10 −3
+> CNN-base βloc = 9 .60 ×10 −36.15 ×10 −2
+> LMMSE –9.50 ×10 −1
+
+Table I reports the steady-state uplink NMSE averaged over rounds 50–100 under individually tuned learning rates in Scene 1 with Setting 1. GRU achieves the lowest average NMSE, confirming that its gain is not attributable solely to learning-rate selection. We next evaluate AirComp aggregation performance in Scene 2 with Setting 1 over 200 communication rounds. As shown in Fig. 6 2, GRU achieves consistently lower aggregation NMSE compared to all baselines in the steady state. The early-stage improvement is attributed to more aligned model updates, while later fluctuations arise from reduced update magnitude and increased heterogeneity effects. Fig. 7 reports the proxy-distortion gap relative to the reference-label configuration under common-reference nor-malization. Values near zero indicate close agreement with reference-label optimization. GRU reaches a smaller steady-state gap faster, indicating better alignment of estimated-CSI-driven optimization with the reference. We further evaluate grouping under Scene 2 with high mobility settings. As shown in Fig. 8, grouping improves performance by separating users with different channel dynam-ics. In particular, low-risk users achieve lower NMSE levels, while high-risk users remain at higher error floors due to more challenging channel conditions. Overall, the proposed framework shows consistent improve-ments under both mild and highly heterogeneous scenarios, indicating robustness of the joint learning, communication, and optimization design.   
+
+> 2Both Fig 6 and Fig 7 overlay 11-round rolling medians, with mean values computed from round 50 onward.
+> Fig. 6. Round-wise AirComp aggregation NMSE in Scene 2 with Setting 1 (without grouping).
+> Fig. 7. Round-wise proxy-distortion gap after physical-layer optimization in Scene 2 with Setting 1 (without grouping).
+
+D. Further Discussion 
+
+Fig. 9 evaluates performance under different pilot lengths in Scene 1. The results show that GRU achieves larger gain gaps between other methods in low-pilot regimes, indicat-ing stronger robustness when CSI observations are limited, due to the historical information exploitation capability from temporal-memory design. We show a large pilot case with P = 128 as shown in Fig. 10, LMMSE achieves competitive CSI estimation per-formance; however, its advantage does not fully translate into improved AirComp performance, indicating that CSI accuracy alone is insufficient for optimal system-level optimization. Fig. 11 evaluates the impact of supervision-label quality on GRU channel estimation in Scene 1 with all users static. Increasing either the reference-pilot SNR or the reference-pilot length consistently reduces the uplink true NMSE. Moreover, the noiseless reference estimate with 64 pilots approaches the performance obtained using perfect CSI labels, demonstrating that label-estimation error is the primary source of the remain-ing performance gap. Angle-domain channel estimation (ADCE) in [4] gener-ates supervision labels via sparse reconstruction from high-dimensional array observations. In contrast, our labels are inferred from beam-combined pilots, avoiding angular dictio-10   
+
+> Fig. 8. Effect of grouping on GRU uplink true NMSE in Scene 2 with Setting 2 (top) and Setting 3 (bottom).
+> Fig. 9. Final uplink true NMSE versus pilot length in Scene 1 with all users static.
+
+naries and iterative support recovery to reduce pilot, memory, and computational overhead, at the cost of unrecoverable spatial information and greater sensitivity to noise and sensing-matrix conditioning. We also compare the SCA and DC-AO solvers in Fig. 12 under perfect supervision label to explicitly illustrate how CSI quality could affect physical layer optimization. SCA performs better in homogeneous settings, while both methods exhibit similar performance under severe heterogeneity, where system performance is primarily limited by channel conditions rather than optimization accuracy. We further clarify the distinction between dynamic grouping and conventional device selection. When an extremely poor user appears, device selection would typically drop it in the current round, whereas risk grouping keeps it active in the high-risk group. Hence, even when the high-risk group cannot reach a low error floor, its partial convergence remains meaningful because these difficult users are retained rather than discarded. The key difference is semantic rather than functional: grouping preserves full participation and continued support for difficult users, and allows re-admission once their     
+
+> Fig. 10. Round-wise uplink true NMSE in the extreme pilot case P= 128
+> for Scene 1 and Scene 2 with all user static.
+> Fig. 11. GRU uplink true NMSE under different supervision-label qualities in Scene 1 with all users static.
+
+path-loss condition or short-term dynamics improve, whereas device selection achieves robustness by excluding them. From a mathematical perspective, the benefit of grouping follows from feasible-set inclusion: the grouped problem con-tains single global aggregation as a special case, and hence its optimum cannot be worse. The gain comes from replacing one compromise model for heterogeneous users with group-wise shared models that better match intra-group statistics, thereby reducing heterogeneity-induced fitting bias. We additionally note that the direct link shows negligible impact under the considered simulation settings, as its con-tribution can be largely absorbed by beamforming and RIS-assisted reflection optimization. 
+
+E. Complexity Discussion 
+
+The AirComp uplink complexity scales linearly with up-date dimension D, making it communication-efficient for large-scale FL systems. SCA-based joint optimization incurs complexity O(Imax K3), while the DC-AO alternative has complexity O(Imax (M 6 + N 6)) due to iterative matrix lifting and difference-of-convex optimization. 11  
+
+> Fig. 12. DC-AO versus SCA in Scene 1 with all users static and Scene 2 with Setting 2.
+
+The grouping SCA subproblem involves O(K2) pairwise terms. A worst-case interior-point implementation may scale as O(K6); however, this represents a conservative upper bound. In practice, sparsity and problem structure significantly reduce complexity. The dominant runtime is typically contributed by local training or server-side optimization depending on system scale. Overall, the proposed framework remains suitable for moderate-scale edge deployment with centralized coordina-tion. VI. C ONCLUSION 
+
+This paper proposes a closed-loop personalized OTA-FL framework for time-varying RIS-assisted cascaded channel estimation. The framework integrates GRU-based tempo-ral learning, personalized federated optimization, over-the-air model aggregation, RIS-enabled physical-layer control, and dynamics-aware grouping into a unified communication and learning system. The GRU-based estimator leverages temporal correlations across communication rounds to jointly estimate current CSI and predict uplink-instant channels. This design reduces pilot and uplink mismatch under mobility. The shared-backbone architecture with task-specific local heads enables personalization while maintaining compatibility with over-the-air aggregation under non-IID data distributions. To improve robustness in heterogeneous environments, a warmup-then-group strategy is introduced. The system first performs global aggregation and then switches to groupwise collaboration once stable representations are formed. Theoretical analysis shows convergence of the Reptile-based shared backbone under OTA distortion. It also establishes stationary-point convergence for the SCA-based grouping algorithm. These results clarify how channel estimation errors, communication distortion, and data heterogeneity jointly influence learning dynamics. Numeri-cal results demonstrate consistent improvements in uplink channel prediction accuracy and OTA aggregation perfor-mance. The gains are especially evident in low-pilot regimes, high mobility scenarios, and settings with strong tail-user effects. Overall, the results indicate that temporal channel learning, personalized federated optimization, physical-layer design, and dynamics-aware grouping are mutually supportive components. Their joint optimization is essential for reliable distributed learning in dynamic wireless environments. APPENDIX APROOF OF LEMMA 1Let Sr = PKk=1 ωrk and ϑrk ≜ crk(ˆ crk)∗/|ˆcrk|2 − 1. With 
+
+prk = √ηr ωrkνrk (ˆ crk)∗/|ˆcrk|2, the component-wise error is 
+
+ˆrr
+
+> ϕ
+
+[d] − rr
+
+> ϕ
+
+[d] = 1
+
+√ηrKX
+
+> k=1
+
+crkprksrk[d] + nr [d]
+
+√ηr −
+
+> K
+
+X
+
+> k=1
+
+ωrkνrk srk[d]=
+
+> K
+
+X
+
+> k=1
+
+ωrkνrk ϑrksrk[d] + nr [d]
+
+√ηr , (40) and from (33), we obtain 
+
+er 
+
+> OTA
+
+=
+
+> K
+
+X
+
+> k=1
+
+ωrkνrk ϑrksrk + nr
+
+√ηr , nr ∼ CN (0, σ 2
+
+> n
+
+IDϕ ). (41) Conditioned on Hr , nr is independent and zero-mean, so, us-ing ∥srk∥22 = Dϕ, Cauchy–Schwarz and (ωrkνrk )2 ≤ Pt|ˆcrk|2/η r
+
+from (22), 
+
+E ∥er
+
+> OTA
+
+∥22 | H r
+
+ =
+
+> K
+
+X
+
+> k=1
+
+ωrkνrk ϑrksrk
+
+> 22
+
++ Dϕσ2
+
+> n
+
+ηr
+
+≤ Dϕ
+
+> K
+
+X
+
+> k=1
+
+ωrkνrk |ϑrk|
+
+!2
+
++ Dϕσ2
+
+> n
+
+ηr
+
+≤ Dϕσ2
+
+> n
+
+ηr (1 + Ξ r
+
+> CSI
+
+) . (42) Substituting 1/η r = [( Sr )2]NMSE r
+
+> proxy
+
+/(σ2
+
+> n
+
+Pt) gives 
+
+E ∥er
+
+> OTA
+
+∥22 | H r
+
+ ≤ Dϕ
+
+(Sr )2
+
+Pt
+
+(1 + Ξ r
+
+> CSI
+
+) NMSE r
+
+> proxy
+
+≜ Cr NMSE r
+
+> proxy
+
+. (43) If P 
+
+> k
+
+|ˆcrk|2 ≤ Cˆc, P 
+
+> k
+
+|ϑrk|2 ≤ Cγ , 0 < S ≤ Sr ≤ K ¯ω, then 
+
+Cr ≤ C ≜ Dϕ
+
+(K ¯ω)2
+
+Pt
+
+
+
+1 + Pt
+
+σ2
+
+> n
+
+CˆcCγ
+
+
+
+, (44) which gives (37). APPENDIX BPROOF OF THEOREM 1By definition, ∆ϕr = βRˆrr 
+
+> ϕ
+
+= βRrr 
+
+> ϕ
+
++ βRer
+
+> OTA
+
+. Under (38), and with E[er 
+
+> OTA
+
+| ϕr ] = 0, E[rr 
+
+> ϕ
+
+| ϕr ] = −∇ F (ϕr ) + 
+
+br (where br denotes the non-IID personalization bias and satisfies ∥br ∥22 ≤ Br
+
+> het
+
+), and Young’s inequality, we have 
+
+E[F (ϕr+1 ) | ϕr ] ≤ F (ϕr ) − βR
+
+
+
+1 − κ
+
+2
+
+
+
+∥∇ F (ϕr )∥22
+
++ βR
+
+2κ Br 
+
+> het
+
++ L
+
+2 E[∥∆ϕr ∥22 | ϕr ]. (45) 12 
+
+Moreover, using ∥∆ϕr ∥22 ≤ 2β2
+
+> R
+
+∥rr
+
+> ϕ
+
+∥22 + 2 β2
+
+> R
+
+∥er
+
+> OTA
+
+∥22,
+
+E[∥rr
+
+> ϕ
+
+∥22 | ϕr ] ≤ G1∥∇ F (ϕr )∥22 + σ2,r  
+
+> loc
+
+and (37), which gives 
+
+L
+
+2 E[∥∆ϕr ∥22 | ϕr ] ≤ Lβ 2
+
+> R
+
+G1∥∇ F (ϕr )∥22
+
++ Lβ 2
+
+> R
+
+σ2,r  
+
+> loc
+
++ Lβ 2
+
+> R
+
+CNMSE r
+
+> proxy
+
+. (46) Combining (45) and (46), define c1 ≜ βR(1 − κ 
+
+> 2
+
+) − Lβ 2
+
+> R
+
+G1,
+
+c2 ≜ 12κ , c3 ≜ L, and c4 ≜ LC . For κ ∈ (0 , 2) , choosing 
+
+0 < β R < 1−κ/ 2 
+
+> LG 1
+
+ensures c1 > 0, making −c1∥∇ F (ϕr )∥22 adescent term. We thus obtain 
+
+E[F (ϕr+1 ) | ϕr ] ≤ F (ϕr ) − c1∥∇ F (ϕr )∥22 + c2βRBr
+
+> het
+
++ c3β2
+
+> R
+
+σ2,r  
+
+> loc
+
++ c4β2
+
+> R
+
+NMSE r
+
+> proxy
+
+.
+
+(47) Taking total expectation, summing (47) over r = 0 , . . . , R −1,and using F ≥ Finf ,
+
+1
+
+R
+
+> R−1
+
+X
+
+> r=0
+
+E∥∇ F (ϕr )∥22 ≤ E[F (ϕ0)] − Finf 
+
+c1R + c2βR
+
+c1R
+
+> R−1
+
+X
+
+> r=0
+
+Br
+
+> het
+
+(48) 
+
++ c3β2
+
+> R
+
+c1R
+
+> R−1
+
+X
+
+> r=0
+
+σ2,r  
+
+> loc
+
++ c4β2
+
+> R
+
+c1R
+
+> R−1
+
+X
+
+> r=0
+
+NMSE r
+
+> proxy
+
+.
+
+The claimed stationarity bound follows. As R → ∞, the 
+
+O(1 /R ) initial-gap term vanishes, leaving a stationary neigh-borhood determined by averaged heterogeneity, local stochas-ticity, and OTA distortion; if these disturbance averages vanish, the time-averaged squared gradient norm converges to zero. Since NMSE r 
+
+> proxy
+
+decreases with increasing ηr , improving worst-user reliability reduces the OTA-induced steady-state error. REFERENCES [1] Y. Mao, C. You, J. Zhang, K. Huang, and K. B. Letaief, “A survey on mobile edge computing: The communication perspective,” IEEE Communications Surveys & Tutorials , vol. 19, no. 4, pp. 2322–2358, 2017. [2] N. Abbas, Y. Zhang, A. Taherkordi, and T. Skeie, “Mobile edge computing: A survey,” IEEE Internet of Things Journal , vol. 5, no. 1, pp. 450–465, 2018. [3] Q. Li, Z. Wen, Z. Wu, S. Hu, N. Wang, Y. Li, X. Liu, and B. He, “A survey on federated learning systems: Vision, hype and reality for data privacy and protection,” IEEE Transactions on Knowledge and Data Engineering , vol. 35, no. 4, pp. 3347–3366, 2023. [4] A. M. Elbir and S. Coleri, “Federated learning for channel estimation in conventional and ris-assisted massive mimo,” IEEE Transactions on Wireless Communications , vol. 21, no. 6, pp. 4255–4268, 2022. [5] H. B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. Ag¨ uera y Arcas, “Communication-Efficient Learning of Deep Networks from Decentralized Data,” arXiv e-prints , p. arXiv:1602.05629, Feb. 2016. [6] P. Kairouz, H. B. McMahan, B. Avent, A. Bellet, M. Bennis, A. Nitin Bhagoji, K. Bonawitz, Z. Charles, G. Cormode, R. Cummings, R. G. L. D’Oliveira, H. Eichner, S. El Rouayheb, D. Evans, J. Gardner, Z. Garrett, A. Gasc´ on, B. Ghazi, P. B. Gibbons, M. Gruteser, Z. Harchaoui, C. He, L. He, Z. Huo, B. Hutchinson, J. Hsu, M. Jaggi, T. Javidi, G. Joshi, M. Khodak, J. Koneˇ cn´ y, A. Korolova, F. Koushanfar, S. Koyejo, T. Lepoint, Y. Liu, P. Mittal, M. Mohri, R. Nock, A. ¨ Ozg¨ ur, R. Pagh, M. Raykova, H. Qi, D. Ramage, R. Raskar, D. Song, W. Song, S. U. Stich, Z. Sun, A. Theertha Suresh, F. Tram` er, P. Vepakomma, J. Wang, L. Xiong, Z. Xu, Q. Yang, F. X. Yu, H. Yu, and S. Zhao, “Advances and Open Problems in Federated Learning,” arXiv e-prints ,p. arXiv:1912.04977, Dec. 2019. [7] J. Koneˇ cn´ y, H. B. McMahan, D. Ramage, and P. Richt´ arik, “Federated Optimization: Distributed Machine Learning for On-Device Intelli-gence,” arXiv e-prints , p. arXiv:1610.02527, Oct. 2016. [8] G. Zhu, Y. Wang, and K. Huang, “Broadband analog aggregation for low-latency federated edge learning,” IEEE Transactions on Wireless Communications , vol. 19, no. 1, pp. 491–506, 2020. [9] M. Mohammadi Amiri and D. G¨ und¨ uz, “Machine learning at the wireless edge: Distributed stochastic gradient descent over-the-air,” IEEE Transactions on Signal Processing , vol. 68, pp. 2155–2169, 2020. [10] U. Awada, J. Zhang, S. Chen, and S. Li, “Airedge: A dependency-aware multi-task orchestration in federated aerial computing,” IEEE Transactions on Vehicular Technology , vol. 71, no. 1, pp. 805–819, 2022. [11] K. Yang, T. Jiang, Y. Shi, and Z. Ding, “Federated learning via over-the-air computation,” IEEE Transactions on Wireless Communications ,vol. 19, no. 3, pp. 2022–2035, 2020. [12] J. Yao, Z. Yang, W. Xu, D. Niyato, and X. You, “Imperfect csi: A key factor of uncertainty to over-the-air federated learning,” IEEE Wireless Communications Letters , vol. 12, no. 12, pp. 2273–2277, 2023. [13] Q. Wu and R. Zhang, “Intelligent reflecting surface enhanced wireless network via joint active and passive beamforming,” IEEE Transactions on Wireless Communications , vol. 18, no. 11, pp. 5394–5409, 2019. [14] T. Jiang and Y. Shi, “Over-the-air computation via intelligent reflecting surfaces,” in 2019 IEEE Global Communications Conference (GLOBE-COM) , 2019, pp. 1–6. [15] K. Yang, Y. Shi, Y. Zhou, Z. Yang, L. Fu, and W. Chen, “Federated ma-chine learning for intelligent iot via reconfigurable intelligent surface,” 
+
+IEEE Network , vol. 34, no. 5, pp. 16–22, 2020. [16] S. Li, C. Liu, H. Lei, N. Wang, and X. Guo, “Joint channel estimation and blockage diagnosis in RIS-assisted mmwave MIMO-OFDM sys-tems,” IEEE Transactions on Vehicular Technology , vol. 75, no. 5, pp. 8018–8029, 2026. [17] S. Li, R. Yang, X. Guo, G. Han, and J. Zhang, “Parametric channel estimation for RIS-assisted mmwave MIMO-OFDM systems with low pilot overhead,” Signal Processing , vol. 225, p. 109611, 2024. [Online]. Available: https://www.sciencedirect.com/science/article/pii/ S0165168424002305 [18] Y. Zhao, Q. Wu, W. Chen, C. Wu, and H. V. Poor, “Performance-oriented design for intelligent reflecting surface-assisted federated learning,” 
+
+IEEE Transactions on Communications , vol. 71, no. 9, pp. 5228–5243, 2023. [19] A. L. Swindlehurst, G. Zhou, R. Liu, C. Pan, and M. Li, “Channel esti-mation with reconfigurable intelligent surfaces—a general framework,” 
+
+Proceedings of the IEEE , vol. 110, no. 9, pp. 1312–1338, 2022. [20] B. Zheng, C. You, W. Mei, and R. Zhang, “A survey on channel estima-tion and practical passive beamforming design for intelligent reflecting surface aided wireless communications,” IEEE Communications Surveys & Tutorials , vol. 24, no. 2, pp. 1035–1071, 2022. [21] Y. Han, W. Tang, X. Li, M. Matthaiou, and S. Jin, “Csi acquisition in ris-assisted mobile communication systems,” National Science Review , vol. 10, no. 8, p. nwad127, 05 2023. [Online]. Available: https://doi.org/10.1093/nsr/nwad127 [22] C. Hu, L. Dai, S. Han, and X. Wang, “Two-timescale channel estimation for reconfigurable intelligent surface aided wireless communications,” 
+
+IEEE Transactions on Communications , vol. 69, no. 11, pp. 7736–7747, 2021. [23] H. Liu, X. Yuan, and Y.-J. A. Zhang, “Reconfigurable intelligent surface enabled federated learning: A unified communication-learning design approach,” IEEE Transactions on Wireless Communications , vol. 20, no. 11, pp. 7595–7609, 2021. [24] M. Asaad Cheema, A. Chawla, V. Chakravarthi Gogineni, and P. Salvo Rossi, “Channel estimation in ris-aided heterogeneous wireless networks via federated learning,” IEEE Communications Letters , vol. 29, no. 4, pp. 709–713, April 2025. [25] G. Long, M. Xie, T. Shen, T. Zhou, X. Wang, and J. Jiang, “Multi-center federated learning: clients clustering for better personalization,” World Wide Web , vol. 26, no. 1, pp. 481–500, 2023. [Online]. Available: https://doi.org/10.1007/s11280-022-01046-x [26] F. Sattler, K.-R. M¨ uller, and W. Samek, “Clustered federated learning: Model-agnostic distributed multitask optimization under privacy con-straints,” IEEE Transactions on Neural Networks and Learning Systems ,vol. 32, no. 8, pp. 3710–3722, 2021. [27] A. Ghosh, J. Chung, D. Yin, and K. Ramchandran, “An efficient framework for clustered federated learning,” IEEE Transactions on Information Theory , vol. 68, no. 12, pp. 8076–8091, 2022. [28] V. Smith, C.-K. Chiang, M. Sanjabi, and A. Talwalkar, “Federated multi-task learning,” in Advances in Neural Information Processing Systems , I. Guyon, U. V. Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett, Eds., vol. 30. Curran Associates, Inc., 2017. [Online]. Available: https://proceedings.neurips.cc/paper files/paper/2017/file/6211080fa89981f66b1a0c9d55c61d0f-Paper.pdf 13 
+
+[29] A. Fallah, A. Mokhtari, and A. Ozdaglar, “Personalized Fed-erated Learning: A Meta-Learning Approach,” arXiv e-prints , p. arXiv:2002.07948, Feb. 2020. [30] F. Chen, M. Luo, Z. Dong, Z. Li, and X. He, “Federated Meta-Learning with Fast Convergence and Efficient Communication,” arXiv e-prints , p. arXiv:1802.07876, Feb. 2018. [31] C. T. Dinh, N. H. Tran, and T. Dung Nguyen, “Personalized Federated Learning with Moreau Envelopes,” arXiv e-prints , p. arXiv:2006.08848, Jun. 2020. [32] K. Cho, B. van Merrienboer, C. Gulcehre, D. Bahdanau, F. Bougares, H. Schwenk, and Y. Bengio, “Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation,” arXiv e-prints , p. arXiv:1406.1078, Jun. 2014. [33] N. Wiener, Extrapolation, Interpolation, and Smoothing of Stationary Time Series: With Engineering Applications . The MIT Press, 08 1949. [Online]. Available: https://doi.org/10.7551/mitpress/2946.001.0001 [34] Q. Wu and R. Zhang, “Intelligent reflecting surface enhanced wireless network: Joint active and passive beamforming design,” in 2018 IEEE Global Communications Conference (GLOBECOM) , 2018, pp. 1–6. [35] M. Razaviyayn, M. Hong, and Z.-Q. Luo, “A unified convergence analysis of block successive minimization methods for nonsmooth optimization,” SIAM Journal on Optimization , vol. 23, no. 2, pp. 1126– 1153, 2013. [Online]. Available: https://doi.org/10.1137/120891009 [36] G. Scutari, F. Facchinei, and L. Lampariello, “Parallel and distributed methods for constrained nonconvex optimization—part i: Theory,” IEEE Transactions on Signal Processing , vol. 65, no. 8, pp. 1929–1944, 2017.

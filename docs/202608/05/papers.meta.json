@@ -1,0 +1,69 @@
+{
+  "label": "2026-08-06",
+  "date": "2026-08-05",
+  "generated_at": "2026-08-05T21:44:09",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202608/05/2608.02884v1-configurable-and-hierarchical-allreduce",
+      "section": "deep",
+      "title_en": "Configurable and Hierarchical Allreduce",
+      "authors": "Valentino Guerrini, Ke Fan, Sidharth Kumar",
+      "date": "2026-08-03",
+      "pdf": "https://arxiv.org/pdf/2608.02884v1",
+      "score": "8.0",
+      "evidence": "优化Allreduce集合通信，为分布式机器学习训练降低通信开销",
+      "tldr": "MPI_Allreduce在科学计算与分布式机器学习中性能关键，但中小消息场景受延迟、同步及硬件层次影响。CHIARA提出可配置分层Allreduce，通过批次-通道拓扑和旋转根原语减少同步开销。在Polaris、Aurora和Fugaku上较厂商实现最高加速13.48倍，并行k-means端到端加速2.2倍。该工作为分层集合通信提供了灵活高效方案。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "MPI_Allreduce is among the most performance-critical collectives in large-scale scientific computing and distributed machine learning, yet the small- and medium-message regime remains challenging: latency, synchronization depth, and strong hardware hierarchy between intra- and inter-domain communication all compound per-invocation cost. We present CHIARA, a configurable hierarchical Allreduce that encodes hardware hierarchy through a logical batch-lane topology and executes a staged schedule in which only a bounded portion of the reduction vector is active at a time. Inter-batch communication is distributed across multiple ranks via a rotating-root lane primitive, avoiding centralized leaders. Tool further enables a semi-composed Rabenseifner-style Allreduce by preserving a lane-aligned intermediate layout across the Reduce-Scatter/Allgather boundary, eliminating redundant intra-domain reorganization. We evaluate Tool on Polaris, Aurora, and Fugaku, achieving speedups of up to 1.94x, 13.43x, and 13.48x over vendor MPI_Allreduce, and up to 2.2x end-to-end speedup in a parallel k-means application.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/05/2608.03676v1-taot-topology-aware-optimal-transport-for-dynamic-expert-replica-placement-in-moe-training",
+      "section": "deep",
+      "title_en": "TAOT: Topology-Aware Optimal Transport for Dynamic Expert Replica Placement in MoE Training",
+      "authors": "Lingyun Zhang, Henghua Zhang, Shilei Gu, Kai Mo, Shuai Han, Shiyong Li, Yanpeng Wang, Dou Shen",
+      "date": "2026-08-04",
+      "pdf": "https://arxiv.org/pdf/2608.03676v1",
+      "score": "8.0",
+      "evidence": "通过拓扑感知副本放置实现通信高效分布式训练",
+      "tldr": "MoE是扩展大语言模型的关键架构，但动态路由导致专家并行训练负载严重不均衡。现有动态复制方法仅优化负载平衡，忽略跨节点专家权重迁移的通信代价，可能得不偿失。TAOT提出拓扑感知最优传输，将过载与空闲容量建模为带通信成本矩阵的熵正则化传输问题，用Sinkhorn-Knopp迭代求解并生成调度，同时重叠访客权重传输与本地计算。实验表明实现1.43x端到端加速，通信成本最高降低74%，平衡质量达到或超过SOTA，为MoE训练提供高效拓扑感知的复制放置方案。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Mixture-of-Experts (MoE) has become a key architecture for scaling large language models (LLMs), yet its dynamic routing causes severe load imbalance in expert-parallel training. Existing dynamic-replica methods copy hot experts onto idle ranks to share computation, but they optimize load balance alone and ignore the cost of moving expert weights across a multi-node topology, so the resulting cross-node communication can outweigh the balancing gain and inflate training cost. We present TAOT, a topology-aware optimal transport method for dynamic expert-replica placement. TAOT models the overload on hot ranks and the spare capacity on lightly loaded ranks as a balanced entropy-regularized optimal transport problem with a communication-cost matrix, solves it with Sinkhorn-Knopp iterations to produce rank-level flow hints, and combines integer replica matching with token assignment into an executable schedule. At the system level, it overlaps guest-weight transfer with home-expert computation to hide the communication overhead. Experiments show TAOT achieves a 1.43x end-to-end MoE training speedup, reaches balance quality competitive with or better than existing state-of-the-art methods, and attains the lowest weighted expert-communication cost across all configurations, with up to a 74% reduction.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/05/2608.01503v1-gpu-accelerated-multilevel-graph-clustering-a-parallel-perspective-on-louvain-and-leiden",
+      "section": "quick",
+      "title_en": "GPU-Accelerated Multilevel Graph Clustering: A Parallel Perspective on Louvain and Leiden",
+      "authors": "Michael S. Gilbert, Kamesh Madduri",
+      "date": "2026-08-02",
+      "pdf": "https://arxiv.org/pdf/2608.01503v1",
+      "score": "7.0",
+      "evidence": "提出Louvain与Leiden的GPU并行实现，用于大规模图聚类，为分布式图划分提供方法",
+      "tldr": "Louvain和Leiden是广泛使用的图聚类算法，但现有并行版本存在质量或性能不足。本文提出GPU并行化的pLouvain和pLeiden，利用轻量级对称破缺模拟有序遍历，并引入生成树精炼保证Leiden的质量优势，同时优化LambdaCC目标函数。在57个图上，pLouvain和pLeiden分别取得3.1倍和8.8倍加速，且pLouvain在多数图上模块度最高。其子程序可用于其他Louvain类方法的并行化。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "The sequential Louvain and Leiden algorithms are widely used techniques for modularity-optimizing clustering (or community detection) in large graphs. We present pLouvain and pLeiden, two new GPU parallelizations. pLouvain is based on the Louvain+ extension. pLeiden is the first parallel implementation to provably preserve all quality guarantees of sequential Leiden. We achieve this through a novel spanning-tree-based refinement approach. Both pLouvain and pLeiden use a lightweight symmetry-breaking technique that emulates an ordered traversal of vertices. For pLouvain, we develop an alternative iteration strategy to rectify the weak internal cluster connectivity observed in Louvain/Louvain+. Further, both pLouvain and pLeiden optimize the LambdaCC objective function, a generalization of modularity and the related Constant Potts model.   On a collection of 57 graphs from 10 families, our results show that pLouvain and pLeiden achieve geometric mean speedups of 3.1x and 8.8x, respectively, over the current fastest open-source parallelizations of Louvain and Leiden. For the clusterings generated, pLouvain yields the highest modularity scores on nearly all tested graphs. The subroutines within these two multilevel approaches could aid in the parallelization of other Louvain-based techniques.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/05/2608.01426v1-cluster-aware-over-the-air-federated-learning-with-energy-harvesting-devices-from-global-training-to-model-personalization",
+      "section": "quick",
+      "title_en": "Cluster-Aware Over-the-Air Federated Learning with Energy-Harvesting Devices: From Global Training to Model Personalization",
+      "authors": "Furkan Bagci, Busra Tegin, Mohammad Kazemi, Tolga M. Duman",
+      "date": "2026-08-02",
+      "pdf": "https://arxiv.org/pdf/2608.01426v1",
+      "score": "6.0",
+      "evidence": "面向集群的空中联邦学习，处理通信与能量约束，提升分布式训练效率",
+      "tldr": "联邦学习受限于异构数据、通信与能量约束。本文针对能量采集设备，提出集群感知的空中联邦学习统一框架：全局训练模式利用集群信息降低数据偏差，个性化模式同时训练多个集群模型。数值实验表明该框架改善公平性或个性化，并减少通信开销。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated learning (FL) enables distributed optimization and learning across decentralized edge devices while preserving data privacy, but its performance is fundamentally constrained by heterogeneous data distributions, limited communication resources, and energy availability. In practical wireless networks, mobile devices (MDs) often exhibit diverse data and learning objectives, naturally forming clusters of users with jointly trainable models. When devices rely on energy harvesting (EH), stochastic energy arrivals further complicate participation and scheduling under communication constraints. In this work, we study over-the-air (OTA) FL with EH MDs under heterogeneous data distributions, and investigate two closely related learning objectives within a unified framework: one aiming for a more representative global model by reducing data bias, and the other learning more personalized cluster-specific models by exploiting this bias. In the global training mode, cluster information guides energy- and diversity-aware scheduling, ensuring that the scheduled active users provide a more representative aggregate update. In the personalization mode, the same cluster structure defines cluster-level learning objectives and OTA recovery targets, enabling the parameter server to train multiple cluster-specific models through simultaneous transmissions over the wireless multiple-access channel. Numerical results demonstrate that the proposed unified framework improves fairness or personalization, depending on the operating mode, while reducing communication overhead.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

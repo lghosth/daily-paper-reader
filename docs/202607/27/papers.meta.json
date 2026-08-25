@@ -1,0 +1,54 @@
+{
+  "label": "2026-07-28",
+  "date": "2026-07-27",
+  "generated_at": "2026-07-27T21:20:22",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202607/27/2607.20914v1-three-pronged-spectral-control-for-federated-parameter-efficient-fine-tuning",
+      "section": "quick",
+      "title_en": "Three-Pronged Spectral Control for Federated Parameter Efficient Fine Tuning",
+      "authors": "Shiva Raj Pokhrel, Dipsan Bhattarai, Anwar Walid",
+      "date": "2026-07-23",
+      "pdf": "https://arxiv.org/pdf/2607.20914v1",
+      "score": "6.0",
+      "evidence": "通信高效的联邦微调（PEFT）",
+      "tldr": "联邦参数高效微调在非独立同分布客户端数据下易出现更新子空间不对齐导致聚合方差大。TRISHUL通过三管齐下的谱控制方法：使用共享冻结的多头低秩基实现精确聚合、核范数近端收缩抑制客户端特定高秩成分、以及基于预训练层容量的凹水填充规则非均匀分配适配头。在视觉和语言基准上相比联邦LoRA显著提升收敛稳定性和最终性能，且不增加通信开销。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated parameter-efficient fine-tuning (PEFT) enables communication-efficient adaptation of large pretrained models on decentralized edge data, but it remains fragile under non-IID client heterogeneity. In low-rank adaptation (LoRA), different clients may learn locally useful but spectrally misaligned update subspaces, causing high-variance aggregation and poor global transfer. We propose TRISHUL, a spectral-control framework for robust federated PEFT. TRISHUL follows the FL no-raw-data-sharing setting but does not itself provide formal privacy guarantees. TRISHUL uses shared frozen multi-head low-rank bases to obtain algebraically exact aggregation of compact core updates, applies nuclear norm proximal shrinkage to suppress client-specific high-rank spectral components before upload, and allocates adaptation heads non-uniformly across layers using a concave water filling budget rule derived from pretrained layer capacity. Because shrinkage is performed only on small core matrices, TRISHUL adds negligible computation and no extra per-round communication over the underlying multi-head PEFT protocol. Across vision and language benchmarks, including CIFAR-100, SVHN, 20 Newsgroups, MRQA, and GLUE with LLaMA3.2-1B, TRISHUL improves convergence, stability, and final performance over federated LoRA baselines, with greater gains under stronger heterogeneity.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/27/2607.21876v1-variance-reduced-q-learning-over-static-and-time-varying-networks",
+      "section": "quick",
+      "title_en": "Variance-Reduced Q-Learning over Static and Time-Varying Networks",
+      "authors": "Sreejeet Maity, Feng Zhu, Aritra Mitra, Robert W. Heath",
+      "date": "2026-07-24",
+      "pdf": "https://arxiv.org/pdf/2607.21876v1",
+      "score": "6.0",
+      "evidence": "分布式Q学习与恒定通信量",
+      "tldr": "多智能体分布式强化学习面临通信效率与收敛速度的挑战。本文提出基于epoch的分布式Q-learning算法VRDQ，通过局部估计Bellman最优性算子并结合共识协议进行信息扩散。理论证明在静态和时变网络下，算法均实现线性加速且仅需O~(1)通信量，显著改善了先验方法的通信开销。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "We investigate a decentralized reinforcement learning problem involving multiple agents that interact with the same Markov Decision Process (MDP). The agents can exchange information over a network to collectively learn the optimal state-action value function. For this setting, we introduce a novel epoch-based distributed $Q$-learning algorithm called VRDQ, where within each epoch, agents locally estimate the Bellman optimality operator and diffuse information using a consensus-based protocol. For both static and time-varying networks, we establish high-probability finite-time convergence rates for VRDQ that enjoy linear speedups from collaboration. Crucially, we prove that such speedups in sample-complexity require only $\\tilde{O}(1)$ communication, substantially improving upon the communication costs in prior work.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/27/2607.22287v1-efficient-recommendations-via-graph-coarsening-and-label-propagation",
+      "section": "quick",
+      "title_en": "Efficient Recommendations via Graph Coarsening and Label Propagation",
+      "authors": "Alessandro Sbandi, Federico Siciliano, Fabrizio Silvestri",
+      "date": "2026-07-24",
+      "pdf": "https://arxiv.org/pdf/2607.22287v1",
+      "score": "6.0",
+      "evidence": "图粗化技术用于高效图处理",
+      "tldr": "基于图的推荐系统面临大规模图带来的可扩展性和效率挑战。本文提出结合图粗化与标签传播的两阶段扩散框架：首先利用领域启发式方法将节点聚合为社区，减少图规模；然后通过标签传播或图神经网络在粗化图上进行扩散，再在子图内细化推荐。在电信数据集上，两阶段LPA相比全图基线NDCG@5提升24%，引入轻量GNN提升超50%但增加训练时间。该方法在可扩展性、延迟与质量间实现了有效平衡。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Graph-based recommendations are widely adopted in real-world industrial applications. However, graphs in these systems often reach a massive scale, posing notable scalability and efficiency challenges. This requires techniques that can effectively balance predictive quality with computational cost. One promising approach is graph coarsening, an adaptive graph reduction technique that offers a way to systematically construct smaller, yet structurally representative, versions of the original large-scale graphs.   In this work, we propose a flexible two-stage diffusion framework that combines graph coarsening with multi-step label propagation in the telecommunications domain. Domain-specific heuristics are applied to first aggregate nodes into meaningful communities, reducing graph size while preserving essential business-relevant relationships. An initial diffusion process done by a Label Propagation Algorithm (LPA) or a Graph Neural Network (GNN) propagates labels across the coarsened graph to produce coarse-grained predictions. Finally, a second LPA within subgraphs generates the final recommendations for individual users.   On a real-world telecommunications dataset, when using LPA in both stages, our method achieves up to +24% NDCG@5 over the full-graph LPA baseline. Incorporating a lightweight GNN in the first stage further boosts NDCG@5 by more than 50%, but requires substantial training and inference time. Through extensive experiments and a detailed ablation, we quantify these trade-offs and demonstrate that our coarsening-driven approach delivers an optimal balance between scalability, latency, and recommendation quality.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

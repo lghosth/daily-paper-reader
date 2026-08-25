@@ -1,0 +1,92 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-29T20:45:41.745419+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2607.22805v1",
+      "source": "arxiv",
+      "title": "OrchNAS: Orchestrated Neural Architecture Search Service for Personalised Federated Edge Intelligence",
+      "abstract": "We propose OrchNAS, an energy-aware, personalised, federated edge intelligence framework that leverages a Neural Architecture Search Service to automatically design service-adaptive models for heterogeneous edge environments. The framework orchestrates the architecture search process on a server-side NAS service, enabling edge services to derive personalised architectures under device-level energy, computation, and memory constraints. We introduce an energy-aware global architecture search mechanism that learns a compact global representation across heterogeneous services. We develop an energy-efficient architecture selection mechanism that enables each service to derive a personalised subnet that satisfies its resource constraints via a progressive, greedy, energy-aware pruning strategy. We propose an energy-efficient personalised model optimisation scheme that updates service-adaptive parameters while preserving global representations, where a primal-dual optimisation mechanism enforces strict energy budgets during architecture adaptation. Experiments on real-world and benchmark datasets demonstrate the effectiveness of the proposed approach.",
+      "authors": [
+        "Keya Patel",
+        "Sajib Mistry",
+        "Sheik Mohammad Mostakim Fattah",
+        "Aneesh Krishna"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-24T16:05:17+00:00",
+      "link": "https://arxiv.org/pdf/2607.22805v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "neural architecture search for federated edge intelligence",
+      "llm_evidence_cn": "联邦边缘智能中的神经架构搜索",
+      "llm_evidence": "联邦边缘智能中的神经架构搜索",
+      "canonical_evidence": "联邦边缘智能中的神经架构搜索",
+      "llm_tldr_en": "OrchNAS proposes a federated NAS framework that personalizes models for heterogeneous edge devices under energy constraints, relevant to graph NAS techniques.",
+      "llm_tldr_cn": "现有联邦学习系统难以适应异构边缘设备的资源约束。本文提出OrchNAS，一种能量感知的个性化联邦边缘智能框架，服务器端神经网络架构搜索服务自动为各设备设计适配模型。通过能量感知全局搜索和高效子网选择机制，在保持模型性能的同时满足设备约束，为分布式环境下NAS方法提供了可迁移的设计思路。",
+      "llm_tldr": "现有联邦学习系统难以适应异构边缘设备的资源约束。本文提出OrchNAS，一种能量感知的个性化联邦边缘智能框架，服务器端神经网络架构搜索服务自动为各设备设计适配模型。通过能量感知全局搜索和高效子网选择机制，在保持模型性能的同时满足设备约束，为分布式环境下NAS方法提供了可迁移的设计思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.23338v1",
+      "source": "arxiv",
+      "title": "Does Graph Compression Preserve Signal Propagation?",
+      "abstract": "Graph compression reduces the computational cost of graph learning, but its effect on signal propagation remains largely underexplored. Existing work evaluates compression through downstream task performance or structural preservation, neither of which directly captures how propagation dynamics change after compression. We study two fundamental compression paradigms, coarsening and sparsification, and ask whether they preserve the propagation behavior of the original graph. Across five datasets, varying compression rates, and propagation depths, we measure signal behavior through three complementary metrics. Our results reveal a consistent tension between the two compression families. Sparsification retains higher signal diversity and mitigates oversmoothing, but its propagation trajectory progressively diverges from that of the original graph. Coarsening more faithfully preserves propagation behavior, but at the cost of stronger smoothing and rank collapse. These findings demonstrate that two propagation-centric objectives, preserving signal diversity and preserving propagation fidelity, are distinct and empirically at odds under graph compression, highlighting the need for evaluation protocols that jointly consider both dimensions. The code and results are available at: https://github.com/KawshikBanerjee/Compression-Propagation-Duality",
+      "authors": [
+        "Kawshik Banerjee",
+        "Khaled Mohammed Saifuddin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-25T19:24:50+00:00",
+      "link": "https://arxiv.org/pdf/2607.23338v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "graph compression for efficient graph learning",
+      "llm_evidence_cn": "图压缩用于高效图学习",
+      "llm_evidence": "图压缩用于高效图学习",
+      "canonical_evidence": "图压缩用于高效图学习",
+      "llm_tldr_en": "Investigates whether graph compression preserves signal propagation; finds sparsification retains diversity and mitigates oversmoothing while coarsening has different effects.",
+      "llm_tldr_cn": "该论文研究了图压缩（粗化与稀疏化）是否保持信号传播特性。通过多个数据集和不同压缩率下的实验，发现稀疏化能保留更高的信号多样性并缓解过平滑问题，而粗化则表现出不同的行为。这一发现对分布式图学习中的图压缩策略选择具有指导意义。",
+      "llm_tldr": "该论文研究了图压缩（粗化与稀疏化）是否保持信号传播特性。通过多个数据集和不同压缩率下的实验，发现稀疏化能保留更高的信号多样性并缓解过平滑问题，而粗化则表现出不同的行为。这一发现对分布式图学习中的图压缩策略选择具有指导意义。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-31T20:03:38.207645+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2607.25716v1",
+      "source": "arxiv",
+      "title": "SpeechLLM Meets Federated Learning for End-to-End ASR: English and Italian Case Studies",
+      "abstract": "Federated learning (FL) enables privacy-preserving training of automatic speech recognition (ASR) systems across distributed data sources, yet its application to large-scale speech language models (SpeechLLMs) remains unexplored. This paper presents the first systematic study of federated training for SpeechLLM-based end-to-end ASR systems. We design a communication-efficient federated optimization strategy tailored to the unique challenges of SpeechLLM architectures, addressing high-dimensional parameter spaces, gradient communication overhead, and computational constraints in distributed settings. Through extensive empirical evaluation on monolingual ASR tasks in English and Italian, we demonstrate the effectiveness and stability of our federated approach compared to centralized training baselines across diverse acoustic conditions and speaking styles. Additionally, we conduct a comprehensive ablation study analyzing the impact of different speech encoder architectures on monolingual English ASR performance within the federated framework, providing insights into optimal model configurations for decentralized training. Our results achieve competitive word error rates while reducing communication costs, establishing practical foundations for federated SpeechLLM deployment in real-world multilingual scenarios.",
+      "authors": [
+        "Mohamed Nabih Ali",
+        "Daniele Falavigna",
+        "Alessio Brutti"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-07-28T13:43:04+00:00",
+      "link": "https://arxiv.org/pdf/2607.25716v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "communication-efficient federated optimization strategy for SpeechLLM ASR",
+      "llm_evidence_cn": "针对SpeechLLM ASR设计通信高效的联邦优化策略",
+      "llm_evidence": "针对SpeechLLM ASR设计通信高效的联邦优化策略",
+      "canonical_evidence": "针对SpeechLLM ASR设计通信高效的联邦优化策略",
+      "llm_tldr_en": "First systematic study of federated training for SpeechLLM-based end-to-end ASR; introduces a communication-efficient optimization strategy handling high-dimensional parameters and gradient overhead, demonstrating effectiveness for English and Italian ASR.",
+      "llm_tldr_cn": "大规模语音语言模型的联邦训练尚缺乏系统研究。本文首次系统研究SpeechLLM端到端ASR的联邦学习，设计通信高效的联邦优化策略，应对高维参数空间与梯度通信开销。在英语和意大利语单语ASR任务上的大量实验表明，该策略有效且稳定。该工作为语音大模型的隐私保护分布式训练提供了通信高效基线。",
+      "llm_tldr": "大规模语音语言模型的联邦训练尚缺乏系统研究。本文首次系统研究SpeechLLM端到端ASR的联邦学习，设计通信高效的联邦优化策略，应对高维参数空间与梯度通信开销。在英语和意大利语单语ASR任务上的大量实验表明，该策略有效且稳定。该工作为语音大模型的隐私保护分布式训练提供了通信高效基线。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.27689v1",
+      "source": "arxiv",
+      "title": "On Graph-Informed Distance Metrics for Comparing Graph Partitions",
+      "abstract": "Comparing graph partitions is fundamental to the analysis of network-structured data, yet existing measures for comparing graph partitions typically rely on graph-agnostic indices that treat vertices as exchangeable, ignoring the underlying graph topology that encodes essential information about community cohesion and separation. We propose a general construction of graph-informed distances that compares vertex partitions through induced edge partitions and yields valid metrics on the space of contiguous graph partitions. As special cases, we develop graph-informed versions of variation of information and the van Dongen distance together with a binary cut-based companion distance, and show that these distances satisfy a natural local graph-aware refinement criterion. Under stochastic block models, we prove that stronger topological disruptions incur asymptotically larger distances almost surely in both inter-community and intra-community split settings. These results provide a simple and principled framework to compare graph partitions while respecting the underlying graph structure.",
+      "authors": [
+        "Srijato Bhattacharyya",
+        "Huiyan Sang",
+        "Bani Mallick"
+      ],
+      "primary_category": "stat.ME",
+      "categories": [
+        "stat.ME"
+      ],
+      "published": "2026-07-30T05:15:11+00:00",
+      "link": "https://arxiv.org/pdf/2607.27689v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "metrics for comparing graph partitions, directly applicable to evaluating distributed GNN partitioning strategies",
+      "llm_evidence_cn": "提供图划分比较度量，可直接用于评估分布式GNN划分策略",
+      "llm_evidence": "提供图划分比较度量，可直接用于评估分布式GNN划分策略",
+      "canonical_evidence": "提供图划分比较度量，可直接用于评估分布式GNN划分策略",
+      "llm_tldr_en": "Proposes graph-informed distance metrics for comparing graph partitions, incorporating topology into measures like variation of information, enabling better evaluation of partitioning strategies.",
+      "llm_tldr_cn": "针对现有图划分比较度量忽略图拓扑信息的问题，提出一类图信息化距离，通过边划分比较顶点划分，并构造变分信息与van Dongen距离的图信息化版本。该度量满足局部图感知细化性质，能更真实地反映社区结构与划分质量，可用于评估分布式GNN中的图划分策略。",
+      "llm_tldr": "针对现有图划分比较度量忽略图拓扑信息的问题，提出一类图信息化距离，通过边划分比较顶点划分，并构造变分信息与van Dongen距离的图信息化版本。该度量满足局部图感知细化性质，能更真实地反映社区结构与划分质量，可用于评估分布式GNN中的图划分策略。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.27767v1",
+      "source": "arxiv",
+      "title": "Train Small, Deploy Large: Zero-Shot GNN Transfer Through Geometric Renormalization",
+      "abstract": "Graph neural networks (GNNs) can operate on large graphs but become infrastructure-sensitive at the scale of millions of nodes and typically require scalable training techniques for even larger graphs. This raises a central question: when can a model trained on a smaller, scaled-down replica of a graph be deployed on the full-resolution graph without retraining? We introduce a zero-shot transfer protocol in which a GNN is trained on a graph coarse-grained by geometric renormalization (GR), and the resulting weights are transferred directly to the original network. Across synthetic and real-world networks, training on GR scaled-down replicas preserves much of the original-scale predictive performance while significantly reducing training cost. We further find that learned representations and predictive trajectories remain aligned across scales. These findings suggest that structural similarity may be more important than network size in determining GNN transferability, opening a path toward scale-equivariant graph architectures.",
+      "authors": [
+        "Robert Jankowski",
+        "Pedro Almagro-Blanco",
+        "Marián Boguñá",
+        "Melanie Weber",
+        "M. Ángeles Serrano"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "physics.soc-ph"
+      ],
+      "published": "2026-07-30T07:03:23+00:00",
+      "link": "https://arxiv.org/pdf/2607.27767v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "graph renormalization coarse-graining as a graph partitioning/coarsening strategy that reduces GNN training cost at scale",
+      "llm_evidence_cn": "几何重整化图粗化可视为一种图划分/粗化策略，用于降低大规模GNN训练成本",
+      "llm_evidence": "几何重整化图粗化可视为一种图划分/粗化策略，用于降低大规模GNN训练成本",
+      "canonical_evidence": "几何重整化图粗化可视为一种图划分/粗化策略，用于降低大规模GNN训练成本",
+      "llm_tldr_en": "Proposes zero-shot transfer of GNN weights from a graph coarse-grained by geometric renormalization to the original graph, preserving predictive performance while substantially cutting training cost, enabling scalable GNN training on large graphs.",
+      "llm_tldr_cn": "针对GNN在百万节点规模下训练成本高、对基础设施敏感的问题，本文提出使用几何重整化(GR)将图粗粒化为缩尺副本，并在其上训练GNN，再将权重零样本直接迁移回原始图。在合成与真实网络上，该方法在显著降低训练开销的同时保留大部分原始尺度预测性能。这一协议为大规模GNN训练提供了一种无需重新训练的扩展途径，对分布式图学习中的图粗化与可扩展训练具有借鉴意义。",
+      "llm_tldr": "针对GNN在百万节点规模下训练成本高、对基础设施敏感的问题，本文提出使用几何重整化(GR)将图粗粒化为缩尺副本，并在其上训练GNN，再将权重零样本直接迁移回原始图。在合成与真实网络上，该方法在显著降低训练开销的同时保留大部分原始尺度预测性能。这一协议为大规模GNN训练提供了一种无需重新训练的扩展途径，对分布式图学习中的图粗化与可扩展训练具有借鉴意义。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

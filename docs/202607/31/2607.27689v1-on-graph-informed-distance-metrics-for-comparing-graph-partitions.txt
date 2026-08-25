@@ -1,0 +1,1249 @@
+Title: On Graph-Informed Distance Metrics for Comparing Graph Partitions
+
+URL Source: https://arxiv.org/pdf/2607.27689v1
+
+Published Time: Fri, 31 Jul 2026 00:30:37 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# On Graph-Informed Distance Metrics for Comparing Graph Partitions 
+
+Srijato Bhattacharyya, Huiyan Sang, and Bani Mallick 
+
+Department of Statistics, Texas A&M University 3143 TAMU, 155 Ireland Street, College Station, Texas 77843, U.S.A. 
+
+srijato@tamu.edu, huiyan@stat.tamu.edu, bmallick@stat.tamu.edu 
+
+Abstract 
+
+Comparing graph partitions is fundamental to the analysis of network-structured data, yet existing measures for comparing graph partitions typically rely on graph-agnostic indices that treat vertices as ex-changeable, ignoring the underlying graph topology that encodes essential information about community cohesion and separation. We propose a general construction of graph-informed distances that compares vertex partitions through induced edge partitions and yields valid metrics on the space of contiguous graph partitions. As special cases, we develop graph-informed versions of variation of information and the van Dongen distance together with a binary cut-based companion distance, and show that these dis-tances satisfy a natural local graph-aware refinement criterion. Under stochastic block models, we prove that stronger topological disruptions incur asymptotically larger distances almost surely in both inter-community and intra-community split settings. These results provide a simple and principled framework to compare graph partitions while respecting the underlying graph structure. 
+
+Keywords: community detection; graph partition; Mirkin distance; stochastic block model; van Dongen metric; variation of information 
+
+# 1 Introduction 
+
+The clustering of data with graph relations has numerous applications in network community detection (Geng et al., 2019), spatial clustering (Luo et al., 2021), disease mapping (Datta et al., 2019), and image segmentation (Felzenszwalb and Huttenlocher, 2004). A distance metric between graph clusterings is a fundamental component for evaluating different graph clustering methods (Meil˘ a, 2007), deriving posterior summaries of Bayesian graph clustering results (Wade and Ghahramani, 2018), conducting geometric analysis on the metric manifold of graph clustering (Song et al., 2026), and constructing dependent models for multivariate graph clustering (Paul and Chen, 2020). For graph clusterings (Lancichinetti and Fortunato, 2009; Bhattacharyya et al., 2025), standard compar-isons have largely relied on measures developed for general set partitions. Widely used examples include the Rand index (Rand, 1971), the adjusted Rand index (Hubert and Arabie, 1985), the Jaccard coefficient, and the Fowlkes–Mallows index (Fowlkes and Mallows, 1983). These criteria compare node assignments and are useful for measuring agreement in labels, but they are graph-agnostic: they treat vertices as exchange-able and ignore the topological role of edges. A second line of work compares partitions through metric structure. Dongen (2000) introduced a bounded metric on the space of set partitions, and this distance has recently been extended and used as a loss over contiguous spatial partitions in Bayesian domain-partitioning problems (Huang and Sang, 2025). Information-theoretic comparisons are also prominent. Meil˘ a (2005, 2007); Wade and Ghahramani (2018) developed the variation of information as a true metric on partitions, 1arXiv:2607.27689v1 [stat.ME] 30 Jul 2026 while Vinh et al. (2009) and Romano et al. (2014) studied related mutual-information-based normalizations and chance corrections. These approaches remain graph-agnostic when applied directly to graph clusterings. Poulin and Th´ eberge (2020) proposed graph-aware similarities and dissimilarities based on the induced binary classification of edges into within-cluster and between-cluster types, and showed that graph-aware and graph-agnostic criteria can behave very differently under refinement and coarsening. Yan et al. (2025) developed a spatially aware adjusted Rand index. While useful for graph-aware clustering comparison, these two methods do not provide a general construction of metrics on graph partitions or establish theoretical properties characterizing how these metrics respond to topological perturbations. Our contribution is to develop an edge-partition construction of graph-informed distances for graph partitions. The construction yields genuine metrics on the space of contiguous graph partitions and naturally accommodates graph-informed versions of variation of information and the van Dongen distance, together with a binary cut-based companion distance. We then formulate a local graph-aware refinement criterion for one-step refinements and show that these three distances satisfy it through distinct local scores. Finally, under stochastic block models (SBM), we establish two topology-aware properties, inter-community split awareness and intra-community split awareness, under which stronger structural disruptions incur larger distances almost surely. 
+
+# 2 Construction of graph-informed metrics 
+
+For any finite non-empty set 𝑋 , let Π(𝑋 ) denote the collection of all partitions of 𝑋 , that is, the family of finite sets of non-empty, pairwise disjoint subsets whose union is 𝑋 . Let 𝜙 = 𝜙 𝑋 : Π(𝑋 ) × Π(𝑋 ) → R≥0
+
+denote a distance metric on Π(𝑋 ).Let 𝐺 = (𝑉, 𝐸 ) be a simple undirected graph with 𝑛 = |𝑉 | vertices and 𝑚 = |𝐸 | > 0 edges. For a vertex partition 𝑃 = {𝑃 1, . . . , 𝑃 𝐾 } ∈ Π(𝑉 ), let 𝐸 𝑖 (𝑃 ) = {{ 𝑢, 𝑣 } ∈ 𝐸 : 𝑢, 𝑣 ∈ 𝑃 𝑖 } for 𝑖 ≥ 1, and let 
+
+𝐸 0 (𝑃 ) = {{ 𝑢, 𝑣 } ∈ 𝐸 : 𝑢 and 𝑣 lie in different clusters of 𝑃 }. The sets 𝐸 𝑖 (𝑃 ) may be empty, in particular when 𝑃 𝑖 is a singleton. For a graph 𝐺 , let 𝐺 [𝑆 ] denote the induced subgraph with vertex set 𝑆 ⊆ 𝑉 and edge set {{ 𝑢, 𝑣 } ∈ 𝐸 : 𝑢, 𝑣 ∈ 𝑆 }. A partition 𝑃 = {𝑃 1, . . . , 𝑃 𝐾 } ∈ Π(𝑉 ) is called contiguous if each 𝐺 [𝑃 𝑖 ]
+
+is connected, and let Π𝐺 (𝑉 ) ⊆ Π(𝑉 ) denote the set of contiguous graph partitions. We use two graph-informed constructions. The first compares the full edge partition induced by 𝑃 , with the between-cluster edge class distinguished. Let 𝐸 ★ = 𝐸 ∪ { ★}, where ★ ∉ 𝐸 is an auxiliary element added to identify the between-cluster edge class, and define the marked edge partition induced by 𝑃 as 
+
+𝜑 (𝑃 ) = {𝐸 0 (𝑃 ) ∪ { ★}} ∪ { 𝐸 𝑖 (𝑃 ) : 1 ≤ 𝑖 ≤ 𝐾, 𝐸 𝑖 (𝑃 ) ≠ ∅} ∈ Π(𝐸 ★).
+
+Definition 1 (Graph-informed distance) . For vertex partitions 𝑃, 𝑄 ∈ Π(𝑉 ) and a metric 𝜙 = 𝜙 𝐸 ★ on Π(𝐸 ★),define 𝑑 𝐺 (𝑃, 𝑄 ; 𝜙 ) = 𝜙 {𝜑 (𝑃 ), 𝜑 (𝑄 )} .
+
+Theorem 1 (Valid graph-informed distance metric) . If |𝐸 | > 0, then 𝑑 𝐺 (· , ·; 𝜙 ) is a distance metric on 
+
+Π𝐺 (𝑉 ).Remark 1. On the full space Π(𝑉 ), the map 𝑑 𝐺 (· , ·; 𝜙 ) is in general only a pseudo-metric, since distinct non-contiguous vertex partitions can induce the same marked edge partition. 
+
+Examples. Taking 𝑋 = 𝐸 ★, two choices of 𝜙 are the variation of information of Meil˘ a (2007), 
+
+𝜙 VI (𝑅, 𝑆 ) = 𝐻 (𝑅 ) + 𝐻 (𝑆 ) − 2𝐼 (𝑅, 𝑆 ),
+
+2and the van Dongen metric of Dongen (2000), 
+
+𝜙 VD (𝑅, 𝑆 ) = 2 − | 𝑋 |−1
+
+∑︁ 
+
+> 𝑖
+
+max  
+
+> 𝑗
+
+|𝑅 𝑖 ∩ 𝑆 𝑗 |+∑︁ 
+
+> 𝑗
+
+max  
+
+> 𝑖
+
+|𝑅 𝑖 ∩ 𝑆 𝑗 |
+
+
+
+.
+
+Here 
+
+𝐻 (𝑅 ) = −∑︁ 
+
+> 𝑖
+
+|𝑅 𝑖 ||𝑋 | log 
+
+ |𝑅 𝑖 ||𝑋 |
+
+
+
+and 
+
+𝐼 (𝑅, 𝑆 ) =∑︁ 
+
+> 𝑖, 𝑗
+
+|𝑅 𝑖 ∩ 𝑆 𝑗 ||𝑋 | log 
+
+ |𝑅 𝑖 ∩ 𝑆 𝑗 | | 𝑋 ||𝑅 𝑖 | | 𝑆 𝑗 |
+
+
+
+,
+
+with 0 log 0 = 0. The corresponding graph-informed distances are denoted by 𝑑 VI  
+
+> 𝐺
+
+and 𝑑 VD  
+
+> 𝐺
+
+.The second construction is a binary cut-based companion construction that records only whether an edge is between clusters. Let P ( 𝐸 ) = {𝑆 : 𝑆 ⊆ 𝐸 }, let 𝜌 : P ( 𝐸 ) × P ( 𝐸 ) → R≥0 be a distance metric on P ( 𝐸 ),and let 𝜓 (𝑃 ) = 𝐸 0 (𝑃 ).
+
+Definition 2 (Cut-based graph-informed distance) . For vertex partitions 𝑃, 𝑄 ∈ Π(𝑉 ), define 𝑑 𝐺 (𝑃, 𝑄 ; 𝜌 ) =
+
+𝜌 {𝜓 (𝑃 ), 𝜓 (𝑄 )} .
+
+Theorem 2 (Valid cut-based graph-informed distance metric) . If |𝐸 | > 0, then 𝑑 𝐺 (· , ·; 𝜌 ) is a distance metric on Π𝐺 (𝑉 ).Example. A choice of 𝜌 is the Mirkin distance (Mirkin and Chernyi, 1970), 𝜌 (𝑆, 𝑇 ) = |𝑆 △𝑇 |, where 
+
+△ denotes the symmetric difference for 𝑆, 𝑇 ∈ P ( 𝐸 ). This leads to a graph-informed Mirkin distance, 
+
+𝑑 (𝜅 ) 
+
+> 𝐺
+
+(𝑃, 𝑄 ) = |𝐸 0 (𝑃 )△ 𝐸 0 (𝑄 )| , which is also the Hamming distance between the binary edge labels indicating within-block versus between-block status. 
+
+# 3 Graph-aware properties of graph-informed metrics 
+
+We investigate the graph-aware properties of the proposed distances from two perspectives. First, we formulate a local graph-aware refinement criterion for comparing one-step refinements of a fixed contiguous partition and show that the graph-informed distances of Section 2 admit corresponding local refinement scores. We then establish related graph-aware properties in inter-community and intra-community split settings under stochastic block models. 
+
+3.1 Local refinement criterion 
+
+We compare the distance between a fixed graph partition and its local refinements by examining how the edge profile is recorded when one block is split into two connected pieces. Let 𝐴 ∈ Π𝐺 (𝑉 ). A partition 
+
+𝐵 ∈ Π𝐺 (𝑉 ) is called a one-step refinement of 𝐴 if there exist a block 𝐶 (𝐵 ) ∈ 𝐴 and two non-empty disjoint sets 𝐶 1 (𝐵 ), 𝐶 2 (𝐵 ) ⊂ 𝐶 (𝐵 ) with 𝐶 (𝐵 ) = 𝐶 1 (𝐵 ) ∪ 𝐶 2 (𝐵 ) such that 𝐵 = ( 𝐴 \ { 𝐶 (𝐵 )}) ∪ { 𝐶 1 (𝐵 ), 𝐶 2 (𝐵 )} . Let 
+
+R ( 𝐴 ) denote the collection of all such refinements. For any 𝐶 ⊆ 𝑉 , write 𝐸 (𝐶 ) = {{ 𝑢, 𝑣 } ∈ 𝐸 : 𝑢, 𝑣 ∈ 𝐶 }.For 𝐵 ∈ R ( 𝐴 ), define 𝜇 (𝐵 ) = |𝐸 (𝐶 (𝐵 ))| . Since 𝐴 ∈ Π𝐺 (𝑉 ) and 𝐶 (𝐵 ) is split into two non-empty sets, 𝜇 (𝐵 ) > 0. Let 𝑒 11 (𝐵 ), 𝑒 22 (𝐵 ) and 𝑒 12 (𝐵 ) denote the numbers of edges in 𝐸 (𝐶 (𝐵 )) with both endpoints in 𝐶 1 (𝐵 ), both endpoints in 𝐶 2 (𝐵 ), and one endpoint in each of 𝐶 1 (𝐵 ) and 𝐶 2 (𝐵 ), respectively. Thus 𝑒 11 (𝐵 ) + 𝑒 22 (𝐵 ) + 𝑒 12 (𝐵 ) = 𝜇 (𝐵 ). Define 𝛼 11 (𝐵 ) = 𝑒 11 (𝐵 )/ 𝜇 (𝐵 ), 𝛼 22 (𝐵 ) = 𝑒 22 (𝐵 )/ 𝜇 (𝐵 ) and 3𝛼 12 (𝐵 ) = 𝑒 12 (𝐵 )/ 𝜇 (𝐵 ), and write 𝛼 (𝐵 ) = (𝛼 11 (𝐵 ), 𝛼 22 (𝐵 ), 𝛼 12 (𝐵 )) . Swapping the labels of the two child blocks exchanges only the first two coordinates. 
+
+Definition 3 (Local graph-aware refinement preference) . Fix 𝐴 ∈ Π𝐺 (𝑉 ). A distance 𝑑 on Π𝐺 (𝑉 ) is said to satisfy the local graph-aware refinement preference criterion if there exists a score function 𝐹 𝐴 : R ( 𝐴 ) → R
+
+such that, for every 𝐵 ∈ R ( 𝐴 ), the value 𝐹 𝐴 (𝐵 ) depends on 𝐵 only through 𝜇 (𝐵 ) and 𝛼 (𝐵 ), up to relabelling of the two child blocks, and for any 𝐵 1, 𝐵 2 ∈ R ( 𝐴 ), 𝐹 𝐴 (𝐵 1) ≤ 𝐹 𝐴 (𝐵 2) ⇐⇒ 𝑑 ( 𝐴, 𝐵 1) ≤ 𝑑 ( 𝐴, 𝐵 2).
+
+This criterion ensures that, relative to a fixed base partition, the ordering of a one-step refinement induced by the distance depends only on the edge mass inside the block being split and by how that mass is redistributed by the split. A metric 𝜙 on Π(𝐸 ★) is called permutation-invariant if 𝜙 (𝑅, 𝑆 ) = 𝜙 {𝜎 (𝑅 ), 𝜎 (𝑆 )} for every permutation 
+
+𝜎 of 𝐸 ★ and every 𝑅, 𝑆 ∈ Π(𝐸 ★). A metric 𝜌 on P ( 𝐸 ) is called permutation-invariant if 𝜌 (𝑈, 𝑊 ) =
+
+𝜌 {𝜎 (𝑈 ), 𝜎 (𝑊 )} for every permutation 𝜎 of 𝐸 and every 𝑈, 𝑊 ∈ P ( 𝐸 ). The variation of information and van Dongen metrics are permutation-invariant on Π(𝐸 ★), and the Mirkin metric is permutation-invariant on 
+
+P ( 𝐸 ).
+
+Theorem 3 (Existence of local refinement scores) . Fix 𝐴 ∈ Π𝐺 (𝑉 ). Let 𝑑 be either 𝑑 𝐺 (· , ·; 𝜙 ) for a permutation-invariant metric 𝜙 on Π(𝐸 ★), or 𝑑 𝐺 (· , ·; 𝜌 ) for a permutation-invariant metric 𝜌 on P ( 𝐸 ).Then 𝑑 satisfies the local graph-aware refinement preference criterion on R ( 𝐴 ).Examples. Let 𝜂 𝐴 = |𝐸 0 ( 𝐴 )| + 1, and let ℎ2 (𝑡 ) = −𝑡 log 𝑡 − ( 1 − 𝑡 ) log (1 − 𝑡 ). For the graph-informed Mirkin distance, 𝐹 (𝜅 ) 
+
+> 𝐴
+
+(𝐵 ) = 𝑒 12 (𝐵 ) = 𝜇 (𝐵 )𝛼 12 (𝐵 ). For the graph-informed variation of information distance, 
+
+𝐹 VI  
+
+> 𝐴
+
+(𝐵 ) = 𝜇 (𝐵 )𝐻 {𝛼 (𝐵 )} + { 𝜂 𝐴 + 𝑒 12 (𝐵 )} ℎ2
+
+ 𝑒 12 (𝐵 )
+
+𝜂 𝐴 + 𝑒 12 (𝐵 )
+
+
+
+,
+
+where 𝐻 {𝛼 (𝐵 )} = −𝛼 11 (𝐵 ) log 𝛼 11 (𝐵 ) − 𝛼 22 (𝐵 ) log 𝛼 22 (𝐵 ) − 𝛼 12 (𝐵 ) log 𝛼 12 (𝐵 ). For the graph-informed van Dongen distance, 
+
+𝐹 VD  
+
+> 𝐴
+
+(𝐵 ) = 𝜂 𝐴 + 𝜇 (𝐵 ) + 𝑒 12 (𝐵 ) − max {𝑒 11 (𝐵 ), 𝑒 22 (𝐵 ), 𝑒 12 (𝐵 )} − max {𝜂 𝐴 , 𝑒 12 (𝐵 )} .
+
+Although the three scores appear dissimilar, each depends on the refinement only through the split profile (𝜇 (𝐵 ), 𝑒 11 (𝐵 ), 𝑒 22 (𝐵 ), 𝑒 12 (𝐵 )) together with the fixed quantity 𝜂 𝐴 , and each aggregates this profile in the manner of a distinct classical family of partition comparison. The Mirkin score retains only the cut coordinate 𝑒 12 (𝐵 ), charging for severed edges alone and remaining indifferent to how the surviving mass is apportioned between the two children. The variation of information score is an entropy functional of the full profile: the term 𝜇 (𝐵 )𝐻 {𝛼 (𝐵 )} is maximized, for fixed 𝜇 (𝐵 ), by a balanced three-way redistribution of the within-block mass and therefore assigns larger values to stronger internal reorganization, while 
+
+{𝜂 𝐴 + 𝑒 12 (𝐵 )} ℎ2{𝑒 12 (𝐵 )/( 𝜂 𝐴 + 𝑒 12 (𝐵 ))} records the conditional uncertainty created when the newly cut edges are merged with the pre-existing marked cut block. The van Dongen score is a dominant-overlap functional; when 𝜂 𝐴 ≥ 𝑒 12 (𝐵 ) it reduces to 𝜇 (𝐵 ) + 𝑒 12 (𝐵 ) − max {𝑒 11 (𝐵 ), 𝑒 22 (𝐵 ), 𝑒 12 (𝐵 )} , retaining only the largest surviving fragment and penalizing near-even redistributions most heavily. A single split is thus scored through three complementary lenses – cut mass, entropy of redistribution, and loss of dominant overlap. 
+
+3.2 Inter-community split awareness 
+
+Let 𝐺 = (𝑉, 𝐸 ) follow a three-block SBM (Holland et al., 1983; Abbe, 2018) with 𝑉 = 𝑔 1 ∪ 𝑔 2 ∪ 𝑔 3,
+
+𝑔 𝑖 ∩ 𝑔 𝑗 = ∅ for 𝑖 ≠ 𝑗 , |𝑔 𝑖 | = 𝑛 𝑖 , 𝑁 = 𝑛 1 + 𝑛 2 + 𝑛 3, and 𝑛 𝑖 /𝑁 → 𝜆 𝑖 ∈ ( 0, 1) with 𝜆 1 + 𝜆 2 + 𝜆 3 = 1. Conditional on the block memberships, edges are independent with probability 𝑝 𝑖 for pairs inside 𝑔 𝑖 and 4Table 1: Almost sure limits in Theorem 4 and Corollary 1. The general column gives the limit under the three-block model; the equal-sized column specializes to 𝜆 1 = 𝜆 2 = 𝜆 3 = 1/3 and 𝑝 1 = 𝑝 2 = 𝑝 3 = 𝑝 , with 
+
+𝐷 := 𝐷 eq ,3 = 3𝑝 + 2(𝑞 12 + 𝑞 23 + 𝑞 13 ).                                                  
+
+> Distance Limit (general) Limit (equal-sized) Mirkin 𝛿 inter
+> 𝜅 =𝜆 2(𝜆 1𝑞 12 −𝜆 3𝑞 23 )𝛿 inter ,eq
+> 𝜅 =(𝑞 12 −𝑞 23 )/ 9Variation of informa-tion
+> 𝛿 inter VI =𝐻 (𝑊 1/𝑇, 𝑈 23 /𝑇, 𝐶 1·/𝑇 )−𝐻 (𝑊 3/𝑇, 𝑈 12 /𝑇, 𝐶 ·3/𝑇 )
+> 𝛿 inter ,eq VI =𝐻 {𝑝 𝐷 ,2(𝑝 +𝑞 23 )
+> 𝐷 ,2(𝑞 12 +𝑞 13 )
+> 𝐷 }−𝐻 {𝑝 𝐷 ,2(𝑝 +𝑞 12 )
+> 𝐷 ,2(𝑞 23 +𝑞 13 )
+> 𝐷 }
+> van Dongen 𝛿 inter VD =(𝑈 12 −𝑈 23 )/ 𝑇 𝛿 inter ,eq VD =2(𝑞 12 −𝑞 23 )/ 𝐷
+
+𝑞 𝑖 𝑗 for pairs between 𝑔 𝑖 and 𝑔 𝑗 , where 0 < 𝑝 𝑖 < 1 and 0 < 𝑞 𝑖 𝑗 < 1. We compare the one-block partition 𝐴 = {𝑉 } with 𝐵 1 = {𝑔 1, 𝑔 2 ∪ 𝑔 3} and 𝐵 2 = {𝑔 3, 𝑔 1 ∪ 𝑔 2}. For compactness, write 𝑊 1 = 𝜆 21 𝑝 1/2, 
+
+𝑊 3 = 𝜆 23 𝑝 3/2, 𝑈 23 = 𝜆 22 𝑝 2/2+𝜆 23 𝑝 3/2+𝜆 2𝜆 3𝑞 23 , 𝑈 12 = 𝜆 21 𝑝 1/2+𝜆 22 𝑝 2/2+𝜆 1𝜆 2𝑞 12 , 𝐶 1· = 𝜆 1𝜆 2𝑞 12 +𝜆 1𝜆 3𝑞 13 ,
+
+𝐶 ·3 = 𝜆 2𝜆 3𝑞 23 + 𝜆 1𝜆 3𝑞 13 , and 𝑇 = 𝑊 1 + 𝜆 22 𝑝 2/2 + 𝑊 3 + 𝜆 1𝜆 2𝑞 12 + 𝜆 2𝜆 3𝑞 23 + 𝜆 1𝜆 3𝑞 13 .
+
+Theorem 4 (Inter-community split awareness) . Under the three-block model above, the following almost sure limits hold. (i) If 𝜆 1𝑞 12 > 𝜆 3𝑞 23 , then 𝑁 −2{𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 2)} → 𝛿 inter  
+
+> 𝜅
+
+> 0 almost surely. (ii) If 𝑈 23 > max {𝐶 1· , 𝑊 1}, 𝑈 12 > max {𝐶 ·3, 𝑊 3}, 𝜆 21 𝑝 1 ≥ 𝜆 23 𝑝 3, and 𝜆 1𝑞 12 > 𝜆 3𝑞 23 , then 𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 
+
+𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → 𝛿 inter VI > 0 almost surely. (iii) If 𝑈 23 > max {𝐶 1· , 𝑊 1}, 𝑈 12 > max {𝐶 ·3, 𝑊 3}, and 𝑊 1 + 𝜆 1𝜆 2𝑞 12 > 𝑊 3 + 𝜆 2𝜆 3𝑞 23 , then 𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 
+
+𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → 𝛿 inter VD > 0 almost surely. 
+
+Theorem 4 shows that the three distances reflect different local manifestations of the same structural comparison between the two refinements. For the Mirkin distance, the only relevant quantity is the excess cut load created by separating 𝑔 1 from 𝑔 2 ∪ 𝑔 3 rather than 𝑔 3 from 𝑔 1 ∪ 𝑔 2. For variation of information, the comparison depends on the full three-way marked edge profile induced by each refinement, and positivity follows when mass is transferred from the outer edge classes to the dominant merged-block class. For van Dongen distance, the dominance conditions identify the asymptotically largest induced marked edge block under each refinement, after which the ordering is determined by the relative sizes of the two merged-block masses. The assumptions in Theorem 4 have simple structural interpretations. For the graph-informed Mirkin distance, the condition 𝜆 1𝑞 12 > 𝜆 3𝑞 23 says that, after weighting by block sizes, separating 𝑔 1 from 
+
+𝑔 2 destroys more cross-community connectivity than separating 𝑔 2 from 𝑔 3, so 𝐵 1 incurs the larger cut load. For graph-informed variation of information, the dominance conditions 𝑈 23 > max {𝐶 1· , 𝑊 1} and 
+
+𝑈 12 > max {𝐶 ·3, 𝑊 3} ensure that the merged-block marked edge class is asymptotically the largest under each refinement, while 𝜆 21 𝑝 1 ≥ 𝜆 23 𝑝 3 together with 𝜆 1𝑞 12 > 𝜆 3𝑞 23 imply that 𝐵 1 has a less concentrated three-way edge profile than 𝐵 2, and hence the larger entropy-based distance. For graph-informed van Dongen distance, the same dominance conditions again identify the merged-block marked edge class as the maximizer, and 
+
+𝑊 1 + 𝜆 1𝜆 2𝑞 12 > 𝑊 3 + 𝜆 2𝜆 3𝑞 23 states that the merged side under 𝐵 2 is asymptotically larger than that under 
+
+𝐵 1, which determines the ordering. 
+
+Corollary 1 (Equal-sized inter-community case) . Assume the setting of Theorem 4 with 𝜆 1 = 𝜆 2 = 𝜆 3 = 1/3
+
+and 𝑝 1 = 𝑝 2 = 𝑝 3 = 𝑝 . If 𝑞 12 > 𝑞 23 , 𝑝 + 𝑞 23 > 𝑞 12 + 𝑞 13 , and 𝑝 + 𝑞 12 > 𝑞 23 + 𝑞 13 , then the conclusions of Theorem 4 hold for all three graph-informed distances. More precisely, 𝑁 −2{𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 2)} → 
+
+𝛿 inter ,eq  
+
+> 𝜅
+
+> 0, 𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → 𝛿 inter ,eq VI > 0, and 𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → 𝛿 inter ,eq VD > 0 almost surely. Remark 2. Corollary 1 gives the clean interpretation under the equal-sized case. The refinements 𝐵 1 =
+
+{𝑔 1, 𝑔 2 ∪ 𝑔 3} and 𝐵 2 = {𝑔 3, 𝑔 1 ∪ 𝑔 2} have the same vertex-level form relative to 𝐴 = {𝑉 }: each isolates 5(a) Three-block (inter-community) setting. (b) Two-block (intra-community) setting. 
+
+Figure 1: Schematic representations of the graph partitions 𝐴 , 𝐵 1, and 𝐵 2. (a) Three-block setting: the dotted lines indicate the cuts producing 𝐵 1 = {𝑔 1, 𝑔 2 ∪ 𝑔 3} and 𝐵 2 = {𝑔 3, 𝑔 1 ∪ 𝑔 2}, with the 𝑔 1–𝑔 2
+
+connection drawn thicker than the 𝑔 2–𝑔 3 connection, reflecting 𝑞 12 > 𝑞 23 , under which the graph-informed distances rank 𝐵 1 farther from 𝐴 than 𝐵 2. (b) Two-block setting: the dotted lines indicate the cuts producing 
+
+𝐴 = {𝑔 1 ∪ 𝑔 2, 𝑔 3 ∪ 𝑔 4}; 𝐵 1 = {𝑔 1, 𝑔 2, 𝑔 3 ∪ 𝑔 4}; 𝐵 2 = {𝑔 1 ∪ 𝑔 2, 𝑔 3, 𝑔 4}. The within-block connectivity on 
+
+𝑔 1 ∪ 𝑔 2 is drawn thicker than that on 𝑔 3 ∪ 𝑔 4, corresponding to 𝑝 1 > 𝑝 2.one group and merges the other two. Any graph-unaware distance depending only on block sizes or label assignments therefore assigns the same distance from 𝐴 to 𝐵 1 and 𝐵 2. By contrast, the graph-informed distances detect that the cut separating 𝑔 1 from 𝑔 2 is stronger than the cut separating 𝑔 2 from 𝑔 3 when 
+
+𝑞 12 > 𝑞 23 , and hence rank 𝐵 1 as farther from 𝐴 . Fig. 1a provides a visual summary of the inter-community comparison. 
+
+3.3 Intra-community split awareness 
+
+Let 𝐺 = (𝑉, 𝐸 ) follow a two-block stochastic block model with meta communities 𝐿 := 𝑔 1 ∪ 𝑔 2 and 
+
+𝑅 := 𝑔 3 ∪ 𝑔 4,where |𝑔 1 | = |𝑔 3 | = 𝑛 1, |𝑔 2 | = |𝑔 4 | = 𝑛 2, 𝑁 = 2𝑛 1 + 2𝑛 2, and 𝑟 = 𝑛 1/𝑛 2 ∈ ( 0, ∞) fixed as 𝑛 1, 𝑛 2 → ∞ .Conditional on the block memberships, edges are independent with probability 𝑝 1 for pairs inside 𝑔 1 ∪ 𝑔 2,probability 𝑝 2 for pairs inside 𝑔 3 ∪ 𝑔 4, and probability 𝑞 for pairs with one endpoint in 𝑔 1 ∪ 𝑔 2 and the other in 𝑔 3 ∪ 𝑔 4, where 0 < 𝑝 1, 𝑝 2, 𝑞 < 1. We compare 𝐴 = {𝑔 1 ∪ 𝑔 2, 𝑔 3 ∪ 𝑔 4}, 𝐵 1 = {𝑔 1, 𝑔 2, 𝑔 3 ∪ 𝑔 4}, and 𝐵 2 = {𝑔 1 ∪ 𝑔 2, 𝑔 3, 𝑔 4} to study how graph-informed distances order different intra-community refinements. For compactness, let 𝐾 (𝑟 ) = 𝑟 +𝑟 −1 +2, 𝑆 1 (𝑟 ) = 1+ { 𝑟 +𝑟 −1}/ 2, 𝑀 1 (𝑟 ) = max {𝑟 /2, 1/( 2𝑟 ), 1}, Φ(𝑟 ) =
+
+2+{ 𝑟 +𝑟 −1}/ 2− 𝑀 1 (𝑟 ), and 𝐷 (𝑟 ) = ( 𝑝 1 + 𝑝 2)𝑆 1 (𝑟 ) + 𝑞𝐾 (𝑟 ). Also let 𝑢 0 (𝑟 ) = 𝑆 1 (𝑟 )−1, 𝑢 1 (𝑟 ) = 𝑟 {2𝑆 1 (𝑟 )} −1,
+
+𝑢 2 (𝑟 ) = {2𝑟𝑆 1 (𝑟 )} −1, let ℎ2 (𝑥 ) = −𝑥 log 𝑥 − ( 1 − 𝑥 ) log (1 − 𝑥 ), let ℎ3 (𝑟 ) = − Í2 
+
+> 𝑗 =0
+
+𝑢 𝑗 (𝑟 ) log 𝑢 𝑗 (𝑟 ), and define 
+
+𝐹 𝑟 ( 𝑝 ) = {𝑝 + 𝑞𝐾 (𝑟 )} ℎ2 [ 𝑝 /{ 𝑝 + 𝑞𝐾 (𝑟 )}] + 𝑝𝑆 1 (𝑟 )ℎ3 (𝑟 ). All almost sure statements are with respect to a sequence of graphs generated under the above model as 𝑁 → ∞ .
+
+Theorem 5 (Intra-community split awareness) . Under the two-block model above, the following almost sure limits hold. 
+
+6(i) If 𝑝 1 > 𝑝 2, then 𝑁 −2{𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 2)} → { 𝑟 /4(𝑟 + 1)2}( 𝑝 1 − 𝑝 2) > 0 almost surely. (ii) If 𝑝 1 > 𝑝 2, then 𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → { 𝐹 𝑟 ( 𝑝 1) − 𝐹 𝑟 ( 𝑝 2)}/ 𝐷 (𝑟 ) > 0 almost surely. (iii) If 𝑝 1 > 𝑝 2 and 𝑝 2 > 𝑞𝐾 (𝑟 ), then 𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → {( 𝑝 1 − 𝑝 2)( Φ(𝑟 ) − 1)}/ 𝐷 (𝑟 ) > 0 almost surely. 
+
+In the two-block SBM setting, we are essentially comparing two size-matched refinements of an underly-ing two-community graph on the meta-communities 𝐿 = 𝑔 1 ∪ 𝑔 2 and 𝑅 = 𝑔 3 ∪ 𝑔 4: the refinement 𝐵 1 refines 
+
+𝐿 , and 𝐵 2 refines 𝑅 . When 𝑝 1 > 𝑝 2, the meta-community 𝐿 is denser than 𝑅 , so 𝐵 1 is the refinement that cuts the denser of the two meta-communities while 𝐵 2 cuts the sparser one. Theorem 5 states that all three graph-informed distances are asymptotically and almost surely strictly larger from 𝐴 to 𝐵 1 than from 𝐴 to 𝐵 2
+
+under the conditions of Theorem 5: a size-matched refinement of a denser community is more topologically disruptive than the same refinement of a sparser community, and the graph-informed distances correctly reflect this. Any distance depending only on vertex-level block sizes or label assignments, by contrast, treats 
+
+𝐵 1 and 𝐵 2 identically in this size-matched regime: at the vertex level, the two refinements have the same form relative to 𝐴 .Theorem 5 also shows that the difference in the Mirkin distance depends only on the extra cut mass produced by splitting 𝑔 1 ∪ 𝑔 2 rather than 𝑔 3 ∪ 𝑔 4. The variation of information limit depends on a one-dimensional contrast through the strictly increasing function 𝐹 𝑟 , so the ordering is governed directly by the inequality 𝑝 1 > 𝑝 2. The van Dongen conclusion again depends on the dominant induced edge class; the additional condition 𝑝 2 > 𝑞𝐾 (𝑟 ) ensures that the within-side classes dominate the cross-side class on both sides, after which the sign is controlled by ( 𝑝 1 − 𝑝 2).
+
+Corollary 2 (Equal-sized intra-community case) . Assume the setting of Theorem 5 with 𝑛 1 = 𝑛 2, so that 
+
+𝑟 = 1, 𝐾 (1) = 4, Φ(1) = 2, and 𝐷 (1) = 2( 𝑝 1 + 𝑝 2 + 2𝑞 ). If 𝑝 1 > 𝑝 2, then 
+
+𝑁 −2{𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 2)} → ( 𝑝 1 − 𝑝 2)/ 16 > 0 almost surely, 
+
+𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → { 𝐹 1 ( 𝑝 1) − 𝐹 1 ( 𝑝 2)}/ 𝐷 (1) > 0 almost surely, where 𝐹 1 ( 𝑝 ) = ( 𝑝 + 4𝑞 ) ℎ2{𝑝 ( 𝑝 +
+
+4𝑞 )−1} + 3𝑝 log 2 ,and, if in addition 𝑝 2 > 4𝑞 , 𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → ( 𝑝 1 − 𝑝 2)/ 𝐷 (1) > 0 almost surely. Remark 3. Corollary 2 gives the corresponding interpretation for within-community splitting when each meta-community is split into two equal-sized pieces. When 𝑛 1 = 𝑛 2, the two refinements 𝐵 1 = {𝑔 1, 𝑔 2, 𝑔 3 ∪
+
+𝑔 4} and 𝐵 2 = {𝑔 1 ∪ 𝑔 2, 𝑔 3, 𝑔 4} have the same vertex-level form relative to 𝐴 = {𝑔 1 ∪ 𝑔 2, 𝑔 3 ∪ 𝑔 4}: each splits one of two equal-sized meta-communities into two equal parts. A graph-unaware distance therefore treats them identically. The graph-informed distances, however, distinguish them through edge density, and correctly assign a larger distance to 𝐵 1 when the side 𝑔 1 ∪ 𝑔 2 is denser than 𝑔 3 ∪ 𝑔 4, that is, when 𝑝 1 > 𝑝 2.Fig. 1b gives the analogous picture for intra-community splitting. 
+
+# 4 Simulation study 
+
+We illustrate the finite-sample behavior of the three graph-informed distances in the equal-sized settings of Corollaries 1 and 2. In the three-block case, we set 𝑝 1 = 𝑝 2 = 𝑝 3 = 0.8, 𝑞 13 = 0.05, and 𝑞 23 = 0.10, then fix 𝑞 12 = 0.30 and vary the graph size 𝑁 , and also fix 𝑁 = 600 and vary the signal gap 𝑞 12 − 𝑞 23 . In the two-block case, we set 𝑝 1 = 0.8, 𝑝 2 = 0.4, and 𝑞 = 0.05 and vary 𝑁 , and also fix 𝑁 = 800, 𝑝 2 = 0.3, 
+
+𝑞 = 0.05 and vary the signal gap 𝑝 1 − 𝑝 2. For each parameter setting, we generated 50 independent graphs and computed the Monte Carlo mean of 𝑑 𝐺 ( 𝐴, 𝐵 1) − 𝑑 𝐺 ( 𝐴, 𝐵 2) for the graph-informed Mirkin distance, normalized by 𝑁 2, together with the graph-informed variation of information and van Dongen distances. Fig. 2 supports the theory. In panels (a) and (b), the Monte Carlo means are positive and stabilize quickly as the graph size increases, consistent with the asymptotic ordering 𝑑 𝐺 ( 𝐴, 𝐵 1) > 𝑑 𝐺 ( 𝐴, 𝐵 2) established in the Corollaries. In panels (c) and (d), the gap, 𝑑 𝐺 ( 𝐴, 𝐵 1) − 𝑑 𝐺 ( 𝐴, 𝐵 2), widens monotonically as the relevant 7Figure 2: Monte Carlo mean differences 𝑑 𝐺 ( 𝐴, 𝐵 1) − 𝑑 𝐺 ( 𝐴, 𝐵 2) for the graph-informed Mirkin, variation of information, and van Dongen distances. Panels (a) and (b) vary graph size in the equal-sized three-block and two-block settings. Panels (c) and (d) fix graph size and vary 𝑞 12 − 𝑞 23 and 𝑝 1 − 𝑝 2. Positive values indicate that 𝐵 1 is farther from 𝐴 than 𝐵 2.structural contrast, 𝑞 12 − 𝑞 23 (inter-community) and 𝑝 1 − 𝑝 2 (intra-community), strengthens, confirming that the distances respond smoothly to the magnitude of the disruption rather than merely to its presence. The Mirkin curve is consistently the smallest, since it registers only the change in cut mass, whereas the variation of information and van Dongen distances react more strongly because they incorporate the full induced edge-partition structure. Across all four panels the ordering is the same: 𝐵 1 is systematically farther from 
+
+𝐴 than 𝐵 2 whenever the graph structure makes the split underlying 𝐵 1 more disruptive, illustrating that all three graph-informed distances recover the topology-aware ranking that graph-agnostic distances cannot. 
+
+# 5 Conclusion 
+
+Graph-informed distances compare partitions through the edge structure they induce and thereby distinguish refinements that are topologically different but combinatorially similar at the vertex level. The metric construction in Section 2 gives a general route from distances between set partitions to distances between contiguous graph partitions, while the local refinement criterion characterizes how graph-aware distance reflects graph structures through the edge mass and split profile created by a refinement. The stochastic block model results show that graph-informed Mirkin, variation of information, and van Dongen distances all respond correctly to intuitively stronger inter-community and intra-community disruptions, though through different local mechanisms. An important direction for future work is to extend the present framework to weighted, directed, and dynamic graphs, where partition comparisons must account not only for connectivity but also for edge heterogeneity and temporal evolution. 8References 
+
+Emmanuel Abbe. Community detection and stochastic block models: recent developments. Journal of Machine Learning Research , 18(177):1–86, 2018. Srijato Bhattacharyya, Huiyan Sang, and Bani Mallick. Constrained clustering via bayesian constrained random graph partitions. Bayesian Analysis , 1(1):1–30, 2025. Abhirup Datta, Sudipto Banerjee, James S Hodges, and Leiwen Gao. Spatial disease mapping using directed acyclic graph auto-regressive (dagar) models. Bayesian Analysis , 14(4):1221, 2019. Stijn Dongen. Performance criteria for graph clustering and Markov cluster experiments . CWI (Centre for Mathematics and Computer Science), 2000. Pedro F Felzenszwalb and Daniel P Huttenlocher. Efficient graph-based image segmentation. International Journal of Computer Vision , 59(2):167–181, 2004. Edward B Fowlkes and Colin L Mallows. A method for comparing two hierarchical clusterings. Journal of the American statistical association , 78(383):553–569, 1983. Junxian Geng, Anirban Bhattacharya, and Debdeep Pati. Probabilistic community detection with unknown number of communities. Journal of the American Statistical Association , 114(526):893–905, 2019. Paul W Holland, Kathryn Blackmond Laskey, and Samuel Leinhardt. Stochastic blockmodels: First steps. 
+
+Social networks , 5(2):109–137, 1983. Kun Huang and Huiyan Sang. Consistent bayesian spatial domain partitioning using predictive spanning tree methods. arXiv preprint arXiv:2508.08324 , 2025. Lawrence Hubert and Phipps Arabie. Comparing partitions. Journal of classification , 2(1):193–218, 1985. Andrea Lancichinetti and Santo Fortunato. Community detection algorithms: a comparative analysis. 
+
+Physical Review E—Statistical, Nonlinear, and Soft Matter Physics , 80(5):056117, 2009. Zhao Tang Luo, Huiyan Sang, and Bani Mallick. A bayesian contiguous partitioning method for learning clustered latent variables. Journal of Machine Learning Research , 22(37):1–52, 2021. Marina Meil˘ a. Comparing clusterings: an axiomatic view. In Proceedings of the 22nd International Conference on Machine Learning , pages 577–584, 2005. Marina Meil˘ a. Comparing clusterings—an information based distance. Journal of multivariate analysis , 98 (5):873–895, 2007. BG Mirkin and LB Chernyi. Measurement of the distance between distinct partitions of a finite set of objects. 
+
+Autom Tel , 5:120–127, 1970. Subhadeep Paul and Yuguo Chen. A random effects stochastic block model for joint community detection in multiple networks with applications to neuroimaging. The Annals of Applied Statistics , 14(2):993–1029, 2020. Val´ erie Poulin and Franc ¸ois Th´ eberge. Comparing graph clusterings: Set partition measures vs. graph-aware measures. IEEE Transactions on Pattern Analysis and Machine Intelligence , 43(6):2127–2132, 2020. 9William M Rand. Objective criteria for the evaluation of clustering methods. Journal of the American Statistical association , 66(336):846–850, 1971. Simone Romano, James Bailey, Vinh Nguyen, and Karin Verspoor. Standardized mutual information for clustering comparisons: one step further in adjustment for chance. In International conference on machine learning , pages 1143–1151. PMLR, 2014. Wookyeong Song, Hang Zhou, Yidong Zhou, and Hans-Georg M¨ uller. Non-euclidean data analysis with metric statistics. Harvard Data Science Review , 8, 2026. Nguyen Xuan Vinh, Julien Epps, and James Bailey. Information theoretic measures for clusterings compari-son: is a correction for chance necessary? In Proceedings of the 26th annual international conference on machine learning , pages 1073–1080, 2009. Sara Wade and Zoubin Ghahramani. Bayesian cluster analysis: Point estimation and credible balls (with discussion). Bayesian Analysis , 13(2):559–626, 2018. Yinqiao Yan, Xiangnan Feng, and Xiangyu Luo. Spatially aware adjusted rand index for evaluating spatial transcriptomics clustering. Biometrics , 81(3):ujaf127, 2025. 10 A Proof of Theorem 1 
+
+Proof. Fix 𝑃, 𝑄, 𝑅 ∈ Π𝐺 (𝑉 ). Since 𝜑 (𝑃 ), 𝜑 (𝑄 ), 𝜑 (𝑅 ) ∈ Π(𝐸 ★) and 𝜙 is a distance metric on Π(𝐸 ★),the quantity 𝑑 𝐺 (𝑃, 𝑄 ; 𝜙 ) = 𝜙 {𝜑 (𝑃 ), 𝜑 (𝑄 )} is well-defined. Non-negativity, symmetry and the triangle inequality follow directly from the corresponding properties of 𝜙 . Indeed, 
+
+𝑑 𝐺 (𝑃, 𝑄 ; 𝜙 ) = 𝜙 {𝜑 (𝑃 ), 𝜑 (𝑄 )} ≥ 0,𝑑 𝐺 (𝑃, 𝑄 ; 𝜙 ) = 𝜙 {𝜑 (𝑃 ), 𝜑 (𝑄 )} = 𝜙 {𝜑 (𝑄 ), 𝜑 (𝑃 )} = 𝑑 𝐺 (𝑄, 𝑃 ; 𝜙 ),
+
+and 
+
+𝑑 𝐺 (𝑃, 𝑅 ; 𝜙 ) = 𝜙 {𝜑 (𝑃 ), 𝜑 (𝑅 )} ≤ 𝜙 {𝜑 (𝑃 ), 𝜑 (𝑄 )} + 𝜙 {𝜑 (𝑄 ), 𝜑 (𝑅 )} = 𝑑 𝐺 (𝑃, 𝑄 ; 𝜙 ) + 𝑑 𝐺 (𝑄, 𝑅 ; 𝜙 ).
+
+It remains to prove the identity of indiscernibles on Π𝐺 (𝑉 ). If 𝑃 = 𝑄 , then 𝜑 (𝑃 ) = 𝜑 (𝑄 ) and hence 
+
+𝑑 𝐺 (𝑃, 𝑄 ; 𝜙 ) = 0. Conversely, suppose 𝑑 𝐺 (𝑃, 𝑄 ; 𝜙 ) = 0. Since 𝜙 is a metric on Π(𝐸 ★), this implies 
+
+𝜑 (𝑃 ) = 𝜑 (𝑄 )
+
+as partitions of 𝐸 ★. In 𝜑 (𝑃 ), the unique block containing ★ is 𝐸 0 (𝑃 ) ∪ { ★}, while in 𝜑 (𝑄 ) the unique block containing ★ is 𝐸 0 (𝑄 ) ∪ { ★}. Therefore equality of the marked edge partitions gives 
+
+𝐸 0 (𝑃 ) ∪ { ★} = 𝐸 0 (𝑄 ) ∪ { ★},
+
+and since ★ ∉ 𝐸 , it follows that 
+
+𝐸 0 (𝑃 ) = 𝐸 0 (𝑄 ).
+
+We now show that this equality implies 𝑃 = 𝑄 . Let 
+
+𝐻 𝑃 = (𝑉, 𝐸 \ 𝐸 0 (𝑃 )) .
+
+For any block 𝑃 𝑖 of 𝑃 , all edges of 𝐺 [𝑃 𝑖 ] belong to 𝐸 \ 𝐸 0 (𝑃 ), and since 𝑃 ∈ Π𝐺 (𝑉 ), the subgraph 𝐺 [𝑃 𝑖 ]
+
+is connected. Hence all vertices in 𝑃 𝑖 lie in a single connected component of 𝐻 𝑃 . Conversely, no edge of 
+
+𝐸 \ 𝐸 0 (𝑃 ) has endpoints in two different blocks of 𝑃 , because every such edge would belong to 𝐸 0 (𝑃 ). Thus no connected component of 𝐻 𝑃 can contain vertices from two different blocks of 𝑃 . Therefore the connected components of 𝐻 𝑃 are exactly the blocks of 𝑃 .The same argument applied to 𝑄 shows that the connected components of 
+
+𝐻 𝑄 = (𝑉, 𝐸 \ 𝐸 0 (𝑄 )) 
+
+are exactly the blocks of 𝑄 . Since 𝐸 0 (𝑃 ) = 𝐸 0 (𝑄 ), we have 𝐻 𝑃 = 𝐻 𝑄 , so their connected components are identical. Hence 𝑃 = 𝑄 . Therefore 𝑑 𝐺 (𝑃, 𝑄 ; 𝜙 ) = 0 implies 𝑃 = 𝑄 on Π𝐺 (𝑉 ), and 𝑑 𝐺 (· , ·; 𝜙 ) is a distance metric on Π𝐺 (𝑉 ). □
+
+# B Proof of Theorem 2 
+
+Proof. Fix 𝑃, 𝑄, 𝑅 ∈ Π𝐺 (𝑉 ). Since 𝜓 (𝑃 ) = 𝐸 0 (𝑃 ), 𝜓 (𝑄 ) = 𝐸 0 (𝑄 ) and 𝜓 (𝑅 ) = 𝐸 0 (𝑅 ) are subsets of 
+
+𝐸 , and since 𝜌 is a distance metric on P ( 𝐸 ), the quantity 𝑑 𝐺 (𝑃, 𝑄 ; 𝜌 ) = 𝜌 {𝜓 (𝑃 ), 𝜓 (𝑄 )} is well-defined. Non-negativity, symmetry and the triangle inequality follow directly from the corresponding properties of 
+
+𝜌 :
+
+𝑑 𝐺 (𝑃, 𝑄 ; 𝜌 ) = 𝜌 {𝜓 (𝑃 ), 𝜓 (𝑄 )} ≥ 0,
+
+11 𝑑 𝐺 (𝑃, 𝑄 ; 𝜌 ) = 𝜌 {𝜓 (𝑃 ), 𝜓 (𝑄 )} = 𝜌 {𝜓 (𝑄 ), 𝜓 (𝑃 )} = 𝑑 𝐺 (𝑄, 𝑃 ; 𝜌 ),
+
+and 
+
+𝑑 𝐺 (𝑃, 𝑅 ; 𝜌 ) = 𝜌 {𝜓 (𝑃 ), 𝜓 (𝑅 )} ≤ 𝜌 {𝜓 (𝑃 ), 𝜓 (𝑄 )} + 𝜌 {𝜓 (𝑄 ), 𝜓 (𝑅 )} = 𝑑 𝐺 (𝑃, 𝑄 ; 𝜌 ) + 𝑑 𝐺 (𝑄, 𝑅 ; 𝜌 ).
+
+It remains to prove the identity of indiscernibles on Π𝐺 (𝑉 ). If 𝑃 = 𝑄 , then 𝜓 (𝑃 ) = 𝜓 (𝑄 ) and hence 
+
+𝑑 𝐺 (𝑃, 𝑄 ; 𝜌 ) = 0. Conversely, suppose 𝑑 𝐺 (𝑃, 𝑄 ; 𝜌 ) = 0. Since 𝜌 is a metric on P ( 𝐸 ), this implies 
+
+𝜓 (𝑃 ) = 𝜓 (𝑄 ),
+
+or equivalently, 
+
+𝐸 0 (𝑃 ) = 𝐸 0 (𝑄 ).
+
+As in the proof of Theorem 1, the connected components of 
+
+(𝑉, 𝐸 \ 𝐸 0 (𝑃 )) 
+
+are exactly the blocks of 𝑃 , because 𝑃 ∈ Π𝐺 (𝑉 ) and all edges between distinct blocks of 𝑃 are removed. Similarly, the connected components of 
+
+(𝑉, 𝐸 \ 𝐸 0 (𝑄 )) 
+
+are exactly the blocks of 𝑄 . Since 𝐸 0 (𝑃 ) = 𝐸 0 (𝑄 ), these two graphs are identical and hence have the same connected components. Therefore 𝑃 = 𝑄 .Thus 𝑑 𝐺 (𝑃, 𝑄 ; 𝜌 ) = 0 implies 𝑃 = 𝑄 for 𝑃, 𝑄 ∈ Π𝐺 (𝑉 ), and 𝑑 𝐺 (· , ·; 𝜌 ) is a distance metric on 
+
+Π𝐺 (𝑉 ). □
+
+# C Proof of Theorem 3 
+
+Proof. Fix the graph 𝐺 = (𝑉, 𝐸 ) and a base partition 𝐴 ∈ Π𝐺 (𝑉 ). For 𝐵 ∈ R ( 𝐴 ), let 𝐶 (𝐵 ) ∈ 𝐴 be the unique block of 𝐴 split by 𝐵 , and write 𝐶 (𝐵 ) = 𝐶 1 (𝐵 ) ∪ 𝐶 2 (𝐵 ) with 𝐶 1 (𝐵 ) and 𝐶 2 (𝐵 ) non-empty and disjoint. Let 
+
+𝐸 11 (𝐵 ) = {{ 𝑢, 𝑣 } ∈ 𝐸 (𝐶 (𝐵 )) : 𝑢, 𝑣 ∈ 𝐶 1 (𝐵 )} ,𝐸 22 (𝐵 ) = {{ 𝑢, 𝑣 } ∈ 𝐸 (𝐶 (𝐵 )) : 𝑢, 𝑣 ∈ 𝐶 2 (𝐵 )} ,
+
+and 
+
+𝐸 12 (𝐵 ) = {{ 𝑢, 𝑣 } ∈ 𝐸 (𝐶 (𝐵 )) : 𝑢 ∈ 𝐶 1 (𝐵 ), 𝑣 ∈ 𝐶 2 (𝐵 )} .
+
+These three sets are pairwise disjoint and their union is 𝐸 (𝐶 (𝐵 )) . Their cardinalities are 𝑒 11 (𝐵 ), 𝑒 22 (𝐵 ) and 
+
+𝑒 12 (𝐵 ), respectively, and 𝜇 (𝐵 ) = |𝐸 (𝐶 (𝐵 ))| .It is enough to prove that, whenever 𝐵, 𝐵 ′ ∈ R ( 𝐴 ) have the same local edge statistics, (𝜇, 𝛼 ), up to relabelling of the two child blocks, the corresponding distances from 𝐴 are equal. After possibly interchanging the labels of 𝐶 1 (𝐵 ′) and 𝐶 2 (𝐵 ′), we may assume 
+
+𝜇 (𝐵 ) = 𝜇 (𝐵 ′), 𝑒 11 (𝐵 ) = 𝑒 11 (𝐵 ′), 𝑒 22 (𝐵 ) = 𝑒 22 (𝐵 ′), 𝑒 12 (𝐵 ) = 𝑒 12 (𝐵 ′).
+
+Indeed, equality of 𝜇 and 𝛼 gives equality of the three edge counts. We first consider the marked edge-partition distance 𝑑 𝐺 (· , ·; 𝜙 ). Let 𝑃 𝐴 = 𝜑 ( 𝐴 ), 𝑃 𝐵 = 𝜑 (𝐵 ), 𝑃 𝐵 ′ =
+
+𝜑 (𝐵 ′) be the marked edge partitions in Π(𝐸 ★). Since 𝐵 is obtained from 𝐴 by splitting 𝐶 (𝐵 ) into 𝐶 1 (𝐵 )
+
+and 𝐶 2 (𝐵 ), the marked between-cluster edge class of 𝑃 𝐵 is 
+
+𝐸 0 (𝐵 ) ∪ { ★} = 𝐸 0 ( 𝐴 ) ∪ 𝐸 12 (𝐵 ) ∪ { ★},
+
+12 the possible non-empty within-block edge classes 𝐸 11 (𝐵 ) and 𝐸 22 (𝐵 ) replace the class 𝐸 (𝐶 (𝐵 )) in the within-cluster edge class of 𝑃 𝐵 , and every other within-block class of 𝑃 𝐴 is unchanged. The same description holds for 𝐵 ′.By permutation invariance of 𝜙 , it is enough to construct a permutation 𝜎 of 𝐸 ★ such that 
+
+𝜎 (𝑃 𝐴 ) = 𝑃 𝐴 , 𝜎 (𝑃 𝐵 ) = 𝑃 𝐵 ′ .
+
+We construct 𝜎 in two cases. 
+
+Case 1: 𝐶 (𝐵 ) = 𝐶 (𝐵 ′). Since the corresponding local edge counts are equal, there exist bijections 
+
+𝑓 11 : 𝐸 11 (𝐵 ) → 𝐸 11 (𝐵 ′), 𝑓 22 : 𝐸 22 (𝐵 ) → 𝐸 22 (𝐵 ′), 𝑓 12 : 𝐸 12 (𝐵 ) → 𝐸 12 (𝐵 ′).
+
+Define 𝜎 : 𝐸 ★ → 𝐸 ★ by 
+
+𝜎 (𝑒 ) =
+
+
+
+𝑓 11 (𝑒 ), 𝑒 ∈ 𝐸 11 (𝐵 ),𝑓 22 (𝑒 ), 𝑒 ∈ 𝐸 22 (𝐵 ),𝑓 12 (𝑒 ), 𝑒 ∈ 𝐸 12 (𝐵 ),𝑒, 𝑒 ∈ 𝐸 ★ \ 𝐸 (𝐶 (𝐵 )) .
+
+Empty sets cause no difficulty. Since 𝐸 11 (𝐵 ), 𝐸 22 (𝐵 ) and 𝐸 12 (𝐵 ) partition 𝐸 (𝐶 (𝐵 )) , and the three maps above are bijections onto the corresponding classes for 𝐵 ′, 𝜎 is a permutation of 𝐸 ★. The block 𝐸 (𝐶 (𝐵 )) 
+
+of 𝑃 𝐴 is mapped onto itself, while every other block of 𝑃 𝐴 , including 𝐸 0 ( 𝐴 ) ∪ { ★}, is fixed as a set. Hence 
+
+𝜎 (𝑃 𝐴 ) = 𝑃 𝐴 . Moreover, the blocks 𝐸 11 (𝐵 ) and 𝐸 22 (𝐵 ) are mapped onto 𝐸 11 (𝐵 ′) and 𝐸 22 (𝐵 ′), respectively, and 
+
+𝜎 {𝐸 0 ( 𝐴 ) ∪ 𝐸 12 (𝐵 ) ∪ { ★}} = 𝐸 0 ( 𝐴 ) ∪ 𝐸 12 (𝐵 ′) ∪ { ★}.
+
+Therefore 𝜎 (𝑃 𝐵 ) = 𝑃 𝐵 ′ .
+
+Case 2: 𝐶 (𝐵 ) ≠ 𝐶 (𝐵 ′). The edge sets 𝐸 (𝐶 (𝐵 )) and 𝐸 (𝐶 (𝐵 ′)) are disjoint, since 𝐶 (𝐵 ) and 𝐶 (𝐵 ′) are distinct blocks of 𝐴 . By the equality of local counts, there exist bijections 
+
+𝑓 11 : 𝐸 11 (𝐵 ) → 𝐸 11 (𝐵 ′), 𝑓 22 : 𝐸 22 (𝐵 ) → 𝐸 22 (𝐵 ′), 𝑓 12 : 𝐸 12 (𝐵 ) → 𝐸 12 (𝐵 ′).
+
+Together these define a bijection 𝑓 : 𝐸 (𝐶 (𝐵 )) → 𝐸 (𝐶 (𝐵 ′)) that sends each local edge class of 𝐵 to the corresponding local edge class of 𝐵 ′. Let 𝑓 −1 : 𝐸 (𝐶 (𝐵 ′)) → 𝐸 (𝐶 (𝐵 )) be its inverse. Define 𝜎 : 𝐸 ★ → 𝐸 ★
+
+by 
+
+𝜎 (𝑒 ) =
+
+
+
+𝑓 (𝑒 ), 𝑒 ∈ 𝐸 (𝐶 (𝐵 )) ,𝑓 −1 (𝑒 ), 𝑒 ∈ 𝐸 (𝐶 (𝐵 ′)) ,𝑒, 𝑒 ∈ 𝐸 ★ \ { 𝐸 (𝐶 (𝐵 )) ∪ 𝐸 (𝐶 (𝐵 ′))} .
+
+This is a permutation of 𝐸 ★. In 𝑃 𝐴 , the sets 𝐸 (𝐶 (𝐵 )) and 𝐸 (𝐶 (𝐵 ′)) are two within-block edge classes; 𝜎 
+
+swaps these two blocks and fixes every other block, including 𝐸 0 ( 𝐴 ) ∪ { ★}. Hence 𝜎 (𝑃 𝐴 ) = 𝑃 𝐴 . In 𝑃 𝐵 , the block 𝐸 (𝐶 (𝐵 )) has been replaced by the possible non-empty classes 𝐸 11 (𝐵 ) and 𝐸 22 (𝐵 ), while 𝐸 12 (𝐵 ) has been added to the marked cut block. These are mapped to the corresponding classes for 𝐵 ′. Also, the unsplit class 𝐸 (𝐶 (𝐵 ′)) in 𝑃 𝐵 is mapped to 𝐸 (𝐶 (𝐵 )) , which is the unsplit class in 𝑃 𝐵 ′ . Finally, 
+
+𝜎 {𝐸 0 ( 𝐴 ) ∪ 𝐸 12 (𝐵 ) ∪ { ★}} = 𝐸 0 ( 𝐴 ) ∪ 𝐸 12 (𝐵 ′) ∪ { ★}.
+
+Thus 𝜎 (𝑃 𝐵 ) = 𝑃 𝐵 ′ .In both cases, permutation invariance of 𝜙 gives 
+
+𝑑 𝐺 ( 𝐴, 𝐵 ; 𝜙 ) = 𝜙 (𝑃 𝐴 , 𝑃 𝐵 ) = 𝜙 {𝜎 (𝑃 𝐴 ), 𝜎 (𝑃 𝐵 )} = 𝜙 (𝑃 𝐴 , 𝑃 𝐵 ′ ) = 𝑑 𝐺 ( 𝐴, 𝐵 ′; 𝜙 ).
+
+13 We next consider the cut-based distance 𝑑 𝐺 (· , ·; 𝜌 ). Since 𝐵 is a one-step refinement of 𝐴 ,
+
+𝜓 (𝐵 ) = 𝐸 0 (𝐵 ) = 𝐸 0 ( 𝐴 ) ∪ 𝐸 12 (𝐵 ),
+
+and similarly 𝜓 (𝐵 ′) = 𝐸 0 ( 𝐴 ) ∪ 𝐸 12 (𝐵 ′). Since 𝑒 12 (𝐵 ) = 𝑒 12 (𝐵 ′), the two sets 𝐸 12 (𝐵 ) and 𝐸 12 (𝐵 ′) have the same cardinality. Hence there exists a permutation 𝜏 of 𝐸 such that 
+
+𝜏 {𝐸 0 ( 𝐴 )} = 𝐸 0 ( 𝐴 ), 𝜏 {𝐸 12 (𝐵 )} = 𝐸 12 (𝐵 ′).
+
+For example, choose any bijection from 𝐸 12 (𝐵 ) to 𝐸 12 (𝐵 ′), extend it to a permutation of 𝐸 \ 𝐸 0 ( 𝐴 ), and fix 
+
+𝐸 0 ( 𝐴 ) pointwise. Then 
+
+𝜏 {𝜓 ( 𝐴 )} = 𝜓 ( 𝐴 ), 𝜏 {𝜓 (𝐵 )} = 𝜓 (𝐵 ′).
+
+By permutation invariance of 𝜌 ,
+
+𝑑 𝐺 ( 𝐴, 𝐵 ; 𝜌 ) = 𝜌 {𝜓 ( 𝐴 ), 𝜓 (𝐵 )} = 𝜌 {𝜏 (𝜓 ( 𝐴 )) , 𝜏 (𝜓 (𝐵 ))} = 𝜌 {𝜓 ( 𝐴 ), 𝜓 (𝐵 ′)} = 𝑑 𝐺 ( 𝐴, 𝐵 ′; 𝜌 ).
+
+Thus, for either construction, 𝑑 ( 𝐴, 𝐵 ) is constant over all refinements 𝐵 ∈ R ( 𝐴 ) with the same local statistics {𝜇 (𝐵 ), 𝛼 (𝐵 )} up to relabelling of the two child blocks. Let S𝐴 be the set of attainable local-statistic pairs (𝜇, 𝛼 ), with the first two coordinates of 𝛼 identified under relabelling. Define 
+
+𝑓 𝐴 : S𝐴 → R, 𝑓 𝐴 (𝜇, 𝛼 ) = 𝑑 ( 𝐴, 𝐵 ),
+
+where 𝐵 is any element of R ( 𝐴 ) with local statistics (𝜇, 𝛼 ). The preceding argument shows that 𝑓 𝐴 is well-defined. Now set 
+
+𝐹 𝐴 (𝐵 ) = 𝑓 𝐴 {𝜇 (𝐵 ), 𝛼 (𝐵 )} , 𝐵 ∈ R ( 𝐴 ).
+
+Then 𝐹 𝐴 (𝐵 ) depends on 𝐵 only through 𝜇 (𝐵 ) and 𝛼 (𝐵 ), up to relabelling of the two child blocks, and 
+
+𝐹 𝐴 (𝐵 ) = 𝑑 ( 𝐴, 𝐵 )
+
+for every 𝐵 ∈ R ( 𝐴 ). Therefore, for any 𝐵 1, 𝐵 2 ∈ R ( 𝐴 ),
+
+𝐹 𝐴 (𝐵 1) ≤ 𝐹 𝐴 (𝐵 2) ⇐⇒ 𝑑 ( 𝐴, 𝐵 1) ≤ 𝑑 ( 𝐴, 𝐵 2).
+
+Hence 𝑑 satisfies the local graph-aware refinement preference criterion on R ( 𝐴 ). □
+
+# D Proof of Theorem 4 
+
+Proof. For 1 ≤ 𝑖 ≤ 3, let W𝑖 denote the number of observed edges with both endpoints in 𝑔 𝑖 , and for 1 ≤ 𝑖 < 𝑗 ≤ 3, let C𝑖 𝑗 denote the number of observed edges between 𝑔 𝑖 and 𝑔 𝑗 . Write 
+
+M = |𝐸 | = W1 + W2 + W3 + C12 + C23 + C13 .
+
+Since the edge indicators are independent and the block memberships are deterministic, the strong law of large numbers gives 
+
+𝑁 −2W𝑖 → 𝜆 2 
+
+> 𝑖
+
+𝑝 𝑖 /2 a.s. (𝑖 = 1, 2, 3),
+
+and 
+
+𝑁 −2C𝑖 𝑗 → 𝜆 𝑖 𝜆 𝑗 𝑞 𝑖 𝑗 a.s. (1 ≤ 𝑖 < 𝑗 ≤ 3).
+
+Hence, on an event of probability one that we fix throughout the proof, 
+
+𝑁 −2M → 𝑇 = 𝑊 1 + 𝜆 22 𝑝 2/2 + 𝑊 3 + 𝜆 1𝜆 2𝑞 12 + 𝜆 2𝜆 3𝑞 23 + 𝜆 1𝜆 3𝑞 13 > 0.
+
+14 We prove the three assertions in turn. 
+
+Mirkin distance. Since 𝐴 = {𝑉 }, 𝐸 0 ( 𝐴 ) = ∅. Thus 
+
+𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 ) = |𝐸 0 (𝐵 )| 
+
+for every partition 𝐵 . Under 𝐵 1 = {𝑔 1, 𝑔 2 ∪ 𝑔 3}, the cut edges are exactly those between 𝑔 1 and 𝑔 2 ∪ 𝑔 3, so 
+
+𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 1) = C12 + C13 .
+
+Under 𝐵 2 = {𝑔 3, 𝑔 1 ∪ 𝑔 2}, the cut edges are exactly those between 𝑔 3 and 𝑔 1 ∪ 𝑔 2, so 
+
+𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 2) = C13 + C23 .
+
+Therefore 
+
+𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 2) = C12 − C23 .
+
+Dividing by 𝑁 2 and passing to the almost sure limit gives 
+
+𝑁 −2{𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 2)} → 𝜆 1𝜆 2𝑞 12 − 𝜆 2𝜆 3𝑞 23 = 𝛿 inter  
+
+> 𝜅
+
+.
+
+This limit is strictly positive when 𝜆 1𝑞 12 > 𝜆 3𝑞 23 .
+
+Graph-informed variation of information. Under the marked construction, 𝜑 ( 𝐴 ) = {{ ★}, 𝐸 }. For 𝐵 1, write 
+
+a1, 𝑁 = W1, b1, 𝑁 = W2 + W3 + C23 , c1, 𝑁 = C12 + C13 .
+
+Thus the three blocks of 𝜑 (𝐵 1) have sizes a1, 𝑁 , b1, 𝑁 and c1, 𝑁 + 1, where the +1 is due to the marker ★ in the cut block. For 𝐵 2, write 
+
+a2, 𝑁 = W3, b2, 𝑁 = W1 + W2 + C12 , c2, 𝑁 = C23 + C13 .
+
+The three blocks of 𝜑 (𝐵 2) have sizes a2, 𝑁 , b2, 𝑁 and c2, 𝑁 + 1. Let ℎ2 (𝑥 ) = −𝑥 log 𝑥 − ( 1 − 𝑥 ) log (1 − 𝑥 ). Since variation of information may be written as 𝐻 {𝜑 (𝐵 𝑘 ) | 
+
+𝜑 ( 𝐴 )} + 𝐻 {𝜑 ( 𝐴 ) | 𝜑 (𝐵 𝑘 )} , we have, for 𝑘 = 1, 2, 
+
+𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 𝑘 ) = MM + 1 𝐻 
+
+ a𝑘, 𝑁 
+
+M , b𝑘, 𝑁 
+
+M , c𝑘, 𝑁 
+
+M
+
+
+
++ c𝑘, 𝑁 + 1
+
+M + 1 ℎ2
+
+ 1
+
+c𝑘, 𝑁 + 1
+
+
+
+.
+
+Indeed, conditional on the real-edge block 𝐸 of 𝜑 ( 𝐴 ), the partition 𝜑 (𝐵 𝑘 ) has proportions a𝑘, 𝑁 /M, b𝑘, 𝑁 /M
+
+and c𝑘, 𝑁 /M, while the only block of 𝜑 (𝐵 𝑘 ) not contained in a block of 𝜑 ( 𝐴 ) is the marked cut block of size 
+
+c𝑘, 𝑁 + 1, which contains ★ and c𝑘, 𝑁 real edges. By the almost sure limits above, 
+
+𝑁 −2 (a1, 𝑁 , b1, 𝑁 , c1, 𝑁 ) → ( 𝑊 1, 𝑈 23 , 𝐶 1· ) a.s. ,
+
+and 
+
+𝑁 −2 (a2, 𝑁 , b2, 𝑁 , c2, 𝑁 ) → ( 𝑊 3, 𝑈 12 , 𝐶 ·3) a.s. .
+
+Moreover, for 𝑘 = 1, 2, 0 ≤ c𝑘, 𝑁 + 1
+
+M + 1 ℎ2
+
+ 1
+
+c𝑘, 𝑁 + 1
+
+
+
+≤ log (c𝑘, 𝑁 + 1) + 1
+
+M + 1 → 015 almost surely. Hence, by continuity of entropy on the simplex, 
+
+𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) → 𝐻 (𝑊 1/𝑇, 𝑈 23 /𝑇, 𝐶 1· /𝑇 ) a.s. ,
+
+and 
+
+𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → 𝐻 (𝑊 3/𝑇, 𝑈 12 /𝑇, 𝐶 ·3/𝑇 ) a.s. .
+
+Therefore 
+
+𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → 𝛿 inter VI a.s. It remains to show that 𝛿 inter VI > 0 under the stated assumptions. Set 
+
+𝑎 1 = 𝑊 1, 𝑏 1 = 𝑈 23 , 𝑐 1 = 𝐶 1· , 𝑎 2 = 𝑊 3, 𝑏 2 = 𝑈 12 , 𝑐 2 = 𝐶 ·3.
+
+The assumptions imply 𝑏 1 > max {𝑎 1, 𝑐 1} and 𝑏 2 > max {𝑎 2, 𝑐 2}. They also imply 
+
+𝑎 1 − 𝑎 2 = 𝑊 1 − 𝑊 3 = (𝜆 21 𝑝 1 − 𝜆 23 𝑝 3)/ 2 ≥ 0and 
+
+𝑐 1 − 𝑐 2 = 𝜆 1𝜆 2𝑞 12 − 𝜆 2𝜆 3𝑞 23 = 𝜆 2 (𝜆 1𝑞 12 − 𝜆 3𝑞 23 ) > 0.
+
+Let Δ𝑎 = 𝑎 1 − 𝑎 2 ≥ 0 and Δ𝑐 = 𝑐 1 − 𝑐 2 > 0. Since 𝑎 1 + 𝑏 1 + 𝑐 1 = 𝑎 2 + 𝑏 2 + 𝑐 2 = 𝑇 ,
+
+𝑎 2 = 𝑎 1 − Δ𝑎 , 𝑏 2 = 𝑏 1 + Δ𝑎 + Δ𝑐 , 𝑐 2 = 𝑐 1 − Δ𝑐 .
+
+Let 𝑓 (𝑥 ) = 𝑥 log 𝑥 on (0, ∞) . The function 𝑓 is strictly convex, and if 𝑣 ≥ 𝑢 > 0 and 0 < 𝛿 ≤ 𝑢 , then 
+
+𝑓 (𝑢 − 𝛿 ) + 𝑓 (𝑣 + 𝛿 ) > 𝑓 (𝑢 ) + 𝑓 (𝑣 ).
+
+This follows since 𝑔 (𝛿 ) = 𝑓 (𝑢 −𝛿 )+ 𝑓 (𝑣 +𝛿 ) satisfies 𝑔 ′ (𝛿 ) = 𝑓 ′ (𝑣 +𝛿 )− 𝑓 ′ (𝑢 −𝛿 ) = log (𝑣 +𝛿 )− log (𝑢 −𝛿 ) > 0.
+
+Applying this first with 𝑢 = 𝑎 1, 𝑣 = 𝑏 1, and 𝛿 = Δ 𝑎 gives, with equality allowed only if Δ𝑎 = 0, 
+
+𝑓 (𝑎 2) + 𝑓 (𝑏 1 + Δ𝑎 ) ≥ 𝑓 (𝑎 1) + 𝑓 (𝑏 1).
+
+Applying it next with 𝑢 = 𝑐 1, 𝑣 = 𝑏 1 + Δ𝑎 , and 𝛿 = Δ 𝑐 gives the strict inequality 
+
+𝑓 (𝑐 2) + 𝑓 (𝑏 2) > 𝑓 (𝑐 1) + 𝑓 (𝑏 1 + Δ𝑎 ),
+
+because Δ𝑐 > 0 and 𝑏 1 + Δ𝑎 ≥ 𝑏 1 > 𝑐 1. Adding yields 
+
+𝑓 (𝑎 2) + 𝑓 (𝑏 2) + 𝑓 (𝑐 2) > 𝑓 (𝑎 1) + 𝑓 (𝑏 1) + 𝑓 (𝑐 1).
+
+Since, for positive 𝑎, 𝑏, 𝑐 with 𝑎 + 𝑏 + 𝑐 = 𝑇 ,
+
+𝐻 (𝑎 /𝑇, 𝑏 /𝑇, 𝑐 /𝑇 ) = − 𝑓 (𝑎 ) + 𝑓 (𝑏 ) + 𝑓 (𝑐 )
+
+𝑇 + log 𝑇, 
+
+we obtain 
+
+𝛿 inter VI = 𝐻 (𝑎 1/𝑇, 𝑏 1/𝑇, 𝑐 1/𝑇 ) − 𝐻 (𝑎 2/𝑇, 𝑏 2/𝑇, 𝑐 2/𝑇 )
+
+= 𝑓 (𝑎 2) + 𝑓 (𝑏 2) + 𝑓 (𝑐 2) − 𝑓 (𝑎 1) − 𝑓 (𝑏 1) − 𝑓 (𝑐 1)
+
+𝑇 > 0.
+
+Graph-informed van Dongen distance. Again 𝜑 ( 𝐴 ) = {{ ★}, 𝐸 }. Let 𝑄 be a marked edge partition with real-edge class sizes 𝑎, 𝑏, 𝑐 , where the marked cut block has size 𝑐 + 1 and the other two blocks have sizes 𝑎 
+
+and 𝑏 . For all sufficiently large 𝑁 in the present setting, 𝑐 ≥ 1. Then the van Dongen formula gives 
+
+𝜙 VD {𝜑 ( 𝐴 ), 𝑄 } = 2 − 1
+
+M + 1 [1 + max {𝑎, 𝑏, 𝑐 } + 𝑎 + 𝑏 + 𝑐 ] = 1 − max {𝑎, 𝑏, 𝑐 }
+
+M + 1 .
+
+16 For 𝐵 1, the real-edge class sizes are 
+
+W1, W2 + W3 + C23 , C12 + C13 .
+
+For 𝐵 2, the real-edge class sizes are 
+
+W3, W1 + W2 + C12 , C23 + C13 .
+
+The strict inequalities 𝑈 23 > max {𝐶 1· , 𝑊 1} and 𝑈 12 > max {𝐶 ·3, 𝑊 3} imply, by the almost sure convergence of normalized edge counts, that almost surely for all sufficiently large 𝑁 ,max {W1, W2 + W3 + C23 , C12 + C13 } = W2 + W3 + C23 ,
+
+and max {W3, W1 + W2 + C12 , C23 + C13 } = W1 + W2 + C12 .
+
+Thus, almost surely for all sufficiently large 𝑁 ,
+
+𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) = 1 − W2 + W3 + C23 
+
+M + 1 , 𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) = 1 − W1 + W2 + C12 
+
+M + 1 .
+
+Subtracting and taking limits gives 
+
+𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → 𝑈 12 − 𝑈 23 
+
+𝑇 = 𝛿 inter VD a.s. Finally, 
+
+𝑈 12 − 𝑈 23 = 𝑊 1 + 𝜆 1𝜆 2𝑞 12 − 𝑊 3 − 𝜆 2𝜆 3𝑞 23 ,
+
+so the assumed inequality 𝑊 1 + 𝜆 1𝜆 2𝑞 12 > 𝑊 3 + 𝜆 2𝜆 3𝑞 23 implies 𝛿 inter VD > 0. This proves the theorem. □
+
+# E Proof of Theorem 5 
+
+Proof. Let 𝐿 = 𝑔 1 ∪ 𝑔 2 and 𝑅 = 𝑔 3 ∪ 𝑔 4. Let W11 and W22 denote the numbers of observed edges inside 𝑔 1
+
+and 𝑔 2, respectively, let W33 and W44 denote the numbers of observed edges inside 𝑔 3 and 𝑔 4, respectively, let C12 and C34 denote the numbers of observed edges between 𝑔 1, 𝑔 2 and between 𝑔 3, 𝑔 4, respectively, and let C𝐿𝑅 denote the number of observed edges with one endpoint in 𝐿 and the other in 𝑅 . Write 
+
+W𝐿 = W11 + W22 + C12 , W𝑅 = W33 + W44 + C34 ,
+
+and 
+
+M = |𝐸 | = W𝐿 + W𝑅 + C𝐿𝑅 .
+
+We normalize edge counts by 𝑛 1𝑛 2. Since 𝑟 = 𝑛 1/𝑛 2 is fixed and 𝑛 1, 𝑛 2 → ∞ , the strong law of large numbers gives W11 
+
+𝑛 1𝑛 2
+
+→ 𝑝 1𝑟 
+
+2 , W22 
+
+𝑛 1𝑛 2
+
+→ 𝑝 1
+
+2𝑟 , C12 
+
+𝑛 1𝑛 2
+
+→ 𝑝 1 a.s. ,
+
+and W33 
+
+𝑛 1𝑛 2
+
+→ 𝑝 2𝑟 
+
+2 , W44 
+
+𝑛 1𝑛 2
+
+→ 𝑝 2
+
+2𝑟 , C34 
+
+𝑛 1𝑛 2
+
+→ 𝑝 2 a.s. .
+
+Moreover, W𝐿 
+
+𝑛 1𝑛 2
+
+→ 𝑝 1𝑆 1 (𝑟 ), W𝑅 
+
+𝑛 1𝑛 2
+
+→ 𝑝 2𝑆 1 (𝑟 ) a.s. ,
+
+17 where 𝑆 1 (𝑟 ) = 1 + { 𝑟 + 𝑟 −1}/ 2, and C𝐿𝑅 
+
+𝑛 1𝑛 2
+
+→ 𝑞𝐾 (𝑟 ) a.s. ,
+
+where 𝐾 (𝑟 ) = 𝑟 + 𝑟 −1 + 2. Therefore, on an event of probability one that we fix throughout the proof, 
+
+M
+
+𝑛 1𝑛 2
+
+→ 𝐷 (𝑟 ) = ( 𝑝 1 + 𝑝 2)𝑆 1 (𝑟 ) + 𝑞𝐾 (𝑟 ) > 0.
+
+We now prove the three claims. 
+
+Mirkin distance. The partitions 𝐵 1 and 𝐵 2 are refinements of 𝐴 . Hence the Mirkin distance from 𝐴 to a refinement counts exactly the newly created cut edges. Under 𝐵 1, the only newly cut edges are those between 
+
+𝑔 1 and 𝑔 2, while under 𝐵 2 the only newly cut edges are those between 𝑔 3 and 𝑔 4. Thus 
+
+𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 1) = C12 , 𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 2) = C34 .
+
+Therefore 
+
+𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 2) = C12 − C34 ,
+
+and 
+
+𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 2)
+
+𝑛 1𝑛 2
+
+→ 𝑝 1 − 𝑝 2 a.s. Since 𝑛 1𝑛 2/𝑁 2 = 𝑟 {4(𝑟 + 1)2}−1, this is equivalent to 
+
+𝑁 −2{𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 (𝜅 ) 
+
+> 𝐺
+
+( 𝐴, 𝐵 2)} → 𝑟 
+
+4(𝑟 + 1)2 ( 𝑝 1 − 𝑝 2) a.s. ,
+
+which is strictly positive when 𝑝 1 > 𝑝 2.
+
+Graph-informed variation of information. Let 𝑃 𝐴 = 𝜑 ( 𝐴 ), 𝑃 1 = 𝜑 (𝐵 1) and 𝑃 2 = 𝜑 (𝐵 2) denote the marked edge partitions of 𝐸 ★. Under 𝐴 , the marked edge partition has three blocks: the edges internal to 𝐿 , the edges internal to 𝑅 , and the marked cut block consisting of the edges across 𝐿 and 𝑅 together with ★.We compute 𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) = 𝐻 (𝑃 1 | 𝑃 𝐴 ) + 𝐻 (𝑃 𝐴 | 𝑃 1). Under 𝐵 1, the block internal to 𝐿 is split into the edges inside 𝑔 1, the edges inside 𝑔 2, and the edges between 𝑔 1 and 𝑔 2; the last group is absorbed into the marked cut block of 𝑃 1 together with the original edges across 𝐿 and 𝑅 and the marker ★. Hence, for all sufficiently large 𝑛 1, 𝑛 2 on the fixed almost sure event, 
+
+𝐻 (𝑃 1 | 𝑃 𝐴 ) = W𝐿 
+
+M + 1 𝐻 
+
+ W11 
+
+W𝐿 
+
+, W22 
+
+W𝐿 
+
+, C12 
+
+W𝐿 
+
+
+
+,
+
+and 
+
+𝐻 (𝑃 𝐴 | 𝑃 1) = C12 + C𝐿𝑅 + 1
+
+M + 1 ℎ2
+
+ C12 
+
+C12 + C𝐿𝑅 + 1
+
+
+
+,
+
+where ℎ2 (𝑥 ) = −𝑥 log 𝑥 − ( 1 − 𝑥 ) log (1 − 𝑥 ). The +1 terms come from the marker in the cut block. By the almost sure limits above, 
+
+W𝐿 
+
+M + 1 𝐻 
+
+ W11 
+
+W𝐿 
+
+, W22 
+
+W𝐿 
+
+, C12 
+
+W𝐿 
+
+
+
+→ 𝑝 1𝑆 1 (𝑟 )
+
+𝐷 (𝑟 ) ℎ3 (𝑟 ) a.s. ,
+
+where 
+
+ℎ3 (𝑟 ) = −𝑢 0 (𝑟 ) log 𝑢 0 (𝑟 ) − 𝑢 1 (𝑟 ) log 𝑢 1 (𝑟 ) − 𝑢 2 (𝑟 ) log 𝑢 2 (𝑟 ),
+
+18 with 𝑢 0 (𝑟 ) = 𝑆 1 (𝑟 )−1, 𝑢 1 (𝑟 ) = 𝑟 {2𝑆 1 (𝑟 )} −1 and 𝑢 2 (𝑟 ) = {2𝑟𝑆 1 (𝑟 )} −1. Also, 
+
+C12 + C𝐿𝑅 + 1
+
+M + 1 ℎ2
+
+ C12 
+
+C12 + C𝐿𝑅 + 1
+
+
+
+→ 𝑝 1 + 𝑞𝐾 (𝑟 )
+
+𝐷 (𝑟 ) ℎ2
+
+ 𝑝 1
+
+𝑝 1 + 𝑞𝐾 (𝑟 )
+
+
+
+a.s. Therefore 
+
+𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) → {𝑝 1 + 𝑞𝐾 (𝑟 )} ℎ2 [ 𝑝 1/{ 𝑝 1 + 𝑞𝐾 (𝑟 )}] + 𝑝 1𝑆 1 (𝑟 )ℎ3 (𝑟 )
+
+𝐷 (𝑟 ) = 𝐹 𝑟 ( 𝑝 1)
+
+𝐷 (𝑟 ) a.s. The same argument with the roles of 𝐿 and 𝑅 exchanged gives 
+
+𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → {𝑝 2 + 𝑞𝐾 (𝑟 )} ℎ2 [ 𝑝 2/{ 𝑝 2 + 𝑞𝐾 (𝑟 )}] + 𝑝 2𝑆 1 (𝑟 )ℎ3 (𝑟 )
+
+𝐷 (𝑟 ) = 𝐹 𝑟 ( 𝑝 2)
+
+𝐷 (𝑟 ) a.s. Hence 
+
+𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 VI  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → 𝐹 𝑟 ( 𝑝 1) − 𝐹 𝑟 ( 𝑝 2)
+
+𝐷 (𝑟 ) a.s. It remains to show that 𝐹 𝑟 is strictly increasing. Write 𝑐 = 𝑞𝐾 (𝑟 ) > 0 and 𝑠 = 𝑆 1 (𝑟 )ℎ3 (𝑟 ) > 0, so that 
+
+𝐹 𝑟 ( 𝑝 ) = ( 𝑝 + 𝑐 )ℎ2
+
+ 𝑝 𝑝 + 𝑐 
+
+
+
++ 𝑠𝑝. 
+
+A direct derivative calculation gives 
+
+𝑑 𝑑𝑝 
+
+
+
+( 𝑝 + 𝑐 )ℎ2
+
+ 𝑝 𝑝 + 𝑐 
+
+ 
+
+= log 
+
+ 𝑝 + 𝑐 𝑝 
+
+
+
+,
+
+and therefore 
+
+𝐹 ′ 
+
+> 𝑟
+
+( 𝑝 ) = log 
+
+ 𝑝 + 𝑐 𝑝 
+
+
+
++ 𝑠 > 0for every 𝑝 > 0. Thus 𝐹 𝑟 is strictly increasing, so 𝑝 1 > 𝑝 2 implies 𝐹 𝑟 ( 𝑝 1) > 𝐹 𝑟 ( 𝑝 2). Since 𝐷 (𝑟 ) > 0, the limiting difference is strictly positive. 
+
+Graph-informed van Dongen distance. We compute the van Dongen limits from the marked edge partitions. Since the ground set is 𝐸 ★, the denominator in the van Dongen distance is M + 1. Consider first 𝑃 𝐴 = 𝜑 ( 𝐴 )
+
+and 𝑃 1 = 𝜑 (𝐵 1). The partition 𝑃 𝐴 has three blocks: the edges internal to 𝐿 , the edges internal to 𝑅 , and the marked cut block consisting of the edges across 𝐿 and 𝑅 together with ★. The partition 𝑃 1 has four blocks: the edges inside 𝑔 1, the edges inside 𝑔 2, the edges inside 𝑅 , and the marked cut block consisting of the edges between 𝑔 1 and 𝑔 2, the edges across 𝐿 and 𝑅 , and ★.For the first max-sum, the block of 𝑃 𝐴 internal to 𝐿 intersects the blocks of 𝑃 1 in three pieces with sizes 
+
+W11 , W22 and C12 ; hence its maximal intersection has limiting mass 𝑝 1 𝑀 1 (𝑟 ), where 
+
+𝑀 1 (𝑟 ) = max 
+
+ 𝑟 
+
+2 , 12𝑟 , 1
+
+
+
+.
+
+The block of 𝑃 𝐴 internal to 𝑅 intersects only the corresponding within-𝑅 block of 𝑃 1, giving limiting mass 
+
+𝑝 2𝑆 1 (𝑟 ). The marked cut block of 𝑃 𝐴 intersects only the marked cut block of 𝑃 1, with size C𝐿𝑅 + 1, giving limiting mass 𝑞𝐾 (𝑟 ). Therefore 1
+
+𝑛 1𝑛 2∑︁ 𝑖 
+
+max  
+
+> 𝑗
+
+|( 𝑃 𝐴 )𝑖 ∩ ( 𝑃 1)𝑗 | → 𝑝 1 𝑀 1 (𝑟 ) + 𝑝 2𝑆 1 (𝑟 ) + 𝑞𝐾 (𝑟 ) a.s. 19 For the second max-sum, the within-𝑔 1 block of 𝑃 1 contributes W11 , the within-𝑔 2 block contributes 
+
+W22 , the within-𝑅 block contributes W𝑅 , and the marked cut block of 𝑃 1 contributes max {C12 , C𝐿𝑅 + 1}.Hence 1
+
+𝑛 1𝑛 2∑︁ 𝑗 
+
+max  
+
+> 𝑖
+
+|( 𝑃 𝐴 )𝑖 ∩ ( 𝑃 1)𝑗 | → 𝑝 1𝑟 
+
+2 + 𝑝 1
+
+2𝑟 + 𝑝 2𝑆 1 (𝑟 ) + max {𝑝 1, 𝑞𝐾 (𝑟 )} a.s. Using (M + 1)/( 𝑛 1𝑛 2) → 𝐷 (𝑟 ), we obtain 
+
+𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) → 𝑝 1Φ(𝑟 ) + 𝑞𝐾 (𝑟 ) − max {𝑝 1, 𝑞𝐾 (𝑟 )} 
+
+𝐷 (𝑟 ) a.s. ,
+
+where 
+
+Φ(𝑟 ) = 2 + 𝑟 + 𝑟 −1
+
+2 − 𝑀 1 (𝑟 ).
+
+The same calculation with 𝑃 2 = 𝜑 (𝐵 2) gives 
+
+𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → 𝑝 2Φ(𝑟 ) + 𝑞𝐾 (𝑟 ) − max {𝑝 2, 𝑞𝐾 (𝑟 )} 
+
+𝐷 (𝑟 ) a.s. Therefore 
+
+𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → ( 𝑝 1 − 𝑝 2)Φ(𝑟 ) + max {𝑝 2, 𝑞𝐾 (𝑟 )} − max {𝑝 1, 𝑞𝐾 (𝑟 )} 
+
+𝐷 (𝑟 ) a.s. Under the additional condition 𝑝 2 > 𝑞𝐾 (𝑟 ), and since 𝑝 1 > 𝑝 2, we have max {𝑝 2, 𝑞𝐾 (𝑟 )} = 𝑝 2, max {𝑝 1, 𝑞𝐾 (𝑟 )} = 𝑝 1.
+
+Hence 
+
+𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 1) − 𝑑 VD  
+
+> 𝐺
+
+( 𝐴, 𝐵 2) → ( 𝑝 1 − 𝑝 2){ Φ(𝑟 ) − 1}
+
+𝐷 (𝑟 ) a.s. Finally, Φ(𝑟 ) > 1 for every 𝑟 > 0: if 1 /2 ≤ 𝑟 ≤ 2, then 𝑀 1 (𝑟 ) = 1 and Φ(𝑟 ) = 1 + ( 𝑟 + 𝑟 −1)/ 2 > 1; if 𝑟 > 2, then 𝑀 1 (𝑟 ) = 𝑟 /2 and Φ(𝑟 ) = 2 + 𝑟 −1/2 > 1; if 0 < 𝑟 < 1/2, then 𝑀 1 (𝑟 ) = 1/( 2𝑟 ) and Φ(𝑟 ) = 2 + 𝑟 /2 > 1. Thus the limit is strictly positive. This completes the proof. □
+
+20

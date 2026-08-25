@@ -1,0 +1,54 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-15T20:18:29.310489+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.09031v1",
+      "source": "arxiv",
+      "title": "HOPPER: Learnable Hop Extraction for Linearized Graph Sequence Models",
+      "abstract": "Graph neural networks typically propagate information through repeated message-passing layers, coupling the distance over which information travels with the number of nonlinear transformations applied. This coupling can make deep architectures difficult to optimize and can lead to over-smoothing, over-squashing, and the loss of long-range information. Linearized Graph Sequence Models (LGSMs) address this issue by separating information depth from processing depth and treating the successive propagation states of each node as a sequence. However, existing LGSMs construct these sequences using fixed graph operators, limiting their ability to adapt propagation to the input graph, node features, and downstream task. We introduce HOPPER, an end-to-end learnable extension of LGSM that learns how hop sequences should be extracted before they are processed by a modern state-space model. Our framework supports feature-conditioned, structure-aware, graph- and hop-adaptive propagation mechanisms while preserving permutation equivariance. Standard adjacency-based and non-backtracking LGSM sequences arise as special cases of our proposed extractor family. We show that HOPPER is state-of-the-art or competitive across the ECHO-Synth benchmark, and that varying the maximum neighborhood size of message backtracking cancellation (i.e. structural memory window) can optimize accuracy on the LRIM physics-based long-range dependency benchmark. These results demonstrate that learnable sequence extraction provides a flexible and effective approach to long-range graph representation learning.",
+      "authors": [
+        "Isuru Herath",
+        "Arin Gopakumar",
+        "Sharan Sahu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-10T02:31:46+00:00",
+      "link": "https://arxiv.org/pdf/2608.09031v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "learnable graph propagation operator; transferable to graph neural architecture search",
+      "llm_evidence_cn": "可学习图传播算子；可迁移至图神经网络架构搜索",
+      "llm_evidence": "可学习图传播算子；可迁移至图神经网络架构搜索",
+      "canonical_evidence": "可学习图传播算子；可迁移至图神经网络架构搜索",
+      "llm_tldr_en": "HOPPER makes hop extraction learnable in linearized graph sequence models, adapting propagation to input graphs and tasks, and providing a differentiable architecture component relevant to GNN architecture search.",
+      "llm_tldr_cn": "线性化图序列模型通常以固定图算子构造传播序列，难以适配不同图结构与任务，并易出现过平滑和长程信息丢失。本文提出HOPPER，将跳数提取设计为端到端可学习模块，使传播距离与处理深度解耦。实验表明其能有效缓解过平滑和过挤压，在长程信息任务上表现更优。该可学习传播算子可作为图神经网络架构搜索的可复用组件，提升模型对不同图数据的泛化能力。",
+      "llm_tldr": "线性化图序列模型通常以固定图算子构造传播序列，难以适配不同图结构与任务，并易出现过平滑和长程信息丢失。本文提出HOPPER，将跳数提取设计为端到端可学习模块，使传播距离与处理深度解耦。实验表明其能有效缓解过平滑和过挤压，在长程信息任务上表现更优。该可学习传播算子可作为图神经网络架构搜索的可复用组件，提升模型对不同图数据的泛化能力。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

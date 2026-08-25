@@ -1,0 +1,586 @@
+Title: A Training-Memory Regression in MLA Sequence Parallelism: Why Megatron-Core Forbids Absorption, and LAGA – a Communication-Efficient Fix
+
+URL Source: https://arxiv.org/pdf/2607.17644v1
+
+Published Time: Tue, 21 Jul 2026 01:34:53 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# A T RAINING -M EMORY REGRESSION IN MLA S EQUENCE PARALLELISM :WHY MEGATRON -C ORE FORBIDS ABSORPTION , AND LAGA — A
+
+# COMMUNICATION -E FFICIENT FIX 
+
+Changzheng Ma 1
+
+## ABSTRACT 
+
+Multi-head Latent Attention (MLA) ships two implementations in Megatron-Core: an explicit form used for training and an absorbed form — which slashes collective communication by gathering only the compressed latent — that is fully implemented but hard-asserted out of training (assert not (self.training and self.cache mla latents) ), allowed only in inference decode. The library documents no reason. We show the restriction is well-founded and quantify why: ported to training, the absorbed form is a memory trap 
+
+— its intermediates live in nh ·dkv dimensions per token, larger than the per-head K/V they replace — inflating activation memory by 20–34%, up to 9.2 GB at DeepSeek-V3 scale (nh=128 , seq =16384 , SP =8 , eager kernel; the gap widens to 19.2 GB under a fused kernel, §4.6), enough to change device-fit. This measurement, validated on two axes (linear in seq and nh) and cross-verified on NVIDIA A100, explains the otherwise-undocumented restriction and leaves practitioners with no low-communication MLA training path. We then provide one. LAGA 
+
+(Latent All-Gather Attention) keeps the absorbed form’s latent-gather communication but rejects the absorb reformulation, instead reconstructing per-head K/V locally from the gathered latent. On 8×Ascend 910B at real DeepSeek-V3 dimensions, L AGA cuts collective communication 1.98 ×, matches explicit memory within 
+
+≤0.5% , is bit-identical to explicit at SP=1 and equivalent to <1×10 −3 at SP=2–8, and under a fused attention kernel improves attention-block throughput 1.04–1.06 × single-node and 1.07–1.24 × cross-node — leading at all sequence lengths in the cross-node regime MLA is deployed for. 
+
+## 1 INTRODUCTION 
+
+A puzzle in production code. Open Megatron-Core’s MLA implementation (NVIDIA, 2025) and the forward begins with an assertion that bans its own low-communication path from training: assert not (self.training and self.cache mla latents) . The absorb refor-mulation — folding kv b proj into the query so attention runs against the compressed latent and only the small la-tent crosses the collective — is fully implemented in the class, but gated to is decode only() inference and hard-asserted out of training. The library ships no low-communication MLA training path: training must use the explicit form, which all-to-alls per-head K/V and at DeepSeek-V3’s nh=128 dominates communication. Why does Megatron-Core refuse to absorb during training? The library does not say. 
+
+We answer the puzzle, and quantify the answer. Ported 
+
+> 1
+
+China Mobile Jiutian Artificial Intelligence Technology (Bei-jing) Co., Ltd., Beijing, China. Correspondence to: Changzheng Ma <machangzheng@cmjt.chinamobile.com >.
+
+Proceedings of the 9 th MLSys Conference , Bellevue, WA, USA, 2026. Copyright 2026 by the author(s). 
+
+to training, the absorbed form is a memory trap . Its interme-diates — qabsorbed = W ⊤
+
+> kv b
+
+qnope and the post-attention latent accumulator — live in nh ·dkv dimensions per token, larger 
+
+than the per-head K/V they replace whenever dkv > d head .At DeepSeek-V3 scale ( nh=128 , dmodel =7168 , seq =16384 ,SP =8 ) we measure the absorbed form’s peak activation memory exceeding the explicit form by 20–34% — 9.2 GB at the production-relevant configuration — enough to change whether the model fits on device. The absorb trick is an inference KV-cache optimization (store the latent, not per-head KV, a ≈ 32 × cache win); in training there is no cache, every forward recomputes, and the absorbed inter-mediates cost memory rather than save it. Megatron-Core’s 
+
+assert is, in effect, an undocumented guard against this regression. 
+
+A training path, as a consequence. The measure-ment above leaves production with a gap: the only low-communication MLA pattern (absorbed) is training-incompatible, so training must use the communication-heavy explicit path. The absorb reformulation is unnec-essary for closing this gap — what we actually want is to stop moving per-head K/V across the collective , and MLA already provides a compressed latent to move instead. arXiv:2607.17644v1 [cs.DC] 20 Jul 2026 A Training-Memory Regression in MLA Sequence Parallelism 
+
+LAGA keeps the explicit attention math (no absorb, no latent-dimension intermediates) and changes only what crosses the wire : a cheap latent all-gather replaces the expensive K/V all-to-all, and per-head K/V are reconstructed locally 
+
+on each rank from the gathered latent, at head-shard granu-larity. L AGA inherits the absorbed form’s communication and the explicit form’s memory. 
+
+Background: why MLA + SP is hard. Long-context training depends on sequence parallelism; the dominant head-dimension family (DeepSpeed Ulysses (Jacobs et al., 2023) and descendants) repartitions seq ↔head so each rank attends full-sequence for a subset of heads, assuming each rank owns a per-head KV shard to scatter. Multi-head Latent Attention (DeepSeek-AI, 2024; 2025) compresses KV into a single shared low-rank latent ( dkv ≈ 512 , vs nh ·dhead ≈
+
+16384 for equivalent GQA), so there is no per-head KV to scatter — in the absorbed form the effective Ulysses degree collapses to one. This is the structural reason production lands on the communication-heavy explicit path. 
+
+Contributions. 
+
+• C1 — The absorbed-memory-trap: measurement, mechanism, and explanation (§3.2/4.3). By porting the inference-side absorb trick to training, we quan-tify a 20–34% activation-memory inflation — reaching 
+
+9.2 GB at DeepSeek-V3 scale (nh=128 , seq =16384, SP =8, eager kernel; 19.2 GB under a fused kernel, §4.6); trace its cause to nh · dkv -dim intermediates exceeding the per-head K/V they replace; and show the inflation is linear on two independent axes (se-quence length and nh), cross-verified on NVIDIA A100. This explains Megatron-Core’s otherwise-undocumented assert not (self.training and self.cache mla latents) .• C2 — L AGA , the consequent training fix (§3). A low-communication MLA training path — latent all-gather 
+
++ local head-shard up-projection, no absorb — that closes the gap C1 exposes. Not present in Megatron-Core. • C3 — Three-way characterization + crossover (§4). 
+
+Closed-form communication/memory analysis vali-dated at V3 dims on 8×Ascend 910B; a through-put crossover showing L AGA ’s advantage strength-ens at production scale (wins single-node at nh=128 )and whose sequence-driven split sharpens cross-node, where long context is runnable at +24% under fused attention, with L AGA leading at all sequence lengths cross-node. • C4 — Correctness (§5). Bit-identical to explicit at SP=1 (same matmul, reordered views); equivalent to 
+
+<7×10 −4 at SP=2–8; verified by a multi-step conver-gence run. 
+
+## 2 BACKGROUND 
+
+2.1 Multi-head Latent Attention (MLA) 
+
+MLA (DeepSeek-AI, 2024) factorizes KV to reduce mem-ory. Given hidden h ∈ RB×S×d:
+
+q = Wq h, c = Wkv a hkpe = split 1(c), latent = split 2(c) ∈ RB×S×dkv 
+
+kv = Wkv b LN (latent ), (knope , v ) = split (kv )
+
+scores = ( qnope ∥ qrope )( qnope ∥ kpe )⊤/√d
+
+(The latent is shared across all nh heads; kpe is broadcast.) For DeepSeek-V3 dims nh=128 , dnope =dv =128 , drope =64 ,
+
+dkv =512 , dmodel =7168 , the latent is nh ·dhead /d kv ≈ 32 ×
+
+smaller than equivalent per-head KV. Two properties matter for SP. (P1) Shared latent: the K/V of all heads descend from a single dkv -rank tensor. (P2) Decoupled RoPE: asmall drope -dim shared band kpe carries positional informa-tion separately. 
+
+2.2 Sequence parallelism 
+
+SP partitions the sequence so each rank attends to a sub-sequence. The head-dimension family — Megatron-SP (Ko-rthikanti et al., 2023), Ulysses (Jacobs et al., 2023), Ring Attention (Liu et al., 2024), USP (Fang & Zhao, 2024), LoongTrain (Gu et al., 2024) — repartitions seq ↔head so each rank computes full-sequence attention for nh/P heads. 
+
+All assume each rank owns a per-head KV shard to scat-ter — true for MHA/GQA, false under MLA property P1. 
+
+2.3 Megatron-Core’s MLA path (and why absorption is inference-only) 
+
+Megatron-Core (the de-facto reference produc-tion stack, building on Megatron-LM (Narayanan et al., 2021)) ships a single MLA training class, 
+
+MLASelfAttention . Its training forward is the explicit 
+
+form: linear kv up proj materializes per-head K/V before core attention , which carries per-head K/V over the CP collective. MCore thus trains MLA long-context under the communication-heavy explicit pattern. MCore also contains the absorb reformulation — but it is gated to inference-decode and hard-asserted against training . The forward opens with 
+
+assert not (self.training and self.cache_mla_latents) 
+
+and the absorption itself, q content =torch.einsum(...) folding kv b proj 
+
+into the query, runs only under the guard 
+
+use absorption = cache mla latents && A Training-Memory Regression in MLA Sequence Parallelism 4096 8192 16384      
+
+> sequence length
+> 0
+> 100
+> 200
+> 300
+> 400
+> 500
+> 600
+> comm / forward (MB)
+> (a) Communication (LAGA 0.50× Explicit)
+> Explicit (B1, MCore)
+> Absorbed (B2)
+> LAGA (ours)
+> Explicit Absorbed LAGA
+> 0
+> 10000
+> 20000
+> 30000
+> 40000
+> peak activation memory (MB)
+> 27.3 GB
+> 36.6 GB
+> 27.4 GB
+> +9.2 GB
+> trap
+> (b) Memory @ seq=16384, SP=8 (Absorbed +9.2 GB)
+
+Figure 1. Teaser. Left: per-forward communication at DeepSeek-V3 scale (explicit → LAGA /absorbed ≈ 50% , 1.98 ×). Right: peak activation memory — absorbed +9.2 GB at seq=16384/SP=8 (the trap we measure and explain; +19.2 GB under fused attention without the eager score-matrix confound), LAGA = explicit (the consequent fix). The headline finding is the right panel’s memory trap and its cause; L AGA is the training path that removes it while keeping the left panel’s 1.98 ×.
+
+inference context.is decode only() .MCore’s designers deliberately restrict the absorb trick to inference: the class’s prepare for absorption 
+
+even concedes that it is “not doing true absorption. We will add this support at a later time.” One contribution of this paper (§3.2/4.3) is to explain why that restriction is well-founded — the absorbed form, ported to training, regresses activation memory by 20–34% (up to 9.2 GB at V3 scale) — and to offer L AGA , a latent-over-CP path viable for training, which MCore does not ship. 
+
+## 3 LAGA : L ATENT ALL -G ATHER 
+
+## ATTENTION 
+
+We present L AGA , a training-time sequence parallelism for MLA. We first pinpoint why standard Ulysses-style SP fails on MLA (§3.1), then analyze two natural-but-flawed ap-proaches (§3.2), and finally present L AGA (§3.3). Through-out, Explicit (B1) denotes the explicit Ulysses-on-MLA baseline, Absorbed (B2) the inference-side absorb trick ported to training, and LAGA our method. 
+
+3.1 Why MLA breaks head-dimension SP 
+
+Ulysses-style SP (Jacobs et al., 2023) partitions the sequence 
+
+dimension and repartitions onto the head dimension via an all-to-all, so each rank computes full-sequence attention for a subset of heads. This requires every rank to own at least one KV head to scatter. MLA defeats this assumption: its KV is a single shared low-rank latent latent kv ∈ Rdkv 
+
+(plus a decoupled RoPE band kpe ), broadcast across all heads via Wkv b . There is no per-head KV to scatter along the head axis. In the absorbed formulation the K side is a shared dkv -rank tensor, so the maximum Ulysses SP degree collapses to 1. The only way to apply head-dimension SP to MLA is to ma-terialize per-head K/V first (the explicit form): compute 
+
+kv = Wkv b LN (latent ) → per-head knope , v , then all-to-all them along heads. This works, but the K/V all-to-all moves 
+
+nh ·(dnope + dv ) elements per token — expensive when nh
+
+is large (DeepSeek-V3: 128 heads). LAGA ’s goal: keep head-dimension SP, but replace the expensive per-head K/V all-to-all with a cheap latent all-gather — without the memory penalty of the naive absorbed approach. 3.2 Two natural baselines (and why they fall short) Explicit Ulysses-on-MLA (B1) — the production train-ing path. Materialize per-head K/V, then all-to-all Q, K, V along heads. Correct, but communication scales with 
+
+nh ·dhead . This is exactly Megatron-Core’s MLA training path. 
+
+Absorbed SP (B2) — the inference-side absorb trick, ported to training. Absorb Wkv b ’s K-half into the query (qabsorbed , an nh · dkv -rank tensor), gather only the latent across CP, run attention in latent space, apply V’s up-projection post-CP. Communication drops to that of L AGA .
+
+But this is a training-memory trap: the intermediates 
+
+qabsorbed and the post-attention latent accumulator live in 
+
+nh ·dkv dimensions per token, larger than the per-head K/V they replace whenever dkv > d head . Measured at DeepSeek-V3 scale ( nh=128 , dkv =512 , dhead =128 ), B2’s peak activa-tion memory exceeds B1 by 20–34%, reaching +9.2 GB at seq=16384/SP=8 (Table 2) — enough to change device-fit. This both explains MCore’s training-restriction on absorp-A Training-Memory Regression in MLA Sequence Parallelism 
+
+tion and motivates L AGA .
+
+3.3 LAGA : latent all-gather + local up-projection 
+
+LAGA keeps B2’s communication pattern (all-gather the latent) but rejects the absorb reformulation, instead recon-structing per-head K/V locally from the gathered latent — landing them in the head dimension (like B1), not the latent dimension (like B2). Algorithm 1 gives the forward pass for SP degree P .
+
+Why this is both comm-cheap and memory-neutral. 
+
+Step 3 moves dkv + drope elements per token instead of B1’s nh(dnope + dv ) — yielding 1.98 × less total for-ward communication at V3 scale (Table 1). Step 4 pro-duces K/V in the head dimension at head-shard granularity 
+
+(nh/P )( dnope + dv ) — identical to B1’s post-all-to-all foot-print, and smaller than B2’s nhdkv qabsorbed /accumulator .Measured: L AGA peak memory matches B1 within ≤0.5% (<27 MB) while B2 balloons by up to 9.2 GB (Table 2). 
+
+Correctness. LAGA is mathematically identical to B1: step 4’s W kkv b [Hr ] · latent is exactly the Hr slice of B1’s 
+
+Wkv b (latent ) (same parameters, same matmul, different view order). Under SP=1 the two are bit-identical (output 
+
+max |∆| = 0 .000 ; §5). The Wkv b gradient shards along the head axis under L AGA , so backward requires a head-axis gradient all-reduce — a one-line implementation detail (§5.2). 
+
+3.4 Composition with expert parallelism 
+
+LAGA ’s collectives live inside the attention block (head/seq axes); expert parallelism’s dispatch all-to-all lives inside the MoE block (token axis). The two are temporally separated and compose without conflict (§6). 
+
+## 4 EVALUATION 
+
+We evaluate L AGA against Explicit (B1) and Absorbed (B2) on communication volume (§4.2), activation memory (§4.3), and throughput (§4.4), then verify numerical equiva-lence to B1 (§4.5). 
+
+4.1 Setup Hardware. One node of 8×Ascend 910B (HCCL) for single-node experiments, and two nodes × 8 cards (16 ranks) for the multi-node SP group (spanning both nodes over RoCE ≈ 11 GB/s). All measurements are bf16. Struc-tural results and the throughput crossover shape are cross-validated on NVIDIA A100 (§4.8). Model (real DeepSeek-V3 dims). A standalone MLA trans-former with public DeepSeek-V3 dimensions: dmodel =7168 ,
+
+nh=128 , dnope =dv =128 , drope =64 , dkv =512 , MLP intermediate = 8192 . S ∈ {4096 , 8192 , 16384 }.Comm/memory use a single attention layer; throughput uses a 4-layer stack at a smaller nh config (see §4.4). The implementation is eager PyTorch (no fused attention kernels); §4.7 discusses this scope. 
+
+Baselines. B1 and B2 share the same weights, input, and SP configuration as L AGA — only the attention form differs (controlled comparison). B1 reproduces the mathematics of Megatron-Core’s MLASelfAttention explicit path (the production training form); our comm/memory claims are an-alytical or structural and thus implementation-independent, while throughput numbers are from our prototype (not mea-sured against MCore directly, since MCore’s absorbed path is hard-asserted against training and the CUDA stack differs on NPU — see §4.7). Comm bytes counted as per-rank send volume. 
+
+4.2 Communication volume (V3 scale, nh=128 )
+
+Table 1 reports per-rank, per-forward sent bytes. LAGA 
+
+and B2 move identical data; both cut communication to 
+
+50.5% of B1 — a stable 1.98 × reduction across SP=4–8 and S=4K–16K. The ratio is structural: B1’s K-side all-to-all moves nh(dnope + dv ) elements/token, whereas L AGA 
+
+moves the low-rank dkv + drope . The reduction strengthens with nh: sweeping nh ∈ { 16 , 32 , 64 , 128 } at SP=8/ S=8192, the ratio climbs 1.88 × → 1.94 → 1.97 → 1.98 (Fig. 3b) — exactly as predicted, since only B1’s K-side term grows with nh.
+
+4.3 Activation memory (V3 scale) — the absorbed memory trap 
+
+Table 2 reports peak max memory allocated . LAGA 
+
+matches B1 within ≤0.5% , while B2 inflates memory by 20–34% — growing sharply with sequence length ,reaching +9.2 GB at S=16384 /SP=8 . This is the central empirical finding: the absorbed path’s qabsorbed /accumulator intermediates (in nhdkv = 128 ·512 per token) dominate as sequences grow. The inflation also scales linearly with 
+
+nh — 337/657/1269/2512 MB as nh doubles 16 → 128 
+
+(at S=8192 /SP=8; the sweep uses dmodel =2048 , so the 
+
+nh=128 point’s 2512 MB differs from the 2362 MB at 
+
+dmodel =7168 in Table 2 — the intermediate scales with 
+
+dmodel ) — confirming the nhdkv -intermediate mechanism on a second axis. 
+
+4.4 Throughput 
+
+We report tokens/s for forward+backward. The picture is a clean crossover , sharpened by multi-node topology. 
+
+Single-node (SP=8, smaller nh=32 , Table 3). In the communication-bound regime (long S) L AGA reaches par-ity (1.01 ×) at S=16384 ; in the compute-bound regime A Training-Memory Regression in MLA Sequence Parallelism 
+
+Algorithm 1 LAGA attention forward (rank r, SP degree P ). 
+
+Input: local hidden h ∈ RB×(S/P )×d. Per-rank head shard Hr = {r n h/P, . . . , (r+1) nh/P −1}.1. qnope , q rope ← Wq (h); latent , k pe ← Wkv a (h); latent ← LayerNorm (latent ). (local) 2. qnope , q rope ← AllToAll head (qnope , q rope ) — head-scatter, gather seq. (cheap: nh(dnope + drope ) elem/tok) 3. latent , k pe ← AllGather seq (latent , k pe ) — gather along seq. key: dkv + drope elem/tok, vs nh(dnope + dv ) for B1’s K/V a2a 
+
+4. knope ← W kkv b [Hr ]·latent ; v ← W vkv b [Hr ]·latent — local up-projection of this rank’s head shard only .(head-dim output, no latent-dim inflation) 5. scores ← (qnope ∥ qrope )( knope ∥ kpe )⊤/√d; out ← softmax (scores ) v
+
+6. out ← AllToAll seq (out ) — scatter seq, gather heads → RB×(S/P )×nh×dv
+
+7. return Wo(reshape (out )) Explicit (B1) 
+
+kv_b_proj 
+
+(locally up-proj 
+
+all heads) 
+
+a2a 
+
+Q,K,V 
+
+(per-head K/V) 
+
+attention a2a 
+
+(output) 
+
+Absorbed (B2) absorb Wkv_b 
+
+into Q 
+
+a2a Q + 
+
+all-gather 
+
+latent 
+
+latent-space 
+
+attn un-absorb 
+
+LAGA (ours) 
+
+a2a Q + 
+
+all-gather 
+
+latent 
+
+local up-proj 
+
+(head shard) attention a2a 
+
+(output) 
+
+Three MLA-SP variants what crosses the collective (red = memory trap; green = LAGA's local up-proj) 
+
+Figure 2. Dataflow. Explicit (B1): Wkv b → a2a(Q, K, V ) → attn → a2a. Absorbed (B2): a2a(Q) + ag (latent ) → absorb →
+
+latent-attn → un-absorb → a2a. LAGA : a2a(Q) + ag (latent ) → local up-proj (K, V ) → attn → a2a. L AGA shares B2’s left and right spine but replaces latent-space attention with head-dim attention on locally reconstructed K/V. 4096 8192 16384        
+
+> sequence length
+> 1.965
+> 1.970
+> 1.975
+> 1.980
+> 1.985
+> 1.990
+> 1.995
+> 2.000
+> 2.005
+> Explicit comm / LAGA comm  (×)
+> 1.99×
+> (a) SP- and seq-invariant
+> SP
+> SP4
+> SP8
+> SP16
+> 16 32 64 128
+> number of heads nh
+> 1.850
+> 1.875
+> 1.900
+> 1.925
+> 1.950
+> 1.975
+> 2.000
+> 2.025
+> Explicit comm / LAGA comm  (×)
+> 1.88×
+> 1.94×
+> 1.97× 1.98×
+> (b) grows with nh(strengthens at scale)
+
+Figure 3. Communication reduction is structural and scale-dependent. (a) Explicit/L AGA ratio holds ≈ 1.98 × across SP and seq. (b) It climbs 1.88 → 1.98 × as nh grows 16 → 128 —strengthens at production scale. 
+
+(short S) L AGA is ≈21% slower. Note L AGA ’s total FLOPs equal B1’s ( Wkv b is merely redistributed) — the regression is kernel efficiency , not FLOPs: L AGA ’s per-head-shard einsums are smaller GEMMs. B2 is consistently slowest. 
+
+Production-scale single-node ( nh=128 , SP=8, Table 4). 
+
+The small-nh crossover understates L AGA ’s production-scale position: at V3 dims the crossover flips in LAGA ’s favor — L AGA beats explicit by 1.04–1.06 × at all se-quence lengths (S=4096 /8192 /16384 ) under the fused kernel. The reason is structural — explicit’s K/V all-to-all scales with nh (4 × larger at nh=128 vs 32), and L AGA ’s halved communication outweighs the kernel overhead. This is the throughput-face confirmation of §4.2: the advantage strengthens at production scale. 
+
+Multi-node — the comm-bound regime where L AGA is meant to win (Table 5). We re-run at V3 dims on 2 nodes 
+
+× 8 cards (SP=16, cross-node over RoCE ≈ 11 GB/s) .The cross-node run isolates the inter-node effect at fixed 
+
+nh=128 . Under the fused kernel, L AGA leads at all se-quence lengths cross-node (1.07–1.24 ×, Table 5), with the advantage growing with sequence length: +7% at S=4096 ,
+
++15% at S=8192 , and +24% at S=16384 . The eager-A Training-Memory Regression in MLA Sequence Parallelism 
+
+Table 1. Per-rank per-forward communication (MB), DeepSeek-V3 dims ( nh=128 , d=7168 ). L AGA /B2 ≈ 0.50 × B1 (1.98 ×). 
+
+S=4096 S=8192 S=16384 
+
+SP B1 B2 LAGA B1 B2 LAGA B1 B2 LAGA 
+
+4 251.7 127.0 127.0 503.3 254.0 254.0 — — —8 146.8 74.0 74.0 293.6 148.0 148.0 587.2 296.0 296.0 
+
+16 78.6 39.6 39.6 157.3 79.2 79.2 314.6 158.5 158.5 
+
+Table 2. Peak activation memory (MB), DeepSeek-V3 dims. L AGA = B1 ( <0.4%); B2 balloons up to +9.2 GB. 
+
+S=4096 S=8192 S=16384 
+
+SP B1 B2 LAGA B1 B2 LAGA B1 B2 LAGA 
+
+4 4620 5900 4633 14463 19409 14485 — — —8 2917 3493 2929 7842 10207 7860 27348 36596 27375 
+
+B2 inflation: +1.3 / 4.9 GB at SP=4; +0.6 / 2.4 / 9.2 GB at SP=8 for S=4 K/8K/16K. 4000 6000 8000 10000 12000 14000 16000 
+
+> sequence length
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> 35
+> peak activation memory (GB) Activation memory (V3, SP=8): Absorbed balloons, LAGA = Explicit
+> Explicit (B1)
+> Absorbed (B2)
+> LAGA (ours)
+> absorbed memory trap
+
+Figure 4. Activation memory (V3, SP=8): Absorbed balloons with sequence length; L AGA tracks Explicit. Shaded gap = the absorbed memory trap. 
+
+kernel run, by contrast, showed a short-sequence regression (0.73 × at S=4096 ) — this was an artifact of the eager im-plementation’s materialized score matrix and small-shard kernel-launch overhead, not a property of L AGA : under fused attention it vanishes entirely (§4.6). Long-context training at S=16384 requires scaling out to SP=16, and LAGA is fastest there under both kernels. LAGA for long context ( ≥8–16K) — wins single-node and cross-node under both kernels; under fused, wins at all seq lengths cross-node. Absorbed is memory-disqualified regardless (Table 2). 
+
+4.5 Numerical equivalence to Explicit (B1) 
+
+Because L AGA ’s step 4 is the Hr slice of B1’s Wkv b (latent )
+
+— same parameters, same matmul, reordered views — the two are numerically identical up to floating-point accumula-tion order. We verify (fp32): • SP=1: bit-identical. Output max |∆| = 0.000 ;
+
+Wq /W kv b /W o gradients = 0 .000 ; h/W kv a /LN gra-4000 6000 8000 10000 12000 14000 16000 
+
+> sequence length
+> 0.7
+> 0.8
+> 0.9
+> 1.0
+> 1.1
+> 1.2
+> 1.3
+> LAGA throughput / Explicit  (×)  +24%
+> (cross-node,
+> long context)
+> eager regression
+> (fused: gone)
+> Throughput at production scale (n_h=128): fused wins all configs cross-node
+> cross-node SP=16, eager
+> cross-node SP=16, fused
+> single-node SP=8, fused
+
+Figure 5. Key result. LAGA /Explicit throughput ratio cross-node (SP=16, nh=128 ). Eager: L AGA loses short (0.73 × at S=4096 ), wins long ( +15%). Fused: the short-seq regression vanishes — LAGA wins at all seq lengths (1.07–1.24 ×), rising to +24%. 
+
+dients ≤ 2×10 −5 (backward accumulation noise, fp32). • SP=2/4/8: equivalent to floating-point precision. 
+
+After SP-consistent gradient aggregation: output 
+
+max |∆| ≤ 5.6×10 −6 and Wkv b grad max |∆| ≤ 
+
+7.7×10 −4 across SP ∈ { 2, 4, 8}. (L AGA and B2, shar-ing the einsum kernel path, agree to the same tolerance as each other — the residual is generic kernel-rounding, not an artifact of L AGA itself.) 
+
+Convergence (multi-step training). We train a small MLA LM (4 layers, d=512 , nh=16 , seq=512, Adam lr= 10 −3,60 steps, random-data memorization) under all three forms from an identical seed. All three descend from loss 7.711 to ≈ 0.004 (identical endpoint). Transient mid-training trajectory differences (max |LAGA − explicit | ≈ 1.5) are the well-known signature of optimizer chaos under floating-point kernel reordering — L AGA and B2 are bit-identical to each other at every step and diverge from explicit by iden-A Training-Memory Regression in MLA Sequence Parallelism 
+
+Table 3. Single-node throughput (tokens/s, SP=8, nh=32 ). Each cell reports B1 / B2 / L AGA ; bold marks the best of the three. Last column: L AGA /B1 ratio. “—” = not run at that configuration. SP S=4096 S=8192 S=16384 LAGA /B1 (B1 / B2 / L AGA ) (B1 / B2 / L AGA ) (B1 / B2 / L AGA )2 24837 / 18793 / 27790 17708 / 11564 / 19341 — 1.12 / 1.09 4 47663 / 35521 / 46353 36764 / 23247 / 38217 — 0.97 / 1.04 8 49388 / 35411 / 39248 66210 / 42971 / 52435 40850 / 23590 / 41450 0.79 / 0.79 / 1.01 
+
+Table 4. Single-node throughput at production scale (SP=8, nh=128 , V3 dims). Eager vs fused attention. Under fused, L AGA wins at all seq lengths and the absorbed memory trap is measured cleanly (no eager score-matrix confound). eager attention fused attention seq explicit absorbed LAGA (L AGA /ex) mem ex/B2/L AGA explicit absorbed LAGA (L AGA /ex) mem ex/B2/L AGA 
+
+4096 43359 32489 45214 (1.04 ×) 2917/3493/2929 53060 38373 55571 (1.05 ×) 1796/3387/1808 8192 34770 22171 36239 (1.04 ×) 7842/10204/7857 51673 28839 54883 (1.06 ×) 2214/7541/2231 16384 20238 OOM 20771 (1.03 ×) 27348/—/27374 38273 16767 39932 (1.04 ×) 3044/22281/3071 Memory in MB. Fused eliminates the shared (B, n h/P, S, S ) score matrix: explicit/L AGA peak drops from ∼27 GB to ∼3 GB at 
+
+S=16384 , exposing absorbed’s method-specific intermediates ( +19.2 GB inflation vs +9.2 GB under eager, where the score matrix masked part of the gap). 0 10 20 30 40 50 60                       
+
+> training step
+> 10 2
+> 10 1
+> 10 0
+> 10 1
+> loss (log)
+> (a) convergence to identical endpoint
+> 2.5 5.0 7.5 10.0 12.5 15.0
+> 3 × 10 0
+> 4 × 10 0
+> 6 × 10 0
+> mid-training zoom
+> Explicit
+> Absorbed
+> LAGA
+> 010 20 30 40 50 60
+> training step
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> | loss| (log)
+> bit-identical
+> (rounding)
+> (b) LAGA Absorbed; both drift from Explicit identically
+> |LAGA Absorbed|
+> |LAGA Explicit|
+
+Figure 6. Correctness. (a) Convergence to an identical endpoint. (b) |∆loss | vs Explicit: |LAGA − Absorbed | ≈ 0 (L AGA ≡ Ab-sorbed, bit-identical) while |LAGA − Explicit | is the generic fp-chaos. 
+
+tical amounts, confirming L AGA introduces no pathology beyond the generic fp-equivalence class. 
+
+4.6 Fused-kernel validation 
+
+The throughput results above use an eager softmax (scores =QK ⊤ → softmax → @V ), which materializes the (B, n h/P, S, S ) score matrix and dispatches small per-head GEMMs. To confirm our findings are not artifacts of this implementation, we replace it with a fused at-tention kernel — npu fusion attention on Ascend (which natively supports MLA’s asymmetric head dimen-sions, Dq =Dk=192 ≥ Dv =128 ) — and re-run single-node (SP=8) and cross-node (SP=16). Tables 4–5 report both side-by-side. Three findings: 
+
+(F1) The eager OOM was implementation-specific, not method-specific. At S=16384 , absorbed OOMs under ea-ger but runs at 16.8K toks/s under fused (score matrix no longer materialized). 
+
+(F2) The short-sequence cross-node regression was a kernel artifact. Under eager, L AGA lost 0.73 × cross-node at S=4096 ; under fused, it wins 1.07 ×. The regression was the eager score-matrix overhead and per-shard kernel-launch cost — not a property of L AGA . Under fused, L AGA 
+
+leads at all sequence lengths cross-node (1.07–1.24 ×). 
+
+(F3) The memory trap is measured more cleanly un-der fused. Eliminating the shared (B, n h/P, S, S ) score matrix removes a confound: explicit/L AGA peak memory drops from ∼27 GB to ∼3 GB at S=16384 , so absorbed’s method-specific intermediates are isolated. Its inflation grows from +9.2 GB (eager) to +19.2 GB (fused) — the absorbed qabsorbed /accumulator still cost nhdkv per token re-gardless of kernel, but under eager the score matrix masked part of the gap. Under fused the C1 measurement is uncon-founded. 
+
+Takeaway. The communication advantage (C2/C3) and the memory-trap measurement (C1) are both robust to kernel choice. The fused results strengthen the paper: L AGA wins at all sequence lengths cross-node, and the memory trap is exposed without the eager confound. 
+
+4.7 Limitations and scope 
+
+• Prototype scale. Comm/memory are measured on a single attention layer and throughput on a 4-layer stack at V3 head dimensions, not an end-to-end DeepSeek-V3-scale (61-layer) run. Comm is per-layer and analyt-ical, and the memory-trap mechanism ( nhdkv interme-diates) is structural and independent of depth; however, end-to-end wall-clock and MFU at full model depth (where attention’s share of total compute is smaller) remain future work. A Training-Memory Regression in MLA Sequence Parallelism                                    
+
+> Table 5. Multi-node throughput (tokens/s), V3 dims, SP=16 cross-node. Eager vs fused. Under fused, L AGA wins at all sequence lengths; the eager short-seq regression (0.73 ×) was a kernel artifact. eager attention fused attention seq explicit absorbed LAGA LAGA /ex explicit absorbed LAGA LAGA /ex 4096 37761 37913 27538 0.73 ×43247 38980 46273 1.07 ×
+> 8192 42225 33724 43254 1.02 ×56369 43048 65067 1.15 ×
+> 16384 30202 20807 34728 1.15 ×50623 30895 62866 1.24 ×
+
+• Convergence at toy scale. The multi-step conver-gence check (§4.5) uses a 4-layer, d=512 model on a random-data memorization task (60 steps). We rely on the per-forward bit-identical result (SP=1: output and Wq /W kv b /W o gradients all exactly 0) as the pri-mary correctness guarantee; the convergence run only confirms no optimizer pathology, not realistic-training parity. • No direct MCore comparison. Throughput is mea-sured against our B1 (which reproduces MCore’s ex-plicit MLA math), not MCore itself; a head-to-head against MCore on matched hardware is left to future work (MCore runs on CUDA, our prototype on NPU). • Fused up-projection kernel. Our fused attention re-places the score-matrix computation but not L AGA ’s local per-head up-projection einsums; a single fused up-proj →attention kernel would further amortize the small-shard GEMMs. Future work. • Training only. LAGA targets training (no KV cache); inference-time MLA parallelism is the domain of TPLA/MLRA/Helix. • Two-node. Multi-node uses two nodes; larger cross-node CP is the natural next scale-up. 
+
+4.8 Cross-hardware validation (NVIDIA A100) 
+
+To confirm the structural results are not a hardware arti-fact, we re-run the V3-scale single-node benchmark (SP=8, 
+
+nh=128 ) on NVIDIA A100 (CUDA/NCCL) via the same code path. • Communication (byte-identical). Comm is analytical, so it matches exactly across hardware: 1.98 × at all three sequence lengths. • Memory (the trap reproduces). Absorbed infla-tion reproduces on A100 ( +575/ +2221/ +8734 MB at 
+
+S=4K/8K/16K) vs Ascend ( +575/ +2362/ +9247 MB) — agreement within allocator noise ( ≤6%). • Throughput (crossover shape holds). LAGA /ex =
+
+1.05/1.03/1.02 × on A100 vs 1.04/1.04/1.03 × on As-cend — the crossover shape (mild L AGA lead at all 
+
+S) reproduces across hardware. Absorbed OOMs at 
+
+S=16384 on both cards (Ascend eager 36.6 GB peak; A100 44.7 GB peak), while explicit/L AGA run — di-rect evidence that the memory trap, not the eager-kernel limit, disqualifies absorbed. 
+
+## 5 CORRECTNESS 
+
+LAGA computes the same function as Explicit (B1); they differ only in where the up-projection happens (before vs after the collective) and which tensor crosses (per-head K/V vs latent). 
+
+5.1 Equivalence to Explicit 
+
+Let L = LN (Wkv a h). Explicit computes, for every head i
+
+and token t,
+
+knope [i, t ] = W kkv b [i] L[t], v[i, t ] = W vkv b [i] L[t],
+
+via a single batched matmul. L AGA ’s step 4 computes ex-actly the same, for i ∈ Hr , via per-shard einsum. These are the same linear maps applied to the same tensor , differing only in kernel dispatch order. Hence: 
+
+Proposition 1 (exact equivalence, SP=1). With P = 1 ,
+
+LAGA and Explicit produce identical outputs and parameter gradients up to floating-point reordering of the Wkv b vs per-shard einsum kernels. 
+
+Proposition 2 (floating-point equivalence, SP >1). For 
+
+P > 1, the sole difference is that Explicit all-to-alls per-head K/V while LAGA all-gathers the latent; both are re-orderings of the same arithmetic, so outputs and aggregated gradients agree to floating-point precision. 
+
+5.2 Backward and the Wkv b gradient shard 
+
+The collectives are wrapped as autograd functions: the head-scatter all-to-all’s backward is the inverse (seq-scatter) all-to-all; the sequence all-gather’s backward is a reduce-scatter. The Wkv b gradient partitions differ: B1 holds a (local seq, all heads) shard; L AGA holds a (full seq, Hr ) shard; both sum to the true total via one SP-group all-reduce. 
+
+5.3 Decoupled RoPE 
+
+The kpe band is shared across heads (P2) and never com-pressed, so it bypasses the absorb question: LAGA all-A Training-Memory Regression in MLA Sequence Parallelism                
+
+> Table 6. Cross-hardware agreement (V3, SP=8, nh=128 ). Comm is byte-identical; the absorbed memory trap and the L AGA throughput win reproduce on CUDA. metric SAscend 910B NVIDIA A100 comm reduction (ex/L AGA )4K/8K/16K 1.98 ×/1.98 ×/1.98 ×1.98 ×/1.98 ×/1.98 ×
+> absorbed mem inflation 4K/8K/16K +575/ +2362/ +9247 MB +575/ +2221/ +8734 MB LAGA /ex throughput 4K/8K/16K 1.04 ×/1.04 ×/1.03 ×1.05 ×/1.03 ×/1.02 ×
+
+gathers kpe alongside the latent. The rope term qrope ·kpe is identical across all three forms. 
+
+## 6 COMPOSITION WITH EXPERT 
+
+## PARALLELISM 
+
+MoE models (e.g., DeepSeek-V3) interleave MLA attention with MoE FFNs trained under expert parallelism (EP). Col-lective isolation: LAGA ’s collectives operate on head/seq axes inside the attention block; EP’s dispatch/combine all-to-alls operate on the token/expert axis inside the MoE block — temporally separated, never contending. Sequence-then-token partitioning: SP first partitions the sequence; EP then dispatches those tokens via the standard preprocess. LAGA places no constraint on the EP degree. Gradient aggregation: the Wkv b head-axis all-reduce is indepen-dent of EP’s data-parallel reduction; the two compose by summation. 
+
+## 7 RELATED WORK 
+
+Megatron-Core MLA (most direct comparison). MCore (NVIDIA, 2025) ships a single MLA training class whose forward is the explicit form (our B1); the absorb reformula-tion is gated to inference and hard-asserted against training. 
+
+Our §3.2/4.3 result explains why that restriction is well-founded — the absorbed form is a training-memory trap (C1) — and L AGA closes the gap it leaves (C2): a low-communication MLA training path. We are not aware of any shipped path — in MCore or elsewhere — that does latent-over-CP + local up-projection for training. 
+
+Distributed MLA (inference). TPLA (Tang et al., 2026), MLRA (Liu et al., 2026), and Helix (Bhatia et al., 2025) parallelize MLA for decoding/serving . All exploit the infer-ence KV-cache; none addresses training activation memory. LAGA targets training. 
+
+Sequence parallelism (MHA/GQA). Megatron-SP (Ko-rthikanti et al., 2023), Ulysses (Jacobs et al., 2023), Ring/Striped Attention (Liu et al., 2024; Brandon et al., 2023), USP (Fang & Zhao, 2024), LoongTrain (Gu et al., 2024) assume per-head KV and do not evaluate MLA. Under P1 their head-scatter has nothing to scatter. 
+
+Name disambiguation. “LASP” (linear-attention SP, Sun et al. (Sun et al., 2025b); LASP-2 (Sun et al., 2025a)) is orthogonal: it targets linear attention , not softmax MLA. Our method is L AGA (Latent All-Gather Attention) to avoid that collision. 
+
+Expert parallelism. MegaBlocks (Gale et al., 2023), Tutel (Hwang et al., 2023), Lina (Li et al., 2023), DeepEP (Zhao et al., 2025) provide EP dispatch all-to-alls; LAGA ’s collectives compose with EP (§6). 
+
+MLA training-memory analyses. “Memory Analysis on Training DeepSeek Models” (Zhang & Su, 2025) analyzes MLA activation memory under TP/SP/CP in Megatron-LM; it does not compare the explicit/absorbed/L AGA patterns on the memory axis we isolate, nor report the absorbed inflation. 
+
+## 8 DISCUSSION AND LIMITATIONS 
+
+When to choose L AGA (the crossover). LAGA wins when the workload is communication-bound: long sequences, moderate SP, slow interconnects, cross-node SP groups — the long-context training scenario MLA is deployed for. Explicit wins when compute-bound. 
+
+Eager implementation caps sequence at low SP. Our pro-totype uses eager softmax; a fused FA-style kernel over the scores lifts the cap (future work; orthogonal to the comm/memory comparisons). 
+
+Fused up-projection for the compute-bound regime. Asingle fused up-proj →attention →output kernel would amor-tize the local up-projection matmuls and is the route to closing the crossover gap. 
+
+Training scope. LAGA targets training, where there is no KV cache. Inference-time MLA parallelism is out of scope. 
+
+A generalizable lesson. The absorbed-baseline result is broader than MLA: an optimization designed for the in-ference KV-cache becomes a memory regression in train-ing. Practitioners porting inference optimizations to training should check activation footprint, not just communication. 
+
+MoE routing amplifies matmul nondeterminism (a re-producibility note). An incidental observation: the top-k
+
+routing gate is a discrete amplifier of floating-point noise — a matmul with nondeterministic reduction order produces a router score near a tie; top-k flips which expert a token visits; the output jumps discretely, turning sub-ULP noise A Training-Memory Regression in MLA Sequence Parallelism 
+
+into a self-sustaining divergence. In a controlled two-run, same-seed prototype (identical init/data, no dropout), MoE run-to-run loss divergence exceeded a same-architecture dense control by ≈ 16 ×, appearing as a single ≈ 1000 ×
+
+step at exactly the first routing-flip step, and deterministic mode eliminated it. The effect is hardware-contingent : it requires the backend to supply matmul nondeterminism — present on the NPU (aclnn default reduction order), latent on CUDA where cuBLAS matmul and the relevant scat-ter/index ops are deterministic at our prototype scale (the effect did not reproduce there). We report this as a repro-ducibility caveat for NPU MoE training — same-seed runs diverge cliff-shaped rather than gradually, and checkpoint-resume fidelity should be judged by loss range/trend, not bit-equality — not as a large-scale result, and leave full characterization to future work. 
+
+Open directions. (i) A fused L AGA attention kernel; (ii) extending L AGA to ring-style SP for the P > n h regime; (iii) overlapping the latent all-gather with the preceding sub-layer’s compute. 
+
+## REFERENCES 
+
+Bhatia, N., More, A., Borkar, R., Mitra, T., Matas, R., Zhao, R., Golub, M., Mudigere, D., Pharris, B., and Rouhani, B. D. Helix Parallelism: Rethinking sharding strategies for interactive multi-million-token LLM decoding. arXiv preprint arXiv:2507.07120 , 2025. KV-parallelism for long-context decoding; inference. Brandon, W., Nrusimha, A., Qian, K., Ankner, Z., Jin, T., Song, Z., and Ragan-Kelley, J. Striped attention: Faster ring attention for causal transformers. arXiv preprint arXiv:2311.09431 , 2023. DeepSeek-AI. DeepSeek-V2: A strong, economical, and ef-ficient mixture-of-experts language model. arXiv preprint arXiv:2405.04434 , 2024. DeepSeek-AI. DeepSeek-V3 technical report. arXiv preprint arXiv:2412.19437 , 2025. Fang, J. and Zhao, S. Usp: A unified sequence parallelism approach for long context generative ai. arXiv preprint arXiv:2405.07719 , 2024. Gale, T., Narayanan, D., Young, C., and Zaharia, M. MegaBlocks: Efficient sparse training with mixture-of-experts. In Proceedings of Machine Learning and Systems (MLSys) , 2023. arXiv:2211.15841. Gu, D., Sun, P., Hu, Q., Huang, T., Chen, X., Xiong, Y., Wang, G., Chen, Q., Zhao, S., Fang, J., Wen, Y., Zhang, T., Jin, X., and Liu, X. LoongTrain: Efficient training of long-sequence LLMs with head-context parallelism. 
+
+arXiv preprint arXiv:2406.18485 , 2024. Hwang, C., Cui, W., Xiong, Y., Yang, Z., Liu, Z., Hu, H., Wang, Z., Salas, R., Jose, J., Ram, P., Chau, J., Cheng, P., Yang, F., Yang, M., and Xiong, Y. Tutel: Adaptive mixture-of-experts at scale. In Proceedings of Machine Learning and Systems (MLSys) , 2023. arXiv:2206.03382. Jacobs, S. A., Tanaka, M., Zhang, C., Zhang, M., Song, S. L., Rajbhandari, S., and He, Y. DeepSpeed-Ulysses: System optimizations for enabling training of extreme long sequence transformer models. arXiv preprint arXiv:2309.14509 , 2023. Also in Proc. VLDB Endow., 2024. Korthikanti, V., Casper, J., Lym, S., McAfee, L., Andersch, M., Shoeybi, M., and Catanzaro, B. Reducing activation recomputation in large transformer models. In Proceed-ings of Machine Learning and Systems (MLSys) , 2023. arXiv:2205.05198. Li, J., Jiang, Y., Zhu, Y., Wang, C., and Xu, H. Acceler-ating distributed MoE training and inference with Lina. In USENIX Annual Technical Conference (ATC) , 2023. arXiv:2210.17223. Liu, H., Zaharia, M., and Abbeel, P. Ring attention with blockwise transformers for near-infinite context. In Inter-national Conference on Learning Representations (ICLR) ,2024. arXiv:2310.01889. Liu, S., Peng, H., Zhang, Z., Chen, Z., and Guo, Y. Multi-head low-rank attention. In International Confer-ence on Learning Representations (ICLR) , 2026. Poster. arXiv:2603.02188. Dual-path attention enabling 4-way tensor-parallel decoding; inference. Narayanan, D., Shoeybi, M., Casper, J., LeGresley, P., Pat-wary, M., Korthikanti, V. A., Vainbrand, D., Kashinkunti, P., Bernauer, J., Catanzaro, B., Phanishayee, A., and Za-haria, M. Efficient large-scale language model training on GPU clusters using Megatron-LM. In International Con-ference for High Performance Computing, Networking, Storage and Analysis (SC) , 2021. arXiv:2104.04473. NVIDIA. Megatron-Core. https://github.com/ NVIDIA/Megatron-LM , 2025. Reference MLA im-plementation: multi_latent_attention.py un-der megatron/core/transformer/ .Sun, W., Lan, D., Zhong, Y., Qu, X., and Cheng, Y. LASP-2: Rethinking sequence parallelism for linear attention and its hybrid. arXiv preprint arXiv:2502.07563 , 2025a. Linear attention, not softmax MLA – orthogonal to our work. Sun, W., Qin, Z., Li, D., Shen, X., Qiao, Y., and Zhong, Y. Linear attention sequence parallelism. Transac-tions on Machine Learning Research (TMLR) , 2025b. A Training-Memory Regression in MLA Sequence Parallelism 
+
+arXiv:2404.02882. Also in OPT 2024 (Optimization for Machine Learning), NeurIPS 2024 Workshop. Linear at-tention, not softmax MLA – orthogonal to our work. Tang, X., Meng, F., Tang, P., Wang, Y., Yin, D., Sun, X., and Zhang, M. TPLA: Tensor parallel latent attention for efficient disaggregated prefill and decode inference. In International Conference on Architectural Support for Programming Languages and Operating Systems (ASP-LOS) , 2026. arXiv:2508.15881. Inference/decode only. Zhang, P. and Su, L. Memory analysis on the training course of DeepSeek models. arXiv preprint arXiv:2502.07846 ,2025. Zhao, C., Zhou, S., Zhang, L., Deng, C., Xu, Z., Liu, Y., Yu, K., Li, J., and Zhao, L. DeepEP: an efficient expert-parallel communication library. https://github. com/deepseek-ai/DeepEP , 2025.

@@ -1,0 +1,54 @@
+{
+  "label": "2026-07-25",
+  "date": "2026-07-24",
+  "generated_at": "2026-07-24T21:18:02",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202607/24/2607.21224v1-controlled-periodic-synchronization-for-efficient-data-parallel-training",
+      "section": "deep",
+      "title_en": "Controlled Periodic Synchronization for Efficient Data-Parallel Training",
+      "authors": "Imane Ettifouri, Mostapha Zbakh, Claude Tadonki",
+      "date": "2026-07-23",
+      "pdf": "https://arxiv.org/pdf/2607.21224v1",
+      "score": "9.0",
+      "evidence": "周期性同步实现通信高效的数据并行训练",
+      "tldr": "数据并行训练在广域网中面临通信瓶颈，标准DDP每步同步开销大，而LocalSGD等周期方法依赖参数平均效果有限。本文提出受控周期数据并行（CPDP），交替本地更新与梯度AllReduce和SlowMo参数平均的协调步骤。在ResNet-50/CIFAR-100上，K=4时CPDP比DDP测试精度提升2.44%，平均训练时间减少13.8%。结果表明同步频率可作为通信约束下分布式训练的有效调控参数。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Data-parallel training relies on frequent gradient synchronization across workers. Standard DDP synchronizes gradients at every iteration, which is effective on fast local-area networks but increasingly sensitive to communication latency and network variability in geographically distributed environments. Periodic methods such as LocalSGD reduce synchronization frequency but rely mainly on parameter averaging, which may be insufficient when worker trajectories diverge. This paper studies synchronization frequency as a systems parameter for communication-constrained distributed training. We evaluate Controlled Periodic Data Parallelism (CPDP), a PyTorch-DDP-compatible strategy that alternates local updates with a reconciliation step combining gradient AllReduce and SlowMo parameter averaging. Experiments are conducted on Grid'5000 across intra-site clusters and a cross-site WAN deployment spanning Nancy and Sophia with 16.6 ms RTT. In the main fixed learning-rate setting of 0.1 on ResNet-50/CIFAR-100, CPDP achieves the highest peak test accuracy among the evaluated configurations. At K=2, CPDP improves over DDP by 2.28 percentage points but incurs additional wall-clock time. At K=4, CPDP improves over DDP by 2.44 percentage points while reducing average wall-clock time by 13.8%. Direct profiling shows that exposed synchronization time at K=4 is roughly half that of DDP, explaining the improved WAN accuracy-time trade-off. Additional experiments on ViT-S/CIFAR-100 and ResNet-50/TinyImageNet show that CPDP remains competitive with DDP and generally improves over LocalSGD. Overall, the results show that synchronization frequency is a practical control parameter for distributed training under communication constraints.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/24/2607.19674v1-fedlsg-llm-enhanced-semantic-calibration-for-federated-graph-backdoor-defense",
+      "section": "quick",
+      "title_en": "FedLSG: LLM-Enhanced Semantic Calibration for Federated Graph Backdoor Defense",
+      "authors": "Chenyu Zhou, Yabin Peng, Wei Huang, Kunlin Li, Shuaishuai Zhang, Xinyuan Miao",
+      "date": "2026-07-22",
+      "pdf": "https://arxiv.org/pdf/2607.19674v1",
+      "score": "6.0",
+      "evidence": "联邦图神经网络后门防御",
+      "tldr": "联邦图神经网络面临后门投毒攻击，现有规则式防御缺乏语义理解，难以应对隐蔽触发器且可能损害良性结构。本文提出FedLSG，首次引入大语言模型到联邦图后门防御，通过图与行为到文本的转换，结合学生-教师架构实现语义校准。教师LLM全局评估客户端更新，学生LoRA模型抑制后门边影响。实验表明该方法显著提升防御能力且不破坏图完整性。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated Graph Neural Networks (FedGNNs) are highly vulnerable to backdoor poisoning, yet existing defenses typically rely on rule-based approaches that lack semantic understanding, making them vulnerable to stealthy triggers and harmful to benign structures. To solve this, we present FedLSG, the first framework that integrates large language models (LLMs) into federated graph backdoor defense. FedLSG introduces a graph and behavior to text grounding scheme that transforms local graph structures and client update behaviors into semantically rich natural language representations. The framework further adopts a lightweight student-teacher architecture. On the server side, a full scale LLM serves as a teacher, providing global contextual guidance and evaluating client updates during aggregation to identify potentially malicious participants. On the client side, a LoRA-based student is maintained to perform semantic reasoning, to suppress the influence of edges associated with backdoor triggers. By enabling semantic interpretation of both graph patterns and client behaviors, the framework adaptively incorporates rule-based signals into message passing and client aggregation for defense. Experiments demonstrate that FedLSG significantly improves resistance to backdoor attacks without compromising graph integrity.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/24/2607.19759v1-convergence-latency-aware-adaptive-modulation-and-resource-allocation-in-ris-assisted-wireless-federated-learning",
+      "section": "quick",
+      "title_en": "Convergence-Latency-Aware Adaptive Modulation and Resource Allocation in RIS-Assisted Wireless Federated Learning",
+      "authors": "Liwei Wang, Wen Chen, Jun Li, Qingqing Wu, Ming Ding, Xusheng Zhu, Qiong Wu",
+      "date": "2026-07-22",
+      "pdf": "https://arxiv.org/pdf/2607.19759v1",
+      "score": "6.0",
+      "evidence": "自适应调制和资源分配实现通信高效的联邦学习",
+      "tldr": "针对RIS辅助无线联邦学习中通信可靠性不足导致的训练延迟和收敛退化问题，提出一种自适应调制与资源分配方案。通过推导符号错误率对梯度更新影响的收敛上界，建立混合整数非线性规划优化收敛与延迟的权衡问题，并设计低复杂度交替优化算法。实验表明该方法在复杂任务和恶劣信道下能显著加速收敛并提升测试精度。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated learning (FL) over wireless networks suffers from significant training latency and degraded convergence due to unreliable wireless transmission, especially under blocked propagation environments. Although reconfigurable intelligent surfaces (RISs) can improve communication reliability, existing wireless FL studies rarely characterize the trade-off between learning convergence and communication delay under modulation-dependent transmission errors. In this paper, we consider a wireless FL system operating under RIS-assisted blocked-link propagation scenarios, and focus on adaptive modulation and sub-channel allocation for convergence-latency aware communication design. By characterizing the effect of symbol errors on uploaded local gradients, we derive a convergence-related upper bound that reveals the impact of symbol error rate (SER) on FL loss decay. Based on this result, we formulate a joint convergence-latency optimization problem, which is cast as a mixed-integer nonlinear programming (MINLP) problem, and solve it using a low-complexity hybrid alternating optimization framework. Extensive experiments on MNIST, CIFAR-10, and Speech Commands show that the proposed scheme consistently achieves faster convergence and higher test accuracy than existing adaptive communication schemes, especially in complex tasks and challenging wireless scenarios.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

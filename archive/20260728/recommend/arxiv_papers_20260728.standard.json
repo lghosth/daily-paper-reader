@@ -1,0 +1,97 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-28T20:03:58.534127+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.23639v1",
+      "source": "arxiv",
+      "title": "Distributed Convolutional Rank Regression over Decentralized Networks",
+      "abstract": "This paper studies convolution rank regression (CRR) over decentralized distributed learning networks. We propose a novel decentralized CRR framework, in which estimators are obtained by solving consensus-constrained optimization with kernel-smoothed rank loss. The developed estimation scheme relies solely on local node data and information shared by neighboring nodes, thereby achieving privacy preservation and high communication efficiency. For heterogeneous network settings, we establish finite-sample error bounds for the decentralized CRR estimator and derive exact support recovery guarantees for the sparse decentralized CRR LASSO estimator. To facilitate numerical implementation, we adopt a generalized consensus ADMM to efficiently solve local subproblems across all network nodes. We verify the favorable performance of our developed approach via extensive numerical simulations and real-data experiments.",
+      "authors": [
+        "Chunjing Li",
+        "Tiange Zhao",
+        "Xiaohui Yuan"
+      ],
+      "primary_category": "stat.ME",
+      "categories": [
+        "stat.ME",
+        "cs.LG"
+      ],
+      "published": "2026-07-26T13:07:42+00:00",
+      "link": "https://arxiv.org/pdf/2607.23639v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "decentralized distributed learning framework with high communication efficiency",
+      "llm_evidence_cn": "去中心化分布式学习框架，具有高通信效率",
+      "llm_evidence": "去中心化分布式学习框架，具有高通信效率",
+      "canonical_evidence": "去中心化分布式学习框架，具有高通信效率",
+      "llm_tldr_en": "Proposes a decentralized Convolutional Rank Regression framework for distributed learning, using consensus-constrained optimization with kernel-smoothed rank loss, achieving high communication efficiency and privacy preservation, with theoretical guarantees.",
+      "llm_tldr_cn": "本文针对分布式学习提出一个去中心化的卷积秩回归（CRR）框架。通过共识约束优化和核平滑秩损失，该框架仅依赖本地数据和邻居信息，实现了高通信效率和隐私保护。在异构网络下，建立了有限样本误差界和支持恢复保证，并采用广义共识ADMM高效求解。该工作为分布式学习系统提供了通信高效的解决方案。",
+      "llm_tldr": "本文针对分布式学习提出一个去中心化的卷积秩回归（CRR）框架。通过共识约束优化和核平滑秩损失，该框架仅依赖本地数据和邻居信息，实现了高通信效率和隐私保护。在异构网络下，建立了有限样本误差界和支持恢复保证，并采用广义共识ADMM高效求解。该工作为分布式学习系统提供了通信高效的解决方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.21885v1",
+      "source": "arxiv",
+      "title": "Remedying Coarsening-Based GNN Training under Heterophily via Adaptive Complementary Enhancement",
+      "abstract": "Coarsening-based training for graph neural networks (GNNs), i.e.\\ training on coarsened graphs rather than the original large ones, has become a promising direction for scaling GNNs to massive graphs. However, prior work has been evaluated almost exclusively on \\textit{homophilic} graphs, leaving the more challenging \\textit{heterophilic} settings underexplored. We show, both empirically and theoretically, that existing coarsening-based training methods suffer significant performance degradation on heterophilic graphs due to inevitable loss of graph information during coarsening. To address this, we propose {\\bf A}daptive {\\bf C}omplementary {\\bf E}nhancement, a plug-and-play, model-agnostic strategy that reintegrates the information discarded in coarsening: ACE learns a projector for re-constructing original node features and applies \\textit{anisotropic structural regularization} to embed local heterophily. We further adopt \\textit{homoscedastic uncertainty weighting} to adaptively balance the combined training objective of primary coarsened-graph training loss and full-graph auxiliary loss with augmented node features re-constructed by the heterophily-aware projector. Extensive experiments show that ACE drives consistent gains on heterophilic benchmarks while preserving competitive results on homophilic graphs with minimal computational overhead. Code is available at the GitHub repository: https://github.com/vasile-paskardlgm/ACE.",
+      "authors": [
+        "Guoming Li",
+        "Jian Yang",
+        "Xukun Wang",
+        "Zixiao Wang",
+        "Shangsong Liang",
+        "Yifan Chen"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "eess.SP",
+        "math.NA"
+      ],
+      "published": "2026-07-24T01:29:28+00:00",
+      "link": "https://arxiv.org/pdf/2607.21885v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "coarsening-based GNN training for scaling to massive graphs",
+      "llm_evidence_cn": "基于粗化的GNN训练方法用于大规模图缩放",
+      "llm_evidence": "基于粗化的GNN训练方法用于大规模图缩放",
+      "canonical_evidence": "基于粗化的GNN训练方法用于大规模图缩放",
+      "llm_tldr_en": "Existing coarsening-based GNN training suffers on heterophilic graphs due to information loss. This paper proposes Adaptive Complementary Enhancement (ACE), a plug-and-play strategy that reintegrates lost information, significantly improving coarsening training performance on heterophilic benchmarks.",
+      "llm_tldr_cn": "现有基于粗化的图神经网络训练方法在大规模图上很有前景，但在异质性图上由于信息丢失而性能严重下降。本文提出自适应互补增强（ACE），一种即插即用的模型无关策略，通过重新整合粗化过程中丢失的关键信息来恢复性能。实验表明，ACE在多个异质性数据集上显著提升粗化训练的效果，甚至接近全图训练。这项工作为大规模异质性图上的高效GNN训练提供了实用解决方案。",
+      "llm_tldr": "现有基于粗化的图神经网络训练方法在大规模图上很有前景，但在异质性图上由于信息丢失而性能严重下降。本文提出自适应互补增强（ACE），一种即插即用的模型无关策略，通过重新整合粗化过程中丢失的关键信息来恢复性能。实验表明，ACE在多个异质性数据集上显著提升粗化训练的效果，甚至接近全图训练。这项工作为大规模异质性图上的高效GNN训练提供了实用解决方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "distributed training systems for graph neural networks",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

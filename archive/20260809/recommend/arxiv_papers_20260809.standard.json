@@ -1,0 +1,54 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-09T20:33:01.852550+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.02558v1",
+      "source": "arxiv",
+      "title": "Benchmarking Sheaf Neural Networks for Inductive Tasks",
+      "abstract": "Sheaf Neural Networks (SNNs) generalize message passing by replacing scalar edge weights of standard Graph Neural Networks (GNNs) with learnable, edge-dependent restriction maps between node stalks. Despite their strong theoretical foundations and promising transductive results, SNNs have been evaluated almost exclusively on transductive node classification, leaving their behaviour under inductive protocols unknown. We address this gap through the first systematic benchmark of the sheaf design space, evaluating three diffusion mechanisms (neural sheaf diffusion, sheaf attention, and sheaf attention with Graph Attention Network v2), three restriction-map parameterizations, three stalk dimensions, and six modern GNN architectural components, within a message-passing reformulation that never assembles the heavy sheaf Laplacian, making the full design space trainable under cross-graph batching. Across $1{,}890$ controlled experiments on 14 inductive datasets, multiple insights emerge: restriction maps are the dominant design choice and general maps are preferable, larger stalks add capacity but not long-range reach, architectural components explain more performance variation than the entire sheaf-specific design space itself. Under a matched protocol, SNNs transfer to inductive settings but do not reach the strongest baselines, with gaps being dataset-dependent. Practically, a single sheaf configuration can generalize across datasets, so effort is better spent tuning the surrounding architectural recipe than the sheaf operator itself.",
+      "authors": [
+        "Stefano Fiorini",
+        "Edoardo Coppola",
+        "Pietro Liò"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-03T17:41:20+00:00",
+      "link": "https://arxiv.org/pdf/2608.02558v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Systematic benchmark of GNN architectural components directly informs NAS search space design for graph neural networks.",
+      "llm_evidence_cn": "系统评估Sheaf GNN架构设计空间，直接为图神经网络架构搜索的搜索空间设计提供依据。",
+      "llm_evidence": "系统评估Sheaf GNN架构设计空间，直接为图神经网络架构搜索的搜索空间设计提供依据。",
+      "canonical_evidence": "系统评估Sheaf GNN架构设计空间，直接为图神经网络架构搜索的搜索空间设计提供依据。",
+      "llm_tldr_en": "First systematic benchmark of sheaf neural networks under inductive tasks, evaluating diffusion mechanisms, parameterizations, and building blocks. Provides empirical basis for GNN architecture search search spaces, bridging architecture benchmarking and NAS.",
+      "llm_tldr_cn": "Sheaf神经网络理论强但此前仅在直推式节点分类上评估。该工作首次在归纳式协议下系统评测其设计空间，涵盖三种扩散机制、多种限制映射参数化以及六个现代GNN组件。结果显示不同组件对归纳性能影响显著，为图神经网络架构搜索提供了可靠的搜索空间基准与候选操作集。这项benchmark填补了GNN结构设计评估空白，可直接支撑NAS方法设计。",
+      "llm_tldr": "Sheaf神经网络理论强但此前仅在直推式节点分类上评估。该工作首次在归纳式协议下系统评测其设计空间，涵盖三种扩散机制、多种限制映射参数化以及六个现代GNN组件。结果显示不同组件对归纳性能影响显著，为图神经网络架构搜索提供了可靠的搜索空间基准与候选操作集。这项benchmark填补了GNN结构设计评估空白，可直接支撑NAS方法设计。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

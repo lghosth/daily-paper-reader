@@ -1,0 +1,39 @@
+{
+  "label": "2026-08-02",
+  "date": "2026-08-01",
+  "generated_at": "2026-08-01T19:52:32",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202608/01/2607.25059v1-parallel-spectral-graph-sparsification-via-low-diameter-decompositions",
+      "section": "quick",
+      "title_en": "Parallel Spectral Graph Sparsification via Low Diameter Decompositions",
+      "authors": "Yves Baumann, Gernot Zöcklein",
+      "date": "2026-07-27",
+      "pdf": "https://arxiv.org/pdf/2607.25059v1",
+      "score": "6.0",
+      "evidence": "并行谱图稀疏化可加速分布式图神经网络训练中的图划分",
+      "tldr": "针对加权图的谱稀疏化，现有无求解器并行方法自2014年以来无实质改进，且依赖目标精度ε。本文提出一种仅依赖并行低直径分解和独立采样的新算法，通过多随机子图估计鲁棒连通性并据此子采样边。该算法首次在实用方法中消除ε对工作量与深度的影响，实验验证在相关图和稀疏度下性能优异。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "We present a new solver-free parallel spectral sparsification algorithm for weighted graphs that relies only on parallel low-diameter decompositions and independent sampling. This yields the first algorithmic improvement over prior, solver-free parallel sparsification approaches since Koutis (2014) and, for the first time for a practical algorithm, eliminates any dependence on the target approximation accuracy $ε$ in the algorithm's work and depth.   Our algorithm works by sub-sampling edges according to their robust connectivity, as introduced by Kapralov and Panigrahy (2012). We show how to estimate the robust connectivities of $G$ in an extremely simple manner: we create multiple random sub graphs $G_p$, where each edge in $G$ is sub-sampled independently with probability $p_e = \\min \\{w_e \\cdot p, 1\\}$. Then, we run a Low Diameter Decomposition in each of the graphs. If $u$ and $v$ often share a cluster in the LDDs, then this provides us with an upper bound on the robust connectivity of the edge $e = (u,v)$. Carefully invoking this procedure for $O(\\log n)$ different values of the probabilities $p$ then allows us to obtain sufficiently good estimates for sub-sampling.   We additionally complement the theory with an experimental evaluation demonstrating strong performance across relevant graphs and sparsity regimes.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/01/2607.27632v1-first-order-constrained-trilevel-optimization-over-distributed-networks-for-robust-coreset-selection",
+      "section": "quick",
+      "title_en": "First-order Constrained Trilevel Optimization Over Distributed Networks for Robust Coreset Selection",
+      "authors": "Yang Jiao, Kaixuan Jiao, Kai Yang, Nadjib Aitsaadi, Ilhem Fajjari, Renwei, Li",
+      "date": "2026-07-30",
+      "pdf": "https://arxiv.org/pdf/2607.27632v1",
+      "score": "6.0",
+      "evidence": "分布式稳健核心集选择可降低分布式训练中的通信与数据规模",
+      "tldr": "物联网边缘网络产生海量数据，全量训练导致高开销，鲁棒核集选择成为关键。本文将其建模为具有层级约束的三层优化问题，并提出联邦一阶约束三层优化算法(F2CTO)，通过分层复合值函数重构与分布式交替投影梯度协同求解。算法达到O(ε^{-3/2})非渐近收敛率。这是首个分布式鲁棒核集选择方法，也是首个处理层级约束三层优化的分布式方法，在持续学习上验证有效。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "With the rapid advancement of the Internet of Things (IoT), massive amounts of data are generated across distributed edge networks. Training models on full data incurs significant computational overhead and storage bottlenecks, rendering coreset selection a critical paradigm. Furthermore, given the privacy-sensitive nature of local data and the escalating demand for model robustness in real-world deployments, developing an effective distributed optimization framework for robust coreset selection is vital, yet remains largely unexplored. To this end, this work first characterizes the hierarchical dependencies among coreset selection, robust optimization, and distributed learning, and formulates the distributed robust coreset selection as a trilevel optimization problem with level-wise constraints. Furthermore, to effectively solve the trilevel problem in a distributed manner, the \\underline{F}ederated \\underline{F}irst-order \\underline{C}onstrained \\underline{T}rilevel \\underline{O}ptimization (F$^2$CTO) is proposed, which synergistically integrates a hierarchical composite value-function reformulation and a distributed alternating projected gradient algorithm. To the best of our knowledge, F$^2$CTO is the first method developed for distributed robust coreset selection, as well as the first distributed optimization approach for trilevel optimization problems with level-wise constraints. Additionally, we prove that the proposed method achieves a non-asymptotic convergence rate of $\\mathcal{O}(ε^{-3/2})$ for finding an $ε$-stationary point. Extensive empirical evaluations on reliable continual learning demonstrate the effectiveness and efficiency of the proposed F$^2$CTO.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

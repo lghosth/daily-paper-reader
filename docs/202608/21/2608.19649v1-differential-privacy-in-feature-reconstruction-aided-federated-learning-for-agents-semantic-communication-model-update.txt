@@ -1,0 +1,868 @@
+Title: Differential Privacy in Feature Reconstruction Aided Federated Learning for Agent's Semantic Communication Model Update
+
+URL Source: https://arxiv.org/pdf/2608.19649v1
+
+Published Time: Fri, 21 Aug 2026 00:27:03 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# Differential Privacy in Feature Reconstruction Aided Federated Learning for Agent’s Semantic Communication Model Update 
+
+Yoon Huh ∗† , Bumjun Kim ∗† , and Wan Choi ∗† ∗Department of Electrical and Computer Engineering, Seoul National University, Seoul 08826, South Korea 
+
+†Institute of New Media and Communications, Seoul National University, Seoul 08826, South Korea 
+
+{mnihy621, eithank96, wanchoi }@snu.ac.kr 
+
+Abstract —This paper proposes a differentially private fed-erated learning (FL) framework built upon an FL algorithm with semantic feature reconstruction (FedSFR) for training semantic communication modules for image transmission. By allowing clients with unfavorable uplink capacity to transmit low-dimensional semantic feature vectors extracted from locally trained joint source-channel coding (JSCC) encoders, FedSFR enhances communication efficiency and training stability under heterogeneous wireless conditions. To protect client privacy, we incorporate the oneshot Laplace mechanism and theoretically demonstrate that feature-based transmission achieves strictly stronger differential privacy (DP) guarantees than gradient-based transmission under an identical communication budget. In addition, a model selection mechanism is introduced to alleviate performance degradation caused by privacy-preserving perturbations. Experimental results on multiple datasets show that the proposed DP-aided FedSFR outperforms DP-enabled FedAvg in training stability and image reconstruction quality in heterogeneous wireless systems. 
+
+Index Terms —differential privacy, feature reconstruction, fed-erated learning, semantic communication, image transmission. 
+
+I. I NTRODUCTION 
+
+Semantic communication has emerged as a key paradigm for task-oriented transmission in sixth-generation (6G) wireless systems, aiming to convey task-relevant information rather than raw bit streams [1]. For robust image transmission, deep learning (DL)–based joint source–channel coding (JSCC) frameworks have been widely studied, where neural network (NN)–based autoencoders jointly optimize source and channel coding over noisy wireless channels [2]. To address the dynamic nature of real-world data distribu-tions while preserving data privacy, federated learning (FL) has emerged as an effective solution for continuously updating se-mantic communication modules across distributed agents [3], [4]. In our previous work, we proposed an FL algorithm with semantic feature reconstruction (FedSFR), a communication-efficient FL framework in which clients experiencing poor channel conditions transmit semantic feature vectors instead of local gradient updates [5], [6]. By combining gradient aggre-gation from clients with better channel conditions with server-side feature reconstruction (FR) learning, FedSFR significantly 
+
+This work was supported by Institute of Information & communications Technology Planning & Evaluation (IITP) grant funded by the Korea govern-ment(MSIT). (No.RS-2024-00398948, Next Generation Semantic Communi-cation Network Research Center) 
+
+accelerates convergence and enhances training stability in heterogeneous wireless environments. Within this framework, semantic communication agents operate as FL clients and update their JSCC encoder–decoder pair, i.e., the local model, through FL. During training, the parameter server (PS) ag-gregates local updates and refines the global model via FR. After training, however, inter-agent semantic communication is conducted exclusively among clients using the learned global model, without involvement of the PS. Although FL avoids direct sharing of raw data, prior studies have shown that privacy leakage may still occur through model updates or learned representations [7]. In FedSFR, feature vectors are generated from public data, so the input samples themselves do not pose a privacy risk. However, since the encoder used for feature generation is trained on private local data, the resulting feature representations may still implicitly reflect client-specific information. To address this concern, this paper investigates the differen-tial privacy (DP) [8] guarantees of FedSFR under an honest-but-curious (HBC) PS. DP is a rigorous and widely adopted framework for protecting sensitive data while preserving the utility of privatized information and an HBC PS is assumed to faithfully follow the FedSFR protocol while attempting to infer clients’ original data from uplink communications. Relatedly, the DP method in [9] employs PS-injected noise to defend against an external adversary rather than an HBC PS, and it neither targets communication-efficient FL nor exploits feature vectors in semantic communication. In contrast, FedSFR sup-ports not only gradient-based updates, as in conventional FL, but also feature-based transmission. Notably, in the feature-based transmission, feature generation relies solely on the encoder of an autoencoder-based semantic communication module. As a result, only the JSCC encoder is subject to privatization, whereas the gradient-based update of FedSFR requires privatizing the entire model. Since DP guarantees are governed by the sensitivity of the privatized target, this structural distinction motivates a fundamental question: how does the choice of transmission strategy affect the achievable DP guarantees in FedSFR? 
+
+To answer this question, we integrate the oneshot and Laplace mechanisms, dubbed the oneshot Laplace (OL) mech-anism [10], for both transmission strategies and provide a rig-arXiv:2608.19649v1 [eess.SP] 20 Aug 2026 orous theoretical comparison of their privacy guarantees. We mathematically prove that feature-based transmission achieves strictly stronger DP guarantees under identical communication constraints due to reduced parameter exposure. Furthermore, to mitigate performance degradation caused by DP noise, we propose a model selection (MS) algorithm that compares FR-assisted updates with gradient-only updates, and then selec-tively retains the update achieving better task performance. The main contributions of this work are as follows:  
+
+> •
+
+We propose a differentially private FedSFR by incorpo-rating the OL mechanism into both gradient-based and feature-based transmission strategies, enabling privacy-preserving training under heterogeneous uplink channels.  
+
+> •
+
+We propose the MS algorithm at the PS that adaptively selects between FR-aided and gradient-only updates, im-proving training stability and yielding a more favorable optimization trajectory under DP noise.  
+
+> •
+
+We establish formal DP guarantees for FedSFR under both sparse gradient and semantic feature transmission. We show that feature-based transmission allows strictly stronger privacy guarantees by reducing the effective parameter exposure under the same uplink budget.  
+
+> •
+
+Experimental results on two image datasets demonstrate that the proposed DP-aided FedSFR consistently out-performs DP-enabled FedAvg in terms of reconstruction quality, convergence behavior, and robustness under var-ious privacy and channel conditions. II. S YSTEM MODEL 
+
+A. Semantic Communication for Image Transmission 
+
+Consider a JSCC-based semantic communication frame-work for image transmission, where the receiver aims to recover the transmitted image. The transmission procedure is summarized as follows. Given a source image X ∈ RC×H×W ,with C, H, and W denoting the number of feature channels, height, and width, respectively, the transmitter maps X into a 
+
+d-dimensional feature vector y ∈ Rd through an encoder fθ
+
+parameterized by θ, expressed as y = fθ (X).To satisfy the transmission power constraint, assumed as 
+
+P = 1 , the encoded feature vector is normalized as ˜y =
+
+y/∥y∥2 and conveyed over a Rayleigh fading channel with coefficient h ∼ CN (0 , 1) . At the receiver, after channel equal-ization, the corrupted representation is processed by a decoder 
+
+f −1 
+
+> ϕ
+
+, parameterized by ϕ, to generate the reconstructed image 
+
+ˆX ∈ RC×H×W , given by ˆX = f −1 
+
+> ϕ
+
+(˜ y + n/h ), where 
+
+n ∼ N (0d, σ 2Id) denotes the Gaussian noise vector. The average signal-to-noise ratio (SNR) γ is defined as 1/σ 2.Let w = {θ, ϕ} ∈ RN collect all trainable parameters of the JSCC model, where N represents the total number of NN parameters. In the FL setting, these parameters are optimized by minimizing the global objective function at the PS, defined as F (w) = 1
+
+> |D|
+
+P 
+
+> X∈D
+
+lc(w; X), where D denotes the image dataset. Here, the sample-wise loss function is chosen as lc(w; X) = MSE ( ˆX, X), which measures the mean squared error (MSE) between the reconstructed image ˆX and the ground-truth image X.Bob Alice  
+
+> Uplink Uplink
+> Downlink
+
+= + 
+
+> Server Model Aggregation
+> Alice Carol
+> Feature Vector Collection
+
+= ∪              
+
+> Bob David
+> 𝓐 𝒎 𝒕 𝓐 𝒐 𝒕
+> Feature Reconstruction : Model Update
+> 𝒇 𝜽 𝒇 𝝓
+> −𝟏
+> 𝒇 𝝓 𝑨𝒍𝒊𝒄𝒆
+> −𝟏 𝒇 𝜽 𝑩𝒐𝒃 𝒇 𝝓 𝑩𝒐𝒃
+> −𝟏 𝒇 𝜽 𝑨𝒍𝒊𝒄𝒆
+> ③
+> ②
+> ⑤
+> ④
+> ①①
+> ②
+> ③
+> : OL Mechanism
+> 𝒘 𝒕+ Τ𝟏 𝟐 𝓓 𝒔 𝒕+ Τ𝟏 𝟐
+> : MS Algorithm
+> 𝒘 𝒕+ Τ 𝟏 𝟐 vs. 𝒘 𝒕+𝟏
+> Fig. 1. Overall procedure of FedSFR with the numbered algorithmic steps. Gray boxes indicate the proposed OL mechanism and MS algorithm for DP.
+
+B. Federated Learning with Semantic Feature Reconstruction 
+
+We consider a wireless FedSFR system [5], which departs from conventional FL schemes that rely solely on gradient-based uplink transmission. The PS interacts with a set of K
+
+clients indexed by A with |A| = K. Each client k ∈ A main-tains a local dataset Dk, while D = S 
+
+> k∈A
+
+Dk is the global dataset. The local objective function at client k is defined as 
+
+Fk(w) = 1 
+
+> |D k|
+
+P 
+
+> X∈D k
+
+lc(w; X), whereas the global objective function at the PS is expressed as F (w) = P 
+
+> k∈A
+
+pkFk(w),where pk = |D k|/|D| denotes the relative data contribution of client k. The overall FedSFR workflow is illustrated in Fig. 1, including five algorithmic steps .In FedSFR, clients with unfavorable uplink capacity upload encoder output feature vectors extracted from their locally updated JSCC encoders instead of transmitting local model (i.e., JSCC module) updates. Since the feature dimension is much smaller than the number of model parameters, i.e., 
+
+d ≪ N , feature-based transmission enables the clients with limited uplink capacity to convey more informative repre-sentations of their local model states than sparsified local updates under the same communication budget. At each global iteration t, the participating clients A(t) ⊂ A are partitioned into two disjoint sets, A(t) 
+
+> m
+
+and A(t) 
+
+> o
+
+, where clients in A(t) 
+
+> m
+
+,experiencing relatively reliable channel conditions, transmit local model updates, whereas the clients in A(t) 
+
+> o
+
+, suffering from poorer channel quality, upload encoder output feature vectors. Accordingly, we have A(t) 
+
+> m
+
+∪ A (t) 
+
+> o
+
+= A(t), with 
+
+|A (t) 
+
+> m
+
+| = Km and |A (t) 
+
+> o
+
+| = Ko. Following [11], features are extracted from a shared public dataset Pk ⊂ D k to avoid direct leakage of local private data at the PS, while the local model is trained using the entire local dataset, including both private and public samples 1. Notably, the transmitted representations thus serve as a medium for conveying local model knowledge. During the local update, each client k downloads the current global model from the PS, denoted by w(t, 0)  
+
+> k
+
+= w(t) ∈ RN .The client then performs local model optimization using its 
+
+> 1If the channel conditions remain poor, some clients only transmit feature vectors generated from the public dataset, raising concerns about imbalanced influence of private data across clients, akin to heterogeneous local data distributions. However, unlike conventional FL for classification, our prior FL results on reconstruction under non-independent and identically distributed (IID) local datasets are similar to those under IID settings [6], indicating that the bias caused by clients with persistently poor channels is negligible.
+
+local dataset Dk via a mini-batch stochastic gradient descent (SGD) algorithm ( step 1). The local update rule follows 
+
+w(t,e +1)  
+
+> k
+
+= w(t,e ) 
+
+> k
+
+− η(t) 
+
+> c
+
+∇F (t,e ) 
+
+> k
+
+(w(t,e ) 
+
+> k
+
+), (1) where e ∈ { 0, . . . , E c − 1} denotes the local iteration index, 
+
+η(t) 
+
+> c
+
+is the local learning rate at global round t, Ec is the total number of local update steps, and ∇F (t,e ) 
+
+> k
+
+(w(t,e ) 
+
+> k
+
+) is the stochastic gradient estimator. To compute this gradient estimator at each local iteration e, the client k draws a mini-batch D(t,e ) 
+
+> k
+
+⊂ D k and averages the sample-wise gradients of 
+
+lc(w(t,e ) 
+
+> k
+
+; X) over D(t,e ) 
+
+> k
+
+.For clients in A(t) 
+
+> m
+
+, local model updates are communicated using a top-S sparsification scheme 2 with error feedback strategy [12]. Specifically, the local update information at global iteration t is given by 
+
+g(t) 
+
+> k
+
+= Sparse (m(t) 
+
+> k
+
++ η(t)
+
+> c
+
+XEc−1 
+
+> e=0
+
+∇F (t,e ) 
+
+> k
+
+(w(t,e ) 
+
+> k
+
+)) , (2) where Sparse (·) denotes the top-S sparsification operator and 
+
+m(t) 
+
+> k
+
+∈ RN is the error memory maintained at client k. The error memory is updated as 
+
+m(t+1)  
+
+> k
+
+= m(t) 
+
+> k
+
++ η(t)
+
+> c
+
+XEc−1 
+
+> e=0
+
+∇F (t,e ) 
+
+> k
+
+(w(t,e ) 
+
+> k
+
+) − g(t) 
+
+> k
+
+, (3) which compensates for information loss via (2). With the sparsification level Sk larger than the threshold Sth , each client 
+
+k ∈ A (t) 
+
+> m
+
+uploads the local update g(t) 
+
+> k
+
+to the PS via the uplink channel ( step 2 ). In contrast, the clients in A(t) 
+
+> o
+
+upload a feature set Y(t)
+
+> k
+
+via the uplink, where each feature vector y is generated by the locally updated JSCC encoder fθ with θ = θ(t,E c) 
+
+> k
+
+using 
+
+Pk (step 2 ). Their uplink budget Sk3 is smaller than Sth ,limiting the number of transmitted feature vectors. During the global update, the PS first aggregates the received local updates and forms a feature-based dataset 
+
+D(t+ 12 ) 
+
+> s
+
+= S
+
+> k∈A (t)
+> o
+
+Y(t) 
+
+> k
+
+by collecting the transmitted features (step 3 ). The intermediate global model is computed as 
+
+w(t+ 12 ) = w(t) − KKm
+
+X
+
+> k∈A (t)
+> m
+
+pkg(t) 
+
+> k
+
+. (4) Starting from w(t+ 12 ,0)  
+
+> s
+
+= w(t+ 12 ), the PS further refines the global model by performing FR using D(t+ 12 ) 
+
+> s
+
+(step 4 ). Through FR, information from the clients in A(t) 
+
+> o
+
+is implicitly integrated into the global model without explicitly transmitting their local updates. Accordingly, the error memory of the client 
+
+k ∈ A (t) 
+
+> o
+
+is reset as m(t+1)  
+
+> k
+
+= 0N after the server-side update.                              
+
+> 2Due to the limited uplink capacity between the PS and each client, the amount of transmitted update information must be constrained to guarantee error-free communication within the required delay T. Accordingly, the sparsification level is determined as Sk=⌊Ck·T·RQ⌋, where Ck,R, and Qare the channel capacity of client k, code rate, and quantization bits, respectively.
+> Smay vary across clients depending on their channel conditions. The top-S
+> sparsification selects the Sentries with the largest magnitudes in a vector, i.e., Skfor client k, and is applied on a per-layer basis for the NN model.
+> 3Skdenotes the uplink payload size of client k. For k∈ A (t)
+> o, it determines the number of transmitted feature vectors, while for k∈ A (t)
+> mit corresponds to the sparsification level for gradient transmission.
+
+The JSCC decoder and encoder at the PS sequentially pro-cess a feature sample y in D(t+ 12 ) 
+
+> s
+
+to produce its reconstruction 
+
+ˆy ∈ Rd, given by ˆy = fθ (f −1 
+
+> ϕ
+
+(˜ y + n)) , where θ = θ(t+ 12 ,e ) 
+
+> s
+
+,
+
+ϕ = ϕ(t+ 12 ,e ) 
+
+> s
+
+, n ∼ N (0d, σ 2Id), and ˜y = y/|| y|| 2. Using the same SGD method as adopted at the clients, the server update is expressed as 
+
+w(t+ 12 ,e +1)  
+
+> s
+
+= w(t+ 12 ,e ) 
+
+> s
+
+− η(t) 
+
+> s
+
+∇F (t+ 12 ,e ) 
+
+> s
+
+(w(t+ 12 ,e ) 
+
+> s
+
+), (5) where e ∈ { 0, . . . , E s − 1} denotes the server iteration index, 
+
+Es is the total number of server updates, η(t) 
+
+> s
+
+is the server learning rate at global iteration t, and ∇F (t+ 12 ,e ) 
+
+> s
+
+(w(t+ 12 ,e ) 
+
+> s
+
+)
+
+is the stochastic gradient estimator. To obtain this gradient estimator at each server iteration e, the PS samples a mini-batch D(t+ 12 ,e ) 
+
+> s
+
+⊂ D(t+ 12 ) 
+
+> s
+
+and averages the sample-wise gradients of the reconstruction loss ls(w; y) = MSE (ˆ y, y)
+
+over D(t+ 12 ,e ) 
+
+> s
+
+. Finally, the PS broadcasts the global model 
+
+w(t+1) = w(t+ 12 ,E s) 
+
+> s
+
+to all clients ( step 5 ). III. D IFFERENTIALLY PRIVATE FED SFR 
+
+A. Oneshot Laplace Mechanism 
+
+Among various variants of DP, the oneshot and Laplace mechanisms are particularly well suited for top-S selection and wireless communication settings due to their computational efficiency and simplicity [8], [10]. Specifically, the oneshot mechanism first privately selects the top-S indices without revealing their true ordering, and the Laplace mechanism then perturbs the selected values to conceal their exact magnitudes. Let D denote the data universe, and let Dm be the set of datasets consisting of m ∈ Z records. We say that two datasets 
+
+D, D′ ∈ Dm are adjacent if they differ in exactly one record. For a fixed positive integer n, consider a query function Q :
+
+Dm → Rn. The sensitivity of this query is defined as the maximum change in its output, when evaluated on any pair of adjacent datasets, given by ∆ = max ∥Q (D) − Q (D′)∥1.
+
+Definition 1 (Differential privacy [8]) . For a privacy parameter 
+
+ϵ > 0, a randomized mechanism M : Rn → Rn satisfies ϵ-DP if, for all adjacent databases D, D′ and every measurable set 
+
+J ⊆ Rn, Pr[ M(Q(D)) ∈ J] ≤ eϵ Pr[ M(Q(D′)) ∈ J] holds. 
+
+Proposition 1 (Oneshot mechanism [10]) . Oneshot mecha-nism Mos adds Laplace noise L1 ∼ Lap(0 , σ 1)n to a query 
+
+Q and returns the top-S indices, achieving ϵ-DP with ϵ = 2S∆ 
+
+> nσ 1
+
+.
+
+Proposition 2 (Laplace mechanism [8]) . For a query Q, the Laplace mechanism is defined as ML(Q(D)) ≜ Q(D) + L2,where L2 ∼ Lap(0 , σ 2)n, achieving ϵ-DP with ϵ = ∆ 
+
+> σ2
+
+.Based on these foundations, we describe two distinct trans-mission strategies under an identical uplink communication budget to enable privacy-preserving uplink transmission: (i) the clients in A(t) 
+
+> m
+
+transmit the local update information g(t)
+
+> k
+
+and (ii) the clients in A(t) 
+
+> m
+
+transmit the feature vectors Y(t) 
+
+> k
+
+.(i) Gradient-based Transmission with DP : Each client k
+
+transmits both the sparsified update values {[g(t) 
+
+> k
+
+]is }Sk
+
+> s=1
+
+and the corresponding indices of the top-Sk selected elements {is}Sk
+
+> s=1
+
+, as in [10], where is ∈ [1: N ] and 
+
+[g(t) 
+
+> k
+
+]is denote the is-th entry of g(t) 
+
+> k
+
+. To achieve DP, a two-stage mechanism is employed. First, the oneshot mechanism Mos is applied to privately select the top-
+
+Sk indices from the Laplace-perturbed local updates 
+
+g(t) 
+
+> k
+
++ ℓ(t)
+
+> k, 1
+
+, where ℓ(t) 
+
+> k, 1
+
+∼ Lap(0 , σ 1)N . Then, to obscure the magnitudes of the selected updates, fresh independent Laplace noise is added via the Laplace mechanism ML,yielding [g(t) 
+
+> k
+
+]is + [ ℓ(t)
+
+> k, 2
+
+]s for s ∈ [1: Sk], where [ℓ(t)
+
+> k, 2
+
+]s
+
+denotes the s-th entry of ℓ(t) 
+
+> k, 2
+
+∼ Lap(0 , σ 2)Sk .(ii) Feature-based Transmission with DP : Unlike case (i), 
+
+Mos and ML are applied only to the encoder-side local updates. Hence, the encoder parameters are privatized prior to feature generation. Since the encoder contains about half of the parameters of the full JSCC model, we assume that it consists of N/ 2 parameters. The client 
+
+k privately selects the top-(Sk/2) indices {is}Sk /2 
+
+> s=1
+
+from the Laplace-perturbed encoder updates g(t) 
+
+> k, θ
+
++ ℓ(t)
+
+> k, 1
+
+, and then corrupts their magnitudes as [g(t) 
+
+> k, θ
+
+]is + [ ℓ(t)
+
+> k, 2
+
+]s for 
+
+s ∈ [1: Sk/2] . Here, g(t) 
+
+> k, θ
+
+∈ RN/ 2 denotes the encoder-side local updates, with [g(t) 
+
+> k, θ
+
+]is representing its is-th entry, ℓ(t) 
+
+> k, 1
+
+∼ Lap(0 , σ 1)N/ 2 and ℓ(t) 
+
+> k, 2
+
+∼ Lap(0 , σ 2)Sk /2.We collectively refer to the privacy mechanisms used in cases (i) and (ii) as the OL mechanism. As illustrated in Fig. 1, the key distinction lies in the privatization target: (i) OL is applied to the full JSCC model; (ii) it is imposed only on the JSCC encoder parameters prior to feature generation. 
+
+B. Model Selection Algorithm 
+
+The FR process in FedSFR enables the global JSCC model to incorporate client-specific characteristics by leveraging fea-ture vectors that implicitly encode local update information rather than explicit gradients. However, under the OL mecha-nism, the benefits of FR, including fast convergence and stable training, may be reduced. This limitation arises because the transmitted feature vectors are generated by a locally perturbed JSCC encoder, whose parameters have already been corrupted by injected noise. Consequently, reconstructing these noisy feature representations can drive the PS toward a suboptimal global model compared to learning from clean features pro-duced by an unperturbed encoder. To mitigate this issue, we propose a novel MS algorithm 4
+
+that compares the image reconstruction performance of the intermediate global model w(t+ 12 ) and the FR-aided global model w(t+1) , as shown in Fig. 1. Since the PS has access to a shared public dataset P = S 
+
+> k∈A
+
+Pk, it can evaluate image reconstruction quality without accessing any private client data. Specifically, it measures the MSE of both models on the public dataset P and selects the one with lower error as the updated global model. This alleviates the negative impact of reconstructing the noisy features under the OL mechanism.    
+
+> 4Although this issue can be alleviated by proper control of σ1and σ2,the resulting performance variations are difficult to characterize explicitly. Moreover, the MS algorithm is compatible with such noise-control strategies.
+
+By retaining the model with superior reconstruction at each iteration, the proposed MS encourages that the global training trajectory steadily improves image reconstruction, enhancing both training stability and robustness under privacy constraints. IV. D IFFERENTIAL PRIVACY ANALYSIS 
+
+When clients transmit feature vectors extracted by a local JSCC encoder, fewer parameters are privatized compared to transmitting local model updates, which can offer inherent privacy advantages. To rigorously analyze the DP guarantees of the two private transmission strategies presented in Section III-A, Theorem 1 is established by leveraging the following two properties together with the OL mechanism. 
+
+Proposition 3 (Composition property [8]) . Let M1 and M2
+
+satisfy ϵ1-DP and ϵ2-DP, respectively. Then, the composed mechanism M2 ◦ M 1 satisfies (ϵ1 + ϵ2)-DP. 
+
+Proposition 4 (Post-processing property [8]) . Let M satisfy 
+
+ϵ-DP. For any deterministic function f , the post-processed mechanism f ◦ M also satisfies ϵ-DP. 
+
+Theorem 1. Assume that each client k ∈ A (t) adopts one of the two DP-enabled transmission strategies with the OL mechanism: (i) transmitting local update information g(t) 
+
+> k
+
+∈
+
+RN , or (ii) transmitting the feature vectors Y(t) 
+
+> k
+
+. Under the oneshot and Laplace mechanism, utilizing Lap(0 , σ 1) and 
+
+Lap(0 , σ 2), respectively, the option (ii) achieves a strictly stronger DP guarantee than the option (i), under an identical uplink communication budget S.
+
+Proof: For the global iteration t, assume that the local update information g(t) 
+
+> k
+
+, defined in (2), has a bounded norm, i.e., ∥g(t) 
+
+> k
+
+∥1 ≤ G(t) for all k. On the one hand, for the clients transmitting g(t) 
+
+> k
+
+, Mos is applied to select the top-
+
+S indices and ML is performed within the selected values. For all adjacent local update information g(t) 
+
+> k
+
+and g′(t) 
+
+> k
+
+, the sensitivity of Mos can be bounded as ∆(i)1 = ∥g(t) 
+
+> k
+
+−
+
+g′(t) 
+
+> k
+
+∥1 ≤ 2G(t). By Proposition 1 , it satisfies ϵ(i)1 -DP, where 
+
+ϵ(i)1 = 4SG (t) 
+
+> N σ 1
+
+. Additionally, the sensitivity corresponding to 
+
+ML is ∆(i)2 = ∥g(t) 
+
+> k
+
+−g′(t) 
+
+> k
+
+∥1 ≤ 2SG (t) 
+
+> N
+
+since we only consider the selected values. Using Proposition 2 , it satisfies ϵ(i)2 -DP, where ϵ(i)2 = 2SG (t) 
+
+> N σ 2
+
+. Therefore, by Proposition 3 , every client transmitting g(t) 
+
+> k
+
+satisfies ϵ(i)-DP for every global iteration, where ϵ(i) = ϵ(i)1 + ϵ(i)2 = 4SG (t) 
+
+> N σ 1
+
++ 2SG (t) 
+
+> N σ 2
+
+= 2SG (t)(σ1+2 σ2) 
+
+> N σ 1σ2
+
+.On the other hand, for the clients transmitting Y(t) 
+
+> k
+
+, since clients only use the updated encoder to extract features, 
+
+Mos and ML are applied to the encoder-side local update information before feature extraction process, which is deter-ministic. According to the Proposition 4 , the feature extraction maintains the same privacy guarantee. The sensitivity on the encoder of Mos is given by ∆(ii )1 = ∥g(t) 
+
+> k, θ
+
+− g′(t) 
+
+> k, θ
+
+∥1 ≤
+
+G(t), where g(t) 
+
+> k, θ
+
+represents the encoder-side local update information. Here, assuming a symmetric encoder–decoder architecture, ∥g(t) 
+
+> k, θ
+
+∥1 ≤ G(t)2 holds. The sensitivity of ML0 20 40 60 80  
+
+> Iteration t
+> 10 12 14 16 18 20 22 24 26
+> PSNR
+> FedSFR+MS FedSFR+OL+MS (privacy) FedSFR+OL+MS (power) FedSFR+OL (privacy) FedSFR+OL (power) FedAvg+OL FedAvg+OL (ideal)
+
+(a) (σ1, σ 2) = (0 .0001 , 0.0001) 0 20 40 60 80   
+
+> Iteration t
+> 10 12 14 16 18 20 22 24 26
+> PSNR
+> FedSFR+MS FedSFR+OL+MS (privacy) FedSFR+OL+MS (power) FedSFR+OL (privacy) FedSFR+OL (power) FedAvg+OL FedAvg+OL (ideal)
+
+(b) (σ1, σ 2) = (0 .001 , 0.001) 0 20 40 60 80   
+
+> Iteration t
+> 10 12 14 16 18 20 22 24 26
+> PSNR
+> FedSFR+MS FedSFR+OL+MS (privacy) FedSFR+OL+MS (power) FedAvg+OL FedAvg+OL (ideal)
+
+(c) (σ1, σ 2) = (0 .01 , 0.01) 
+
+Fig. 2. Performance comparison between differentially private FedSFR and FedAvg with σ1 = σ2 for CIFAR-10 dataset. 0 20 40 60 80  
+
+> Iteration t
+> 10 12 14 16 18 20 22 24 26
+> PSNR
+> FedSFR+MS FedSFR+OL+MS (privacy) FedSFR+OL+MS (power) FedAvg+OL FedAvg+OL (ideal)
+
+(a) (σ1, σ 2) = (0 .0001 , 0.01) 0 20 40 60 80   
+
+> Iteration t
+> 10 12 14 16 18 20 22 24 26
+> PSNR
+> FedSFR+MS FedSFR+OL+MS (privacy) FedSFR+OL+MS (power) FedAvg+OL FedAvg+OL (ideal)
+
+(b) (σ1, σ 2) = (0 .02 , 0.00005) 0 2 4 6 8 10 12 14 16 18 20                                
+
+> SNR
+> 12 14 16 18 20 22 24 26
+> PSNR
+> FedSFR+OL+MS (privacy, σ1=σ2= 0.0005) FedSFR+OL+MS (power, σ1=σ2= 0.001) FedAvg+OL ( σ1=σ2= 0.001) FedAvg+OL (ideal, σ1=σ2= 0.001) FedSFR+OL+MS (privacy, σ1=σ2= 0.005) FedSFR+OL+MS (power, σ1=σ2= 0.01) FedAvg+OL ( σ1=σ2= 0.01) FedAvg+OL (ideal, σ1=σ2= 0.01)
+
+(c) SNR vs. PSNR Fig. 3. Performance comparison between differentially private FedSFR and FedAvg (a), (b) with σ1̸ = σ2, and (c) under Rayleigh fading channels with varying average SNR for CIFAR-10 dataset. 
+
+is ∆(ii )2 = ∥g(t)
+
+k, θ − g′(t)
+
+k, θ ∥1 ≤ SG (t)
+
+N . Hence, similar to the derivation of ϵ(i), each client transmitting Y(t)
+
+k satisfies ϵ(ii )-DP for every global iteration, where ϵ(ii ) = SG (t)(σ1+2 σ2)
+
+N σ 1σ2 .Finally, since ϵ(i) > ϵ (ii ), this completes the proof. 
+
+Remark 1. In the proof of Theorem 1 , the DP advantage of FedSFR stems from the fact that feature vectors are generated solely by the JSCC encoder, which contains roughly half of the parameters of the full autoencoder. While in case (i) the DP mechanisms are applied to the entire JSCC model, in case (ii) they are applied only to the encoder, effectively reducing the mechanism’s sensitivity by about 50%. Since DP guarantees are tightly coupled to the size and sensitivity of the NN components being privatized, this structural reduction substantially improves privacy. Consequently, even with DP mechanisms beyond the OL mechanism, encoder-only priva-tization in FedSFR provides a general DP advantage. V. N UMERICAL RESULTS 
+
+We compare the proposed differentially private FedSFR framework with the FedAvg baseline using the CIFAR-10 dataset, which consists of 3 × 32 × 32 RGB images. Recon-struction performance is evaluated in terms of the peak signal-to-noise ratio (PSNR). Km + Ko = 20 clients are chosen from the total K = 50 clients, following the common partial participation setting in FL to reduce uplink burden [5]–[7]. The sparsification level Sk varies at each iteration in proportion to the channel capacity between the PS and client k under Rayleigh fading with CN (0 , 1) , yielding Sk/N approximately between 0.05 and 0.25 . The threshold determining whether client k is included in A(t)
+
+m or A(t)
+
+o is set to Sth /N = 0 .15 , re-sulting in Ko ≈ 10 . The initial learning rates are η(0) 
+
+s = 0 .001 
+
+at the PS and η(0) 
+
+c = 0 .01 at the clients, both decayed by a factor of 0.9 every 10 global iterations. Both clients and the PS use batch size 16 for 3 epochs. The JSCC encoder and decoder are implemented with five convolutional and five transposed convolutional layers, respectively, resulting in about 0.32 Mtrainable parameters. The feature dimension is set to d = 256 .The training SNR γ is fixed at 20 dB, and PSNR is evaluated under the same condition. For DP evaluation, we adopt a baseline setting where Laplace noise Lap(0 , σ 1) and Lap(0 , σ 2) are applied to the oneshot and Laplace mechanisms with (σ1, σ 2) =(0 .001 , 0.001) . According to Theorem 1 , FedSFR+OL+MS (privacy) denotes the configuration that matches the pri-vacy level of FedAvg+OL , i.e., ϵ(i) = ϵ(ii ), by using re-duced noise scales (σ1, σ 2) = (0 .0005 , 0.0005) . In contrast, 
+
+FedSFR+OL+MS (power) corresponds to the setting that pro-vides twice the privacy level of FedAvg+OL , i.e., ϵ(i) = 2 ϵ(ii ),by injecting noise with (σ1, σ 2) = (0 .001 , 0.001) .
+
+FedSFR vs. FedAvg. Fig. 2 compares the PSNR of DP-aided FedSFR and FedAvg with σ1 = σ2. Since FedAvg+OL 
+
+fails to be properly trained under our heterogeneous wireless environments, we add FedAvg+OL (ideal) , where Sk/N =0.2 for A(t)
+
+m and Sk/N = 0.1 for A(t)
+
+o with Ko = 10 .As shown in Figs. 2(a) and 2(b), FedSFR+OL+MS achieves faster convergence and more stable training than FedAvg+OL (ideal) , benefiting from FR, and our method is much more robust to heterogeneous settings than FedAvg+OL . When comparing FedSFR+OL+MS with FedSFR+OL , the pro-posed MS algorithm enhances both training stability and task performance due to more optimal training trajectory, particu-larly in the later stages of training. As illustrated in Fig. 2(c), even under severe noise injection, where overall performance 0 20 40 60 80  
+
+> Iteration t
+> 10 12 14 16 18 20 22 24 26
+> PSNR
+> FedSFR FedSFR+OL+MS (privacy) FedSFR+OL+MS (power) FedSFR+OL (privacy) FedSFR+OL (power) FedAvg+OL FedAvg+OL (ideal)
+
+(a) CelebA dataset 0 20 40 60 80   
+
+> Iteration t
+> 10 12 14 16 18 20 22 24
+> PSNR
+> FedSFR+MS FedSFR+OL+MS (privacy) FedSFR+OL+MS (power) FedAvg+OL FedAvg+OL (ideal)
+
+(b) 10 dB training SNR 0 20 40 60 80      
+
+> Iteration t
+> 10 12 14 16 18 20 22 24 26
+> PSNR
+> Sth /N= 0.11 (3.5)
+> Sth /N= 0.15 (9.6)
+> Sth /N= 0.19 (17.2)
+
+(c) Varying Sth 
+
+Fig. 4. Performance comparison between differentially private FedSFR and FedAvg (a) for CelebA dataset, (b) under 10 dB training SNR, and (c) performance of FedSFR+OL+MS (power) with varying the threshold Sth for CIFAR-10 dataset. 
+
+degradation is inevitable, the proposed method consistently outperforms the baselines. In addition, FedSFR+OL+MS (privacy) exhibits a more favorable training behavior than 
+
+FedSFR+OL+MS (power) , which highlights the tradeoff between privacy guarantees and model performance. Figs. 3(a) and 3(b) provide the same privacy guarantee by adjusting σ1 and σ2. A comparison between the two figures shows that increasing σ1 while decreasing σ2 degrades the per-formance of both frameworks. This trend indicates that heavy noise injected during the top-S index selection ( σ1) disrupts the identification of important local updates more severely than magnitude perturbations ( σ2). Nevertheless, even under this unfavorable noise distribution, FedSFR consistently out-performs FedAvg, highlighting the robustness of FR. Beyond the effect of the MS algorithm, these observations indicate that, given privacy requirement, proper control of σ1 and σ2 plays a critical role in performance and warrants further investigation. To compare the semantic communication modules from FL, Fig. 3(c) illustrates the PSNR under Rayleigh fading channels. When σ1 = σ2 = 0 .001 (dashed lines), all methods exhibit similar PSNR due to their comparable final FL performance except FedAvg+OL , following Fig. 2(b). However, when σ1 =
+
+σ2 = 0 .01 (solid lines), FedSFR achieves better performance than FedAvg, and FedSFR+OL+MS (privacy) outperforms 
+
+FedSFR+OL+MS (power) , following Fig. 2(c). 
+
+Ablation Studies. To assess the applicability of the pro-posed approach to higher-resolution settings, we perform ex-periments on the CelebA dataset, as illustrated in Fig. 4(a). The experimental outcomes follow the same behavior as those obtained on the CIFAR-10 dataset, as shown in Fig. 2(b), con-firming the consistency of the proposed framework. Moreover, similar to the 20 dB setting in Fig. 2(b), the 10 dB case in Fig. 4(b) surpasses the baselines, while converging faster due to its lower achievable performance. Fig. 4(c) illustrates the impact of the threshold Sth and |A (t) 
+
+> o
+
+| averaged over T iterations is indicated in the legend. When Sth /N = 0 .11 , the reduced FR effects due to fewer clients in A(t) 
+
+> o
+
+result in unstable initial training. For Sth /N = 0 .19 , the PSNR becomes the lowest because excessive FR occurs with fewer clients in A(t) 
+
+> m
+
+. The setting Sth /N = 0 .15 achieves the highest PSNR with a stable training process, yielding balanced FL behavior. These suggest that the proper choice of the threshold plays an important role in performance and deserves further investigation. VI. C ONCLUSION 
+
+This paper proposed a DP-aided FedSFR framework, which incorporates the OL mechanism, for updating semantic com-munication modules in heterogeneous wireless systems. By leveraging the inherent privacy benefit of clients that transmit locally generated semantic feature vectors instead of sparse local updates, we proved that feature-based transmission achieves strictly stronger DP guarantees than gradient-based transmission under an identical uplink budget. To mitigate the performance degradation induced by DP noise, we proposed the MS algorithm that adaptively retains beneficial server-side updates. Experiments demonstrated that the proposed DP-aided FedSFR consistently outperforms DP-enabled FedAvg in terms of image reconstruction performance and training stability, while maintaining rigorous privacy guarantees. REFERENCES [1] X. Luo, H.-H. Chen, and Q. Guo, “Semantic communications: Overview, open issues, and future research directions,” IEEE Wireless Communi-cations , vol. 29, no. 1, pp. 210–219, 2022. [2] Y. Huh, H. Seo, and W. Choi, “Universal joint source-channel coding for modulation-agnostic semantic communication,” IEEE Journal on Selected Areas in Communications , vol. 43, no. 7, pp. 2560–2574, 2025. [3] H. Sun et al. , “Federated learning-based cooperative model training for task-oriented semantic communication,” in IEEE Conference on Computer Communications Workshops (INFOCOM) , 2024, pp. 1–6. [4] X. Xu et al. , “Federated KD-assisted image semantic communication in IoT edge learning,” IEEE Internet of Things Journal , vol. 11, no. 21, pp. 34 215–34 228, 2024. [5] Y. Huh, B. Kim, and W. Choi, “Feature reconstruction aided federated learning for image semantic communication,” in IEEE Global Commu-nications Conference (GLOBECOM) , 2025, pp. 4669–4674. [6] ——, “Federated learning enhanced by feature reconstruction for semantic communication module updates of agents,” arXiv preprint arXiv:2508.03248v3 , 2026. [7] B. Kim, H. Seo, and W. Choi, “Privacy-enhanced over-the-air federated learning via client-driven power balancing,” IEEE Transactions on Communications , vol. 73, no. 12, pp. 15 537–15 553, 2025. [8] C. Dwork et al. , “The algorithmic foundations of differential privacy,” 
+
+Foundations and Trends® in Theoretical Computer Science , vol. 9, no. 3–4, pp. 211–407, 2014. [9] H. Liu et al. , “Adaptive privacy budget-based differential privacy co-training for wireless semantic communication,” in IEEE Wireless Com-munications and Networking Conference (WCNC) , 2024, pp. 1–6. [10] G. Qiao, W. Su, and L. Zhang, “Oneshot differentially private top-k selection,” in International Conference on Machine Learning (ICML) .PMLR, 2021, pp. 8672–8681. [11] Y. Zhao et al. , “Federated learning with non-IID data,” arXiv preprint arXiv:1806.00582 , 2018. [12] M. M. Amiri and D. G¨ und¨ uz, “Federated learning over wireless fading channels,” IEEE Transactions on Wireless Communications , vol. 19, no. 5, pp. 3546–3557, 2020.

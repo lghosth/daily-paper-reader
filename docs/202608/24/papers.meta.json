@@ -1,0 +1,54 @@
+{
+  "label": "2026-08-25",
+  "date": "2026-08-24",
+  "generated_at": "2026-08-24T19:30:29",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202608/24/2608.20518v1-fl-maestro-multi-agent-llm-orchestration-for-resource-constrained-federated-learning",
+      "section": "deep",
+      "title_en": "FL-MAESTRO: Multi-Agent LLM Orchestration for Resource-Constrained Federated Learning",
+      "authors": "Jiajun Wu, Zirui Wang, Jiayu Zhou, Qiang Ye, Steve Drew",
+      "date": "2026-08-20",
+      "pdf": "https://arxiv.org/pdf/2608.20518v1",
+      "score": "8.0",
+      "evidence": "联合优化联邦学习的通信拓扑、资源分配与聚合规则，直接面向通信高效训练",
+      "tldr": "联邦学习每轮需同时确定通信拓扑、资源分配和聚合规则，而现有智能体方案只处理单一维度。FL-MAESTRO提出多智能体编排框架，用三个专用LLM agent分别负责一个决策维度，并由协调者整合和可行性校验。它利用服务器预测的故障列表剔除不会被聚合的客户端，从而将浪费的轮次能量从三分之一以上降至接近零，同时匹配现有最强能量感知基线的精度。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "In Federated Learning (FL), the communication topology is a runtime variable rather than a fixed design choice, since links and edge devices drop in and out during training. Each round, the server must commit three coupled decisions, namely the communication topology, per-client resource allocation, and the aggregation rule for combining local updates. Recent agentic systems have begun bringing large language models (LLM) into FL, but the existing line of work either operates at setup time or handles a single runtime dimension such as client selection. We propose FL-MAESTRO, a multi-agent orchestrator that makes the joint runtime FL decision directly through three specialist LLM agents, one per decision dimension. A coordinator combines their analyses into a single decision, and a non-LLM feasibility check confirms it before the round executes. Because the orchestrator consumes the server's predicted-failure list, it withholds clients whose updates would never be aggregated, which removes the dominant source of wasted round energy in classical FL on volatile edge networks. Because client state is read as natural-text profiles, the same orchestrator extends to heterogeneous device classes without per-class energy models. On a non-IID CIFAR-10 benchmark, FL-MAESTRO matches the accuracy of the strongest energy-aware baseline while cutting wasted round energy from over a third to near zero. Code is available at https://github.com/denoslab/FL-MAESTRO.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/24/2608.21096v1-flatland-personalized-graph-federated-learning-via-tailored-lorentz-space",
+      "section": "quick",
+      "title_en": "FlatLand: Personalized Graph Federated Learning via Tailored Lorentz Space",
+      "authors": "Jiahong Liu, Ram Samarth B B, Xinyu Fu, Menglin Yang, Weixi Zhang, Rex Ying, Irwin King",
+      "date": "2026-08-21",
+      "pdf": "https://arxiv.org/pdf/2608.21096v1",
+      "score": "7.0",
+      "evidence": "跨异构客户端的分布式图联邦学习",
+      "tldr": "图联邦学习面临客户端数据高度异构的挑战，现有个性化方法常忽视图结构内在几何特性。提出FlatLand，利用定制Lorentz空间将不同客户端数据嵌入双曲几何，以类时间维编码客户端特定异质性，适配真实世界图的负曲率。参数解耦策略分离异构信息与公共知识，无需相似度估计即可直接聚合。实验在低维图联邦任务上取得显著性能提升，验证了方法的有效性与优越性。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated learning enables privacy-preserving collaborative training, but highly heterogeneous client data remain challenging, especially in graph federated learning where clients possess structurally diverse graphs. Existing personalized federated learning (PFL) methods ignore the intrinsic geometric properties of diverse graph structures. We propose FlatLand, a novel personalized federated learning method that embeds different clients' data in tailored Lorentz space of hyperbolic geometry. Our key insight is that hyperbolic geometry naturally accommodates the intrinsic negative curvature prevalent in real-world graphs, while the time-like dimension in Lorentz space provides a principled way to encode client-specific heterogeneity. We develop a parameter decoupling strategy that separates heterogeneous information (captured in time-like parameters) from common knowledge (preserved in space-like parameters), enabling direct aggregation without requiring client similarity estimation and extra calculation modules. Empirical results on diverse federated graph learning tasks demonstrate that FlatLand achieves superior performance, particularly in low-dimensional settings.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/24/2608.17865v1-esr-hgnn-eliminating-semantic-redundancy-for-efficient-mini-batch-hgnn-inference",
+      "section": "quick",
+      "title_en": "ESR-HGNN: Eliminating Semantic Redundancy for Efficient Mini-batch HGNN Inference",
+      "authors": "Dengke Han, Mingyu Yan, Duo Wang, Wenming Li, Xiaochun Ye, Dongrui Fan",
+      "date": "2026-08-18",
+      "pdf": "https://arxiv.org/pdf/2608.17865v1",
+      "score": "6.0",
+      "evidence": "改进异构图神经网络的迷你批采样，支持高效图学习流程",
+      "tldr": "异构图表征学习在关键领域广泛应用，但端到端推理中基于元路径的mini-batch采样因不规则遍历导致大量随机访存，且语义冗余造成过多冗余遍历，成为严重瓶颈。为此提出冗余感知采样范式，利用元路径字典树复用遍历路径以消除冗余访存，并映射为多通道硬件单元ESR-HGNN，同时采用可重用性驱动的元路径分组。实验表明采样性能平均提升一个数量级并显著节能，与GPU及先进加速器集成时端到端推理大幅提速。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Heterogeneous graph neural networks (HGNNs) are highly effective in processing heterogeneous graph data and have been widely adopted in critical domains. As real-world graph data continues to scale, performing direct inference on entire graphs becomes increasingly infeasible, making mini-batch methods the standard approach. However, in end-to-end HGNN inference, metapath-based mini-batch sampling constitutes a significant performance bottleneck due to the extensive random memory accesses induced by the irregular traversal of graph structures. Existing sampling paradigms suffer from excessive redundant traversals caused by inherent semantic redundancy, severely degrading sampling efficiency and, consequently, leading to suboptimal mini-batch inference performance.   In this work, we propose a redundancy-aware HGNN sampling paradigm that leverages a metapath trie to reuse traversal paths, effectively eliminating redundant memory accesses. We then map it onto a multi-channel hardware sampling unit denominated ESR-HGNN. Furthermore, we introduce a reusability-driven metapath grouping technique that optimally clusters metapaths to maximize reusable traversal paths within hardware channels, enhancing efficiency in scenarios with semantic parallelism. Extensive experimental results demonstrate that ESR-HGNN achieves an average sampling performance improvement of one order of magnitude over CPU and GPU, accompanied by significant energy savings. Additionally, it delivers substantial speedup in end-to-end mini-batch inference when integrated with GPU and state-of-the-art HGNN inference accelerator.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

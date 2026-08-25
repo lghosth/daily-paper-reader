@@ -1,0 +1,205 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-03T21:07:01.150862+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.23595v1",
+      "source": "arxiv",
+      "title": "Age-of-Information Aware Federated Learning with Finite Speed Pinching Antenna",
+      "abstract": "This paper investigates age-of-information (AoI) aware federated learning over wireless networks with finite speed pinching antennas. In contrast to existing studies that assume an infinitely high antenna moving speed, a practical round based training procedure is considered, where the pinching antenna is repositioned during the local training phase and its feasible movement range depends on the selected devices. This creates a new coupling among device selection, antenna placement, local training time, model uploading time, and AoI evolution. To characterize the impact of antenna moving speed, the rate gain over the fixed antenna and the gap to the infinite speed benchmark are analyzed. Subsequently, an overall AoI minimization problem is formulated under a round latency deadline by jointly optimizing the selected device set and the pinching antenna position. A coalitional game based device selection algorithm is proposed, where finite speed antenna placement is incorporated into the coalition utility evaluation. For antenna placement, the optimal search region is derived by exploiting the mobility constraint and device location span, based on which a branch-and-bound (BnB) algorithm is developed to obtain the global optimum. Simulation results show that the proposed scheme can accelerate learning convergence, reduce the sum AoI, and improve device participation compared with baseline schemes, demonstrating the potential of pinching antennas for enhancing federated learning through flexible spatial reconfiguration.",
+      "authors": [
+        "Kaidi Wang",
+        "Daniel K C So",
+        "Zhiguo Ding"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP"
+      ],
+      "published": "2026-07-26T10:53:21+00:00",
+      "link": "https://arxiv.org/pdf/2607.23595v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Federated learning with age-of-information and model uploading time optimization targets communication-efficient training.",
+      "llm_evidence_cn": "通过信息年龄与模型上传时间优化实现无线联邦学习中的通信高效训练。",
+      "llm_evidence": "通过信息年龄与模型上传时间优化实现无线联邦学习中的通信高效训练。",
+      "canonical_evidence": "通过信息年龄与模型上传时间优化实现无线联邦学习中的通信高效训练。",
+      "llm_tldr_en": "Proposes age-of-information-aware federated learning with finite-speed pinching antennas, jointly optimizing device selection, antenna placement, local training, and upload scheduling to improve communication efficiency.",
+      "llm_tldr_cn": "现有联邦学习研究常假设天线移动速度无限大，忽视了实际天线重定位与本地训练、上传时间的耦合。本文针对有限移动速度的贴片天线无线联邦学习，建立设备选择、天线位置、本地训练时间、模型上传时间与信息年龄（AoI）的联合优化问题，并分析天线速度带来的速率增益。通过AoI感知的设备调度与资源分配，可显著降低训练过程中的信息陈旧度与通信开销，为无线场景下的通信高效训练提供新思路。",
+      "llm_tldr": "现有联邦学习研究常假设天线移动速度无限大，忽视了实际天线重定位与本地训练、上传时间的耦合。本文针对有限移动速度的贴片天线无线联邦学习，建立设备选择、天线位置、本地训练时间、模型上传时间与信息年龄（AoI）的联合优化问题，并分析天线速度带来的速率增益。通过AoI感知的设备调度与资源分配，可显著降低训练过程中的信息陈旧度与通信开销，为无线场景下的通信高效训练提供新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.25441v1",
+      "source": "arxiv",
+      "title": "PIcsC: Partitioning-Induced Covariate Shift Correction",
+      "abstract": "Covariate shift across training-data partitions biases model selection and parameter estimation in cross-validation, lifelong learning, and federated learning. We propose \\textit{Partition-Induced Covariate-shift Correction} (\\texttt{PIcsC}), a Fisher information-based regularization framework that mitigates distribution mismatch between data partitions and a reference distribution. \\texttt{PIcsC} approximates partition divergence using the Fisher Information Matrix (FIM) and incorporates the resulting statistic as a regularizer during optimization. The same formulation applies to both centrally partitioned datasets (batches or cross-validation folds) and inherently distributed data (federated clients or decentralized nodes), requiring only partition-local gradient statistics rather than raw data. We further introduce a conditional adaptation mechanism that combines FIM shift with KL divergence to detect significant distribution shifts and activates regularization only when necessary. Experiments on more than 40 datasets demonstrate consistent improvements under both natural and synthetic covariate shift. On fragmented batch and fold settings, \\texttt{PIcsC} reduces fragmentation-induced performance degradation by more than 20\\% and 25\\%, respectively. On seven federated learning benchmarks, it consistently outperforms FedAvg, FedProx, and SCAFFOLD by 3 -5 percentage points without requiring client-specific personalization. These results demonstrate that Fisher information provides an effective and unified mechanism for mitigating partition-induced covariate shift across both centralized and distributed learning.",
+      "authors": [
+        "Behraj Khan",
+        "Behroz Mirza",
+        "Syed Ahmad Chan Bukhari",
+        "Tahir Qasim Syed"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-28T08:33:04+00:00",
+      "link": "https://arxiv.org/pdf/2607.25441v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "corrects distribution mismatch across data partitions for distributed learning",
+      "llm_evidence_cn": "校正分布式学习中数据分区间的分布失配",
+      "llm_evidence": "校正分布式学习中数据分区间的分布失配",
+      "canonical_evidence": "校正分布式学习中数据分区间的分布失配",
+      "llm_tldr_en": "PIcsC corrects partition-induced covariate shift via Fisher information regularization, improving training across central and distributed data partitions with only local gradient statistics.",
+      "llm_tldr_cn": "交叉验证、终身学习及联邦学习中，训练数据划分常引发协变量偏移，导致模型选择与参数估计偏差。提出PIcsC框架，利用Fisher信息矩阵近似分区与参考分布之间的散度，并将其作为正则项融入优化。该框架适用于集中式批次、联邦客户端或去中心化节点，仅需分区局部梯度信息，即可有效校正分布失配，改善分区数据上的模型训练。",
+      "llm_tldr": "交叉验证、终身学习及联邦学习中，训练数据划分常引发协变量偏移，导致模型选择与参数估计偏差。提出PIcsC框架，利用Fisher信息矩阵近似分区与参考分布之间的散度，并将其作为正则项融入优化。该框架适用于集中式批次、联邦客户端或去中心化节点，仅需分区局部梯度信息，即可有效校正分布失配，改善分区数据上的模型训练。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.25650v1",
+      "source": "arxiv",
+      "title": "PowerScale: Energy-Efficient Geo-Distributed Model Training with Federated Datacenter Power",
+      "abstract": "The power demands of large-scale AI training increasingly exceed the capacity of any single data center, making geo-distributed training across power-constrained sites a practical necessity. Prior work optimizes such training mainly for time-to-accuracy using single-tier aggregation, where every site exchanges model updates directly with a central aggregator over the WAN each synchronization round, without accounting for the energy required to reach convergence. Single-tier aggregation is fundamentally energy-inefficient because synchronization barriers force faster sites to idle, full WAN updates dominate communication energy at scale, and fixed synchronization frequency keeps paying the same communication cost even when updates shrink late in training.   To address these inefficiencies, we present PowerScale, a hierarchical aggregation system that exploits the latency hierarchy of wide-area networks. PowerScale organizes sites into regional clusters and applies a Sync-Async synchronization modality: sites synchronize frequently with a nearby cluster aggregator over fast local links, while cluster aggregators push pre-aggregated updates asynchronously to a global aggregator over the WAN. PowerScale forms clusters based on both network proximity and power availability, and uses an adaptive synchronization policy that reduces communication energy by adjusting how often clusters synchronize to training progress. This structure shortens synchronization barriers and replaces per-site WAN transmissions with fewer, pre-aggregated transmissions at a lower frequency. We evaluate PowerScale at 100-site scale in a Flower-based simulation environment. PowerScale matches or slightly improves time-to-accuracy compared with single-tier baselines while reducing energy consumption by up to 3.9x.",
+      "authors": [
+        "Talha Mehboob",
+        "Zhe Xu",
+        "Michael Zink",
+        "David Irwin"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-07-28T12:37:08+00:00",
+      "link": "https://arxiv.org/pdf/2607.25650v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Focuses on communication-efficient geo-distributed model training by reducing synchronization and WAN update overhead",
+      "llm_evidence_cn": "关注地理分布式训练中的通信效率，减少同步等待和WAN更新开销",
+      "llm_evidence": "关注地理分布式训练中的通信效率，减少同步等待和WAN更新开销",
+      "canonical_evidence": "关注地理分布式训练中的通信效率，减少同步等待和WAN更新开销",
+      "llm_tldr_en": "PowerScale addresses energy-inefficient single-tier synchronization in geo-distributed training, proposing hierarchical aggregation with energy-aware adaptive synchronization to cut communication cost and idle time, reducing energy while maintaining convergence.",
+      "llm_tldr_cn": "大规模AI训练功耗超过单个数据中心容量，地理分布式训练成为必要，但现有单层聚合因同步屏障、WAN全量更新和固定高频同步导致能耗高。文章提出PowerScale，通过分层聚合、能源感知的自适应同步频率以及更高效的更新机制，减少空闲等待和通信能耗。实验表明其在保持接近收敛精度的同时显著降低训练能耗和通信开销。该方法为跨地域受限电力场景下的大模型训练提供了节能方案。",
+      "llm_tldr": "大规模AI训练功耗超过单个数据中心容量，地理分布式训练成为必要，但现有单层聚合因同步屏障、WAN全量更新和固定高频同步导致能耗高。文章提出PowerScale，通过分层聚合、能源感知的自适应同步频率以及更高效的更新机制，减少空闲等待和通信能耗。实验表明其在保持接近收敛精度的同时显著降低训练能耗和通信开销。该方法为跨地域受限电力场景下的大模型训练提供了节能方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.29248v1",
+      "source": "arxiv",
+      "title": "Wireless Aggregation Latency in Edge Learning with Fractional Power Control",
+      "abstract": "When multiple wireless edge servers communicate with a common core server, their uplink transmissions create a multiple-access bottleneck that affects the la- tency of distributed edge learning systems. This paper analyzes this bottleneck and investigates the use of fractional power control (FPC) to mitigate it in hierarchi- cal federated learning (HFL). Modeling the spatial deployment of edge servers and wireless channel gains using stochastic wireless models, we analytically character- ize the mean core aggregation latency (CAL) under a TDMA aggregation policy. We formulate the cumulative core aggregation latency as a renewal reward pro- cess, where each learning round constitutes a renewal cycle and task completion defines the stopping time. This representation yields an exact decomposition of the mean cumulative aggregation latency into the product of the expected stopping round and the expected per-round aggregation latency under iid server selection. We then derive analytical upper bounds on the expected per-round latency under fractional power control (FPC). Numerical results demonstrate that even modest FPC exponents substantially reduce CAL across a wide range of deployment scenar- ios. These results highlight fractional power control as a simple and model-agnostic mechanism for mitigating wireless aggregation bottlenecks in edge learning systems.",
+      "authors": [
+        "A. C. Vamshi Karthik",
+        "S. Tayyaba",
+        "S. Vanka"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP"
+      ],
+      "published": "2026-07-31T10:20:20+00:00",
+      "link": "https://arxiv.org/pdf/2607.29248v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "wireless aggregation latency analysis for communication efficiency in edge learning",
+      "llm_evidence_cn": "边缘学习中无线聚合时延分析以提升通信效率",
+      "llm_evidence": "边缘学习中无线聚合时延分析以提升通信效率",
+      "canonical_evidence": "边缘学习中无线聚合时延分析以提升通信效率",
+      "llm_tldr_en": "Analytical characterization of core aggregation latency in hierarchical federated learning using stochastic geometry, and fractional power control to mitigate the multiple-access bottleneck.",
+      "llm_tldr_cn": "在层次化联邦学习中，边缘服务器与核心服务器的上行传输构成多址接入瓶颈，影响分布式学习时延。论文用随机无线模型建模边缘服务器空间分布与信道增益，在TDMA聚合策略下解析刻画平均核心聚合时延，并利用更新报酬过程计算学习任务完成时间。基于此分析，研究分数功率控制在降低聚合时延中的作用，为无线边缘学习系统提供理论指导。",
+      "llm_tldr": "在层次化联邦学习中，边缘服务器与核心服务器的上行传输构成多址接入瓶颈，影响分布式学习时延。论文用随机无线模型建模边缘服务器空间分布与信道增益，在TDMA聚合策略下解析刻画平均核心聚合时延，并利用更新报酬过程计算学习任务完成时间。基于此分析，研究分数功率控制在降低聚合时延中的作用，为无线边缘学习系统提供理论指导。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.29659v1",
+      "source": "arxiv",
+      "title": "GQ-FSL: Green Quantized Federated Split Learning",
+      "abstract": "Deploying state-of-the-art deep neural networks (DNNs) at the wireless edge is severely bottlenecked by the strict energy and resource constraints of mobile devices. While federated split learning (FSL) mitigates on-device computation by offloading workloads to an edge server, this may introduce systemic overheads, while the continuous exchange of cut-layer data, and submodels still incurs significant energy consumption (EC). To address this, we propose a green quantized FSL (GQ-FSL) framework that incorporates stochastic quantization for both local collaborative training and wireless transmissions. Notably, GQ-FSL supports asymmetric precision levels for the client- and server-side submodels, effectively decoupling device energy constraints from global convergence degradation. To quantify these tradeoffs, we develop parameterized energy models for the split architecture and derive a theoretical convergence bound under statistically heterogeneous data. Building on that, we formulate a joint optimization problem to configure the DNN split point and precision levels, minimizing the total system EC while satisfying a strict target accuracy constraint. Ultimately, we demonstrate that GQ-FSL enables large-scale DNN deployment on resource-constrained devices, achieving superior energy efficiency compared to quantized federated learning and full-precision FSL.",
+      "authors": [
+        "Idan Roth",
+        "Lutz Lampe"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC",
+        "eess.SP"
+      ],
+      "published": "2026-07-31T17:40:27+00:00",
+      "link": "https://arxiv.org/pdf/2607.29659v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "stochastic quantization for communication efficiency in federated split learning",
+      "llm_evidence_cn": "联邦拆分学习中的随机量化以降低通信与能耗",
+      "llm_evidence": "联邦拆分学习中的随机量化以降低通信与能耗",
+      "canonical_evidence": "联邦拆分学习中的随机量化以降低通信与能耗",
+      "llm_tldr_en": "GQ-FSL reduces energy and communication overhead in federated split learning via stochastic quantization with asymmetric precision levels for client and server submodels, decoupling device energy constraints from convergence.",
+      "llm_tldr_cn": "无线边缘设备部署深度神经网络时常受能耗与资源限制。联邦拆分学习虽可减轻设备计算压力，但子模型与切层数据交换仍产生大量通信能耗。为此提出GQ-FSL框架，在训练与无线传输中引入随机量化，并支持客户端与服务器子模型使用不对称精度。该设计可将设备能量约束与全局收敛性能解耦，为绿色高效的联邦拆分学习提供了可行方案。",
+      "llm_tldr": "无线边缘设备部署深度神经网络时常受能耗与资源限制。联邦拆分学习虽可减轻设备计算压力，但子模型与切层数据交换仍产生大量通信能耗。为此提出GQ-FSL框架，在训练与无线传输中引入随机量化，并支持客户端与服务器子模型使用不对称精度。该设计可将设备能量约束与全局收敛性能解耦，为绿色高效的联邦拆分学习提供了可行方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

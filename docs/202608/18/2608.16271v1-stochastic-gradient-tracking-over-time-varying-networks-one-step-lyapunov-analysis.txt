@@ -1,0 +1,2329 @@
+Title: Stochastic Gradient Tracking over Time-Varying Networks: One-Step Lyapunov Analysis
+
+URL Source: https://arxiv.org/pdf/2608.16271v1
+
+Published Time: Tue, 18 Aug 2026 01:47:39 GMT
+
+Number of Pages: 29
+
+Markdown Content:
+# Stochastic Gradient Tracking over Time-Varying Networks: One-Step Lyapunov Analysis 
+
+## Sulaiman A. Alghunaim 
+
+Department of Electrical Engineering, Kuwait University 
+
+sulaiman.alghunaim@ku.edu.kw 
+
+Abstract 
+
+We study decentralized stochastic gradient tracking over a time-varying network of 
+
+N agents under a uniform window-mixing condition. Products of τ consecutive doubly stochastic mixing matrices contract disagreement by a factor λ < 1, although individual matrices need not contract disagreement strictly and individual communication graphs may be disconnected. We construct a time-varying quadratic norm that turns this window contraction into an exact one-step Lyapunov identity. This leads to coupled one-step recursions for the centroid and disagreement errors, without unrolling the dynamics over communication windows. For smooth strongly convex objectives, the leading stochastic term is ˜O(1 /(N K )); for smooth convex objectives, it is O(1 /√N K ). Both match their centralized mini-batch counterparts and yield linear speedup after a network-dependent transient. 
+
+# 1 Introduction 
+
+In decentralized optimization, a group of agents minimizes a global objective by combining local computation with communication restricted to network neighbors; no central node collects the data or the iterates [1,2]. Problems of this form arise in multi-agent coordination, formation control, and flocking [3–5], in distributed model-predictive control [6], and in distributed estimation and adaptive processing over sensor networks [2,7]. The time-varying regime is the practically important one: mobility, scheduling, link failures, and bandwidth constraints all cause the communication graph to change from one iteration to the next. 
+
+## 1.1 Problem and algorithm 
+
+Problem. We study the following distributed stochastic optimization problem: minimize  
+
+> x∈Rd
+
+f (x) ≜ 1
+
+N
+
+> N
+
+∑
+
+> i=1
+
+fi(x), fi(x) ≜ E [Fi(x; ξi)] , (1) 1arXiv:2608.16271v1 [math.OC] 17 Aug 2026 over a decentralized network of N agents. Each agent i has access only to its private local objective fi : Rd → R and to stochastic samples ξi used to evaluate gradients of the loss function Fi(·; ξi); the stochasticity may represent local data sampling or measurement noise. By exchanging information only with their current neighbors, the agents seek a common solution to (1) without requiring a central coordinator.  
+
+> TV-GT algorithm.
+
+Gradient tracking [8–10] augments decentralized gradient descent [1, 2] with a dynamic estimate of the aggregate gradient to eliminate a bias caused by differ-ences among local objectives. In this work, we study stochastic gradient tracking (GT) over time-varying communication graphs. At iteration k, agent i communicates with its current neighbors according to the mixing weights {wkij }Nj=1 , where wkij > 0 only if agent j is a neigh-bor of agent i at time k or j = i, and wkij = 0 otherwise. Each agent i maintains a local primal variable xki ∈ Rd and a gradient-tracking variable gki ∈ Rd, and performs 
+
+xk+1  
+
+> i
+
+=
+
+> N∑
+> j=1
+
+wkij (xkj − αg kj ) (2a) 
+
+gk+1  
+
+> i
+
+=
+
+> N∑
+> j=1
+
+wkij gkj + ∇Fi(xk+1  
+
+> i
+
+; ξk+1  
+
+> i
+
+) − ∇ Fi(xki ; ξki ), (2b) with initialization g0 
+
+> i
+
+= ∇Fi(x0 
+
+> i
+
+; ξ0 
+
+> i
+
+) and x0 
+
+> i
+
+∈ Rd. The communication graph and the mixing weights {wkij } may vary with k and are assumed to satisfy Assumption 2. 
+
+## 1.2 Related work 
+
+Decentralized optimization over time-varying networks dates back to early distributed sub-gradient methods. The works [1, 11] analyze distributed (sub)gradient methods over graph sequences for which connectivity is required only over bounded communication windows, while the individual graphs may be disconnected. Most later work on time-varying net-works adopts this window-based connectivity model. More recently, [12] analyzes decentral-ized SGD (DSGD) under general time-varying topologies and shows that DSGD achieves a leading variance term reduced by a factor proportional to the number of agents, i.e. , lin-ear speedup. DSGD, however, does not correct the bias induced by heterogeneous local objectives. Consequently, with constant stepsizes its error generally contains a persistent heterogeneity-dependent term, while exact convergence typically requires diminishing step-sizes [13]. Gradient tracking (GT) removes this steady-state bias by dynamically tracking the aggre-gate gradient [8,9]. Many works have analyzed GT over time-varying networks [9,10,14,15]. These works, however, focus on deterministic gradients and establish exact convergence un-der window-based connectivity, but do not address our stochastic gradient noise setting. Recent work has begun to address stochastic GT over time-varying graphs [16–18]. The work [16] imposes an expected-connectivity condition at each communication round, whereas [17] considers graph sequences with finite-time consensus. The work [18] replaces exact finite-time consensus by an approximate variant under symmetric doubly stochastic mixing. 2These settings do not cover Assumption 2, which allows nonsymmetric mixing matrices, disconnected individual graphs, and an arbitrary window contraction factor λ < 1. Directed networks, where double stochasticity is generally unavailable, are handled by a modified family of GT methods [19, 20]. The work [19] extends NEXT to time-varying directed graphs through the push-sum-based SONATA framework, while [20] extends push– pull methods [21, 22] to time-varying directed networks and establishes linear convergence for strongly convex objectives; see also [23]. These results, however, focus on deterministic gradients. Stochastic GT over time-varying directed graphs has also been considered recently [24,25]. Push-sum, gradient tracking, and momentum are combined in [24], under the requirement that the communication graph be strongly connected at every iteration; [25] pairs push–pull gradient tracking with heavy-ball momentum and likewise assumes strong connectivity of every individual graph. Neither analysis covers the mixing model of Assumption 2, which permits individual graphs to be disconnected. Beyond the differences in network assumptions and convergence guarantees, our analysis also differs from prior work in how the time-varying network is handled. Analyses based directly on window contraction typically unroll the error over complete communication win-dows while also accounting for the associated partial-window terms; see, e.g. , [12, 18]. We instead work in a time-varying quadratic norm under which the window-mixing condition of Assumption 2 already forces a strict decrease at every single iteration. This construction builds on classical converse-Lyapunov theory for stable time-varying systems and is closely re-lated to the Lyapunov–Stein equation and converse Lyapunov results for linear time-varying systems [26–28]. Related ideas have also been used in networked control to combine joint connectivity with time-varying quadratic Lyapunov functions [29–31]. However, these works consider continuous-time dynamics and problems different from (1). Here, we apply this construction directly to the discrete-time disagreement mixing process underlying stochastic gradient tracking and use the resulting time-varying quadratic norm to control the coupled primal–tracking errors. 
+
+## 1.3 Contributions 
+
+This paper analyzes stochastic gradient tracking (2) under the uniform window-mixing condi-tion in Assumption 2: every product of τ consecutive mixing matrices contracts disagreement by a factor λ < 1, while the individual matrices are required only to be nonnegative and doubly stochastic. In particular, individual communication graphs may be disconnected and need not provide contraction at every iteration. • One-step analysis under window contraction. We associate the time-varying mixing process with a quadratic Lyapunov norm whose defining identity gives a strict decrease at every iteration. This holds even when the individual mixing matrices are not strictly contractive. After scaling the tracking variable appropriately, the same norm controls the primal and tracking disagreements jointly. The resulting analysis 3works directly at the iteration level and avoids unrolling the recursion over communi-cation windows. This route differs from existing window-based analyses; we are not aware of prior work that applies this converse-Lyapunov construction to stochastic gradient tracking over time-varying networks. • Finite-time guarantees for strongly convex and convex objectives. For smooth strongly convex objectives, the leading stochastic term is ˜O(σ2/(N K )), where σ2
+
+bounds the gradient-noise variance. For smooth convex objectives, we obtain an er-godic bound with leading term O(σ/ √N K ). These terms match the corresponding centralized mini-batch rates and yield linear speedup in the number of agents. • Explicit network dependence. We characterize explicitly how the convergence bounds depend on the window length τ and the window contraction factor λ. In the strongly convex case, the coefficient of the higher-order stochastic term scales as τ 3 
+
+> (1 −λ)3
+
+,and the admissible stepsize and transient length are also characterized explicitly in terms of τ and 1 − λ. These expressions make explicit how long the network-dependent transient lasts before the centralized rate takes over. 
+
+# 2 Assumptions and error dynamics 
+
+In this section, we first state the assumptions on the objective functions, communication network, and stochastic gradients. We then derive the centroid and disagreement dynamics that form the basis of the convergence analysis. 
+
+## 2.1 Assumptions 
+
+Assumption 1 (Functions) . Each local objective fi is L-smooth and μ-strongly convex for some 0 ≤ μ ≤ L, where μ = 0 corresponds to the convex case. We assume that f admits a minimizer and let x⋆ denote any minimizer of f . For the strongly convex case ( μ > 0), we define the condition number κ ≜ Lμ .
+
+Assumption 2 (Network) . The sequence {Wk}k≥0 is deterministic, and each Wk ∈ RN ×N
+
+is nonnegative and doubly stochastic ( wkij ≥ 0, Wk1 = 1, 1TWk = 1T). Define Π ≜ 1
+
+N 11 T, ˜Wk ≜ Wk − Π. (3) There exist an integer τ ≥ 1 and a constant λ ∈ [0 , 1) such that every product of τ consecutive mixing matrices contracts disagreement: 
+
+> ∥∥∥ ˜
+
+Wk+τ −1: k 
+
+> ∥∥∥2
+
+≤ λ, for all k ≥ 0, (4) where ˜Wt:s ≜ ˜Wt ˜Wt−1 · · · ˜Ws, t ≥ s. We define the τ -window spectral gap by ∆ λ ≜ 1 − λ ∈
+
+(0 , 1]. 4Assumption 2 is a uniform window-mixing condition: contraction is required only over products of τ consecutive mixing matrices, while an individual matrix Wk need not contract disagreement. Consequently, the communication graph may be disconnected at individual iterations. The parameters τ and ∆ λ quantify the effect of the time-varying network on the convergence rate: smaller τ and larger ∆ λ correspond to faster information mixing. 
+
+Remark 1 (Aligned-window contraction) . Condition (4) requires contraction for windows starting at every iteration. A closely related formulation imposes contraction only on aligned blocks {ℓτ 0, . . . , (ℓ + 1) τ0 − 1}, ℓ ≥ 0, as in the deterministic setting considered in [12]. Every window of length 2 τ0 −1 contains at least one complete aligned τ0-block. Since the remaining doubly stochastic mixing factors are nonexpansive, aligned τ0-window contraction with factor 
+
+λ < 1 implies (4) with ( τ, λ ) = (2 τ0 − 1, λ ); see also [10]. We let Fk denote the information available immediately before the stochastic samples 
+
+{ξki }Ni=1 are drawn at iteration k; in particular, Fk contains the initialization and all iterates and stochastic samples generated up to iteration k − 1. 
+
+Assumption 3 (Gradient noise) . Conditioned on Fk, the samples ξk 
+
+> 1
+
+, . . . , ξ kN are mutually independent and, for every i, satisfy 
+
+E [
+
+∇Fi(xki ; ξki ) − ∇ fi(xki ) | F k]
+
+= 0 (5a) 
+
+E
+
+> [∥∥∥
+
+∇Fi(xki ; ξki ) − ∇ fi(xki )∥∥∥2
+
+| F k
+
+> ]
+
+≤ σ2. (5b) The initial iterates {x0 
+
+> i
+
+}Ni=1 are deterministic. 
+
+## 2.2 Network form 
+
+Network notation. For the analysis, we write (2) in stacked form. Define 
+
+x ≜ col {x1, . . . , x N } ∈ RN d (6a) 
+
+g ≜ col {g1, . . . , g N } ∈ RN d (6b) 
+
+∇F(x; ξ) ≜ col {∇ Fi(xi; ξi)}Ni=1 ∈ RN d (6c) 
+
+∇f (x) ≜ col {∇ fi(xi)}Ni=1 ∈ RN d (6d) 
+
+Wk ≜ Wk ⊗ Id. (6e) 
+
+TV-GT algorithm. With the notation above, (2) becomes 
+
+xk+1 = Wk(xk − αgk) (7a) 
+
+gk+1 = Wkgk + ∇F(xk+1 ; ξk+1 ) − ∇ F(xk; ξk), (7b) with g0 = ∇F(x0; ξ0) and arbitrary x0. We now separate the network dynamics into the evolution of the network centroid and the disagreement among the agents. 52.3 Centroid and disagreement 
+
+Change of coordinates. Define 
+
+yk ≜ gk − ∇ F(xk; ξk). (8) The initialization of g0 implies y0 = 0. This change of coordinates removes the difference of consecutive stochastic gradients from the tracking recursion. Substituting (8) into (7) gives 
+
+xk+1 = Wk(xk − α∇F(xk; ξk) − αyk) (9a) 
+
+yk+1 = Wkyk − (I − Wk)∇F(xk; ξk). (9b) For the centroid and disagreement analysis, define 
+
+Π ≜ Π ⊗ Id = 
+
+> (
+
+1
+
+N 11 T)
+
+⊗ Id (10a) 
+
+> ˜
+
+Wk ≜ Wk − Π = ˜Wk ⊗ Id (10b) ¯xk ≜ 1
+
+N (1T ⊗ Id)xk = 1
+
+N
+
+> N∑
+> i=1
+
+xki (10c) 
+
+∇f (xk) ≜ 1
+
+N
+
+> N∑
+> i=1
+
+∇fi(xki ) (10d) ̂
+
+xk ≜ (I − Π)xk (10e) 
+
+uk ≜ ∇f (xk) − ∇ f (x⋆), x⋆ ≜ 1 ⊗ x⋆ (10f) 
+
+> ˜
+
+yk ≜ yk + ∇f (x⋆) (10g) 
+
+vk ≜ ∇F(xk; ξk) − ∇ f (xk), ¯vk ≜ 1
+
+N (1T ⊗ Id)vk. (10h) 
+
+Lemma 1 (Centroid and disagreement dynamics) . The centroid evolves as ¯xk+1 = ¯ xk − α∇f (xk) − α¯vk, (11) while the disagreement satisfies ̂
+
+xk+1 = ˜Wk(̂xk − α˜yk − αuk − αvk) (12a) 
+
+> ˜
+
+yk+1 = ˜Wk ˜yk − (I − Wk)( uk + vk). (12b) 
+
+Proof. By double stochasticity, 1 
+
+> N
+
+(1T ⊗ Id)Wk = 1 
+
+> N
+
+(1T ⊗ Id). Averaging (9b) and using 
+
+y0 = 0 therefore gives 1 
+
+> N
+
+(1T ⊗ Id)yk = 0, k ≥ 0. Therefore, averaging (9a) and using (10h) gives (11). For the disagreement dynamics, note that x⋆ minimizes f , Π∇f (x⋆) = 0, and hence 
+
+Π˜yk = 0. Moreover, ∇F(xk; ξk) = ∇f (x⋆) + uk + vk. Applying I − Π to (9a) and using (I − Π)Wk = ˜Wk gives (12a). Finally, substituting yk = ˜yk − ∇ f (x⋆) into (9b) yields 
+
+> ˜
+
+yk+1 = Wk ˜yk − (I − Wk)( uk + vk). (13) Since Π˜yk = 0, Wk ˜yk = ˜Wk ˜yk, which gives (12b). 6The centroid recursion (11) is independent of the particular mixing matrix Wk; the effect of the communication network is therefore captured through the coupled disagreement dynam-ics (12). 
+
+## 2.4 Joint disagreement dynamics 
+
+To balance the primal and tracking disagreements, define the scaled tracking disagreement 
+
+zk ≜ αη ˜yk, η ≜ ∆λ
+
+2τ . (14) Using (12), the two disagreement variables evolve as ̂
+
+xk+1 = ˜Wk
+
+> (̂
+
+xk − ηzk − αuk − αvk)
+
+(15a) 
+
+zk+1 = ˜Wkzk − αη (I − Wk)( uk + vk). (15b) The scaling in (14) is introduced solely for the analysis. Its specific choice ensures that, once the one-step Lyapunov dissipation coefficient δ = 1−λ2 
+
+> τ
+
+is established below, we have η ≤ δ/ 2. This allows the coupling between the primal and tracking disagreements to be absorbed by the network dissipation in the joint Lyapunov recursion. 
+
+# 3 One-step Lyapunov analysis 
+
+This section builds, from the window-mixing condition alone, a time-varying quadratic norm in which the disagreement dynamics dissipate at every iteration; the remainder of the GT analysis is carried out in that norm. 
+
+## 3.1 Time-varying quadratic Lyapunov norm 
+
+Define the state-transition matrix of the lifted disagreement mixing process by 
+
+Ψ(t, s ) ≜
+
+> ˜
+
+Wt−1 ˜Wt−2 · · · ˜Ws, t > s, 
+
+I, t = s. (16) For each k ≥ 0, define 
+
+Pk ≜
+
+> ∞∑
+> r=0
+
+Ψ(k + r, k )TΨ(k + r, k ). (17) The quadratic form induced by Pk measures the accumulated future disagreement energy starting from time k. The window contraction ensures that this series is finite and uniformly bounded. 7Lemma 2 (Time-varying quadratic mixing norm) . Under Assumption 2, define 
+
+Rk ≜ δPk, δ ≜ 1 − λ2
+
+τ . (18) Then, for every k ≥ 0, 
+
+δI ⪯ Rk ⪯ I, (19a) 
+
+> ˜
+
+WT 
+
+> k
+
+Rk+1 ˜Wk = Rk − δI. (19b) Moreover, with ∆ λ ≜ 1 − λ,∆λ
+
+τ ≤ δ = ∆λ(1 + λ)
+
+τ ≤ 2∆ λ
+
+τ , 0 < δ ≤ 1
+
+τ ≤ 1. (20) 
+
+Proof. See Appendix B.1. Equation (19b) implies that the time-varying quadratic Lyapunov function Vk(q) ≜
+
+∥q∥2 
+
+> Rk
+
+applied to the homogeneous disagreement dynamics qk+1 = ˜Wkqk gives the exact one-step decrease 
+
+Vk+1 (qk+1 ) = Vk(qk) − δ∥qk∥2.
+
+Thus, although ˜Wk need not contract disagreement in the Euclidean norm at every itera-tion, it is strictly dissipative in the time-varying Lyapunov norm: the window-scale mixing property reappears as a per-iteration decrease. 
+
+Remark 2 (Converse Lyapunov construction) . The construction of Pk is motivated by classical converse-Lyapunov arguments for stable linear time-varying systems and is closely related to the Lyapunov–Stein equation and converse Lyapunov theory [26–28]. Related ideas have also appeared in continuous-time multi-agent systems [30, 31]. Here, we apply this construction directly to the discrete-time disagreement process underlying stochastic gradient tracking. 
+
+Remark 3 (Per-step contraction) . When τ = 1, Assumption 2 implies ∥ ˜Wk∥2 ≤ λ < 1, for every k ≥ 0. Hence, the Euclidean norm itself yields the one-step decrease ∥ ˜Wkq∥2 ≤
+
+λ2∥q∥2 = ∥q∥2 − (1 − λ2)∥q∥2. Therefore, in this case, a time-varying quadratic norm is not needed to obtain a per-iteration contraction. The construction in Lemma 2 is useful for the genuinely window-based case τ > 1. 
+
+## 3.2 Coupled error recursions 
+
+Using the scaled variable in (14), define 
+
+Ek ≜ ∥̂xk∥2 
+
+> Rk
+
++ 2 ∥zk∥2 
+
+> Rk
+
+(21a) 
+
+> ˜
+
+Ek ≜ ∥̂xk∥2 + 2 ∥zk∥2, (21b) 8and let 
+
+> ˜
+
+Xk ≜ E ∥¯xk − x⋆∥2 (22a) 
+
+Ek ≜ 1
+
+N E[Ek], ˜Ek ≜ 1
+
+N E[ ˜Ek]. (22b) By (19a), 
+
+δ ˜Ek ≤ E k ≤ ˜Ek, (23) and hence 
+
+Ek ≤ ˜Ek ≤ Ek
+
+δ , 1
+
+N E ∥̂xk∥2 ≤ ˜Ek. (24) Finally, define 
+
+Q ≜ 1 + 8
+
+η2 = 1 + 32 τ 2
+
+∆2
+
+> λ
+
+. (25) 
+
+Lemma 3 (Coupled centroid–disagreement error) . Under Assumptions 1–3, if 0 < α ≤ 
+
+> 14L
+
+, then, for every k ≥ 0, 
+
+> ˜
+
+Xk+1 ≤ (1 − μα ) ˜Xk + 3αL 
+
+2
+
+> ˜
+
+Ek + α2σ2
+
+N (26a) 
+
+Ek+1 ≤ Ek − δ
+
+4
+
+> ˜
+
+Ek + 10 α2QL 2
+
+δ
+
+> ( ˜
+
+Xk + ˜Ek
+
+> )
+
++ α2Qσ 2. (26b) 
+
+Proof. See Appendix B.2. What Lemma 3 exploits is that a single time-varying matrix Rk can serve as the quadratic norm for both the primal disagreement ̂ xk and the scaled tracking disagreement zk. The scaling zk = ( α/η )˜yk makes the primal–tracking coupling sufficiently small relative to the network decrement. Through the identity (19b), the window-contraction assumption shows up as a one-step decrease of the combined energy Ek.
+
+# 4 Convergence results 
+
+We now give our main convergence results. 
+
+## 4.1 Strongly convex result 
+
+Theorem 1 (One-step contraction) . Suppose Assumptions 1–3 hold with μ > 0. If 0 < α ≤ ¯α ≜ δ
+
+√320 L√Qκ , (27) define Vk ≜ ˜Xk + ωE k, ω ≜ 16 αL δ . Then 
+
+Vk+1 ≤
+
+> (
+
+1 − μα 
+
+2
+
+> )
+
+Vk + α2σ2
+
+N + 16 α3LQσ 2
+
+δ . (28) 9Proof. See Appendix B.3. The preceding one-step recursion yields the following finite-horizon guarantee. 
+
+Corollary 1 (Transient rate and linear speedup) . Suppose the conditions in Theorem 1 hold. Then, for every horizon K ≥ 1, there exists a horizon-dependent stepsize such that 
+
+E ∥¯xK − x⋆∥2 ≤ ˜O 
+
+> (
+
+σ2
+
+N K + τ 3σ2
+
+(1 − λ)3K2 + C0 exp 
+
+> (
+
+−c(1 − λ)2Kκ3/2τ 2
+
+> ))
+
+, (29) where c > 0 is an absolute constant, C0 ≜ ˜X0 + 16 ¯ αL δN ∥̂ x0∥2 + 32 ¯ α3Lη2δN ∥∇ f (x⋆)∥2 is independent of K, and ˜O(·) hides logarithmic factors and constants depending on μ and L. Moreover, linear speedup is achieved 
+
+E ∥¯xK − x⋆∥2 ≤ ˜O 
+
+> (
+
+σ2
+
+N K 
+
+> )
+
+(30) after transient time 
+
+Ktransient = ˜O 
+
+> (
+
+κ3/2τ 2
+
+(1 − λ)2 + N κτ 3
+
+(1 − λ)3
+
+> )
+
+. (31) 
+
+Proof. See Appendix B.4. The leading term in (29) matches the centralized stochastic rate obtained by averaging 
+
+N independent stochastic gradients, and therefore gives linear speedup in the number of agents. The network affects only the higher-order term and the transient period through the window length τ and the window spectral gap 1 − λ. Thus, individual graphs may be disconnected, as permitted by Assumption 2, without changing the leading statistical term. Remark 1 shows that the same conclusion applies to the standard aligned-window model after a constant-factor increase in the window length. When σ = 0, Theorem 1 with a constant admissible stepsize gives geometric convergence to the exact solution. 
+
+Corollary 2 (Consensus error) . Let the conditions of Theorem 1 hold, and let α = αK be the horizon-dependent stepsize (93d) used in Corollary 1. Then, for every K ≥ 1, 1
+
+N E ∥̂xK ∥2 
+
+> RK
+
+≤ ˜O 
+
+> (
+
+τ 3σ2
+
+(1 − λ)3K2 + τ 2E0
+
+(1 − λ)2K2 + C0K exp 
+
+> (
+
+−c (1 − λ)2Kκ3/2τ 2
+
+> ))
+
+, (32) where c > 0 is an absolute constant. 
+
+Proof. See Appendix B.5. 10 4.2 Convex result 
+
+For the convex case ( μ = 0), define the expected function gap 
+
+> ˜
+
+Fk ≜ E[f (¯ xk) − f (x⋆)] . (33) The following lemma gives the convex counterpart of Lemma 3. 
+
+Lemma 4 (Convex centroid–disagreement recursion) . Suppose Assumptions 1–3 hold with μ = 0. If 0 < α ≤ 1/(4 L), then, for every k ≥ 0, 
+
+> ˜
+
+Xk+1 ≤ ˜Xk − α ˜Fk + 3αL 
+
+2
+
+> ˜
+
+Ek + α2σ2
+
+N , (34a) 
+
+Ek+1 ≤ Ek − δ
+
+4
+
+> ˜
+
+Ek + 20 α2QL δ
+
+> ˜
+
+Fk + 10 α2QL 2
+
+δ
+
+> ˜
+
+Ek + α2Qσ 2. (34b) 
+
+Proof. See Appendix B.6. 
+
+Theorem 2 (Convex finite-horizon bound) . Suppose Assumptions 1–3 hold with μ = 0. If 0 < α ≤ αcvx ≜ δ
+
+√480 L√Q, (35) then, for every K ≥ 1, 1
+
+K
+
+> K−1∑
+> k=0
+> (
+
+E[f (¯ xk) − f (x⋆)] + LN E ∥̂xk∥2
+
+> )
+
+≤ 8 ˜X0
+
+3αK + 40 LE 0
+
+δK + 8ασ 2
+
+3N + 40 α2QLσ 2
+
+δ . (36) 
+
+Proof. See Appendix B.7. 
+
+Corollary 3 (Convex rate and linear speedup) . Suppose the conditions of Theorem 2 hold. Then there exists a horizon-dependent stepsize such that 1
+
+K
+
+> K−1∑
+> k=0
+> (
+
+E[f (¯ xk) − f (x⋆)] + LN E ∥̂xk∥2
+
+> )
+
+= O 
+
+> (
+
+σ
+
+√N K + τ
+
+1 − λ 
+
+> (
+
+σK
+
+> )2/3
+
++ τ 2 ˜X0
+
+(1 − λ)2K + τ ¯E0
+
+(1 − λ)K
+
+> )
+
+, (37) where ¯E0 ≜ 1
+
+> N
+> (
+
+∥̂x0∥2 
+
+> R0
+
++ 2α2cvx  
+
+> η2
+
+∥∇ f (x⋆)∥2
+
+> R0
+> )
+
+.
+
+Proof. See Appendix B.8. The leading term in (37) scales as O(σ/ √N K ) and is independent of the network param-eters, matching the centralized mini-batch stochastic-gradient rate. The remaining terms decay faster with K and capture the effect of the time-varying network. In particular, 11 comparing each network-dependent term with the leading statistical term shows that they become lower order after Ktransient = O ( N 3τ 6
+
+> (1 −λ)6
+> )
+
+. Hence, beyond this network-dependent transient, the convergence rate is dominated by the centralized term O(σ/ √N K ), and the method achieves linear speedup in the number of agents despite the time-varying network. In the noiseless case, setting σ = 0 in (36) and using a constant admissible stepsize gives 
+
+O(τ 2/((1 − λ)2K)). 
+
+Remark 4 (Consensual initialization) . If x0 
+
+> i
+
+= x0 for every i, then ̂ x0 = 0 and ˜X0 =
+
+∥x0 − x⋆∥2. Moreover, ¯E0 = 2α2cvx  
+
+> η2N
+
+∥∇ f (x⋆)∥2 
+
+> R0
+
+. Thus, the local-gradient heterogeneity at the solution enters only through the K−1 initialization term in (37). 
+
+# 5 Conclusion and future directions 
+
+This paper analyzed stochastic gradient tracking over deterministic time-varying networks under a window-mixing condition that permits individual communication graphs to be dis-connected. The time-varying quadratic Lyapunov construction converts contraction over communication windows into a one-step decrease, leading to finite-time guarantees for both strongly convex and convex objectives. In both cases, the dominant statistical term matches the corresponding centralized mini-batch rate after a network-dependent transient. Future work includes extending the one-step Lyapunov framework to random communi-cation graphs, smooth nonconvex objectives, and time-varying directed push–pull methods. In particular, whether time-varying push–pull admits linear speedup is open; even for static networks such guarantees appeared only recently [32]. 12 Appendices 
+
+# A Auxiliary results 
+
+We first collect the basic mixing and stochastic-noise consequences of the main assumptions that are used in the proofs. We also recall a standard bound for the centroid error. 
+
+Proposition 1 (Properties of the mixing matrices) . Under Assumption 2, for every k ≥ 0and every t ≥ s ≥ 0, 
+
+∥ ˜Wk+τ −1: k∥2 ≤ λ, k ≥ 0 (38a) 
+
+∥ ˜Wt:s∥2 ≤ 1 (38b) 
+
+∥I − Wk∥2 ≤ 2, (38c) where ˜Wt:s ≜ ˜Wt:s ⊗ Id = WtWt−1 · · · Ws − Π.
+
+Proof. Since Wk is nonnegative and doubly stochastic, ∥Wk∥1 = ∥Wk∥∞ = 1. Hence 
+
+∥Wk∥2 ≤
+
+√
+
+∥Wk∥1∥Wk∥∞ = 1 . (39) Moreover, double stochasticity implies Π Wk = WkΠ = Π. Therefore, 
+
+˜Wt:s = ( Wt − Π)( Wt−1 − Π) · · · (Ws − Π) = WtWt−1 · · · Ws − Π. (40) Since the product Wt · · · Ws is also nonnegative and doubly stochastic, 
+
+∥ ˜Wt:s∥2 = ∥(IN − Π) Wt · · · Ws∥2 ≤ 1. (41) The bound ∥IN − Wk∥2 ≤ 2 then follows from the triangle inequality. For the lifted matrices, 
+
+˜Wk = ˜Wk ⊗ Id, and hence ˜Wt:s = ˜Wt:s ⊗ Id. Using ∥A ⊗ Id∥2 = ∥A∥2, all the corresponding lifted bounds follow immediately from the scalar-matrix bounds and Assumption 2. 
+
+Proposition 2 (Gradient-noise bounds) . Under Assumption 3, for every k ≥ 0, 
+
+E[
+
+∥vk∥2 | F k]
+
+≤ N σ 2, E[
+
+∥¯vk∥2 | F k]
+
+≤ σ2
+
+N . (42) 
+
+Proof. Write 
+
+vki ≜ ∇Fi(xki ; ξki ) − ∇ fi(xki ), (43) so that vk = col {vk 
+
+> 1
+
+, . . . , v kN }. By conditional unbiasedness and the bounded-variance as-sumption, E[vki | F k] = 0 and E[∥vki ∥2 | F k] ≤ σ2. Therefore, 
+
+E[∥vk∥2 | F k] = 
+
+> N
+
+∑
+
+> i=1
+
+E[∥vki ∥2 | F k] ≤ N σ 2. (44) 13 Moreover, for ¯ vk = 1
+
+> N
+
+∑Ni=1 vki , conditional independence and zero conditional means imply that the cross terms vanish, and hence 
+
+E[∥¯vk∥2 | F k] = 1
+
+N 2
+
+> N
+
+∑
+
+> i=1
+
+E[∥vki ∥2 | F k] ≤ σ2
+
+N . (45) The following lemma provides the basic bound for the centroid error. 
+
+Lemma 5 (Centroid error inequality) . Under Assumptions 1–3, if 0 < α ≤ 14L , then, for every k ≥ 0, 
+
+E ∥¯xk+1 − x⋆∥2 ≤ (1 − μα ) E ∥¯xk − x⋆∥2 − α E[f (¯ xk) − f (x⋆)] + 3αL 
+
+2N E ∥̂xk∥2 + α2σ2
+
+N . (46) 
+
+Proof. The proof is standard; see, e.g. , [33, Lemma 3]. Conditioning on Fk and using 
+
+E[¯ vk | F k] = 0 in (11) gives 
+
+E[
+
+∥¯xk+1 − x⋆∥2 ∣∣∣ Fk]
+
+= ∥∥∥¯xk − x⋆ − α∇f (xk)∥∥∥2
+
++ α2 E[
+
+∥¯vk∥2 ∣∣∣ Fk]
+
+≤ ∥ ¯xk − x⋆∥2 − 2α 〈
+
+¯xk − x⋆, ∇f (xk)〉
+
++ α2∥∇ f (xk)∥2 + α2σ2
+
+N , (47) where the last inequality follows from (42). We first bound the inner-product term. For each agent i, μ-strong convexity of fi implies: 
+
+fi(x⋆) ≥ fi(xki ) + 〈
+
+∇fi(xki ), x ⋆ − xki
+
+〉
+
++ μ
+
+2 ∥xki − x⋆∥2. (48) Rearranging gives 
+
+〈
+
+xki − x⋆, ∇fi(xki )〉
+
+≥ fi(xki ) − fi(x⋆) + μ
+
+2 ∥xki − x⋆∥2. (49) Using ¯ xk − x⋆ = xki − x⋆ + ¯ xk − xki , we obtain 
+
+〈
+
+¯xk − x⋆, ∇fi(xki )〉
+
+= 〈
+
+xki − x⋆, ∇fi(xki )〉
+
++ 〈
+
+¯xk − xki , ∇fi(xki )〉
+
+≥ fi(xki ) − fi(x⋆) + 〈
+
+∇fi(xki ), ¯xk − xki
+
+〉
+
++ μ
+
+2 ∥xki − x⋆∥2. (50) On the other hand, the L-smoothness of fi gives: 
+
+fi(¯ xk) ≤ fi(xki ) + 〈
+
+∇fi(xki ), ¯xk − xki
+
+〉
+
++ L
+
+2 ∥¯xk − xki ∥2. (51) 14 Equivalently, 
+
+fi(xki ) + 〈
+
+∇fi(xki ), ¯xk − xki
+
+〉
+
+≥ fi(¯ xk) − L
+
+2 ∥xki − ¯xk∥2. (52) Substituting this bound into (50) yields 
+
+〈
+
+¯xk − x⋆, ∇fi(xki )〉
+
+≥ fi(¯ xk) − fi(x⋆) + μ
+
+2 ∥xki − x⋆∥2 − L
+
+2 ∥xki − ¯xk∥2. (53) Averaging (53) over i = 1 , . . . , N and recalling ∇f (xk) = 1
+
+> N
+
+∑Ni=1 ∇fi(xki ), gives 
+
+〈
+
+¯xk − x⋆, ∇f (xk)〉
+
+≥ f (¯ xk) − f (x⋆) + μ
+
+2N
+
+> N
+
+∑
+
+> i=1
+
+∥xki − x⋆∥2 − L
+
+2N
+
+> N
+
+∑
+
+> i=1
+
+∥xki − ¯xk∥2. (54) The standard variance decomposition gives 
+
+> N
+
+∑
+
+> i=1
+
+∥xki − x⋆∥2 =
+
+> N
+
+∑
+
+> i=1
+
+∥xki − ¯xk∥2 + N ∥¯xk − x⋆∥2
+
+≥ N ∥¯xk − x⋆∥2, (55) where we used ∑Ni=1 (xki − ¯xk) = 0. Applying these relations to (54) gives 
+
+〈
+
+¯xk − x⋆, ∇f (xk)〉
+
+≥ f (¯ xk) − f (x⋆) + μ
+
+2 ∥¯xk − x⋆∥2 − L
+
+2N ∥̂ xk∥2, (56) where we used ∥̂xk∥2 = ∑Ni=1 ∥xki − ¯xk∥2. Next, decompose the average local gradient as 
+
+∇f (xk) = ∇f (¯ xk) + 1
+
+N
+
+> N
+
+∑
+
+> i=1
+
+(
+
+∇fi(xki ) − ∇ fi(¯ xk))
+
+. (57) Using ∥a + b∥2 ≤ 2∥a∥2 + 2 ∥b∥2, Jensen’s inequality, and L-smoothness, 
+
+∥∇ f (xk)∥2 ≤ 2∥∇ f (¯ xk)∥2 + 2
+
+N
+
+> N
+
+∑
+
+> i=1
+
+∥∇ fi(xki ) − ∇ fi(¯ xk)∥2
+
+≤ 4L(
+
+f (¯ xk) − f (x⋆))
+
++ 2L2
+
+N ∥̂xk∥2, (58) where we also used ∥∇ f (¯ xk)∥2 ≤ 2L(f (¯ xk) − f (x⋆)). Substituting (56) and (58) into (47) gives 
+
+E[
+
+∥¯xk+1 − x⋆∥2 ∣∣∣ Fk]
+
+≤ (1 − μα )∥¯xk − x⋆∥2 − (
+
+2α − 4α2L)( 
+
+f (¯ xk) − f (x⋆))
+
++ αL + 2 α2L2
+
+N ∥̂ xk∥2 + α2σ2
+
+N . (59) Since α ≤ 1/(4 L), 2α − 4α2L ≥ α, αL + 2 α2L2 ≤ 3αL 
+
+2 . (60) Applying these bounds in (59) and taking total expectation proves (46). 15 B Proofs of the main results 
+
+## B.1 Proof of Lemma 2 
+
+Proof. Write r = ℓτ + t, where ℓ, t are integers with ℓ ≥ 0 and 0 ≤ t < τ . The transition 
+
+Ψ(k + r, k ) defined in (16) can then be decomposed into ℓ complete blocks of length τ and one remaining block of length t < τ . By Assumption 2, every complete τ -block contracts disagreement by at most λ, whereas the remaining block is nonexpansive since each doubly stochastic mixing matrix satisfies ∥ ˜Wj ∥2 ≤ 1. Hence, 
+
+∥Ψ(k + r, k )∥2 ≤ λℓ = λ⌊r/τ ⌋, (61) where, when λ = 0, the usual convention λ0 = 1 is used. Consequently, 
+
+Ψ(k + r, k )TΨ(k + r, k ) ⪯ λ2⌊r/τ ⌋I. (62) Since the r = 0 term in (17) is I, we have Pk ⪰ I. Using (62) for the upper bound and writing each r ≥ 0 uniquely as r = ℓτ + t gives 
+
+I ⪯ Pk =
+
+> ∞∑
+> r=0
+
+Ψ(k + r, k )TΨ(k + r, k )
+
+⪯
+
+> ∞∑
+> r=0
+
+λ2⌊r/τ ⌋I
+
+= 
+
+> ∞∑
+> ℓ=0
+> τ−1∑
+> t=0
+
+λ2ℓI
+
+= τ
+
+> ∞∑
+> ℓ=0
+
+λ2ℓI = τ
+
+1 − λ2 I = 1
+
+δ I. (63) Multiplying (63) by δ and recalling Rk = δPk yields (19a). Now we show (19b). For r ≥ 1, by the definition in (16), the transition matrix can be factored as 
+
+Ψ(k + r, k ) = Ψ(k + r, k + 1) ˜Wk. (64) Separating the r = 0 term in (17), for which Ψ(k, k ) = I, and using (64) gives 
+
+Pk = I +
+
+> ∞∑
+> r=1
+
+Ψ(k + r, k )TΨ(k + r, k )= I + ˜WT 
+
+> k
+> (∞∑
+> r=1
+
+Ψ(k + r, k + 1) TΨ(k + r, k + 1) 
+
+> )˜
+
+Wk. (65) Introducing the change of index r′ = r − 1, the summation in (65) satisfies 
+
+> ∞∑
+> r=1
+
+Ψ(k + r, k + 1) TΨ(k + r, k + 1) =
+
+> ∞∑
+> r′=0
+
+Ψ(k + 1 + r′, k + 1) TΨ(k + 1 + r′, k + 1) = Pk+1 . (66) 16 Consequently, 
+
+Pk = I + ˜WT 
+
+> k
+
+Pk+1 ˜Wk. (67) Multiplying (67) by δ and recalling Rk = δPk yields (19b). Finally, from the definition of δ,
+
+δ = 1 − λ2
+
+τ = ∆λ(1 + λ)
+
+τ . (68) Since λ ∈ [0 , 1), we have 1 ≤ 1 + λ < 2, and hence ∆λ
+
+τ ≤ δ ≤ 2∆ λ
+
+τ . (69) Moreover, 0 < 1 − λ2 ≤ 1 and τ ≥ 1, so 0 < δ ≤ 1 
+
+> τ
+
+≤ 1. This proves (20). 
+
+## B.2 Proof of Lemma 3 
+
+Proof. Equation (26a) follows from (46) and (24) after dropping the nonnegative function-gap term. We next establish the disagreement recursion by first recalling from (15) that ̂
+
+xk+1 = ˜Wk
+
+> (̂
+
+xk − ηzk − αuk − αvk)
+
+, (70a) 
+
+zk+1 = ˜Wkzk − αη (I − Wk)( uk + vk). (70b) Define 
+
+Hk ≜ ˜WT 
+
+> k
+
+Rk+1 ˜Wk = Rk − δI. (71) By (19a) and (19b), 0 ⪯ Hk ⪯ Rk ⪯ I. Moreover, (14), (18), and (20) imply 
+
+η = δ
+
+2(1 + λ) ≤ δ
+
+2 ≤ 12. (72) Consider first the homogeneous part of (70). Using (71), its one-step energy is 
+
+Eh 
+
+> k+1
+
+≜ ∥ ˜Wk(̂xk − ηzk)∥2 
+
+> Rk+1
+
++ 2 ∥ ˜Wkzk∥2
+
+> Rk+1
+
+= ∥̂xk − ηzk∥2 
+
+> Hk
+
++ 2 ∥zk∥2
+
+> Hk
+
+= Ek − δ∥̂xk∥2 − 2δ∥zk∥2 − 2η(̂ xk)THkzk + η2∥zk∥2 
+
+> Hk
+
+. (73) Using 2 |(̂ xk)THkzk| ≤ ∥ ̂xk∥2 
+
+> Hk
+
++ ∥zk∥2 
+
+> Hk
+
+, Hk ⪯ I, and (72) gives 
+
+Eh 
+
+> k+1
+
+≤ E k − (δ − η)∥̂xk∥2 − (2 δ − η − η2)∥zk∥2
+
+≤ E k − (δ − η)( ∥̂xk∥2 + 2 ∥zk∥2)
+
+≤ E k − δ
+
+2
+
+> ˜
+
+Ek. (74) 17 The variables ̂ xk, zk, and uk are Fk-measurable, while E[vk | F k] = 0. Hence, conditioning on Fk and expanding the two terms in Ek+1 , the cross terms involving vk vanish, and we obtain 
+
+E[Ek+1 | F k] = ∥∥∥ ˜Wk(̂xk − ηzk − αuk)∥∥∥2
+
+> Rk+1
+
++ 2 ∥∥∥ ˜Wkzk − αη (I − Wk)uk∥∥∥2
+
+> Rk+1
+
++ α2 E
+
+[
+
+∥ ˜Wkvk∥2 
+
+> Rk+1
+
++ 2
+
+η2 ∥(I − Wk)vk∥2
+
+> Rk+1
+
+∣∣∣∣∣ Fk
+
+]
+
+. (75) For any positive semidefinite matrix R, vectors a, b , and β > 0, Young’s inequality gives 
+
+∥a + b∥2 
+
+> R
+
+≤ (1 + β)∥a∥2 
+
+> R
+
++
+
+(
+
+1 + 1
+
+β
+
+)
+
+∥b∥2
+
+> R
+
+. (76) Applying (76) with β = δ/ 4 to each of the first two terms yields 
+
+E[Ek+1 | F k] ≤
+
+(
+
+1 + δ
+
+4
+
+)
+
+Eh
+
+> k+1
+
++
+
+(
+
+1 + 4
+
+δ
+
+)
+
+α2
+
+(
+
+∥ ˜Wkuk∥2 
+
+> Rk+1
+
++ 2
+
+η2 ∥(I − Wk)uk∥2
+
+> Rk+1
+
+)
+
++ α2 E
+
+[
+
+∥ ˜Wkvk∥2 
+
+> Rk+1
+
++ 2
+
+η2 ∥(I − Wk)vk∥2
+
+> Rk+1
+
+∣∣∣∣∣ Fk
+
+]
+
+. (77) Since Rk+1 ⪯ I, ∥ ˜Wk∥2 ≤ 1, and ∥I − Wk∥2 ≤ 2, for any vector q,
+
+∥ ˜Wkq∥2 
+
+> Rk+1
+
++ 2
+
+η2 ∥(I − Wk)q∥2 
+
+> Rk+1
+
+≤
+
+(
+
+1 + 8
+
+η2
+
+)
+
+∥q∥2 = Q∥q∥2. (78) Therefore, using (74) and (42), 
+
+E[Ek+1 | F k] ≤
+
+(
+
+1 + δ
+
+4
+
+) ( 
+
+Ek − δ
+
+2
+
+˜Ek
+
+)
+
++
+
+(
+
+1 + 4
+
+δ
+
+)
+
+α2Q∥uk∥2 + α2QN σ 2
+
+≤ E k − δ
+
+4
+
+˜Ek + 5α2Qδ ∥uk∥2 + α2QN σ 2. (79) In the last inequality, we used Ek ≤ ˜Ek to bound ( δ/ 4) Ek ≤ (δ/ 4) ˜Ek, discarded the nonpositive term −(δ2/8) ˜Ek, and used 0 < δ ≤ 1 to obtain 1 + 4 /δ ≤ 5/δ . For the gradient gap, split each entry of uk = ∇f (xk) − ∇ f (x⋆) at ¯ xk and use L-smoothness: 
+
+∥uk∥2 ≤ 2
+
+> N
+
+∑
+
+> i=1
+
+∥∇ fi(xki ) − ∇ fi(¯ xk)∥2 + 2 
+
+> N
+
+∑
+
+> i=1
+
+∥∇ fi(¯ xk) − ∇ fi(x⋆)∥2
+
+≤ 2L2∥̂ xk∥2 + 2 N L 2∥¯xk − x⋆∥2. (80) Taking expectations, dividing by N , and using (24) yields 1
+
+N E ∥uk∥2 ≤ 2L2( ˜Xk + ˜Ek). (81) Taking total expectation in (79), dividing by N , and substituting (81) gives (26b). 18 B.3 Proof of Theorem 1 
+
+Proof. Since κ = L/μ , the stepsize cap in (27) can be written as ¯α = δ
+
+√320 L√Qκ =
+
+> √
+
+μδ 2
+
+320 QL 3 . (82) Since μ ≤ L, 0 < δ ≤ 1, and Q ≥ 1, this gives 
+
+α ≤
+
+> √
+
+μδ 2
+
+320 QL 3 ≤ 1
+
+√320 L ≤ 14L. (83) Moreover, 4 ≤ √320 √Q κ 3/2 together with (82) yields ¯α = δ
+
+√320 L√Qκ ≤ δ
+
+4μ, (84) and therefore 
+
+α ≤ 14L, α ≤ δ
+
+4μ. (85) For compactness, write 
+
+χ ≜ 10 α2QL 2
+
+δ . (86) By (83), Lemma 3 applies, using Vk = ˜Xk + ωE k, ω = 16 αL δ , and (26) gives 
+
+Vk+1 ≤ (
+
+1 − μα + ωχ ) ˜Xk + ωE k + 
+
+> [
+
+3αL 
+
+2 − ωδ 
+
+4 + ωχ 
+
+> ]˜
+
+Ek
+
++ α2σ2
+
+N + ωα 2Qσ 2. (87) The stepsize condition also gives 
+
+ωχ = 160 α3QL 3
+
+δ2 ≤ μα 
+
+2 . (88) Hence, 1 −μα +ωχ ≤ 1− μα  
+
+> 2
+
+. Moreover, ωδ/ 4 = 4 αL , while (88) and μ ≤ L give ωχ ≤ αL/ 2. Therefore, 3αL 
+
+2 − ωδ 
+
+4 + ωχ ≤ − 2αL. (89) Hence, using these in (87), we get 
+
+Vk+1 ≤ (1 − μα  
+
+> 2
+
+) ˜Xk + ωE k − 2αL ˜Ek
+
++ α2σ2
+
+N + ωα 2Qσ 2. (90) 19 Since Ek ≤ ˜Ek by (24), 
+
+ωE k − 2αL ˜Ek ≤ ω
+
+> (
+
+1 − 2αL ω
+
+> )
+
+Ek
+
+= ω
+
+> (
+
+1 − δ
+
+8
+
+> )
+
+Ek
+
+≤ ω
+
+> (
+
+1 − μα 
+
+2
+
+> )
+
+Ek, (91) where the last inequality follows from (85). Finally, 
+
+ωα 2Qσ 2 = 16 α3LQσ 2
+
+δ . (92) Substituting (91) and (92) into (90) proves (28). 
+
+## B.4 Proof of Corollary 1 
+
+For completeness, define the technical stepsize and initialization quantities used in the proof: ¯α ≜ δ
+
+√320 L√Qκ (93a) 
+
+C0 ≜ ˜X0 + 16¯ αL δN ∥̂x0∥2 + 32¯ α3Lη2δN ∥∇ f (x⋆)∥2 (93b) 
+
+TK ≜ max 
+
+> {
+
+e, μ2N C 0K
+
+2σ2
+
+> }
+
+(93c) 
+
+αK ≜ min  
+
+> {
+
+2 ln TK
+
+μK , ¯α
+
+> }
+
+. (93d) Here, the choice TK ≥ e ensures ln TK ≥ 1 and hence a strictly positive candidate stepsize. 
+
+Proof. By Theorem 1, 
+
+Vk+1 ≤
+
+> (
+
+1 − μα 
+
+2
+
+> )
+
+Vk + α2σ2
+
+N + 16 α3LQσ 2
+
+δ (94) holds whenever 0 < α ≤ ¯α. Iterating (94) and using ∑K−1
+
+> t=0
+> (
+
+1 − μα 
+
+> 2
+> )t
+
+≤ 2 
+
+> μα
+
+, together with 1 − t ≤ e−t, gives 
+
+VK ≤ exp 
+
+> (
+
+−μαK 
+
+2
+
+> )
+
+V0 + 2ασ 2
+
+μN + 32 α2LQσ 2
+
+μδ . (95) Since y0 = 0, (10g) and (14) give z0 = ( α/η )∇f (x⋆). Hence, using R0 ⪯ I,
+
+E0 ≤ 1
+
+N ∥̂ x0∥2 + 2α2
+
+η2N ∥∇ f (x⋆)∥2. (96) 20 Then V0 ≤ C0, and using ˜XK ≤ VK in (95) gives 
+
+> ˜
+
+XK ≤ C0 exp 
+
+> (
+
+−μαK 
+
+2
+
+> )
+
++ 2ασ 2
+
+μN + 32 α2LQσ 2
+
+μδ . (97) Set α = αK . Since αK ≤ 2 ln TK /(μK ), the two stochastic terms in (97) satisfy 2αK σ2
+
+μN ≤ 4σ2 ln TK
+
+μ2N K , (98a) 32 α2 
+
+> K
+
+LQσ 2
+
+μδ ≤ 128 LQσ 2 ln 2 TK
+
+μ3δK 2 . (98b) If αK = 2 ln TK /(μK ), then 
+
+C0 exp 
+
+> (
+
+−μα K K
+
+2
+
+> )
+
+= C0
+
+TK
+
+> (93c)
+
+≤ 2σ2
+
+μ2N K . (99) If instead αK = ¯ α, we retain the exponentially decaying initialization term. Consequently, 
+
+> ˜
+
+XK ≤ 2(1 + 2 ln TK )σ2
+
+μ2N K + 128 LQσ 2 ln 2 TK
+
+μ3δK 2
+
++ C0 exp 
+
+> (
+
+−μ¯αK 
+
+2
+
+> )
+
+. (100) It remains to expose the network dependence. From (20) and (25) 
+
+δ = Θ  
+
+> (
+
+1 − λτ
+
+> )
+
+, Q = Θ  
+
+> (
+
+τ 2
+
+(1 − λ)2
+
+> )
+
+. (101) More explicitly, since τ ≥ 1 and ∆ λ ≤ 1, 32 τ 2
+
+∆2
+
+> λ
+
+≤ Q ≤ 33 τ 2
+
+∆2
+
+> λ
+
+. (102) Combining (20) and (102) yields 16 τ 3
+
+∆3
+
+> λ
+
+≤ Qδ ≤ 33 τ 3
+
+∆3
+
+> λ
+
+. (103) Thus the first two terms in (100) give the first two terms in (29), up to logarithmic factors and constants depending on μ and L. For the initialization term, using δ ≥ ∆λ/τ and 
+
+Q ≤ 33 τ 2/∆2 
+
+> λ
+
+from (102), 
+
+μ¯α
+
+2 = δ
+
+2√320 √Q κ 3/2 ≥ ∆2
+
+> λ
+
+2√320 · 33 κ3/2τ 2 ≥ ∆2
+
+> λ
+
+206 κ3/2τ 2 , (104) 21 so exp( −μ¯αK/ 2) ≤ exp (
+
+−c (1 −λ)2K/ (κ3/2τ 2))
+
+with c = 1 /206. This proves the exponential term in (29). Finally, we determine when the network-dependent and initialization terms become lower order than the centralized statistical term. Ignoring logarithmic factors, the first two stochas-tic terms in (100) scale as 
+
+σ2
+
+μ2N K and LQσ 2
+
+μ3δK 2 ,
+
+respectively. Requiring the network-dependent term to be no larger than the centralized term gives 
+
+LQσ 2
+
+μ3δK 2 ≲ σ2
+
+μ2N K 
+
+⇐⇒ K ≳ N LμQδ = N κ Qδ . (105) Since Qδ = Θ ( τ 3
+
+> (1 −λ)3
+> )
+
+, this yields K = ˜O ( N κτ 3
+
+> (1 −λ)3
+> )
+
+. For the initialization term, we require 
+
+C0 exp 
+
+> (
+
+−μ¯αK 
+
+2
+
+> )
+
+≲ σ2
+
+μ2N K . (106) Equivalently, 
+
+K ≳ 1
+
+μ¯α log  
+
+> (
+
+μ2N C 0Kσ2
+
+> )
+
+. (107) Thus, up to logarithmic factors, the initialization transient is determined by 1 /(μ¯α). Using   
+
+> 1
+> μ¯α
+
+= Θ ( κ3/2τ 2
+
+> (1 −λ)2
+> )
+
+, we obtain 
+
+K = ˜O 
+
+> (
+
+κ3/2τ 2
+
+(1 − λ)2
+
+> )
+
+. (108) Combining the two requirements gives (31). 
+
+## B.5 Proof of Corollary 2 
+
+Proof. Define 
+
+r ≜ 1 − δ
+
+8, ρ ≜ 1 − μα 
+
+2 .
+
+Under the stepsize condition, 10 α2QL 2
+
+δ ≤ δ
+
+8.
+
+Hence, using Ek ≤ ˜Ek in (26b), 
+
+Ek+1 ≤ rE k + 10 α2QL 2
+
+δ
+
+> ˜
+
+Xk + α2Qσ 2. (109) 22 Theorem 1 also gives 
+
+˜Xk ≤ ρkC0 + 2ασ 2
+
+μN + 32 α2LQσ 2
+
+μδ . (110) Iterating (109) gives 
+
+EK ≤ rK E0 + 10 α2QL 2
+
+δ C0
+
+> K−1
+
+∑
+
+> k=0
+
+rK−1−kρk
+
++ 8α2Qσ 2
+
+δ + 160 α3QL 2σ2
+
+μN δ 2 + 2560 α4Q2L3σ2
+
+μδ 3 . (111) By (85), μα/ 2 ≤ δ/ 8, so r ≤ ρ and 
+
+> K−1
+
+∑
+
+> k=0
+
+rK−1−kρk ≤ Kρ K−1.
+
+Set α = αK . Since αK ≤ 2 ln TK /(μK ) and αK ≤ ¯α, the three noise terms in (111) satisfy 8α2 
+
+> K
+
+Qσ 2
+
+δ + 160 α3 
+
+> K
+
+QL 2σ2
+
+μN δ 2 + 2560 α4 
+
+> K
+
+Q2L3σ2
+
+μδ 3
+
+= ˜O
+
+( Qσ 2
+
+δK 2 +
+
+√Q σ 2
+
+δN K 2
+
+)
+
+= ˜O
+
+( τ 3σ2
+
+(1 − λ)3K2
+
+)
+
+, (112) where we used 160¯ αQL 2
+
+μδ 2 =
+
+√80 Qκ δ , 2560¯ α2Q2L3
+
+μδ 3 = 8Qδ ,
+
+and (103). For the initialization term, 1 − t ≤ e−t and sup x> 0 x2e−x = 4 e−2 give 
+
+rK E0 ≤ 256 e−2E0
+
+δ2K2 = O
+
+( τ 2E0
+
+(1 − λ)2K2
+
+)
+
+. (113) It remains to bound the cross term. Since 10 α2 
+
+> K
+
+QL 2
+
+δ ≤ δ
+
+32 κ ≤ 1,
+
+if αK = 2 ln TK /(μK ), then 
+
+ρK−1 ≤ e1/8
+
+TK
+
+,
+
+and hence, by (93c), 10 α2 
+
+> K
+
+QL 2
+
+δ C0Kρ K−1 = ˜O
+
+( τ 3σ2
+
+(1 − λ)3K2
+
+)
+
+. (114) If αK = ¯ α, then 10 α2 
+
+> K
+
+QL 2
+
+δ C0Kρ K−1 ≤ e1/8C0K exp 
+
+(
+
+−(1 − λ)2K
+
+206 κ3/2τ 2
+
+)
+
+. (115) Combining these bounds with 1 
+
+> N
+
+E ∥̂xK ∥2 
+
+> RK
+
+≤ EK proves (32). 23 B.6 Proof of Lemma 4 
+
+Proof. Lemma 5 remains valid after setting μ = 0. Therefore, 
+
+> ˜
+
+Xk+1 ≤ ˜Xk − α ˜Fk + 3αL 
+
+2N E ∥̂xk∥2 + α2σ2
+
+N . (116) Using 1 
+
+> N
+
+E ∥̂xk∥2 ≤ ˜Ek from (24) proves (34a). Now for the disagreement recursion, we know that for every convex L-smooth function h
+
+and all x, y ,
+
+∥∇ h(x) − ∇ h(y)∥2 ≤ 2L (h(x) − h(y) − ⟨∇ h(y), x − y⟩) . (117) Recall that uk = ∇f (xk) − ∇ f (x⋆). Splitting each local gradient difference at ¯ xk and using 
+
+∥p + q∥2 ≤ 2∥p∥2 + 2 ∥q∥2 gives 
+
+∥uk∥2 ≤ 2
+
+> N∑
+> i=1
+
+∥∇ fi(xki ) − ∇ fi(¯ xk)∥2
+
++ 2 
+
+> N∑
+> i=1
+
+∥∇ fi(¯ xk) − ∇ fi(x⋆)∥2. (118) The first sum satisfies 2
+
+> N∑
+> i=1
+
+∥∇ fi(xki ) − ∇ fi(¯ xk)∥2 ≤ 2L2∥̂xk∥2. (119) Applying (117) to the second sum with x = ¯ xk and y = x⋆ gives 2
+
+> N∑
+> i=1
+
+∥∇ fi(¯ xk) − ∇ fi(x⋆)∥2
+
+≤ 4L
+
+> N∑
+> i=1
+> (
+
+fi(¯ xk) − fi(x⋆) − 〈
+
+∇fi(x⋆), ¯xk − x⋆〉) 
+
+= 4 N L (
+
+f (¯ xk) − f (x⋆))
+
+, (120) where we used ∑Ni=1 ∇fi(x⋆) = N ∇f (x⋆) = 0. Combining (118)–(120), taking expectations, and using 1 
+
+> N
+
+E ∥̂xk∥2 ≤ ˜Ek yields 1
+
+N E ∥uk∥2 ≤ 2L2 ˜Ek + 4 L ˜Fk. (121) The argument leading to (79) uses only the network and noise assumptions and therefore remains unchanged. Taking total expectation in (79) and dividing by N gives 
+
+Ek+1 ≤ Ek − δ
+
+4
+
+> ˜
+
+Ek + 5α2QδN E ∥uk∥2 + α2Qσ 2. (122) Substituting (121) into (122) proves (34b). 24 B.7 Proof of Theorem 2 
+
+Proof. Since δ ≤ 1 and Q ≥ 1, the stepsize condition (35) implies α ≤ 1/(4 L), so Lemma 4 applies. Summing (34a) from k = 0 to K − 1, using ˜XK ≥ 0, and dividing by αK gives 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+˜Fk ≤
+
+˜X0
+
+αK + 3L
+
+2K
+
+> K−1
+
+∑
+
+> k=0
+
+˜Ek + ασ 2
+
+N . (123) Moreover, (35) implies 10 α2QL 2
+
+δ ≤ δ
+
+48 ≤ δ
+
+8. (124) Therefore, (34b) gives 
+
+Ek+1 ≤ Ek − δ
+
+8
+
+˜Ek + 20 α2QL δ
+
+˜Fk + α2Qσ 2. (125) Summing, using EK ≥ 0, and dividing by K yields 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+˜Ek ≤ 8E0
+
+δK + 160 α2QL δ2K
+
+> K−1
+
+∑
+
+> k=0
+
+˜Fk + 8α2Qσ 2
+
+δ . (126) Substituting (126) into (123) gives 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+˜Fk ≤
+
+˜X0
+
+αK + 12 LE 0
+
+δK + 240 α2QL 2
+
+δ2K
+
+> K−1
+
+∑
+
+> k=0
+
+˜Fk
+
++ 12 α2QLσ 2
+
+δ + ασ 2
+
+N . (127) Again by (35), 240 α2QL 2
+
+δ2 ≤ 12. (128) Hence 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+˜Fk ≤ 2 ˜X0
+
+αK + 24 LE 0
+
+δK + 24 α2QLσ 2
+
+δ + 2ασ 2
+
+N . (129) Multiplying (126) by L and using 160 α2QL 2
+
+δ2 ≤ 13 (130) gives 
+
+LK
+
+> K−1
+
+∑
+
+> k=0
+
+˜Ek ≤ 8LE 0
+
+δK + 13K
+
+> K−1
+
+∑
+
+> k=0
+
+˜Fk + 8α2QLσ 2
+
+δ . (131) 25 Adding 1
+
+> K
+
+∑K−1 
+
+> k=0
+
+˜Fk to (131) and then applying (129) yields 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+( ˜Fk + L ˜Ek
+
+)
+
+≤ 8 ˜X0
+
+3αK + 40 LE 0
+
+δK + 8ασ 2
+
+3N + 40 α2QLσ 2
+
+δ . (132) Finally, ˜Fk = E[f (¯ xk) − f (x⋆)] and 1 
+
+> N
+
+E ∥̂xk∥2 ≤ ˜Ek, which proves (36). 
+
+## B.8 Proof of Corollary 3 
+
+Proof. Since y0 = 0, definitions (10g) and (14) give 
+
+z0 = αη ∇f (x⋆). (133) Hence 
+
+E0 = 1
+
+N
+
+(
+
+∥̂x0∥2 
+
+> R0
+
++ 2α2
+
+η2 ∥∇ f (x⋆)∥2
+
+> R0
+
+)
+
+≤ ¯E0, (134) for every α ≤ αcvx . Choose 
+
+αK ≜ min 
+
+√
+
+N ˜X0
+
+σ2K ,
+
+( ˜X0δ
+
+15 QLσ 2K
+
+)1/3
+
+, α cvx 
+
+ . (135) Using Theorem 2 and (134), we have 
+
+RK ≤ AαK
+
++ Bα K + Cα 2 
+
+> K
+
++ 40 L ¯E0
+
+δK , (136) where RK denotes the left-hand side of (36) and 
+
+A ≜ 8 ˜X0
+
+3K , B ≜ 8σ2
+
+3N , C ≜ 40 QLσ 2
+
+δ .
+
+The choice (135) is equivalently 
+
+αK = min 
+
+√
+
+AB ,
+
+( AC
+
+)1/3
+
+, α cvx 
+
+ .
+
+Therefore, 
+
+Bα K ≤ √AB, Cα 2 
+
+> K
+
+≤ A2/3C1/3,
+
+and AαK
+
+≤ √AB + A2/3C1/3 + Aαcvx 
+
+.
+
+26 Substituting these bounds into (136) gives 
+
+RK ≤ 2√AB + 2 A2/3C1/3 + Aαcvx 
+
++ 40 L ¯E0
+
+δK . (137) Finally, 
+
+Qδ = Θ  
+
+> (
+
+τ 3
+
+(1 − λ)3
+
+> )
+
+, 1
+
+αcvx 
+
+= Θ  
+
+> (
+
+Lτ 2
+
+(1 − λ)2
+
+> )
+
+, 1
+
+δ = Θ  
+
+> (
+
+τ
+
+1 − λ
+
+> )
+
+.
+
+Applying these relations to (137) proves (37). 
+
+# References 
+
+[1] A. Nedic and A. Ozdaglar, “Distributed subgradient methods for multi-agent optimization,” 
+
+IEEE Transactions on Automatic Control , vol. 54, no. 1, pp. 48–61, 2009. [2] A. H. Sayed, “Adaptation, learning, and optimization over neworks,” Foundations and Trends in Machine Learning , vol. 7, no. 4-5, pp. 311–801, 2014. [3] A. Jadbabaie, J. Lin, and A. S. Morse, “Coordination of groups of mobile autonomous agents using nearest neighbor rules,” IEEE Transactions on Automatic Control , vol. 48, no. 6, pp. 988– 1001, 2003. [4] R. Olfati-Saber, “Flocking for multi-agent dynamic systems: Algorithms and theory,” IEEE Transactions on Automatic Control , vol. 51, no. 3, pp. 401–420, 2006. [5] O. Shorinwa, T. Halsted, J. Yu, and M. Schwager, “Distributed optimization methods for multi-robot systems: Part 1—a tutorial [tutorial],” IEEE Robotics & Automation Magazine ,vol. 31, no. 3, pp. 121–138, 2024. [6] J. F. Mota, J. M. Xavier, P. M. Aguiar, and M. P¨ uschel, “Distributed ADMM for model predictive control and congestion control,” in Proceedings of the IEEE Conference on Decision and Control (CDC) , pp. 5110–5115, 2012. [7] I. D. Schizas, A. Ribeiro, and G. B. Giannakis, “Consensus in Ad Hoc WSNs with noisy links—Part I: Distributed estimation of deterministic signals,” IEEE Transactions on Signal Processing , vol. 56, no. 1, pp. 350–364, 2008. [8] J. Xu, S. Zhu, Y. C. Soh, and L. Xie, “Augmented distributed gradient methods for multi-agent optimization under uncoordinated constant stepsizes,” in Proceedings of the IEEE Conference on Decision and Control (CDC) , (Osaka, Japan), pp. 2055–2060, 2015. [9] P. Di Lorenzo and G. Scutari, “NEXT: In-network nonconvex optimization,” IEEE Transac-tions on Signal and Information Processing over Networks , vol. 2, no. 2, pp. 120–136, 2016. [10] A. Nedic, A. Olshevsky, and W. Shi, “Achieving geometric convergence for distributed opti-mization over time-varying graphs,” SIAM Journal on Optimization , vol. 27, no. 4, pp. 2597– 2633, 2017. 
+
+27 [11] S. S. Ram, A. Nedic, and V. V. Veeravalli, “Distributed stochastic subgradient projection al-gorithms for convex optimization,” Journal of Optimization Theory and Applications , vol. 147, no. 3, pp. 516–545, 2010. [12] A. Koloskova, N. Loizou, S. Boreiri, M. Jaggi, and S. Stich, “A unified theory of decentralized SGD with changing topology and local updates,” in Proceedings of the International Conference on Machine Learning (ICML) , vol. 119, (Virtual/online), pp. 5381–5393, PMLR, July 2020. [13] K. Yuan, S. A. Alghunaim, B. Ying, and A. H. Sayed, “On the influence of bias-correction on distributed stochastic optimization,” IEEE Transactions on Signal Processing , vol. 68, pp. 4352–4367, 2020. [14] A. Sundararajan, B. Van Scoy, and L. Lessard, “Analysis and design of first-order distributed optimization algorithms over time-varying graphs,” IEEE Transactions on Control of Network Systems , vol. 7, no. 4, pp. 1597–1608, 2020. [15] M. Maros and J. Jald´ en, “A geometrically converging dual method for distributed optimization over time-varying graphs,” IEEE Transactions on Automatic Control , vol. 66, no. 6, pp. 2465– 2479, 2020. [16] Y. Huang, J. Xu, J. Chen, and K. H. Johansson, “Beyond scaffold: A unified spatio-temporal gradient tracking method,” arXiv preprint arXiv:2512.01732 , 2025. [17] E. D. H. Nguyen, X. Jiang, B. Ying, and C. A. Uribe, “On graphs with finite-time consensus and their use in gradient tracking,” SIAM Journal on Optimization , vol. 35, no. 2, pp. 872–898, 2025. [18] A. Fainman and S. Vlaski, “On the convergence of decentralized stochastic gradient-tracking with finite-time consensus,” IEEE Transactions on Signal Processing , 2026. [19] G. Scutari and Y. Sun, “Distributed nonconvex constrained optimization over time-varying digraphs,” Mathematical Programming , vol. 176, no. 1-2, pp. 497–544, 2019. [20] F. Saadatniaki, R. Xin, and U. A. Khan, “Decentralized optimization over time-varying di-rected graphs with row and column-stochastic matrices,” IEEE Transactions on Automatic Control , vol. 65, no. 11, pp. 4769–4780, 2020. [21] R. Xin and U. A. Khan, “A linear algorithm for optimization over directed graphs with geo-metric convergence,” IEEE Control Systems Letters , vol. 2, no. 3, pp. 315–320, 2018. [22] S. Pu, W. Shi, J. Xu, and A. Nedi´ c, “Push–pull gradient methods for distributed optimization in networks,” IEEE Transactions on Automatic Control , vol. 66, no. 1, pp. 1–16, 2020. [23] A. Nedi´ c, D. T. A. Nguyen, and D. T. Nguyen, “AB/Push-Pull method for distributed op-timization in time-varying directed networks,” Optimization Methods and Software , vol. 40, no. 5, pp. 1044–1071, 2025. [24] Y. Chen, A. Hashemi, and H. Vikalo, “Accelerated distributed stochastic nonconvex optimiza-tion over time-varying directed networks,” IEEE Transactions on Automatic Control , vol. 70, no. 4, pp. 2196–2211, 2024. 
+
+28 [25] D. T. A. Nguyen, S. Wang, D. T. Nguyen, A. Nedich, and H. V. Poor, “Decentralized fed-erated learning with gradient tracking over time-varying directed networks,” arXiv preprint arXiv:2409.17189 , 2024. [26] P. Stein, “Some general theorems on iterants,” Journal of Research of the National Bureau of Standards , vol. 48, no. 1, p. 82, 1952. [27] B. Anderson and J. B. Moore, “Detectability and stabilizability of time-varying discrete-time linear systems,” SIAM Journal on Control and Optimization , vol. 19, no. 1, pp. 20–32, 1981. [28] R. Geiselhart, R. H. Gielen, M. Lazar, and F. R. Wirth, “An alternative converse Lyapunov theorem for discrete-time systems,” Systems & Control Letters , vol. 70, pp. 49–59, 2014. [29] Y. Su and J. Huang, “Stability of a class of linear switching systems with applications to two consensus problems,” IEEE Transactions on Automatic Control , vol. 57, no. 6, pp. 1420–1430, 2012. [30] W. Liu and J. Huang, “Adaptive leader-following consensus for a class of higher-order nonlinear multi-agent systems with directed switching networks,” Automatica , vol. 79, pp. 84–92, 2017. [31] Z. Liu and J. Huang, “Distributed Nash equilibrium seeking in aggregative games over jointly connected and weight-balanced networks,” IEEE Transactions on Automatic Control , vol. 70, no. 5, pp. 3486–3493, 2025. [32] L. Liang, G. Luo, and K. Yuan, “On the linear speedup of the push-pull method for decen-tralized optimization over digraphs,” arXiv preprint arXiv:2506.18075 , 2025. [33] S. A. Alghunaim and K. Yuan, “An enhanced gradient-tracking bound for distributed online stochastic convex optimization,” Signal Processing , vol. 217, p. 109345, 2024. 
+
+29

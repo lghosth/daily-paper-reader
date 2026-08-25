@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-09",
+  "date": "2026-08-08",
+  "generated_at": "2026-08-08T20:35:57",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/08/2608.05127v1-sstqprivacy-preserving-vector-quantization-via-subsampled-stochastic-turboquant",
+      "section": "deep",
+      "title_en": "SSTQ:Privacy-Preserving Vector Quantization via Subsampled Stochastic TurboQuant",
+      "authors": "Adel Javanmard, David P. Woodruff, Vahab Mirrokni",
+      "date": "2026-08-05",
+      "pdf": "https://arxiv.org/pdf/2608.05127v1",
+      "score": "8.0",
+      "evidence": "面向分布式优化中的低通信成本问题，提出向量量化方案",
+      "tldr": "在分布式优化中兼顾本地差分隐私与低通信成本颇具挑战，现有vqSGD等向量量化依赖高维几何构造，却产生不利的维度相关方差。为此提出SSTQ，整合过完备等范数紧框架、坐标子采样及隐私感知一维量化，并给出随机响应与Laplace两个变体。SSTQ达到最优MSE缩放，通信开销仅⌈log2 N⌉+b比特，同时将码本相关MSE由O(4^b)优化至O(2^b)。在CIFAR-10与Fashion-MNIST联邦学习任务上，SSTQ相比既有基线展现出更优的效用和通信效率。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Achieving local differential privacy in distributed optimization while maintaining low communication cost remains challenging. Existing vector quantization methods, such as vqSGD, use high-dimensional geometric constructions but incur unfavorable dimension-dependent variance. In this work, we propose Subsampled Stochastic TurboQuant (SSTQ), a framework that combines overcomplete equal-norm tight frames, coordinate subsampling, and privacy-aware one-dimensional quantization. SSTQ includes two variants: a Flat Randomized Response version and a Metric-Aware Laplace version, the latter being better suited to higher codebook bit-width regimes. We show that SSTQ achieves optimal mean squared error scaling while using only $\\lceil \\log_2 N \\rceil + b$ bits per client, where $N = Θ(d)$ is the frame size. We also derive a surrogate privacy-aware codebook objective that reduces the codebook-dependent MSE scaling from $O(4^b)$ to $O(2^b)$. Finally, we empirically evaluate SSTQ against established baselines on federated learning tasks using CIFAR-10 and Fashion-MNIST, demonstrating favorable utility and communication efficiency.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

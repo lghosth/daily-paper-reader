@@ -1,0 +1,170 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-05T21:40:16.326279+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2608.02884v1",
+      "source": "arxiv",
+      "title": "Configurable and Hierarchical Allreduce",
+      "abstract": "MPI_Allreduce is among the most performance-critical collectives in large-scale scientific computing and distributed machine learning, yet the small- and medium-message regime remains challenging: latency, synchronization depth, and strong hardware hierarchy between intra- and inter-domain communication all compound per-invocation cost. We present CHIARA, a configurable hierarchical Allreduce that encodes hardware hierarchy through a logical batch-lane topology and executes a staged schedule in which only a bounded portion of the reduction vector is active at a time. Inter-batch communication is distributed across multiple ranks via a rotating-root lane primitive, avoiding centralized leaders. Tool further enables a semi-composed Rabenseifner-style Allreduce by preserving a lane-aligned intermediate layout across the Reduce-Scatter/Allgather boundary, eliminating redundant intra-domain reorganization. We evaluate Tool on Polaris, Aurora, and Fugaku, achieving speedups of up to 1.94x, 13.43x, and 13.48x over vendor MPI_Allreduce, and up to 2.2x end-to-end speedup in a parallel k-means application.",
+      "authors": [
+        "Valentino Guerrini",
+        "Ke Fan",
+        "Sidharth Kumar"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-03T21:12:43+00:00",
+      "link": "https://arxiv.org/pdf/2608.02884v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Optimizes Allreduce collective to reduce communication cost for distributed ML training",
+      "llm_evidence_cn": "优化Allreduce集合通信，为分布式机器学习训练降低通信开销",
+      "llm_evidence": "优化Allreduce集合通信，为分布式机器学习训练降低通信开销",
+      "canonical_evidence": "优化Allreduce集合通信，为分布式机器学习训练降低通信开销",
+      "llm_tldr_en": "Proposes CHIARA, a configurable hierarchical Allreduce that reduces latency and communication cost for small and medium messages in distributed training, useful for communication-efficient graph learning systems.",
+      "llm_tldr_cn": "分布式训练中Allreduce集合通信是关键性能瓶颈，尤其小中消息量时延迟和同步开销较大。本文提出CHIARA，一种可配置的分层Allreduce，通过逻辑批量通道拓扑和阶段化调度，限制同时活跃的归约向量部分，并使用旋转根通道在多个rank间分发批量间通信。实验表明CHIARA能显著降低小中消息下的通信开销，可为分布式图神经网络等机器学习训练提供高效的通信原语。",
+      "llm_tldr": "分布式训练中Allreduce集合通信是关键性能瓶颈，尤其小中消息量时延迟和同步开销较大。本文提出CHIARA，一种可配置的分层Allreduce，通过逻辑批量通道拓扑和阶段化调度，限制同时活跃的归约向量部分，并使用旋转根通道在多个rank间分发批量间通信。实验表明CHIARA能显著降低小中消息下的通信开销，可为分布式图神经网络等机器学习训练提供高效的通信原语。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.03676v1",
+      "source": "arxiv",
+      "title": "TAOT: Topology-Aware Optimal Transport for Dynamic Expert Replica Placement in MoE Training",
+      "abstract": "Mixture-of-Experts (MoE) has become a key architecture for scaling large language models (LLMs), yet its dynamic routing causes severe load imbalance in expert-parallel training. Existing dynamic-replica methods copy hot experts onto idle ranks to share computation, but they optimize load balance alone and ignore the cost of moving expert weights across a multi-node topology, so the resulting cross-node communication can outweigh the balancing gain and inflate training cost. We present TAOT, a topology-aware optimal transport method for dynamic expert-replica placement. TAOT models the overload on hot ranks and the spare capacity on lightly loaded ranks as a balanced entropy-regularized optimal transport problem with a communication-cost matrix, solves it with Sinkhorn-Knopp iterations to produce rank-level flow hints, and combines integer replica matching with token assignment into an executable schedule. At the system level, it overlaps guest-weight transfer with home-expert computation to hide the communication overhead. Experiments show TAOT achieves a 1.43x end-to-end MoE training speedup, reaches balance quality competitive with or better than existing state-of-the-art methods, and attains the lowest weighted expert-communication cost across all configurations, with up to a 74% reduction.",
+      "authors": [
+        "Lingyun Zhang",
+        "Henghua Zhang",
+        "Shilei Gu",
+        "Kai Mo",
+        "Shuai Han",
+        "Shiyong Li",
+        "Yanpeng Wang",
+        "Dou Shen"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-04T13:50:22+00:00",
+      "link": "https://arxiv.org/pdf/2608.03676v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Communication-efficient distributed training via topology-aware replica placement",
+      "llm_evidence_cn": "通过拓扑感知副本放置实现通信高效分布式训练",
+      "llm_evidence": "通过拓扑感知副本放置实现通信高效分布式训练",
+      "canonical_evidence": "通过拓扑感知副本放置实现通信高效分布式训练",
+      "llm_tldr_en": "TAOT models dynamic expert replica placement as entropy-regularized optimal transport with communication cost, reducing cross-node traffic in MoE training; a communication-efficient training method, though not graph-specific.",
+      "llm_tldr_cn": "该论文针对混合专家（MoE）并行训练中动态路由导致的负载不均问题，指出现有动态副本方法只优化负载均衡而忽略跨节点拓扑通信代价。提出TAOT，将热点专家副本放置建模为带通信成本的正则化最优传输问题，在平衡负载的同时最小化通信开销。实验证明TAOT能显著降低训练通信成本，提升整体训练效率。该方法为通信高效分布式训练提供了通用思路，虽面向LLM但可借鉴到图学习系统。",
+      "llm_tldr": "该论文针对混合专家（MoE）并行训练中动态路由导致的负载不均问题，指出现有动态副本方法只优化负载均衡而忽略跨节点拓扑通信代价。提出TAOT，将热点专家副本放置建模为带通信成本的正则化最优传输问题，在平衡负载的同时最小化通信开销。实验证明TAOT能显著降低训练通信成本，提升整体训练效率。该方法为通信高效分布式训练提供了通用思路，虽面向LLM但可借鉴到图学习系统。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.01503v1",
+      "source": "arxiv",
+      "title": "GPU-Accelerated Multilevel Graph Clustering: A Parallel Perspective on Louvain and Leiden",
+      "abstract": "The sequential Louvain and Leiden algorithms are widely used techniques for modularity-optimizing clustering (or community detection) in large graphs. We present pLouvain and pLeiden, two new GPU parallelizations. pLouvain is based on the Louvain+ extension. pLeiden is the first parallel implementation to provably preserve all quality guarantees of sequential Leiden. We achieve this through a novel spanning-tree-based refinement approach. Both pLouvain and pLeiden use a lightweight symmetry-breaking technique that emulates an ordered traversal of vertices. For pLouvain, we develop an alternative iteration strategy to rectify the weak internal cluster connectivity observed in Louvain/Louvain+. Further, both pLouvain and pLeiden optimize the LambdaCC objective function, a generalization of modularity and the related Constant Potts model.   On a collection of 57 graphs from 10 families, our results show that pLouvain and pLeiden achieve geometric mean speedups of 3.1x and 8.8x, respectively, over the current fastest open-source parallelizations of Louvain and Leiden. For the clusterings generated, pLouvain yields the highest modularity scores on nearly all tested graphs. The subroutines within these two multilevel approaches could aid in the parallelization of other Louvain-based techniques.",
+      "authors": [
+        "Michael S. Gilbert",
+        "Kamesh Madduri"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-02T21:20:44+00:00",
+      "link": "https://arxiv.org/pdf/2608.01503v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "GPU parallelizations of Louvain and Leiden for large graph clustering, enabling scalable graph partitioning",
+      "llm_evidence_cn": "提出Louvain与Leiden的GPU并行实现，用于大规模图聚类，为分布式图划分提供方法",
+      "llm_evidence": "提出Louvain与Leiden的GPU并行实现，用于大规模图聚类，为分布式图划分提供方法",
+      "canonical_evidence": "提出Louvain与Leiden的GPU并行实现，用于大规模图聚类，为分布式图划分提供方法",
+      "llm_tldr_en": "This paper presents pLouvain and pLeiden, GPU parallelizations of multilevel graph clustering algorithms. pLeiden is the first parallel implementation preserving all quality guarantees of sequential Leiden, achieved via a novel spanning-tree-based refinement. These methods enable scalable graph partitioning and community detection.",
+      "llm_tldr_cn": "针对大规模图上的模块度优化聚类，本文提出Louvain与Leiden的GPU并行实现pLouvain和pLeiden。pLeiden首次在并行化中保留顺序Leiden的全部质量保证，关键在于基于生成树的精化方法。两者通过对称破缺技术模拟有序遍历，可高效处理大规模图，为分布式图计算中的图划分与社区发现提供了可扩展的并行工具。",
+      "llm_tldr": "针对大规模图上的模块度优化聚类，本文提出Louvain与Leiden的GPU并行实现pLouvain和pLeiden。pLeiden首次在并行化中保留顺序Leiden的全部质量保证，关键在于基于生成树的精化方法。两者通过对称破缺技术模拟有序遍历，可高效处理大规模图，为分布式图计算中的图划分与社区发现提供了可扩展的并行工具。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.01426v1",
+      "source": "arxiv",
+      "title": "Cluster-Aware Over-the-Air Federated Learning with Energy-Harvesting Devices: From Global Training to Model Personalization",
+      "abstract": "Federated learning (FL) enables distributed optimization and learning across decentralized edge devices while preserving data privacy, but its performance is fundamentally constrained by heterogeneous data distributions, limited communication resources, and energy availability. In practical wireless networks, mobile devices (MDs) often exhibit diverse data and learning objectives, naturally forming clusters of users with jointly trainable models. When devices rely on energy harvesting (EH), stochastic energy arrivals further complicate participation and scheduling under communication constraints. In this work, we study over-the-air (OTA) FL with EH MDs under heterogeneous data distributions, and investigate two closely related learning objectives within a unified framework: one aiming for a more representative global model by reducing data bias, and the other learning more personalized cluster-specific models by exploiting this bias. In the global training mode, cluster information guides energy- and diversity-aware scheduling, ensuring that the scheduled active users provide a more representative aggregate update. In the personalization mode, the same cluster structure defines cluster-level learning objectives and OTA recovery targets, enabling the parameter server to train multiple cluster-specific models through simultaneous transmissions over the wireless multiple-access channel. Numerical results demonstrate that the proposed unified framework improves fairness or personalization, depending on the operating mode, while reducing communication overhead.",
+      "authors": [
+        "Furkan Bagci",
+        "Busra Tegin",
+        "Mohammad Kazemi",
+        "Tolga M. Duman"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "published": "2026-08-02T18:15:49+00:00",
+      "link": "https://arxiv.org/pdf/2608.01426v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "communication-efficient federated learning with over-the-air aggregation and cluster awareness",
+      "llm_evidence_cn": "面向集群的空中联邦学习，处理通信与能量约束，提升分布式训练效率",
+      "llm_evidence": "面向集群的空中联邦学习，处理通信与能量约束，提升分布式训练效率",
+      "canonical_evidence": "面向集群的空中联邦学习，处理通信与能量约束，提升分布式训练效率",
+      "llm_tldr_en": "This work studies over-the-air federated learning with energy-harvesting devices under heterogeneous data, leveraging user clusters and model personalization. It addresses communication resource and energy constraints in distributed optimization, proposing cluster-aware scheduling for efficient global-to-personalized training.",
+      "llm_tldr_cn": "本文研究能量采集设备下的空中联邦学习，考虑异构数据分布与动态能量到达对通信和调度的影响。通过识别用户集群并引入模型个性化，在有限通信资源下实现从全局训练到个性化模型的转换。所提出的集群感知机制在分布式学习中兼顾通信效率与设备能量约束，为无线场景下的高效联邦训练提供了新思路。",
+      "llm_tldr": "本文研究能量采集设备下的空中联邦学习，考虑异构数据分布与动态能量到达对通信和调度的影响。通过识别用户集群并引入模型个性化，在有限通信资源下实现从全局训练到个性化模型的转换。所提出的集群感知机制在分布式学习中兼顾通信效率与设备能量约束，为无线场景下的高效联邦训练提供了新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
