@@ -1,0 +1,54 @@
+{
+  "label": "2026-08-26",
+  "date": "2026-08-25",
+  "generated_at": "2026-08-25T20:11:02",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202608/25/2608.22575v1-two-level-domain-decomposition-adagrad-method-for-scalable-training-of-graph-neural-networks",
+      "section": "deep",
+      "title_en": "Two-level domain-decomposition AdaGrad method for scalable training of graph neural networks",
+      "authors": "Laurynas Varnas, Julien Herrmann, Alexander Heinlein, Serge Gratton, Alena Kopaničáková",
+      "date": "2026-08-23",
+      "pdf": "https://arxiv.org/pdf/2608.22575v1",
+      "score": "9.0",
+      "evidence": "通过域分解进行图划分以支持分布式GNN训练，降低通信开销",
+      "tldr": "图神经网络的消息传递机制耦合节点，导致分布式训练面临优化代价高、内存占用大和通信开销大的挑战。为此，提出域分解AdaGrad方法DD-AG2m，交替进行全局图与分区图上的AG2m优化，并引入基于粗图的两级变体2DD-AG2m以降低全局信息获取成本。实验表明，达到相同预测性能时计算成本降低4-8倍，固定计算成本下性能最高提升22%。该方法为大规模图训练提供了高效可扩展的优化方案。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Graph neural networks (GNNs) have emerged as a powerful framework for learning from graph-structured data. However, their efficient training remains challenging, particularly in distributed computing environments. This challenge arises from the use of message passing, which couples all graph nodes, leading to expensive optimization steps, high memory requirements, and substantial communication overhead. To alleviate these limitations, we propose a novel domain-decomposition (DD) variant of AG2m, an AdaGrad method enhanced with second-order curvature information and momentum, denoted by DD-AG2m. The proposed DD-AG2m alternates between AG2m optimization on the original (global) graph and AG2m optimization on the partitioned graphs. To incorporate global information at reduced cost, we further introduce a two-level variant (2DD-AG2m) that performs global optimization steps on a coarse graph obtained by randomly subsampling nodes within each subdomain. Numerical experiments spanning graph classification, node-level regression, and spatiotemporal forecasting tasks demonstrate that the proposed DD methods reduce the computational cost required to achieve the same predictive performance by a factor of 4-8. Moreover, for the fixed computational cost, they improve the predictive performance of GNNs by up to 22% compared with the baseline AG2m.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/25/2608.23013v1-ced-ef-compressed-exact-diffusion-with-error-feedback-for-multi-agent-learning",
+      "section": "deep",
+      "title_en": "CED-EF: Compressed Exact Diffusion with Error Feedback for Multi-Agent Learning",
+      "authors": "Sulaiman A. Alghunaim, Kun Yuan",
+      "date": "2026-08-24",
+      "pdf": "https://arxiv.org/pdf/2608.23013v1",
+      "score": "9.0",
+      "evidence": "通过压缩模型交换与误差反馈实现通信高效的去中心化训练",
+      "tldr": "针对多智能体网络中的分布式随机优化，压缩通信虽可降低带宽但引入有偏误差。本文提出基于误差反馈的精确扩散方法 CED-EF，兼容偏置 δ-压缩器，每轮每节点仅通信一个压缩模型向量。在非凸光滑目标下获得主导随机项 O(σ/√NK) 的收敛率，暂态时间依赖 O(N^3/(δ^4Δ_λ^4))；在 PL 条件下进一步改进。理论结果优于现有压缩方案，数值实验验证了其优势。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "We study decentralized stochastic optimization over a network of $N$ agents under compressed communication. We propose CED-EF, an exact diffusion-based method with error feedback that directly accommodates biased $δ$-contractive compressors while communicating one compressed model-sized vector per node per iteration. For smooth nonconvex objectives with unbiased stochastic gradients whose variance is bounded by $σ^2$, where $σ\\geq0$, we establish a convergence rate whose leading stochastic term is $\\mathcal O(σ/\\sqrt{NK})$. For $σ>0$, the dominant dependence of the corresponding transient time on the number of agents, compression level, and spectral gap $Δ_λ$ is $\\mathcal O(N^3/(δ^4Δ_λ^4))$, with fixed problem-dependent factors suppressed. Under the Polyak--Łojasiewicz condition, CED-EF attains a leading stochastic term $\\widetilde{\\mathcal O}(σ^2/(NK))$ with transient time on the order of $\\widetilde{\\mathcal O}(N/(δ^2Δ_λ^2))$. These dependencies improve the compression and/or network dependence of existing results. Numerical experiments on least-squares and logistic-regression problems illustrate the performance advantages of CED-EF.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/25/2608.23018v1-splitlite-low-rank-residual-compression-for-split-learning",
+      "section": "deep",
+      "title_en": "SplitLite: Low-Rank Residual Compression for Split Learning",
+      "authors": "Tao Li, Yulin Tang, Qi Guo, Xianhao Chen",
+      "date": "2026-08-24",
+      "pdf": "https://arxiv.org/pdf/2608.23018v1",
+      "score": "9.0",
+      "evidence": "通过分割学习中的低秩残差压缩实现通信高效训练",
+      "tldr": "联邦微调端侧大语言模型面临计算负担，分割学习将主要训练负载卸载至服务器，但需交换高维激活和梯度，通信成本高昂。SplitLite利用连续轮次间激活和梯度残差的低有效秩结构，在LoRA秩r更新下分别呈现2r和4r秩，通过仅传输量化截断SVD残差因子，大幅降低上下行通信。在GLUE基准上，上行通信减少93.5%，总通信减少83.7%，且无性能损失。该方法为通信高效的端侧LLM微调提供了新思路。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated fine-tuning of on-device large language models (LLMs) faces a significant computing burden. To overcome this limitation, split learning (SL) has emerged as a promising solution, which offloads the primary training workload to a powerful server. However, SL requires exchanging high-dimensional activations and gradients between clients and the server, resulting in prohibitive communication costs. To overcome this challenge, we propose SplitLite, a communication-efficient split federated LoRA fine-tuning method that exploits the low effective rank structure of consecutive-epoch activation and gradient residuals. Our key finding is that, when LoRA uses rank $r$ updates in parameter space, the activation and gradient residuals of the same data sample between adjacent epochs also exhibit effective rank-$2r$ and rank-$4r$ structures, respectively. By revealing this property, SplitLite transmits only quantized truncated singular value decomposition (SVD) residual factors, thereby significantly reducing both activation uplink and gradient downlink traffic. Extensive experiments on the GLUE benchmark across a series of advanced on-device LLMs demonstrate that our method reduces activation uplink communication costs by up to 93.5\\% and total communication costs by up to 83.7\\%, without performance degradation.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

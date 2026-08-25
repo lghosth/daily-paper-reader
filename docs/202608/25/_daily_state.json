@@ -1,0 +1,57 @@
+{
+  "date": "20260825",
+  "date_label": "2026-08-26",
+  "generated_at": "2026-08-26 04:10:59 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2608.22575v1",
+      "route": "202608/25/2608.22575v1-two-level-domain-decomposition-adagrad-method-for-scalable-training-of-graph-neural-networks",
+      "title": "Two-level domain-decomposition AdaGrad method for scalable training of graph neural networks",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过域分解进行图划分以支持分布式GNN训练，降低通信开销",
+      "first_seen_at": "2026-08-26 04:10:59 北京时间",
+      "updated_at": "2026-08-26 04:10:59 北京时间"
+    },
+    {
+      "paper_id": "2608.23013v1",
+      "route": "202608/25/2608.23013v1-ced-ef-compressed-exact-diffusion-with-error-feedback-for-multi-agent-learning",
+      "title": "CED-EF: Compressed Exact Diffusion with Error Feedback for Multi-Agent Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过压缩模型交换与误差反馈实现通信高效的去中心化训练",
+      "first_seen_at": "2026-08-26 04:10:59 北京时间",
+      "updated_at": "2026-08-26 04:10:59 北京时间"
+    },
+    {
+      "paper_id": "2608.23018v1",
+      "route": "202608/25/2608.23018v1-splitlite-low-rank-residual-compression-for-split-learning",
+      "title": "SplitLite: Low-Rank Residual Compression for Split Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过分割学习中的低秩残差压缩实现通信高效训练",
+      "first_seen_at": "2026-08-26 04:10:59 北京时间",
+      "updated_at": "2026-08-26 04:10:59 北京时间"
+    }
+  ]
+}

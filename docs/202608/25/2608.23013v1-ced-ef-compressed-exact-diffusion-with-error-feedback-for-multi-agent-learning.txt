@@ -1,0 +1,7258 @@
+Title: CED-EF: Compressed Exact Diffusion with Error Feedback for Multi-Agent Learning
+
+URL Source: https://arxiv.org/pdf/2608.23013v1
+
+Published Time: Tue, 25 Aug 2026 01:50:46 GMT
+
+Number of Pages: 57
+
+Markdown Content:
+# CED-EF: Compressed Exact Diffusion with Error Feedback for Multi-Agent Learning ∗
+
+Sulaiman Alghunaim Kun Yuan 
+
+Department of Electrical Engineering Center for Machine Learning Research Kuwait University, Kuwait Peking University, China 
+
+sulaiman.alghunaim@ku.edu.kw kunyuan@pku.edu.cn 
+
+Abstract 
+
+We study decentralized stochastic optimization over a network of N agents under compressed communication. We propose CED-EF, an exact diffusion-based method with error feedback that directly accommodates biased δ-contractive compressors while communicating one compressed model-sized vector per node per iteration. For smooth nonconvex objectives with unbiased stochastic gradients whose variance is bounded by σ2, where σ ≥ 0, we establish a convergence rate whose leading stochastic term is O(σ/ √N K ). For σ > 0, the dominant dependence of the corresponding transient time on the number of agents, compression level, and spectral gap ∆λ is O(N 3/(δ4∆4
+
+> λ
+
+)), with fixed problem-dependent factors suppressed. Under the Polyak– Lojasiewicz condition, CED-EF attains a leading stochastic term ˜O(σ2/(N K )) with transient time on the order of ˜O(N/ (δ2∆2
+
+> λ
+
+)). These dependencies improve the compression and/or network dependence of existing results. Numerical experiments on least-squares and logistic-regression problems illustrate the performance advantages of CED-EF. 
+
+# 1 Introduction 
+
+1.1 Problem setup 
+
+We consider a decentralized stochastic consensus optimization problem over a network of N nodes, also referred to as agents, clients, or workers. Each node i ∈ { 1, . . . , N } has access only to its local data distribution Di and the associated local risk function fi : Rn → R. The goal is for the nodes to collaboratively minimize the global objective, defined as the average of the local risks: 
+
+x⋆ ∈ argmin 
+
+> x∈Rn
+
+f (x) ≜ 1
+
+N
+
+> N
+
+∑
+
+> i=1
+
+fi(x), fi(x) ≜ Eξi∼D i
+
+[Fi(x; ξi)]. (1) Here, Fi(x; ξi) denotes a stochastic realization of the loss at node i, and ξi represents a random sample drawn from the local distribution Di. The objective is to minimize the global risk f without requiring any node to access the private data or loss functions of the other nodes. We consider 
+
+decentralized (fully distributed) settings, where the nodes are connected through a communication 
+
+> ∗
+
+This work was supported and funded by Kuwait University Research Grant No. EE02/23. 
+
+1arXiv:2608.23013v1 [math.OC] 24 Aug 2026 graph and may exchange information only with their immediate neighbors [1, 2]. This differs from the centralized and federated setups, in which every node communicates with a central server that coordinates the updates [3–5]. Problem (1) is a standard model for decentralized machine learning, where data are naturally distributed across devices, workers, or institutions and communication is often the main bottle-neck [4–7]. It also has applications in control as it arises in multi-agent and multi-robot coor-dination, formation control, and flocking [8–10], and in distributed model-predictive control [11]. Further applications include distributed estimation and in-network adaptive filtering over sensor networks [2, 12], as well as distributed spectrum sensing in cognitive-radio networks [13]. In all of these settings, decentralization is desirable because it avoids a single point of failure, preserves data locality, and lets computation scale with the number of participating agents; in particular, for large data sets it becomes inefficient—or infeasible—to solve problem (1) on a single agent. In distributed optimization, communication can become a major bottleneck when high-dimensional model updates must be exchanged among the participating agents. Two common strategies are used to reduce this cost: allowing agents to perform multiple local updates between communication rounds [5, 14–17], and compressing the messages transmitted during communication [18–42]. We focus on decentralized optimization with compressed communication and develop a com-pressed variant of exact diffusion (ED) [43], also known as NIDS [44], equipped with error feedback. The method handles biased contractive compressors and is analyzed for both smooth nonconvex objectives and objectives satisfying the Polyak–Lojasiewicz (PL) condition. We first review the most closely related compressed decentralized methods and then summarize our contributions. 
+
+1.2 Related work 
+
+Decentralized optimization has been extensively studied in recent years, leading to a wide range of algorithms. Among the most prominent are consensus-based methods [1] and diffusion strategies [2, 45,46], which are often collectively referred to as decentralized stochastic gradient descent (DSGD) in the recent literature [15]. To reduce communication costs, DSGD has been combined with compression in several works [22–28]. However, DSGD and its variants are generally not robust to data heterogeneity: when the local objective functions differ across nodes, these methods may converge to a biased solution under constant stepsizes [6, 46, 47]. To remove this bias, several bias-correction mechanisms have been developed. Two widely adopted classes are gradient-tracking methods [48,49] and primal-dual methods, including EXTRA [50] and exact diffusion (ED) [43,44]. A unified treatment of these bias-corrected decentralized methods can be found in [51, 52]. Several bias-corrected decentralized methods have also been extended to compressed communi-cation settings. The work [31] develops a compressed primal-dual method with linear convergence for strongly convex objectives under unbiased compressors. Closely related compressed ED-type schemes are proposed in [32,33], where linear convergence is established in strongly convex settings for unbiased compressors. In addition, [33] also treats biased compressors, although its guarantees do not cover aggressive compression regimes. The work [41] studies compressed ED with error feed-back, focusing again on unbiased compression and strongly convex costs. On the gradient-tracking side, [37] proposes compressed GT-based algorithms with linear convergence for strongly convex objectives under biased compressors. In contrast to these works, which focus primarily on strongly convex optimization, our work studies the nonconvex stochastic setting. The work [34] studies CEDAS, an ED-based method closely related to [32], in the stochastic nonconvex setting. Its main convergence analysis assumes unbiased compression. The same work 2discusses a biased-to-unbiased conversion mechanism that introduces an additional compression operation and increases the communication cost. The work [36] handles a general class of compres-sors directly and establishes the linear-speedup rate O(1 /√N K ) for smooth nonconvex objectives where K is the number of iteration. Under the PL condition, however, its constant-stepsize result gives linear convergence to a noise neighborhood rather than a 1 /(N K ) stochastic decay. Among gradient-tracking methods, BEER [38] supports biased compression but requires large mini-batches in its stochastic guarantee, whereas MoTEF [40] combines momentum tracking with error feedback and obtains linear speedup under arbitrary data heterogeneity. In this work, we focus on an ED-based construction for two reasons. First, CED-EF com-municates one compressed model-sized vector per node per iteration, whereas the GT baselines BEER and MoTEF communicate two compressed model-sized quantities per iteration. Second, ED-type methods can exhibit a more favorable dependence on network connectivity than standard GT methods [52]. This motivates the development of an ED-based method that directly handles biased contractive compression while retaining favorable dependence on the network connectivity. 
+
+1.3 Contributions 
+
+Our main contributions are as follows. Here, N denotes the number of agents, K the number of iteration, σ2 the uniform upper bound on the stochastic-gradient variance, δ ∈ (0 , 1] the contraction parameter of the compressor, and ∆ λ the spectral gap of the mixing matrix defined in (4). 1. Algorithm. We propose CED-EF , a compressed exact diffusion method equipped with er-ror feedback that directly accommodates biased δ-contractive compressors. CED-EF com-municates one compressed model-sized vector per node per iteration and requires neither unbiasedness of the compressor nor a lower bound on δ away from zero. 2. Nonconvex convergence with linear speedup. For smooth nonconvex objectives with unbi-ased stochastic gradients of bounded variance, we establish an ergodic stationarity rate with leading term O(σ/ √N K ). The analysis requires neither bounded stochastic gradients nor a uniform bound on data heterogeneity. For σ > 0, the dominant network- and compression-dependent transient time is O(N 3/δ 4∆4
+
+> λ
+
+). This improves over existing methods as summa-rized in Table 1. To the best of our knowledge, among the ED-type methods, this is the first linear-speedup guarantee under biased contractive compression in the nonconvex setting. 3. PL convergence with linear speedup. Under the PL condition, we establish a leading stochastic term ˜O(σ2/N K ). The dominant network- and compression-dependent transient time is ˜O(N/δ 2∆2
+
+> λ
+
+). This improves over existing methods as summarized in Table 1. 4. Relation to unbiased compression. For an unbiased compressor with variance parameter 
+
+C ≥ 0, the standard scaling yields a contractive compressor with δ−1 = 1 + C. Consequently, for C ≥ 1, the dominant network- and compression-dependent factors scale as C4 and C2
+
+in the nonconvex and PL settings, respectively, compared with the C6 and C3 dependencies reported for CEDAS. 32 Proposed algorithm 
+
+2.1 Network combination matrix 
+
+We let wij ≥ 0 denote the weight that agent i assigns to the information received from agent j.The weights are assumed to satisfy wij = 0 whenever j / ∈ N i, where Ni denotes the set of agents directly connected to agent i including agent i so that wii denotes the self-weight of agent i. In other words, each agent only assigns nonnegative weights to itself and direct neighbors. We further define the combination (weight or mixing) matrix W = [ wij ] ∈ RN ×N , whose ( i, j )th entry is given by wij . We assume that W satisfies Assumption 1. 
+
+2.2 CED-EF 
+
+Exact Diffusion. Exact Diffusion (ED) is a decentralized method originally proposed in [43]. Given x0 
+
+> i
+
+, the primal-dual form of the ED recursion can be written as [51]: ˆxki = xki − α∇Fi(xki ; ξki ) − yki , (2a) 
+
+xk+1  
+
+> i
+
+= ∑
+
+> j∈N i
+
+wij ˆxkj , (2b) 
+
+yk+1  
+
+> i
+
+= yki + ˆ xki − xk+1  
+
+> i
+
+. (2c) Here yki is a correction dual variable, also called a control variate, and α > 0 is the primal stepsize. 
+
+CED-EF We propose a compressed variant of ED with error-feedback, named CED-EF, listed in Algorithm 1. Here Ci : Rn → Rn is a (possibly biased) contractive compression operator satisfying Assumption 4. The algorithm uses five scalar parameters: the gradient stepsize α > 0, the consensus parameter γ ∈ (0 , 1], the primal and dual mixing weights β, θ > 0, and the error-feedback leakage parameter η ∈ (0 , 1]. In Algorithm 1, communication occurs only in Step 3. Each agent broadcasts a single compressed vector qki , receives the corresponding vectors from its neighbors, and forms ∑ 
+
+> j∈N i
+
+wij qkj . In ad-dition to xki , yki , and eki , each agent stores the two surrogate variables ϕki and ψki . The variable 
+
+eki accumulates the compression error leakage and feeds it back into the subsequent compressed message. In the uncompressed case, Ci = I. If e0 
+
+> i
+
+= 0, then eki = 0 for all k, for any η ∈ (0 , 1]. Moreover, with β = θ = 1, CED-EF reduces to exact diffusion with mixing matrix Wγ = (1 − γ)IN + γW .
+
+# 3 Convergence result 
+
+3.1 Main assumptions 
+
+Assumption 1 (Weight matrix) . The matrix W = [ wij ] is nonnegative, symmetric, doubly stochastic, primitive, and compatible with the communication graph, i.e. , wij = 0 whenever j / ∈ N i.Under Assumption 1, the eigenvalues of W can be ordered as 1 = λ1 > λ 2 ≥ · · · ≥ λN > −1. We 4Algorithm 1 CED-EF Update for Agent i
+
+given positive stepsizes α, β, γ, θ , leakage η ∈ (0 , 1], mixing matrix W , and initial points ϕ0 
+
+> i
+
+,
+
+ψ0 
+
+> i
+
+= ∑ 
+
+> j∈N i
+
+wij ϕ0 
+
+> j
+
+, x0 
+
+> i
+
+= (1 − γ)ϕ0 
+
+> i
+
++ γψ 0 
+
+> i
+
+, y0 
+
+> i
+
+= 0, and e0 
+
+> i
+
+= 0. For k = 0 , 1, 2, . . . , agent i performs the following updates: 1. Compute: ˆxki = xki − α∇Fi(xki ; ξki ) − yki . (3a) 2. Create the compressed message qki = Ci(ˆ xki − ϕki + ηe ki ) and update: 
+
+ek+1  
+
+> i
+
+= ˆ xki − ϕki + eki − qki (3b) 
+
+ϕk+1  
+
+> i
+
+= ϕki + βq ki . (3c) 3. Send qki to neighbors, receive qkj from j ∈ N i, and update 
+
+ψk+1  
+
+> i
+
+= ψki + β ∑
+
+> j∈N i
+
+wij qkj (3d) 
+
+xk+1  
+
+> i
+
+= (1 − γ)ϕk+1  
+
+> i
+
++ γψ k+1  
+
+> i
+
+. (3e) 4. Construct ˆϕki = ϕki + θq ki and ˆψki = ψki + θ ∑ 
+
+> j∈N i
+
+wij qkj and update the dual variables 
+
+yk+1  
+
+> i
+
+= yki + γ( ˆϕki − ˆψki
+
+). (3f) define 
+
+λ ≜ λ2 = max  
+
+> i≥2
+
+λi, ∆λ ≜ 1 − λ (4a) 
+
+λ ≜ λN = min  
+
+> i≥2
+
+λi, ∆λ ≜ 1 − λ (4b) Here ∆ λ is the spectral gap associated with the second-largest eigenvalue, while ∆ λ captures the dependence on the lower end of the nontrivial spectrum. Note that 0 < ∆λ ≤ ∆λ < 2. 
+
+Assumption 2 (Smoothness and Lower Boundedness) . Each local objective function fi : Rn →
+
+R has L-Lipschitz continuous gradients ( L-smooth). That is, for all x, x ′ ∈ Rn and for all agents i,
+
+∥∇ fi(x) − ∇ fi(x′)∥ ≤ L∥x − x′∥. (5) In addition, f ⋆ ≜ inf x∈Rn f (x) > −∞ .Both the stochastic gradient oracle and the compression operator may be randomized. We collect all of this randomness in a single filtration {Fk}k≥0, where Fk is generated by the gradient samples and the compressor’s internal randomness drawn in iterations 0 , 1, . . . , k − 1, together with the deterministic initialization. Consequently the iterates xki , ψ ki , y ki , e ki are F k-measurable, whereas the iteration-k gradient samples {ξki }Ni=1 and the iteration-k compressor randomness are independent of Fk.5Assumption 3 (Stochastic Gradient Oracle) . Each agent i has access to an unbiased stochastic gradient ∇Fi(xki ; ξki ) with bounded conditional variance: there exists σ ≥ 0 such that, for every i
+
+and k,
+
+E
+
+[
+
+∇Fi(xki ; ξki ) | Fk]
+
+= ∇fi(xki ), (6a) 
+
+E
+
+[
+
+∥∇ Fi(xki ; ξki ) − ∇ fi(xki )∥2 | Fk]
+
+≤ σ2. (6b) For each k, conditioned on Fk, the current samples {ξki }Ni=1 are mutually independent across agents. We further assume that the samples used at iteration k are independent of the randomness generated at previous iterations. 
+
+Assumption 4 (Compression operator) . The (possibly randomized) compression operator Ci :
+
+Rn → Rn is δ-contractive: for every input x ∈ Rn,
+
+E [∥C i(x) − x∥2 | x] ≤ (1 − δ)∥x∥2, 0 < δ ≤ 1, (7) where the expectation is taken over the internal randomness of Ci, which is independent of Fk and of the gradient samples. 
+
+3.2 General nonconvex results 
+
+We next give our convergence result in the general nonconvex setting. 
+
+Theorem 1 (Convergence in nonconvex setting) . Suppose Assumptions 1–4 hold and the algorithm parameters α, β, γ, η, θ satisfy the admissibility conditions in (133). Then, the iterates generated by CED-EF, initialized with ϕ0 
+
+> i
+
+= x0 for all i, satisfy 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+E ∥∇ f ( ¯ϕke )∥2 ≲ ˜f (x0)
+
+αβK + αβ Ψ1 + α2β2
+
+(
+
+Ψ2 + ˜Ψ2
+
+K
+
+)
+
++ α4β4Ψ3, (8) where ¯ϕke ≜ 1
+
+> N
+
+∑Ni=1 (ϕki + βe ki ), ˜f (x) ≜ f (x) − f ⋆, and Ψ1 = O
+
+( Lσ 2
+
+N
+
+)
+
+, (9a) Ψ2 = O
+
+(
+
+L2σ2
+
+[ 1
+
+νθγ ∆λ
+
++ 1 − δη2δ2 + 1
+
+βγ ∆λ
+
+]) 
+
+, (9b) 
+
+˜Ψ2 = O
+
+( L2ς20
+
+νθβγ 2∆2
+
+> λ
+
+)
+
+, (9c) Ψ3 = O
+
+( L4σ2
+
+N νθ 2βγ 3∆3
+
+> λ
+
+)
+
+. (9d) Here, ς20 ≜ 1
+
+> N
+
+∑Ni=1 ∥∇ fi(x0) − ∇ f (x0)∥2, ∆ λ ≜ 1 − λ, ∆ λ ≜ 1 − λ, and ν ≜ 1 − (β+θ)2γ∆λ 
+
+> 4β
+
+> 0. Theorem 1 is proved in Appendix C. Corollary 1, proved in Appendix C.2, specializes this result to obtain explicit convergence and transient-time rates. 6Corollary 1 (Convergence rate) . Assume that the conditions of Theorem 1 hold. In the heavy-compression regime where 1 − δ = Θ(1), we may choose the parameters as 
+
+θ = Θ(1) , η = Θ(1) , β ≍ δ∆λ
+
+∆λ
+
+, γ ≍ δ∆λ
+
+∆2
+
+> λ
+
+, (10) with the implied constants chosen sufficiently small that the admissibility conditions (133) hold and ν = Θ(1). With this choice, there exists a stepsize product τ = αβ (depending on the number of iterations K; see (148)) achieving the following convergence rate 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+E ∥∇ f ( ¯ϕke )∥2 ≤ O 
+
+(√ σ2
+
+> N K
+
+)
+
++ O
+
+(( σ ∆λ
+
+> δ∆λ
+
+)2/3 1
+
+K2/3
+
+)
+
++ O
+
+(( σ2
+
+> N
+
+)1/5( ∆λ
+
+> ∆λ
+
+)7/5 1
+
+> δ4/5K4/5
+
+)
+
++ O
+
+(
+
+ς2/30
+
+( ∆λ
+
+> ∆λ
+
+)5/3 1
+
+δK 
+
+)
+
++ O
+
+( ∆2
+
+> λ
+
+δ∆2
+
+> λ
+
+1
+
+K
+
+)
+
+.
+
+(11) Moreover, in terms of the network and compression parameters, linear-speedup is achieved after transient time K ≥ Ktr , where 
+
+Ktr = O
+
+(
+
+max 
+
+{ N 3∆4
+
+> λ
+
+δ4∆4
+
+> λ
+
+, N ς 4/30 ∆10 /3
+
+> λ
+
+δ2∆10 /3
+
+> λ
+
+, N ∆14 /3
+
+> λ
+
+δ8/3∆14 /3
+
+> λ
+
+}) 
+
+. (12) The leading term in (11) is O(σ/ √N K ), which matches the centralized stochastic scaling. The remaining terms depend on the network connectivity, compression level, and initial heterogeneity and determine the transient period before this leading term dominates. In particular, ς20 appears only in a lower-order term and therefore does not affect the asymptotic linear-speedup rate. Com-pared with GT-based compressed methods, CED-EF communicates a single compressed vector per agent per iteration, halving the per-iteration communication cost. 
+
+Remark 1 (Transient time) . The transient time is dominated by its first term, 
+
+Ktr = O
+
+( N 3∆4
+
+> λ
+
+δ4∆4
+
+> λ
+
+)
+
+, (13) whenever the other two terms in (12) do not exceed it, i.e. ,∆λ ≥ δ2∆λ
+
+N 3 , ς20 ≤ N 3∆λ
+
+δ3∆λ
+
+. (14) The dominance conditions themselves become less restrictive as δ decreases because the first term deteriorates more rapidly with compression than the competing transient terms. This observa-tion concerns only which term dominates the bound; it should not be interpreted as compression improving the transient time. In fact, the transient time increases as δ decreases. With ∆ λ = Θ(1), these conditions reduce to ∆ λ ≳ δ2/N 3 and ς20 ≲ N 3/(δ3∆λ). The first condition holds for common network families [53]: for example, ∆ λ = Θ(1) for complete and expander graphs, ∆ λ ≍ 1/N for the two-dimensional grid/torus and star, and ∆ λ ≍ 1/N 2 for the ring and line. Table 1 compares this bound with the transient-time bounds available for related methods. 7Remark 2 (Unbiased compressors) . Suppose that Q is unbiased and satisfies E∥Q (x) − x∥2 ≤
+
+C∥x∥2. Then the scaled compressor C(x) ≜ 11+ C Q(x) is contractive with parameter δ = 1 /(1 + 
+
+C) [54]. Consequently, (13) becomes 
+
+Ktr = O
+
+( N 3(1 + C)4∆4
+
+> λ
+
+∆4
+
+> λ
+
+)
+
+(15) In particular, for C ≥ 1, this yields Ktr = O
+
+( N 3C4∆4
+
+> λ
+> ∆4
+> λ
+
+)
+
+. This improves the C6 dependence estab-lished for CEDAS under unbiased compression [34]. Moreover, CED-EF directly accommodates biased contractive compressors, including deterministic sparsifiers such as Top-c.
+
+Remark 3 (Stepsize choice) . The stepsize in (148) is selected by balancing the terms in the convergence bound, following the approach used in [15, 40, 55]. This choice yields a nearly optimal bound covering both the stochastic and deterministic settings; for example, setting σ = 0 gives the deterministic rate O(ς2/30
+
+( ∆λ
+
+> ∆λ
+
+)5/3 1 
+
+> δK
+
+) + O( ∆2 
+
+> λ
+> δ∆2
+> λ
+> 1
+> K
+
+). If we instead use the typical choice αβ =
+
+O(√N/K ), then for large K, we have 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+E ∥∇ f ( ¯ϕke )∥2 ≤ O 
+
+( 1 + σ2
+
+√N K 
+
+)
+
++ O
+
+( N σ 2
+
+K · ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
++ O
+
+( N ς 20
+
+K2 · ∆5
+
+> λ
+
+δ3∆5
+
+> λ
+
+)
+
++ O
+
+( N σ 2
+
+K2 · ∆7
+
+> λ
+
+δ4∆7
+
+> λ
+
+)
+
+.
+
+(16) This choice does not recover the O(1 /K ) deterministic rate when σ = 0, since the stepsize is not optimized. 
+
+3.3 PL condition result 
+
+Here, we state the convergence result for CED-EF under the PL condition given below. 
+
+Assumption 5 (PL condition) . The aggregate function f (x) = 1
+
+> N
+
+∑Ni=1 fi(x) satisfies the PL in-equality: 2μ (f (x) − f ⋆) ≤ ∥∇ f (x)∥2, ∀ x ∈ Rn, (17) for some 0 < μ ≤ L, where f ⋆ is defined in Assumption 2. 
+
+Theorem 2 (Convergence of CED-EF in the PL setting) . Suppose Assumptions 1–5 hold. Suppose also that the algorithm parameters α, β, γ, η, θ satisfy the PL admissibility conditions in (165). Then, the iterates generated by CED-EF, initialized with ϕ0 
+
+> i
+
+= x0 for all i, satisfy 
+
+E ˜f ( ¯ϕKe ) ≤ exp 
+
+(
+
+− μτ K 
+
+2
+
+) ( ˜f ( ¯ϕ0
+
+> e
+
+) + ˜a2τ 2)
+
++ O
+
+( τ Lσ 2
+
+μN 
+
+)
+
++ O
+
+( τ 2L2σ2
+
+μ
+
+[ 1
+
+νθγ ∆λ
+
++ 1 − δη2δ2 + 1
+
+νβγ ∆λ
+
+])
+
++ O
+
+( τ 4L4σ2
+
+μN νθ 2βγ 3∆3
+
+> λ
+
+)
+
+, (18) 8where τ ≜ αβ , ¯ϕke ≜ 1
+
+> N
+
+∑Ni=1 (ϕki + βe ki ), ˜f (x) ≜ f (x) − f ⋆, ˜a2 = O
+
+( L2 ¯τ ς 20
+
+> νθβγ 2∆2
+> λ
+
+)
+
+(¯ τ denotes the largest admissible value of τ ), with ς20 ≜ 1
+
+> N
+
+∑Ni=1 
+
+∥∥∇fi(x0) − ∇ f (x0)∥∥2 and ∆ λ ≜ 1 − λ, ∆ λ ≜ 1 − λ,
+
+ν ≜ 1 − (β+θ)2γ∆λ 
+
+> 4β
+
+> 0. Theorem 2 is proven in Appendix D. The following convergence rate result follows from the previous theorem. 
+
+Corollary 2 (Convergence rate in PL setting) . Suppose the conditions in Theorem 2 hold. In the heavy-compression regime where 1 − δ = Θ(1), we may choose the parameters as 
+
+θ = Θ(1) , η = Θ(1) , ν = Θ(1) , β ≍ δ∆λ
+
+∆λ
+
+, γ ≍ δ∆λ
+
+∆2
+
+> λ
+
+. (19) With this choice, there exists a stepsize τ ≤ ¯τ (depending on K), where ¯ τ denotes the largest admissible value of τ , that achieves the following convergence rate: 
+
+E ˜f ( ¯ϕKe ) ≤ ˜O
+
+( Lσ 2
+
+μ2N K 
+
+)
+
++ ˜O
+
+( L2σ2∆2
+
+> λ
+
+μ3δ2∆2
+
+> λ
+
+K2
+
+)
+
++ ˜O
+
+( L4σ2∆7
+
+> λ
+
+μ5N δ 4∆7
+
+> λ
+
+K4
+
+)
+
++
+
+( ˜f ( ¯ϕ0
+
+> e
+
+) + ˜ ς20
+
+)
+
+exp 
+
+(
+
+− μ¯τ K 
+
+2
+
+)
+
+,
+
+(20) with ˜ ς20 ≜ ˜a2 ¯τ 2 = O
+
+( ς20 ∆λ
+
+> L∆λ
+
+)
+
+. Moreover, suppose σ > 0. Treating the condition number κ = L/μ as fixed and suppressing κ-dependent and logarithmic factors in ˜O(·), linear speedup is achieved after 
+
+K ≥ Ktr , where 
+
+Ktr = ˜O
+
+(
+
+max 
+
+{ N ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+, ∆7/3
+
+> λ
+
+δ4/3∆7/3
+
+> λ
+
+}) 
+
+. (21) The first term in (20) decays exponentially with K, while the leading stochastic term is 
+
+˜O(σ2/(N K )). The remaining stochastic terms decay faster in K and therefore affect only the transient period before the 1 /(N K ) term dominates. 
+
+Remark 4 (PL transient time) . The PL transient time in (21) is dominated by its first term, 
+
+Ktr = ˜O
+
+( N ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
+, (22) whenever the second term in (21) does not exceed it. This holds iff ∆ λ ≥ δ2∆λ  
+
+> N3
+
+. Since ∆ λ < 2, this is implied by the mild condition ∆ λ ≳ δ2/N 3. Hence, for standard connected networks (see Remark 1), the dominant PL transient time is given by (22). For an unbiased compressor Q with E ∥Q (x) − x∥2 ≤ C∥x∥2, the scaled operator C(x) =  
+
+> 11+ C
+
+Q(x) is contractive with δ = 11+ C . Substituting this relation into (22) gives the dominant transient time Ktr = ˜O(N C 2/∆2
+
+> λ
+
+). This improves the O(N C 3/∆2
+
+> λ
+
+) transient-time dependence established for CEDAS [34]. 9Table 1: Comparison of the dependence of the transient time on the number of agents, network connectivity, and compression quality. Here ∆ λ = 1 − λ is the spectral gap defined in (4). Fixed problem-dependent quantities such as smoothness, condition-number, variance, and initialization factors, as well as logarithmic factors where applicable, are suppressed. 
+
+Method Transient time Comments nonconvex PL/SC 
+
+Choco-SGD [23, 24] 
+
+N 3G4
+
+∆8
+
+> λ
+
+δ4 SC: N G 2
+
+δ2∆4
+
+> λ
+
+Bounded gradients 
+
+E [∥∇ Fi(x, ξ )∥2] ≤ G2
+
+DeepSqueeze [25] 
+
+N 3ζ4
+
+δ6∆12 
+
+> λ
+
+✗ Bounded heterogeneity 
+
+> 1
+> N
+
+∑ 
+
+> i
+
+∥∇ fi(x) − ∇ f (x)∥2 ≤ ζ2
+
+MoTEF [40] 
+
+N 3
+
+δ4∆10 
+
+> λ
+
+Nδ2∆5
+
+> λ
+
+Communicating two compressed vectors CEDAS [34] 
+
+N 3C6
+
+∆4
+
+> λ
+
+SC: N C 3
+
+∆2
+
+> λ
+
+Stochastic unbiased compressor †
+
+E ∥Q (x) − x∥2 ≤ C∥x∥2
+
+CED-EF 
+
+[This work] 
+
+N 3
+
+δ4∆4
+
+> λ
+
+Nδ2∆2
+
+> λ
+
+–                       
+
+> †If an unbiased compressor satisfies E∥Q (x)−x∥2≤C∥x∥2, then the scaling C=Q/(1 + C) gives δ= 1 /(1 + C), and hence δ−1= 1 + C. Therefore, for C≥1, the corresponding CED-EF network/compression dependencies are N3C4/∆4
+> λ
+> and N C 2/∆2
+> λin the nonconvex and PL settings, respectively.
+
+Remark 5 (Deterministic PL case) . The logarithmic stepsize selection in Corollary 2 is stated for σ > 0. When σ = 0, the stochastic terms in Theorem 2 vanish, and one may instead take any fixed admissible τ ∈ (0 , ¯τ ], for example τ = ¯ τ , to obtain ˜f ( ¯ϕKe ) ≤
+
+( ˜f ( ¯ϕ0
+
+> e
+
+) + ˜a2 ¯τ 2)
+
+exp 
+
+(
+
+− μ¯τ K 
+
+2
+
+)
+
+. (23) 
+
+# 4 Numerical experiments 
+
+We evaluate CED-EF against three communication-compressed decentralized baselines: CEDAS [34], BEER [38], and MoTEF [40]. We consider regularized least squares on synthetic data and logistic regression with a nonconvex regularizer on real data. 
+
+Common setup For every experiment, N = 20 nodes are connected through either an exponen-tial graph or a line graph. We construct a symmetric doubly stochastic mixing matrix using the Metropolis–Hastings rule; the corresponding spectral gaps are approximately 0 .44 and 8 .2 × 10 −3,respectively. All methods use the same biased Top-c compressor, which retains the c largest-magnitude coordinates and satisfies ∥Top-c(v) − v∥2 ≤ (1 − cn
+
+) ∥v∥2, so that δ = c/n . Although the convergence analysis of CEDAS assumes unbiased compression, we use the same biased compressor 10 for all methods to provide a controlled empirical comparison; CEDAS converges in all reported ex-periments. In each stochastic trial, all methods use the same mini-batch sequence. The primal and compression-memory variables are initialized at zero, while the gradient-tracking and momentum variables in BEER and MoTEF are initialized according to their respective algorithms at the zero primal iterate. 
+
+4.1 Least squares problem 
+
+In the least squares setup, each node objective is 
+
+fi(x) = 12M ∥Aix − bi∥2 + λreg  
+
+> 2
+
+∥x∥2, (24) with M = 200, n = 10, and λreg = 10 −3. The matrices are generated randomly with controlled conditioning and data heterogeneity. Let ˜Ai denote the design matrix obtained before the final scaling. A normalized ground-truth vector x◦ is drawn once, and the responses are generated according to bi = ˜Aix◦ + εi, where the noise standard deviation is 0 .1(1 + 0 .5|τi|) with τi =2( i − 1) /(N − 1) − 1. The design matrices used by the optimization algorithms are then set to 
+
+Ai = 1 .5 ˜Ai.
+
+Least squares results We use Top-2 compression, corresponding to δ = 0 .2, and mini-batches of size B = 25. The methods are tuned to comparable steady-state error levels so that the experiment primarily compares the rate at which this accuracy regime is attained. Communication cost is measured in compressed-vector transmissions, with one vector per iteration charged to CED-EF and CEDAS, and two to BEER and MoTEF. The results are averaged over 30 independent runs. Figure 1 reports the stochastic results on the exponential (left) and line (right) graphs. CED-EF and CEDAS converge faster than BEER and MoTEF on both topologies, with CED-EF attaining the prescribed accuracy slightly earlier than CEDAS. Figure 2 reports the corresponding full-gradient experiment, where CED-EF reaches high accuracy substantially sooner than the competing methods. We also observe that the performance of the gradient-tracking-based methods, BEER and MoTEF, deteriorates more markedly than that of the exact diffusion-based methods, CED-EF and CEDAS, as the network becomes more poorly connected. This empirical trend is consistent with the stronger network dependence summarized in Table 1 and with analogous comparisons between uncompressed exact diffusion and gradient-tracking methods [52]. 
+
+Effect of the compression level To study the communication savings provided by compression, we simulate CED-EF with c ∈ { 1, 3, 5, n }, where c = n denotes uncompressed communication. Each compression level is tuned independently, and the horizontal axis reports transmitted bits per node. A Top-c message is charged c(16 + ⌈log 2 n⌉) bits, whereas an uncompressed message requires 16 n bits. Figure 3 reports the results. The compressed variants substantially reduce the communication required per iteration and can therefore require fewer communicated bits to attain a prescribed accuracy, particularly on the well-connected exponential graph. 11 0 200 400 600 800 1000 Compressed-vector transmissions per node 10 -4          
+
+> 10 -3
+> 10 -2
+> 10 -1
+> 10 0
+> 10 1
+> kr f(¹ x)k2
+> Least squares, exponential graph, Top-2(±= 0 :20 )
+> CED-EF CEDAS BEER MoTEF 01000 2000 3000 4000 5000 Compressed-vector transmissions per node 10 -4
+> 10 -3
+> 10 -2
+> 10 -1
+> 10 0
+> 10 1
+> 10 2
+> kr f(¹ x)k2
+> Least squares, line graph, Top-2(±= 0 :20 )
+> CED-EF CEDAS BEER MoTEF
+
+Figure 1: Stochastic least squares with Top-2 compression on the exponential (left) and line (right) graphs. 0 1000 2000 3000 4000 5000 6000 7000 8000 Compressed-vector transmissions per node 10 -28             
+
+> 10 -23
+> 10 -18
+> 10 -13
+> 10 -8
+> 10 -3
+> 10 2
+> kr f(¹ xk)k2
+> Least squares, deterministic, exponential graph, Top-2(±= 0 :20 )
+> CED-EF CEDAS BEER MoTEF 01000 2000 3000 4000 5000 6000 7000 8000 Compressed-vector transmissions per node 10 -24
+> 10 -20
+> 10 -16
+> 10 -12
+> 10 -8
+> 10 -4
+> 10 0
+> kr f(¹ xk)k2
+> Least squares, deterministic, line graph, Top-2(±= 0 :20 )
+> CED-EF CEDAS BEER MoTEF
+
+Figure 2: Deterministic least squares with full gradients and Top-2 compression on the exponential (left) and line (right) graphs. 
+
+4.2 Logistic-regression problem 
+
+We consider logistic regression with the saturating nonconvex regularizer 
+
+fi(x) = 1
+
+M
+
+M∑
+
+j=1 
+
+log 
+
+(
+
+1 + exp( −bij aT
+
+ij x)
+
+)
+
++ λreg 
+
+n∑
+
+ℓ=2 
+
+x2
+
+ℓ
+
+1 + x2
+
+ℓ
+
+, (25) where aij ∈ Rn is the augmented feature vector, whose first coordinate is the intercept, and bij ∈{− 1, +1 } is the corresponding label. The intercept is not regularized. For the real-data experiment, we use the LIBSVM a9a binary classification dataset. The fea-tures are standardized using their global empirical means and standard deviations, after which an intercept is appended. The samples are randomly permuted using a fixed seed and partitioned evenly and disjointly among the N = 20 nodes. We retain 20 ,000 examples, so each node receives 
+
+M = 1000 samples. This instance is run in the stochastic regime with Top-5 compression, mini-batch size B = 64, and regularization λreg = 10 −3. The results are averaged over 5 independent runs. 
+
+Logistic regression results Figure 4 reports stochastic logistic regression on the a9a dataset using 
+
+c = 5 and B = 64. As in the least-squares experiments, CED-EF and CEDAS attain a given 12 0 50000 100000 150000 200000 250000 300000 Communicated bits per node 10 -25 
+
+10 -21 
+
+10 -17 
+
+10 -13 
+
+10 -9 
+
+10 -5 
+
+10 -1 
+
+> kr f(¹ xk)k2
+
+CED-EF, least squares, exponential graph 
+
+No compression Top-1 Top-3 Top-5 0 100000 200000 300000 400000 500000 600000 700000 800000 Communicated bits per node 10 -24 
+
+10 -20 
+
+10 -16 
+
+10 -12 
+
+10 -8 
+
+10 -4 
+
+10 0
+
+> kr f(¹ xk)k2
+
+CED-EF, least squares, line graph 
+
+No compression Top-1 Top-3 Top-5 Figure 3: CED-EF with no compression and Top-k, k ∈ { 1, 3, 5}, on the least squares problem. 0 250 500 750 1000 1250 1500 1750 2000 Compressed-vector transmissions per node 10 -4 
+
+10 -3 
+
+10 -2 
+
+10 -1 
+
+> kr f(¹ x)k2
+
+a9a, exponential graph, Top-5 (± = 0 :040 )
+
+CED-EF CEDAS BEER MoTEF 0 1000 2000 3000 4000 5000 Compressed-vector transmissions per node 10 -4 
+
+10 -3 
+
+10 -2 
+
+10 -1 
+
+> kr f(¹ x)k2
+
+a9a, line graph, Top-5 (± = 0 :040 )
+
+CED-EF CEDAS BEER MoTEF 
+
+Figure 4: Stochastic logistic regression on the LIBSVM a9a data set on the exponential (left) and line (right) graphs. 
+
+stationarity level using fewer compressed-vector transmissions than BEER and MoTEF. 13 Appendices 
+
+# A Convergence analysis preliminaries 
+
+We first rewrite CED-EF in compact network form and introduce the variables used in the con-vergence analysis. Lemma 1 gives the centroid recursion, while Lemma 2 gives the corresponding disagreement dynamics. 
+
+A.1 CED-EF in compact form 
+
+For analysis purposes, we express CED-EF given in Algorithm 1 in compact network form. To do that, we define the following quantities: 
+
+W ≜ W ⊗ In, Wγ ≜ ((1 − γ)IN + γW ) ⊗ In = (1 − γ)I + γW. (26a) 
+
+xk ≜ col {xki }Ni=1 , yk ≜ col {yki }Ni=1 (26b) 
+
+ϕk ≜ col {ϕki }Ni=1 , ek ≜ col {eki }Ni=1 (26c) 
+
+f (x) ≜
+
+> N
+
+∑
+
+> i=1
+
+fi(xi), F(x; ξ) ≜
+
+> N
+
+∑
+
+> i=1
+
+Fi(xi; ξi) (26d) 
+
+∇f (x) ≜ col {∇ fi(xi)}Ni=1 , ∇F(x; ξ) ≜ col {∇ Fi(xi; ξi)}Ni=1 (26e) 
+
+C(x) ≜ col {C i(xi)}Ni=1 . (26f) Using this notation, Algorithm 1 updates (3) can be expressed in network compact form as follows: ˆxk = xk − α∇F(xk; ξk) − yk (27a) ˆϕk = ϕk + θC(ˆ xk − ϕk + ηek) (27b) 
+
+ϕk+1 = ϕk + βC(ˆ xk − ϕk + ηek) (27c) 
+
+yk+1 = yk + γ(I − W) ˆϕk (27d) 
+
+xk+1 = Wγ ϕk+1 (27e) 
+
+ek+1 = ˆ xk − ϕk + ek − C(ˆ xk − ϕk + ηek), (27f) with x0 = Wγ ϕ0, y0 = 0, and e0 = 0. Here, ψk ≜ col {ψki }Ni=1 is eliminated using the invariant 
+
+ψk = Wϕk, which holds for all k by initialization and the updates. Indeed, with qk ≜ C(ˆ xk −
+
+ϕk + ηek), we have ψk+1 = ψk + βWqk = W(ϕk + βqk) = Wϕk+1 and, similarly, ˆψk = W ˆϕk.Hence, (3e) and (3f) reduce to (27e) and (27d), respectively. 14 A.2 Centroid and average deviation 
+
+Here, we transform the recursion (27) into a form suitable for our analysis. To do that, we define the following useful quantities: 
+
+ϕke ≜ ϕk + βek (28a) ¯ϕke ≜ 1 ⊗ ¯ϕke , ¯ϕke ≜ (1 /N )
+
+> N
+
+∑
+
+> i=1
+
+ϕke,i . (28b) We next show that ¯ϕke evolves as a perturbed stochastic gradient descent on the average cost f .
+
+Lemma 1 (Centroid evolution) . The centroid ¯ϕke defined in (28) evolves as follows: ¯ϕk+1  
+
+> e
+
+= ¯ϕke − αβ N
+
+> N
+
+∑
+
+> i=1
+
+∇Fi(xki ; ξki ). (29) 
+
+Proof. Multiplying (27f) by β and adding to (27c), leads to 
+
+ϕk+1  
+
+> e
+
+= ϕk + β ˆxk − βϕk + βek
+
+> (27a)
+
+= (1 − β)ϕk + βxk − αβ ∇F(xk; ξk) − βyk + βek
+
+> (27e)
+
+= Wβ,γ ϕk − αβ ∇F(xk; ξk) − βyk + βek
+
+> (28a)
+
+= Wβ,γ ϕke − αβ ∇F(xk; ξk) − βyk + β(I − Wβ,γ )ek, (30) where Wβ,γ = (1 − βγ )I + βγ W. The result follows by taking the average and using ( 1T ⊗ I)( I −
+
+Wβ,γ ) = 0 and the fact that ( 1T ⊗ I)yk = 0 under y0 = 0 since yk will always be in the range of 
+
+I − W.Under Assumption 1, the weight matrix W admits the symmetric eigendecomposition [2, 56]: 
+
+W =
+
+[ 1√N 1 Q] [
+
+1 00 Λ
+
+] [ 1√N 1T
+
+QT
+
+]
+
+,
+
+where Λ = diag {λi}Ni=2 is a diagonal matrix containing the eigenvalues with magnitude less than one. The matrix Q ∈ RN ×(N −1) satisfies QTQ = IN −1, QQ T = IN − 1 
+
+> N
+
+11 T, and 1TQ = 0. It follows that W defined in (26a) can be decomposed as 
+
+W =
+
+[ 1√N 1 ⊗ In Q] [
+
+In 00 Λ
+
+] [ 1√N 1T ⊗ In
+
+QT
+
+]
+
+= 1 
+
+> N
+
+11 T ⊗ In + QΛQ T, (31a) where Λ ≜ Λ ⊗ In ∈ Rn(N −1) ×n(N −1) and Q ≜ Q ⊗ In ∈ RnN ×n(N −1) satisfies: 
+
+QTQ = I, QQ T = I − 1 
+
+> N
+
+11 T ⊗ In, (1T ⊗ In)Q = 0 . (31b) Note that ∥Q∥ = 1 and for any vector u = col {u1, . . . , u N } with ui ∈ Rn,
+
+∥QTu∥2 = ∥QQ Tu∥2 = ∥u − ¯u∥2 (32) where ¯ u = 1 ⊗ ¯u and ¯ u = (1 /N ) ∑Ni=1 ui. That is, ∥QTu∥2 measures the deviation of u from the average. We next give an important relation regarding the deviation from the average for ϕke and another relevant quantity. 15 Lemma 2 (Deviation from average) . Using the network form of CED-EF given by (27), it holds that 
+
+QTϕk+1 
+
+> e
+
+QT̂ zk+1 
+
+ = D
+
+QTϕke
+
+QT̂ zk
+
+ − α
+
+[ βQT
+
+θLγ QT
+
+]
+
+gk 
+
+> 1
+
++
+
+[ 0
+
+αQT
+
+]
+
+gk+1 2 +
+
+[ β(β + θ)Lγ QT
+
+(θ2L2 
+
+> γ
+
+− βLγ Λθ,γ )QT
+
+]
+
+ek, (33) where 
+
+D ≜
+
+[ Λβ,γ −βILγ Λθ,γ Λθ,γ 
+
+]
+
+, Lγ ≜ (I − Λγ ) = γ(I − Λ) (34a) 
+
+gk 
+
+> 1
+
+≜ ∇F(xk; ξk) − ∇ f ( ¯ϕke ), gk+1 2 ≜ ∇f ( ¯ϕk+1  
+
+> e
+
+) − ∇ f ( ¯ϕke ) (34b) 
+
+zk ≜ yk + α∇f ( ¯ϕke ),̂ zk ≜ zk + ( I − Wθ,γ )ek, (34c) with Λs,γ ≜ I − s(I − Λγ ) = (1 − sγ )I + sγ Λ for s ∈ { β, θ } and Wθ,γ = I − θγ (I − W) = (1 − θγ )I + θγ W.
+
+Proof. First note that for any s, we have 
+
+Ws ≜ (1 − s)I + sW = I − s(I − W) ⇐⇒ I − Ws = s(I − W). (35) Hence, from (30), we have 
+
+ϕk+1  
+
+> e
+
+= Wβ,γ ϕke − αβ ∇F(xk; ξk) − βyk + β2(I − Wγ )ek, (36) where Wβ,γ = (1 − βγ )I + βγ W. Following a similar argument on (27b), we also have ˆϕk = ϕk + θC(ˆ xk − ϕk + ηek)
+
+> (27f)
+
+= (1 − θ)ϕk + θˆxk + θ(ek − ek+1 )
+
+> (27a)
+
+= Wθ,γ ϕk − αθ ∇F(xk; ξk) − θyk + θ(ek − ek+1 ). (37) Substituting into (27d) gives 
+
+yk+1 = yk + ( I − Wγ )
+
+(
+
+Wθ,γ ϕk − αθ ∇F(xk; ξk) − θyk + θ(ek − ek+1 )
+
+)
+
+= Wθ,γ yk + ( I − Wγ )Wθ,γ ϕk − α(I − Wθ,γ )∇F(xk; ξk) + ( I − Wθ,γ )( ek − ek+1 ), (38) where Wθ,γ = (1 −θγ )I+θγ W. Using the change of variable zk = yk+α∇f ( ¯ϕke ) and ϕke = ϕk+βek,we can rewrite (36) and (38) as follows 
+
+ϕk+1  
+
+> e
+
+= Wβ,γ ϕke − αβ (∇F(xk; ξk) − ∇ f ( ¯ϕke )) − βzk + β2(I − Wγ )ek (39a) 
+
+zk+1 = Wθ,γ zk + ( I − Wγ )Wθ,γ ϕke − α(I − Wθ,γ )( ∇F(xk; ξk) − ∇ f ( ¯ϕke )) 
+
+− β(I − Wγ )Wθ,γ ek + ( I − Wθ,γ )( ek − ek+1 ) + α(∇f ( ¯ϕk+1  
+
+> e
+
+) − ∇ f ( ¯ϕke )) . (39b) Using another change of variable ̂ zk = zk + ( I − Wθ,γ )ek and the definitions in (34b), gives 
+
+ϕk+1  
+
+> e
+
+= Wβ,γ ϕke − αβ gk 
+
+> 1
+
+− β̂ zk + β(β + θ)( I − Wγ )ek, (40a) ̂
+
+zk+1 = Wθ,γ ̂ zk + ( I − Wγ )Wθ,γ ϕke − αθ (I − Wγ )gk 
+
+> 1
+
++ αgk+1 2
+
++
+
+[
+
+(I − Wθ,γ )2 − β(I − Wγ )Wθ,γ 
+
+]
+
+ek. (40b) 16 Using the decomposition of W given in (31), it holds that QTW = ΛQ T. Therefore, using I −
+
+Wθ,γ = θ(I − Wγ ) and multiplying the upper and lower blocks of (40) by QT yields the claimed recursion. 
+
+# B Intermediate lemmas 
+
+We exploit the block structure of D in (34a) to diagonalize the disagreement recursion (33). The resulting coordinates are then used to bound the centroid, disagreement, and compression-error dynamics. 
+
+B.1 Fundamental transformation 
+
+Lemma 3 (Fundamental transformation) . Suppose Assumption 1 holds and the parameters satisfy the condition 
+
+γ(1 − λ) < 4β
+
+(β + θ)2 ⇐⇒ ν ≜ 1 − (β + θ)2γ(1 − λ)4β > 0, (41) where λ ≜ min i≥2 λi is the smallest eigenvalue of W . Then the matrix (34a) admits the decompo-sition D = V∆V −1 for some V and a matrix ∆ with 
+
+λθ ≜ ∥∆∥ =
+
+√
+
+1 − θγ (1 − λ) < 1, λ ≜ max  
+
+> i≥2
+
+λi. (42) Therefore, multiplying (33) by V−1 on the left gives: 
+
+dk+1 = ∆d k − αV−1
+
+[ βQT
+
+θLγ QT
+
+]
+
+gk 
+
+> 1
+
++ V−1
+
+[ 0
+
+αQT
+
+]
+
+gk+1 2 + V−1
+
+[ β(β + θ)Lγ QT
+
+(θ2L2 
+
+> γ
+
+− βLγ Λθ,γ )QT
+
+]
+
+ek, (43) where 
+
+dk ≜ V−1
+
+QTϕke
+
+QT̂ zk
+
+ (44) Moreover, partitioning V−1 = [ V−1 
+
+> l
+
+V−1 
+
+> r
+
+], 
+
+∥V−1 
+
+> l
+
+∥2 ≤ λ2
+
+> θ
+
+2β2ν ≜ v2 
+
+> l
+
+, ∥V−1 
+
+> r
+
+∥2 ≤ 12βγ (1 − λ)ν ≜ v2 
+
+> r
+
+, (45a) 
+
+∥V−1 
+
+> l
+
+(I − Λ)∥2 ≤ λ2
+
+> θ
+
+(1 − λ)2
+
+2β2ν ≜ ¯v2 
+
+> l
+
+, ∥V−1 
+
+> r
+
+(I − Λ)∥2 ≤ 1 − λ
+
+2βγν ≜ ¯v2 
+
+> r
+
+. (45b) 
+
+Proof. The structure of D given by (34a) implies that there is a permutation matrix P such that 
+
+PDP T = blkdiag {Di}Ni=2 ⊗ In, Di =
+
+[ λβ,i −βγ(1 − λi)λθ,i λθ,i 
+
+]
+
+, (46) 17 where λβ,i ≜ (1 − βγ ) + βγλ i and λθ,i ≜ (1 − θγ ) + θγλ i. The trace and determinant of Di are tr( Di) = λβ,i + λθ,i and det( Di) = λβ,i λθ,i + βγ (1 − λi)λθ,i = λθ,i . (47) With ¯λβ,θ,i ≜ 12 (λβ,i + λθ,i ), the two eigenvalues of Di are ρ(1 ,2) ,i = ¯λβ,θ,i ± 12
+
+√tr( Di)2 − 4 det( Di). Moreover, with ℓγ,i ≜ γ(1 − λi) > 0, it holds under condition (41) that tr( Di)2 − 4 det( Di) = ℓγ,i 
+
+[(β + θ)2ℓγ,i − 4β] < 0 (48) for all i ≥ 2. Hence the eigenvalues are complex conjugates ρ(1 ,2) ,i = ¯λβ,θ,i ± jωi with 
+
+ω2 
+
+> i
+
+≜ det( Di) −
+
+( tr( Di)2
+
+)2
+
+= βγ (1 − λi)νi > 0, νi ≜ 1 − (β + θ)2γ(1 − λi)4β . (49) Moreover, the magnitudes of the eigenvalues are 
+
+|ρ(1 ,2) ,i | =
+
+√¯λ2 
+
+> β,θ,i
+
++ ω2 
+
+> i
+
+=
+
+√
+
+det( Di) = 
+
+√
+
+λθ,i =
+
+√
+
+1 − θγ (1 − λi). (50) Since ( β + θ)2 ≥ 4βθ , condition (41) also gives θγ (1 − λ) < 1, so λθ,i ∈ (0 , 1) and λθ =max i≥2
+
+√λθ,i = √1 − θγ (1 − λ) < 1. Since the eigenvalues are distinct, each Di is diagonalizable with Di = Vi∆iV −1 
+
+> i
+
+where ∆ i =diag {ρ1,i , ρ 2,i } and defining pi ≜ ¯λβ,θ,i − λβ,i = 12 (β − θ)γ(1 − λi), we have 
+
+Vi =
+
+[ −β −βpi + j ωi pi − jωi
+
+]
+
+, V −1 
+
+> i
+
+=
+
+
+
+− 12β − jpi
+
+2βω i
+
+− j2ωi
+
+− 12β + jpi
+
+2βω i
+
+j2ωi
+
+ . (51) This follows since for any 2 × 2 matrix D = [ dij ] with distinct eigenvalues ρ1, ρ 2, the matrix with eigenvectors as columns is 
+
+V =
+
+[
+
+d12 d12 
+
+ρ1 − d11 ρ2 − d11 
+
+]
+
+. (52) To verify, one can check V −1 
+
+> i
+
+Vi = I2 and Di = Vi∆iV −1 
+
+> i
+
+by direct (symbolic) multiplication. Thus, 
+
+D = V∆V −1 = PT ˆV∆ ˆV−1P with ˆV = blkdiag {Vi} ⊗ In, ∆ = blkdiag {∆i} ⊗ In (V = PT ˆV and 
+
+V−1 = ˆV−1P). Since V−1 = ˆV−1P and P routes the first column of each block to the ϕe-half and the second to the ̂ z-half, the partition V−1 = [ V−1 
+
+> l
+
+V−1 
+
+> r
+
+] is 
+
+V−1 
+
+> l
+
+= blkdiag 
+
+
+
+− 12β − jpi
+
+2βω i
+
+− 12β + jpi
+
+2βω i
+
+
+
+> Ni=2
+
+⊗ In, V−1 
+
+> r
+
+= blkdiag 
+
+
+
+− j2ωi
+
+j2ωi
+
+
+
+> Ni=2
+
+⊗ In. (53) Using the identity (which follows from ¯λ2 
+
+> β,θ,i
+
++ ω2 
+
+> i
+
+= λθ,i )
+
+ω2 
+
+> i
+
++ p2 
+
+> i
+
+= λθ,i (1 − λβ,i ) = βγ (1 − λi)λθ,i , (54) 18 the left block column gives 
+
+∥V−1 
+
+> l
+
+∥2 = max  
+
+> i≥2
+
+2
+
+∣∣∣− 12β − jpi
+
+> 2βω i
+
+∣∣∣2
+
+= max 
+
+> i≥2
+
+12β2 · ω2 
+
+> i
+
++ p2
+
+> i
+
+ω2
+
+> i
+> (54) ,(49)
+
+= max 
+
+> i≥2
+
+λθ,i 
+
+2β2νi
+
+≤ λ2
+
+> θ
+
+2β2ν , (55) where we used νi ≥ ν, λθ,i ≤ λ2
+
+> θ
+
+, with λθ = √1 − θγ (1 − λ). The right block column gives 
+
+∥V−1 
+
+> r
+
+∥2 = max 
+
+> i≥2
+
+12ω2
+
+> i
+
+= max 
+
+> i≥2
+
+12βγ (1 − λi)νi
+
+≤ 12βγ (1 − λ)ν , (56) using 1 − λi ≥ 1 − λ. Weighting by ( I − Λ), 
+
+∥V−1 
+
+> l
+
+(I − Λ)∥2 ≤ λ2
+
+> θ
+
+(1 − λ)2
+
+2β2ν , ∥V−1 
+
+> r
+
+(I − Λ)∥2 ≤ 1 − λ
+
+2βγν . (57) 
+
+Corollary 3. Under the conditions of Lemma 3, it holds that 
+
+∥ϕke − ¯ϕke ∥2 = ∥QTϕke ∥2 ≤ 4β2∥dk∥2, (58a) 
+
+∥zk − ¯zk∥2 = ∥QTzk∥2 ≤ 8λ2
+
+> θ
+
+βγ (1 − λ)∥dk∥2 + 2 θ2γ2(1 − λ)2∥ek∥2. (58b) where λ ≜ min i≥2 λi.
+
+Proof. From the decomposition in Lemma 3, Vd k = col {QTϕke , QT̂ zk}. Using V = PT ˆV with ˆV = blkdiag {Vi}Ni=2 ⊗ In and the explicit form of Vi,
+
+[QTϕke
+
+QT̂ zk
+
+]
+
+= Vd k =
+
+([ −βI N −1 −βI N −1
+
+diag {pi + j ωi}Ni=2 diag {pi − jωi}Ni=2 
+
+]
+
+⊗ In
+
+)
+
+PTdk. (59) Let Pu and Pl be the first and last ( N − 1) n columns of P, so that PTdk = col {PT
+
+> u
+
+dk, PT 
+
+> l
+
+dk}.Since ∥P∥ = 1 we have ∥PT
+
+> u
+
+dk∥ ≤ ∥ dk∥ and ∥PT 
+
+> l
+
+dk∥ ≤ ∥ dk∥. For the upper block, 
+
+∥QTϕke ∥2 = ∥∥ − βPT
+
+> u
+
+dk − βPT 
+
+> l
+
+dk∥∥2 ≤ 2β2∥PT
+
+> u
+
+dk∥2 + 2 β2∥PT 
+
+> l
+
+dk∥2 ≤ 4β2∥dk∥2, (60) which proves (58a). For the lower block, using ∥diag {pi ± jωi} ⊗ In∥2 = max i≥2 |pi ± jωi|2 =max i≥2(p2 
+
+> i
+
++ ω2 
+
+> i
+
+), 
+
+∥QT̂ zk∥2 ≤ 2∥∥(diag {pi + j ωi} ⊗ In)PT
+
+> u
+
+dk∥∥2 + 2 ∥∥(diag {pi − jωi} ⊗ In)PT 
+
+> l
+
+dk∥∥2
+
+≤ 4 max  
+
+> i≥2
+
+(p2 
+
+> i
+
++ ω2 
+
+> i
+
+)∥dk∥2 (54) 
+
+= 4 max 
+
+> i≥2
+
+[βγ (1 − λi)λθ,i 
+
+]∥dk∥2 ≤ 4βγλ 2
+
+> θ
+
+(1 − λ)∥dk∥2, (61) where the last inequality uses λθ,i ≤ λ2 
+
+> θ
+
+and 1 − λi ≤ 1 − λ for all i ≥ 2. By the definition of ̂ zk,̂
+
+zk = zk + ( I − Wθ,γ )ek =⇒ QTzk = QT̂ zk − θLγ QTek.
+
+Therefore, 
+
+∥QTzk∥2 ≤ 2∥QT̂ zk∥2 + 2 θ2∥Lγ QTek∥2
+
+≤ 8βγλ 2
+
+> θ
+
+(1 − λ)∥dk∥2 + 2 θ2∥Lγ ∥2∥QTek∥2
+
+≤ 8βγλ 2
+
+> θ
+
+(1 − λ)∥dk∥2 + 2 θ2γ2(1 − λ)2∥ek∥2, (62) which proves (58b). 19 Remark 6 (Complex change of coordinates) . Under (41), the eigenvalues of each block Di
+
+form a complex-conjugate pair; hence V, V−1, ∆, and the transformed iterate dk may be complex-valued. Throughout this part of the analysis, ∥·∥ denotes the Euclidean norm on the corresponding complex space and its induced operator norm, and ⟨a, b ⟩ = a∗b denotes the Hermitian inner product. Thus, norm expansions involve 2 ℜ⟨ a, b ⟩, while |⟨ a, b ⟩| denotes the complex modulus. 
+
+B.2 Intermediate bounds 
+
+Lemma 4 (Centroid descent) . Suppose Assumptions 1–3 and the conditions of Lemma 3 hold with γ ∈ (0 , 1]. Then 
+
+E f ( ¯ϕk+1  
+
+> e
+
+) ≤ E f ( ¯ϕke ) − αβ 
+
+2 E ∥∇ f ( ¯ϕke )∥2 − αβ 
+
+2 (1 − αβL ) E ∥∇ f (xk)∥2
+
++ 4αβ 3L2
+
+N E ∥dk∥2 + αβ 3L2
+
+N E ∥ek∥2 + α2β2Lσ 2
+
+2N ,
+
+(63) where ¯ϕke ≜ 1 
+
+> N
+
+(1T ⊗ In)ϕke and ∇f (xk) ≜ 1
+
+> N
+
+∑Ni=1 ∇fi(xki ). 
+
+Proof. From (29), we have ¯ϕk+1  
+
+> e
+
+= ¯ϕke − αβ ∇F(xk; ξk), where ∇F(xk; ξk) ≜ 1
+
+> N
+
+∑Ni=1 ∇Fi(xki ; ξki ). By the L-smoothness of f , for any y, z ∈ Rn,
+
+f (y) ≤ f (z) + ⟨∇ f (z), y − z⟩ + L
+
+2 ∥y − z∥2. (64) Setting y = ¯ϕk+1  
+
+> e
+
+and z = ¯ϕke gives 
+
+f ( ¯ϕk+1  
+
+> e
+
+) ≤ f ( ¯ϕke ) − αβ 〈∇f ( ¯ϕke ), ∇F(xk; ξk)〉 + α2β2L
+
+2 ∥∇ F(xk; ξk)∥2. (65) Using Assumption 3, the stochastic-gradient conditional expectation with respect to Fk satisfies 
+
+E[∇F(xk; ξk) | Fk] = ∇f (xk), (66a) 
+
+E
+
+[
+
+∥∇ F(xk; ξk)∥2 | Fk]
+
+≤ ∥∇ f (xk)∥2 + σ2
+
+N . (66b) Therefore, 
+
+E[f ( ¯ϕk+1  
+
+> e
+
+) | Fk] ≤ f ( ¯ϕke ) − αβ 
+
+〈
+
+∇f ( ¯ϕke ), ∇f (xk)
+
+〉
+
++ α2β2L
+
+2 ∥∇ f (xk)∥2 + α2β2Lσ 2
+
+2N . (67) Using the identity 2 ⟨a, b ⟩ = ∥a∥2 + ∥b∥2 − ∥ a − b∥2, with a = ∇f ( ¯ϕke ) and b = ∇f (xk), we get 
+
+−
+
+〈
+
+∇f ( ¯ϕke ), ∇f (xk)
+
+〉
+
+= − 12 ∥∇ f ( ¯ϕke )∥2 − 12 ∥∇ f (xk)∥2 + 12 ∥∇ f (xk) − ∇ f ( ¯ϕke )∥2. (68) Substituting this into (67) yields 
+
+E[f ( ¯ϕk+1  
+
+> e
+
+) | F k] ≤ f ( ¯ϕke ) − αβ 
+
+2 ∥∇ f ( ¯ϕke )∥2 − αβ 
+
+2 (1 − αβL )∥∇ f (xk)∥2
+
++ αβ 
+
+2 ∥∇ f (xk) − ∇ f ( ¯ϕke )∥2 + α2β2Lσ 2
+
+2N . (69) 20 It remains to bound the gradient mismatch. By definition, ∇f ( ¯ϕke ) = 1
+
+> N
+
+∑Ni=1 ∇fi( ¯ϕke ), and thus, 
+
+∥∇ f (xk) − ∇ f ( ¯ϕke )∥2 =
+
+∥∥∥∥∥
+
+1
+
+N
+
+> N
+
+∑
+
+> i=1
+
+(∇fi(xki ) − ∇ fi( ¯ϕke )) 
+
+∥∥∥∥∥
+
+> 2
+
+≤ 1
+
+N
+
+> N
+
+∑
+
+> i=1
+
+∥∇ fi(xki ) − ∇ fi( ¯ϕke )∥2
+
+≤ L2
+
+N
+
+> N
+
+∑
+
+> i=1
+
+∥xki − ¯ϕke ∥2
+
+= L2
+
+N ∥xk − ¯ϕke ∥2. (70) Next, since xk = Wγ ϕk and ϕk = ϕke − βek, we have 
+
+xk − ¯ϕke = Wγ (ϕke − βek) − ¯ϕke
+
+= Wγ (ϕke − ¯ϕke ) − βWγ ek. (71) Using ∥Wγ ∥ ≤ 1, we obtain 
+
+∥xk − ¯ϕke ∥2 ≤ 2∥ϕke − ¯ϕke ∥2 + 2 β2∥ek∥2(58a) 
+
+≤ 8β2∥dk∥2 + 2 β2∥ek∥2. (72) Combining (70) and (72) gives 
+
+∥∇ f (xk) − ∇ f ( ¯ϕke )∥2 ≤ 8β2L2
+
+N ∥dk∥2 + 2β2L2
+
+N ∥ek∥2. (73) Substituting (73) into (69) yields 
+
+E[f ( ¯ϕk+1  
+
+> e
+
+) | Fk] ≤ f ( ¯ϕke ) − αβ 
+
+2 ∥∇ f ( ¯ϕke )∥2 − αβ 
+
+2 (1 − αβL )∥∇ f (xk)∥2
+
++ 4αβ 3L2
+
+N ∥dk∥2 + αβ 3L2
+
+N ∥ek∥2 + α2β2Lσ 2
+
+2N . (74) Taking total expectation completes the proof. 
+
+Lemma 5 (Average deviation bound) . Suppose Assumptions 1–3 and the conditions of Lemma 3 hold, and define ¯λθ ≜ 1+ λθ 
+
+> 2
+
+. If 
+
+αβ ≤√ν (1 − λθ)20 L , (75) then 
+
+E ∥dk+1 ∥2 ≤ ¯λθ E ∥dk∥2 +
+
+[ 52 β(1 − λ)
+
+ν θ (1 − λ) + 96 α2β2L2
+
+ν θγ (1 − λ)
+
+]
+
+E ∥ek∥2
+
++ 10 α4βN L 2
+
+ν θγ 2(1 − λ)2 E ∥∇ f (xk)∥2 + 10 α4βL 2σ2
+
+ν θγ 2(1 − λ)2 + 12 α2N σ 2
+
+ν .
+
+(76) 21 Proof. Recall from (43) that 
+
+dk+1 = ∆d k − αV−1
+
+[ βI
+
+θLγ
+
+]
+
+QTgk 
+
+> 1
+
++ V−1
+
+[ 0
+
+αI
+
+]
+
+QTgk+1 2 + V−1Eeek, (77) where gk 
+
+> 1
+
+= ∇F(xk; ξk) − ∇ f ( ¯ϕke ), gk+1 2 = ∇f ( ¯ϕk+1  
+
+> e
+
+) − ∇ f ( ¯ϕke ), and 
+
+Ee ≜
+
+[ β(β + θ)Lγ
+
+(θ2L2 
+
+> γ
+
+− βLγ Λθ,γ )
+
+]
+
+QT (78) For notational convenience, we also define 
+
+uk ≜ QT(∇F(xk; ξk) − ∇ f (xk)) (79a) 
+
+mk ≜ QT(∇f (xk) − ∇ f ( ¯ϕke )) (79b) 
+
+rk+1 ≜ V−1 
+
+> r
+
+QT(∇f ( ¯ϕk+1  
+
+> e
+
+) − ∇ f ( ¯ϕke )) (79c) 
+
+B ≜ βV−1 
+
+> l
+
++ θV−1 
+
+> r
+
+Lγ , (79d) where V−1 
+
+> l
+
+and V−1 
+
+> r
+
+are the left block and right block of V−1 = [ V−1 
+
+> l
+
+V−1 
+
+> r
+
+], respectively. Splitting 
+
+QTgk 
+
+> 1
+
+= uk + mk in (77) and using V−1 = [ V−1 
+
+> l
+
+V−1 
+
+> r
+
+], 
+
+dk+1 = ∆d k + V−1Eeek − αBm k
+
+︸ ︷︷ ︸   
+
+> ≜ak(Fk-measurable)
+
++αrk+1 − αBu k, (80) Squaring (80) and separating the zero-mean term αBu k, the cross term with the Fk-measurable 
+
+ak vanishes in expectation while −2ℜ⟨ rk+1 , Bu k⟩ ≤ 2|⟨ rk+1 , Bu k⟩| ≤ ∥ rk+1 ∥2 + ∥Bu k∥2; hence 
+
+E[∥dk+1 ∥2 | Fk] ≤ E[∥ak + αrk+1 ∥2 | Fk] + α2 E[∥rk+1 ∥2 | Fk] + 2 α2 E[∥Bu k∥2 | Fk]. (81) We now use Jensen’s inequality ∥a + b∥2 ≤ 1 
+
+> t
+
+∥a∥2 + 11−t ∥b∥2 for any 0 < t < 1. Since ak + αrk+1 =
+
+∆d k + V−1Eeek − α(Bm k − rk+1 ), Jensen’s inequality with weight λθ, ∥∆d k∥ ≤ λθ∥dk∥, and 
+
+∥V−1Eeek − α(Bm k − rk+1 )∥2 ≤ 2∥V−1Eeek∥2 + 2 ∥α(Bm k − rk+1 )∥2
+
+≤ 2∥V−1Eeek∥2 + 4 α2∥Bm k∥2 + 4 α2∥rk+1 ∥2 (82) give, 
+
+E[∥dk+1 ∥2 | Fk] ≤ λθ∥dk∥2 + 21 − λθ
+
+∥V−1Eeek∥2 + 4α2
+
+1 − λθ
+
+∥Bm k∥2
+
++ 5α2
+
+1 − λθ
+
+E[∥rk+1 ∥2 | Fk] + 2 α2 E[∥Bu k∥2 | Fk], (83) where we used 1 ≤ 11−λθ . Both the gradient noise and the gradient mismatch enter through B, and for any v,
+
+∥Bv ∥2 ≤ 2β2v2 
+
+> l
+
+∥v∥2 + 2 θ2γ2 ¯v2 
+
+> r
+
+∥v∥2 = 2 w2∥v∥2, (84) 22 where w2 ≜ β2v2 
+
+> l
+
++ θ2γ2 ¯v2 
+
+> r
+
+. By (84), smoothness, ∥QT · ∥ ≤ ∥ · ∥ , and Assumption 3, we have 
+
+∥Bm k∥2 ≤ 2w2L2∥xk − ¯ϕke ∥2 (85a) 
+
+E[∥Bu k∥2 | Fk] ≤ 2w2N σ 2 (85b) 
+
+∥rk+1 ∥2 ≤ v2 
+
+> r
+
+L2∥ ¯ϕk+1  
+
+> e
+
+− ¯ϕke ∥2. (85c) Therefore, putting these bounds into (83), we get 
+
+E[∥dk+1 ∥2 | Fk] ≤ λθ∥dk∥2 + 21 − λθ
+
+∥V−1Eeek∥2 + 8α2w2L2
+
+1 − λθ
+
+∥xk − ¯ϕke ∥2
+
++ 5α2v2 
+
+> r
+
+L2
+
+1 − λθ
+
+E[∥ ¯ϕk+1  
+
+> e
+
+− ¯ϕke ∥2 | Fk] + 4 α2w2N σ 2, (86) We now bound the term ∥V−1Eeek∥2, where Ee is defined in (78). Using Λθ,γ = I − θLγ , the lower block can be factored as 
+
+θ2L2 
+
+> γ
+
+− βLγ Λθ,γ = Lγ
+
+[θ(θ + β)Lγ − βI]. (87) The condition (41), namely γ(1 − λ) < 4β 
+
+> (β+θ)2
+
+, implies that, for every i ≥ 2, 
+
+ℓγ,i ≜ γ(1 − λi) ≤ γ(1 − λ) < 4β
+
+(β + θ)2 .
+
+Hence 0 ≤ θ(θ + β)ℓγ,i < θ (θ + β) 4β
+
+(β + θ)2 = 4βθ β + θ ≤ 4β. 
+
+Therefore, max i≥2 |θ(θ + β)ℓγ,i − β| ≤ 3β. Moreover, from (45), we have 
+
+∥V−1 
+
+> l
+
+Lγ ∥2 ≤ γ2 ¯v2 
+
+> l
+
+= λ2
+
+> θ
+
+γ2(1 − λ)2
+
+2β2ν , ∥V−1 
+
+> r
+
+Lγ ∥2 ≤ γ2 ¯v2 
+
+> r
+
+= γ(1 − λ)2βν .
+
+Thus, 
+
+∥V−1Eeek∥2 ≤ 2β2(β + θ)2∥V−1 
+
+> l
+
+Lγ ∥2∥ek∥2 + 18 β2∥V−1 
+
+> r
+
+Lγ ∥2∥ek∥2
+
+≤ (β + θ)2λ2
+
+> θ
+
+γ2(1 − λ)2
+
+ν ∥ek∥2 + 9βγ (1 − λ)
+
+ν ∥ek∥2
+
+≤ 13 βγ (1 − λ)
+
+ν ∥ek∥2. (88) In the last step, we used λ2 
+
+> θ
+
+≤ 1 and ( β + θ)2γ(1 − λ) < 4β. Substituting (88) into (86), and using 
+
+∥xk − ¯ϕke ∥2 (72) 
+
+≤ 8β2∥dk∥2 + 2 β2∥ek∥2
+
+together with 
+
+E[∥ ¯ϕk+1  
+
+> e
+
+− ¯ϕke ∥2 | Fk] ≤ N α 2β2∥∇ f (xk)∥2 + α2β2σ2,
+
+23 gives 
+
+E ∥dk+1 ∥2 ≤
+
+(
+
+λθ + 64 α2β2w2L2
+
+1 − λθ
+
+)
+
+E ∥dk∥2
+
++
+
+( 26 βγ (1 − λ)
+
+ν(1 − λθ) + 16 α2β2w2L2
+
+1 − λθ
+
+)
+
+E ∥ek∥2
+
++ 5α4β2N v 2 
+
+> r
+
+L2
+
+1 − λθ
+
+E ∥∇ f (xk)∥2 + 5α4β2v2 
+
+> r
+
+L2σ2
+
+1 − λθ
+
++ 4 α2w2N σ 2. (89) Now, by (45), 
+
+w2 = β2v2 
+
+> l
+
++ θ2γ2 ¯v2 
+
+> r
+
+= λ2
+
+> θ
+
+2ν + θ2γ(1 − λ)2βν .
+
+Using γ(1 − λ) < 4β 
+
+> (β+θ)2
+
+, we obtain 
+
+θ2γ(1 − λ)2βν < θ2
+
+2βν · 4β
+
+(β + θ)2 = 2θ2
+
+ν(β + θ)2 ≤ 2
+
+ν . (90) Since λ2 
+
+> θ
+
+≤ 1, it follows that w2 ≤ 3 
+
+> ν
+
+. Moreover, 
+
+v2 
+
+> r
+
+= 12βγ (1 − λ)ν ≤ 1
+
+βγ (1 − λ)ν ,
+
+and 11−λθ ≤ 2 
+
+> θγ (1 −λ)
+
+. Substituting these estimates into (89) yields 
+
+E ∥dk+1 ∥2 ≤
+
+(
+
+λθ + 192 α2β2L2
+
+ν(1 − λθ)
+
+)
+
+E ∥dk∥2
+
++
+
+[ 52 β(1 − λ)
+
+νθ (1 − λ) + 96 α2β2L2
+
+νθγ (1 − λ)
+
+]
+
+E ∥ek∥2
+
++ 10 α4βN L 2
+
+νθγ 2(1 − λ)2 E ∥∇ f (xk)∥2 + 10 α4βL 2σ2
+
+νθγ 2(1 − λ)2 + 12 α2N σ 2
+
+ν . (91) Finally, under 
+
+αβ ≤√ν(1 − λθ)20 L =⇒ 192 α2β2L2
+
+ν(1 − λθ) ≤ 1 − λθ
+
+2 .
+
+Hence the coefficient of E ∥dk∥2 is bounded by λθ + 1−λθ 
+
+> 2
+
+= 1+ λθ 
+
+> 2
+
+= ¯λθ. Putting this into (91) yields our result. 
+
+Lemma 6 (Error-Feedback bound) . Suppose Assumptions 1–4 hold and the conditions of Lemma 3 hold. For 0 < δ ≤ 1, assume in addition 
+
+γβ ≤ ηδ 
+
+8√3(1 − λ)√1 − δ , (92a) 
+
+γθ ≤ ηδ 
+
+8√6(1 − λ)√1 − δ , (92b) 
+
+αβ ≤ ηδ 
+
+4√6L√1 − δ . (92c) 24 Then 
+
+E ∥ek+1 ∥2 ≤
+
+(
+
+1 − ηδ 
+
+> 4
+
+)
+
+E ∥ek∥2 + 2(1 −δ)
+
+> ηδ
+
+(
+
+24 β2γ2(1 − λ)2 + 24 α2β2L2 + 48 βγ (1 − λ)
+
+)
+
+E ∥dk∥2
+
++ 12 α2N (1 −δ) 
+
+> ηδ
+
+E ∥∇ f ( ¯ϕke )∥2 + 6(1 −δ) 
+
+> ηδ
+
+α2N σ 2. (93) 
+
+Proof. Write sk ≜ ˆxk − ϕk. Then, 
+
+ek+1 = sk + ek − C(sk + ηek)= (1 − η)ek + [(sk + ηek) − C(sk + ηek)]. (94) Viewing the right-hand side as a convex combination of ek and 
+
+η−1[(sk + ηek) − C(sk + ηek)]
+
+with weights 1 − η and η, convexity of ∥ · ∥ 2 gives 
+
+∥ek+1 ∥2 ≤ (1 − η)∥ek∥2 + 1
+
+η
+
+∥∥(sk + ηek) − C(sk + ηek)∥∥2. (95) To apply the compressor contraction condition rigorously, define Gk ≜ Fk ∨ σ(ξk 
+
+> 1
+
+, . . . , ξ kN ). Condi-tioned on Gk, the compressor input sk + ηek is fixed, while the current compressor randomness is independent of Gk. Therefore, by (7), 
+
+E
+
+[∥∥∥(sk + ηek) − C(sk + ηek)
+
+∥∥∥2 ∣∣∣∣ Gk
+
+]
+
+≤ (1 − δ)∥sk + ηek∥2. (96) Combining (96) with (95) and conditioning on Gk gives 
+
+E [∥ek+1 ∥2 | Gk] ≤ (1 − η)∥ek∥2 + 1 − δη ∥sk + ηek∥2. (97) Taking conditional expectation with respect to Fk and using the tower property, since Fk ⊆ Gk,
+
+E
+
+[
+
+E
+
+[
+
+∥ek+1 ∥2 | Gk]∣ ∣∣Fk]
+
+= E
+
+[
+
+∥ek+1 ∥2 | Fk]
+
+yields 
+
+E [∥ek+1 ∥2 | Fk] ≤ (1 − η)∥ek∥2 + 1 − δη E [∥sk + ηek∥2 | Fk]. (98) Using Jensen’s inequality, ∥a + b∥2 ≤ 1 
+
+> t
+
+∥a∥2 + 11−t ∥b∥2, with t = δ 
+
+> 2−δ
+
+, we have 
+
+∥sk + ηek∥2 ≤ 2 − δδ ∥sk∥2 + 2 − δ
+
+2(1 − δ) η2∥ek∥2.
+
+Since ek is 
+
+bmcF k-measurable, the ∥ek∥2 terms combine to 1 − ηδ/ 2. Bounding 2 − δ ≤ 2 in the remaining term gives 
+
+E [∥ek+1 ∥2 | Fk] ≤
+
+(
+
+1 − ηδ 
+
+> 2
+
+)
+
+∥ek∥2 + 2(1 − δ)
+
+ηδ E [∥sk∥2 | Fk]. (99) 25 We now bound ∥sk∥2. Using xk = Wγ ϕk, zk = yk + α∇f ( ¯ϕke ), and ( Wγ − I) ¯ϕke = 0, we obtain 
+
+sk = ( Wγ − I)ϕk − α∇F(xk; ξk) − yk
+
+= ( Wγ − I)( ϕk − ¯ϕke ) − α(∇F(xk; ξk) − ∇ f ( ¯ϕke )) − zk. (100) Therefore, 
+
+∥sk∥2 ≤ 3γ2(1 − λ)2∥ϕk − ¯ϕke ∥2 + 3 α2∥∇ F(xk; ξk) − ∇ f ( ¯ϕke )∥2 + 3 ∥zk∥2. (101) Here we used ∥Wγ − I∥ = γ(1 − λ). Using ϕk = ϕke − βek and (58a), we get 
+
+∥ϕk − ¯ϕke ∥2 ≤ 2∥ϕke − ¯ϕke ∥2 + 2 β2∥ek∥2
+
+≤ 8β2∥dk∥2 + 2 β2∥ek∥2. (102) The gradient term obeys 
+
+E [∥∇ F(xk; ξk) − ∇ f ( ¯ϕke )∥2 | Fk] ≤ L2∥xk − ¯ϕke ∥2 + N σ 2(72) 
+
+≤ 8β2L2∥dk∥2 + 2 β2L2∥ek∥2 + N σ 2. (103) Next, splitting zk = ( zk − ¯zk) + ¯ zk and using the deviation bound (58b), we have 
+
+∥zk − ¯zk∥2 ≤ 8βγ (1 − λ)∥dk∥2 + 2 θ2γ2(1 − λ)2∥ek∥2,
+
+where we used λθ ≤ 1. Together with ∥¯zk∥2 ≤ α2N ∥∇ f ( ¯ϕke )∥2, we obtain 
+
+∥zk∥2 ≤ 2∥zk − ¯zk∥2 + 2 ∥¯zk∥2
+
+≤ 16 βγ (1 − λ)∥dk∥2 + 4 θ2γ2(1 − λ)2∥ek∥2 + 2 α2N ∥∇ f ( ¯ϕke )∥2. (104) Combining (101), (102), (103), and (104), we get 
+
+E[∥sk∥2 | Fk] ≤
+
+(
+
+24 β2γ2(1 − λ)2 + 24 α2β2L2 + 48 βγ (1 − λ)
+
+)
+
+∥dk∥2
+
++
+
+(
+
+6γ2(1 − λ)2(β2 + 2 θ2) + 6 α2β2L2)
+
+∥ek∥2
+
++ 6 N α 2∥∇ f ( ¯ϕke )∥2 + 3 α2N σ 2. (105) Substituting (105) into (99) and taking total expectation gives 
+
+E ∥ek+1 ∥2 ≤
+
+(
+
+1 − ηδ  
+
+> 2
+
++ 2(1 −δ)
+
+> ηδ
+
+[
+
+6γ2(1 − λ)2(β2 + 2 θ2) + 6 α2β2L2]) 
+
+E ∥ek∥2
+
++ 2(1 −δ)
+
+> ηδ
+
+(
+
+24 β2γ2(1 − λ)2 + 24 α2β2L2 + 48 βγ (1 − λ)
+
+)
+
+E ∥dk∥2
+
++ 12 α2N (1 −δ) 
+
+> ηδ
+
+E ∥∇ f ( ¯ϕke )∥2 + 6(1 −δ) 
+
+> ηδ
+
+α2N σ 2. (106) The coefficient of E ∥ek∥2 is bounded by 1 − ηδ/ 4 provided 
+
+> 2(1 −δ)
+> ηδ
+
+(
+
+6γ2(1 − λ)2(β2 + 2 θ2) + 6 α2β2L2)
+
+≤ ηδ  
+
+> 4
+
+.
+
+A sufficient separated condition is 12 γ2(1 − λ)2(β2 + 2 θ2) 1 − δηδ ≤ ηδ 
+
+8 , (107a) 12 α2β2L2 1 − δηδ ≤ ηδ 
+
+8 . (107b) These are satisfied under (92), which implies our result (93). 26 C Nonconvex proof 
+
+Here, we use Lemmas 4, 5, 6 to prove Theorem 1. For convenience, define the shorthand 
+
+Gk ≜ E ∥∇ f ( ¯ϕke )∥2, ¯Gk ≜ E ∥∇ f (xk)∥2, Dk ≜ E ∥dk∥2, Ek ≜ E ∥ek∥2. (108) Subtracting f ⋆ from (63) and using αβ ≤ 12L , so that 1 − αβL ≥ 12 , with ˜f ( ¯ϕke ) = f ( ¯ϕke ) − f ⋆, gives 
+
+E ˜f ( ¯ϕk+1  
+
+> e
+
+) ≤ E ˜f ( ¯ϕke ) − αβ 
+
+2 Gk − αβ 
+
+4 ¯Gk + 4αβ 3L2
+
+N Dk + αβ 3L2
+
+N Ek + α2β2Lσ 2
+
+2N . (109) Recursions (76) and (93) are used unchanged. For notational convenience, let 
+
+A1 ≜ 4αβ 3L2
+
+N , A2 ≜ αβ 3L2
+
+N , A3 ≜ α2β2Lσ 2
+
+2N , (110a) 
+
+B1 ≜ 52 β∆λ
+
+νθ ∆λ
+
++ 96 α2β2L2
+
+νθγ ∆λ
+
+, (110b) 
+
+B2 ≜ 10 α4βN L 2
+
+νθγ 2∆2
+
+> λ
+
+, B3 ≜ 10 α4βL 2σ2
+
+νθγ 2∆2
+
+> λ
+
++ 12 α2N σ 2
+
+ν , (110c) 
+
+C1 ≜ 2(1 − δ)
+
+ηδ 
+
+(
+
+24 β2γ2∆2 
+
+> λ
+
++ 24 α2β2L2 + 48 βγ ∆λ
+
+)
+
+, (110d) 
+
+C2 ≜ 12 α2N (1 − δ)
+
+ηδ , C3 ≜ 6(1 − δ)
+
+ηδ α2N σ 2, (110e) where ∆ λ ≜ 1 − λ, ∆ λ ≜ 1 − λ, ∆ θ ≜ 1 − ¯λθ = 1−λθ 
+
+> 2
+
+, and λθ = √1 − θγ ∆λ. With this notation, recursions (109), (76), and (93) become 
+
+E ˜f ( ¯ϕk+1  
+
+> e
+
+) ≤ E ˜f ( ¯ϕke ) − αβ 
+
+2 Gk − αβ 
+
+4 ¯Gk + A1Dk + A2Ek + A3, (111a) 
+
+Dk+1 ≤ (1 − ∆θ)Dk + B1Ek + B2 ¯Gk + B3, (111b) 
+
+Ek+1 ≤ (1 − μη)Ek + C1Dk + C2Gk + C3, (111c) where μη ≜ ηδ  
+
+> 4
+
+. Note that since 1 − √1 − a ≥ a/ 2 for any a ∈ [0 , 1], we have ∆θ = 1 − λθ
+
+2 = 1 − √1 − θγ ∆λ
+
+2 ≥ θγ ∆λ
+
+4 , and hence 1∆θ
+
+≤ 4
+
+θγ ∆λ
+
+. (112) 
+
+C.1 Proof of Theorem 1 
+
+We consider the Lyapunov function 
+
+Lk ≜ E ˜f ( ¯ϕke ) + χ1Dk + χ2Ek (113) where χ1, χ 2 > 0 will be specified shortly. It follows from (111a)–(111c) that 
+
+Lk+1 − L k ≤ − 
+
+( αβ  
+
+> 2
+
+− χ2C2
+
+)
+
+Gk −
+
+( αβ  
+
+> 4
+
+− χ1B2
+
+) ¯Gk + (A1 − χ1∆θ + χ2C1
+
+)Dk
+
++ (A2 + χ1B1 − χ2μη
+
+)Ek + A3 + χ1B3 + χ2C3. (114) 27 Annihilate Dk, Ek. To make the coefficients of Dk, Ek nonpositive we choose 
+
+χ1 ≜ 2A1
+
+∆θ
+
+= 8αβ 3L2
+
+N ∆θ
+
+, χ2 ≜ 2( A2 + χ1B1)
+
+μη
+
+, (115) so that 
+
+A2 + χ1B1 − χ2μη = −(A2 + χ1B1) ≤ 0. (116) Moreover, 
+
+A1 − χ1∆θ + χ2C1 = −A1 + χ2C1 ≤ 0 (117) when χ2C1 ≤ A1. Using A2 = A1/4 and (115), 
+
+χ2C1 = 2( A2 + χ1B1)
+
+μη
+
+C1 = A1
+
+μη
+
+( C1
+
+2 + 4B1C1
+
+∆θ
+
+)
+
+, (118) so χ2C1 ≤ A1 if C1 
+
+> 2
+
++ 4B1C1 
+
+> ∆θ
+
+≤ μη. To satisfy this, we impose 
+
+C1 ≤ μη
+
+2 , B1C1 ≤ ∆θμη
+
+8 , (119) which can be satisfied for sufficiently small parameters, as specified below. Under (119), 
+
+C1
+
+2 + 4B1C1
+
+∆θ
+
+≤ μη
+
+4 + μη
+
+2 = 3μη
+
+4 =⇒ χ2C1 ≤ 3A1
+
+4 ≤ A1. (120) Finally, the second bound in (119) gives χ1B1 = 2A1 
+
+> ∆θ
+
+B1 ≤ A1μη 
+
+> 4C1
+
+= A2μη 
+
+> C1
+
+, so that 
+
+χ2 = 2( A2 + χ1B1)
+
+μη
+
+≤ 2A2
+
+μη
+
++ 2A2
+
+C1
+
+. (121) 
+
+Negative gradient coefficients. To make the coefficients of the gradient terms in (114) negative, we impose 
+
+χ2C2 ≤ αβ 
+
+4 , χ1B2 ≤ αβ 
+
+8 .
+
+With A2 = αβ 3L2 
+
+> N
+
+, C2 = 12 α2N (1 −δ) 
+
+> ηδ
+
+, the bound (121) splits χ2C2 into two parts, each controlled separately. For the first part, 2A2
+
+μη
+
+C2 = 96 α3β3L2(1 − δ)(ηδ )2 ≤ αβ 
+
+8 ⇐⇒ αβ ≤ ηδ 
+
+16 √3 L√1 − δ . (122) For the second part, note from C1 = 2(1 −δ)
+
+> ηδ
+
+(
+
+24 β2γ2∆2 
+
+> λ
+
++ 24 α2β2L2 + 48 βγ ∆λ
+
+)
+
+that, keeping only the third term in C1, we have 
+
+C1 ≥ 96(1 − δ)βγ ∆λ
+
+ηδ .
+
+28 Using this and A2 = αβ 3L2 
+
+> N
+
+, C2 = 12 α2N (1 −δ) 
+
+> ηδ
+
+, we obtain 2A2
+
+C1
+
+C2 ≤ 2
+
+( αβ 3L2
+
+> N
+
+) ( 12 α2N (1 −δ)
+
+> ηδ
+
+)
+
+> 96(1 −δ)βγ ∆λ
+> ηδ
+
+= α3β2L2
+
+4γ∆λ
+
+≤ αβ 
+
+8
+
+⇐⇒ α2β ≤ γ∆λ
+
+2L2 . (123) Together, (122)–(123) give χ2C2 ≤ αβ  
+
+> 4
+
+. Next, by (115) and B2 = 10 α4βN L 2
+
+> νθγ 2∆2
+> λ
+
+, we have 
+
+χ1B2 = 2A1B2
+
+∆θ
+
+= 80 α5β4L4
+
+νθγ 2∆2
+
+> λ
+
+∆θ
+
+≤ αβ 
+
+8
+
+⇐⇒ α4β3 ≤ νθγ 2∆2
+
+> λ
+
+∆θ
+
+640 L4 . (124) By (112), we have ∆ θ ≥ θγ ∆λ 
+
+> 4
+
+. Therefore, (124) is guaranteed by the sufficient condition 
+
+α4β3 ≤ νθ 2γ3∆3
+
+> λ
+
+2560 L4 . (125) 
+
+Conditions to satisfy (119) . We now give sufficient conditions under which (119) holds. (1) B1C1 ≤ ∆θμη/8. Using (112) and μη = ηδ/ 4, it suffices to impose B1C1 ≤ θγ ∆ληδ  
+
+> 128
+
+. Recall that 
+
+B1 = 52 β∆λ
+
+νθ ∆λ
+
++ 96 α2β2L2
+
+νθγ ∆λ
+
+,C1 = 2(1 − δ)
+
+ηδ 
+
+(
+
+24 β2γ2∆2 
+
+> λ
+
++ 24 α2β2L2 + 48 βγ ∆λ
+
+)
+
+.
+
+Write B1 = B01 + Bα 
+
+> 1
+
+, where 
+
+B01 ≜ 52 β∆λ
+
+νθ ∆λ
+
+, Bα 
+
+> 1
+
+≜ 96 α2β2L2
+
+νθγ ∆λ
+
+.
+
+Imposing 
+
+α2β ≤ γ∆λ
+
+4L2 (126) gives Bα 
+
+> 1
+
+≤ 24 β∆λ 
+
+> νθ ∆λ
+
+≤ B01 , and hence B1 ≤ 2B01 . Moreover, under (126), 24 α2β2L2 ≤ 6βγ ∆λ.
+
+If also βγ ∆λ ≤ 1, then 24 β2γ2∆2 
+
+> λ
+
+≤ 24 βγ ∆λ.
+
+Therefore, 
+
+C1 ≤ 2(1 − δ)
+
+ηδ (24 + 6 + 48) βγ ∆λ = 156(1 − δ)βγ ∆λ
+
+ηδ .
+
+29 Consequently, 
+
+B1C1 ≤ 2B01 · 156(1 − δ)βγ ∆λ
+
+ηδ = 16224(1 − δ)β2γ∆2
+
+> λ
+
+νθ ∆ληδ .
+
+Thus it is sufficient that 16224(1 − δ)β2γ∆2
+
+> λ
+
+νθ ∆ληδ ≤ θγ ∆ληδ 
+
+128 .
+
+This is guaranteed by 
+
+β ≤√ν θ ∆ληδ 
+
+832 √3 ∆ λ
+
+√1 − δ . (127) (2) C1 ≤ μη/2. This condition is equivalent to 24 β2γ2∆2 
+
+> λ
+
++ 24 α2β2L2 + 48 βγ ∆λ ≤ (ηδ )2
+
+16(1 − δ) . (128) When βγ ∆λ ≤ 1, we have 24 β2γ2∆2 
+
+> λ
+
+≤ 24 βγ ∆λ.
+
+Hence it is sufficient that 24 α2β2L2 + 72 βγ ∆λ ≤ (ηδ )2
+
+16(1 − δ) .
+
+Splitting the two terms equally, it suffices to impose 24 α2β2L2 ≤ (ηδ )2
+
+32(1 − δ) , 72 βγ ∆λ ≤ (ηδ )2
+
+32(1 − δ) .
+
+Equivalently, 
+
+αβ ≤ ηδ L√768(1 − δ) , βγ ≤ (ηδ )2
+
+2304(1 − δ)∆ λ
+
+. (129) The first condition in (129) matches (122).  
+
+> Collected sufficient conditions.
+
+We gather every condition imposed so far and reduce them to a convenient sufficient set. We assume 0 < η ≤ 1, 0 < γ ≤ 1, and 0 < β ≤ θ. The bound γ ≤ 1guarantees that Wγ = (1 − γ)I + γW is a convex combination of I and W, so that ∥Wγ ∥ ≤ 1, as used in (72). Besides the descent bound αβL ≤ 12 , all the conditions imposed are (41) : γ∆λ < 4β
+
+(β + θ)2 , ν = 1 − (β + θ)2γ∆λ
+
+4β > 0,
+
+(127) : β ≤√ν θ ∆ληδ 
+
+832 √3 ∆ λ
+
+√1 − δ ,
+
+(92a) : βγ ≤ ηδ 
+
+8√3 ∆ λ
+
+√1 − δ , (92b) : γθ ≤ ηδ 
+
+8√6 ∆ λ
+
+√1 − δ ,
+
+second bound of (129) : βγ ≤ (ηδ )2
+
+2304(1 − δ)∆ λ
+
+,
+
+30 the α stepsize bounds (75) : αβ ≤√ν(1 − λθ)20 L , (122) /first of (129) : αβ ≤ ηδ 
+
+16 √3 L√1 − δ ,
+
+(92c) : αβ ≤ ηδ 
+
+4√6 L√1 − δ , (123) : α2β ≤ γ∆λ
+
+2L2 ,
+
+(125) : αβ ≤ 
+
+> (
+
+νβθ 2γ3∆3
+
+> λ
+
+2560 L4
+
+> )1/4
+
+,
+
+and the two auxiliary conditions used to establish (119), (126) : α2β ≤ γ∆λ
+
+4L2 , βγ ∆λ ≤ 1.
+
+The two auxiliary conditions are automatic. Multiplying (41) by β and using θ ≥ β gives 
+
+βγ ∆λ < 4β2
+
+(β + θ)2 ≤ 1,
+
+which is the second auxiliary condition. Moreover, if 
+
+αβ ≤√νθγ ∆λ
+
+40 L ,
+
+then 
+
+α2β = (αβ )2
+
+β ≤ νθ 2γ2∆2
+
+> λ
+
+1600 L2β .
+
+Using (41), we have 
+
+γ < 4β
+
+(β + θ)2∆λ
+
+.
+
+Therefore, 
+
+α2β ≤ νθ 2γ∆2
+
+> λ
+
+400 L2(β + θ)2∆λ
+
+≤ γ∆λ
+
+400 L2 ≤ γ∆λ
+
+4L2 ,
+
+where we used θ2 ≤ (β + θ)2 and ∆ λ ≤ ∆λ. Hence (126) holds. The same argument also implies the weaker condition (123). Thus the auxiliary conditions hold automatically whenever (41) and 
+
+αβ ≤ √νθγ ∆λ/(40 L) hold. 
+
+The βγ and γθ constraints. Since ( β + θ)2 ≥ θ2, the condition (41) gives 
+
+γθ ≤ 4βθ∆λ
+
+, βγ ≤ 4β2
+
+θ2∆λ
+
+. (130) Let the upper bound in (127) be 
+
+B ≜
+
+√ν θ ∆ληδ 
+
+832 √3 ∆ λ
+
+√1 − δ .
+
+If β ≤ B, then (130) gives 
+
+γθ ≤ 4Bθ∆λ
+
+=
+
+√ν ∆ληδ 
+
+208 √3 ∆ 2
+
+> λ
+
+√1 − δ , (131) 31 and 
+
+βγ ≤ 4B2
+
+θ2∆λ
+
+= 4ν∆2
+
+> λ
+
+(ηδ )2
+
+832 2 · 3 (1 − δ)∆ 3
+
+> λ
+
+. (132) Since ν ≤ 1, ∆ λ ≤ ∆λ, and 208 √3 ≥ 8√6, it follows from (131) that 
+
+γθ ≤√ν ∆ληδ 
+
+208 √3 ∆ 2
+
+> λ
+
+√1 − δ ≤ ηδ 
+
+208 √3 ∆ λ
+
+√1 − δ ≤ ηδ 
+
+8√6 ∆ λ
+
+√1 − δ ,
+
+and hence (92b) holds. Since β ≤ θ and √6 ≥ √3, 
+
+βγ ≤ γθ ≤ ηδ 
+
+8√6 ∆ λ
+
+√1 − δ ≤ ηδ 
+
+8√3 ∆ λ
+
+√1 − δ ,
+
+so (92a) holds. Finally, since ν ≤ 1, ∆ λ ≤ ∆λ, and 9216 ≤ 832 2 · 3, 4ν∆2
+
+> λ
+
+832 2 · 3 ∆ 3
+
+> λ
+
+≤ 4832 2 · 3 ∆ λ
+
+≤ 12304 ∆ λ
+
+,
+
+so (132) implies the second bound of (129), 
+
+βγ ≤ (ηδ )2
+
+2304(1 − δ)∆ λ
+
+.
+
+Thus (127) and (41) imply all the remaining βγ and γθ constraints. 
+
+The α-conditions. The condition (41) gives 
+
+θγ ∆λ < 4βθ 
+
+(β + θ)2 ≤ 1,
+
+and since ∆ λ ≤ ∆λ, also θγ ∆λ < 1. Consequently, the descent bound αβ ≤ 1/(2 L) is implied by 
+
+αβ ≤√νθγ ∆λ
+
+40 L .
+
+The same condition implies (75): since 1 − λθ = 1 − √1 − θγ ∆λ ≥ θγ ∆λ/2, we have 
+
+√νθγ ∆λ
+
+40 L ≤√ν(1 − λθ)20 L .
+
+It also implies (123) and (126), as shown above. It remains to check (122) and (92c). From (127) and (41), we already showed that 
+
+γθ ≤√ν ∆ληδ 
+
+208 √3 ∆ 2
+
+> λ
+
+√1 − δ .
+
+Thus 
+
+θγ ∆λ ≤√ν ∆2
+
+> λ
+
+ηδ 
+
+208 √3 ∆ 2
+
+> λ
+
+√1 − δ ≤√νηδ 
+
+208 √3 √1 − δ .
+
+Therefore, √νθγ ∆λ
+
+40 L ≤ νηδ 
+
+8320 √3 L√1 − δ ≤ ηδ 
+
+16 √3 L√1 − δ ,
+
+32 which implies (122). Since 16 √3 > 4√6, (122) also implies (92c). Therefore, we can impose the following simplified sufficient conditions: 0 < η ≤ 1, 0 < γ ≤ 1, θ > 0, (133a) 
+
+γ∆λ < 4β
+
+(β + θ)2 , ν ≜ 1 − (β + θ)2γ∆λ
+
+4β > 0, (133b) 0 < β ≤ min 
+
+{ √ν θ ∆ληδ 
+
+832 √3 ∆ λ
+
+√1 − δ , θ 
+
+}
+
+, (133c) 
+
+αβ ≤ min 
+
+
+
+√νθγ ∆λ
+
+40 L ,
+
+( νβθ 2γ3∆3
+
+> λ
+
+2560 L4
+
+)1/4 . (133d) 
+
+Telescoping. Under (133), (114) is bounded above by 
+
+Lk+1 − L k ≤ − αβ 
+
+4 Gk − αβ 
+
+8 ¯Gk + ( A3 + χ1B3 + χ2C3). (134) Rearranging, summing over k = 0 , . . . , K − 1, and using LK ≥ 0 gives 12K
+
+> K−1
+
+∑
+
+> k=0
+
+E ∥∇ f (xk)∥2 + 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+E ∥∇ f ( ¯ϕke )∥2 ≤ 4L0
+
+αβK + 4( A3 + χ1B3 + χ2C3)
+
+αβ . (135) 
+
+Noise floor. We now find the order of the noise terms. Recall the definitions (110) and (115). The first two terms are 4A3
+
+αβ 
+
+> (110)
+
+= 2αβLσ 2
+
+N = O
+
+( αβLσ 2
+
+N
+
+)
+
+, (136) 4χ1B3
+
+αβ 
+
+> (110)(115)
+
+= 320 α4β3L4σ2
+
+N ν ∆θθγ 2∆2
+
+> λ
+
++ 384 α2β2L2σ2
+
+ν∆θ
+
+> (112)
+
+≤ 1280 α4β3L4σ2
+
+N νθ 2γ3∆3
+
+> λ
+
++ 1536 α2β2L2σ2
+
+νθγ ∆λ
+
+. (137) For the last term, we use 
+
+χ2(121) 
+
+≤ 2A2
+
+μη
+
++ 2A2
+
+C1
+
+.
+
+The first term gives 4
+
+αβ · 2A2
+
+μη
+
+C3 = 192(1 − δ)α2β2L2σ2
+
+η2δ2 .
+
+For the second term, using the updated definition of C1, we have 
+
+C1 ≥ 2(1 − δ)
+
+ηδ · 48 βγ ∆λ = 96(1 − δ)βγ ∆λ
+
+ηδ .
+
+Consequently, 4χ2C3
+
+αβ ≤ 192(1 − δ)α2β2L2σ2
+
+η2δ2 + α2β2L2σ2
+
+2βγ ∆λ
+
+. (138) 33 Using the previous estimates in (135), and multiplying by 2, we obtain 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+(
+
+E ∥∇ f (xk)∥2 + E ∥∇ f ( ¯ϕke )∥2)
+
+≤ 8L0
+
+αβK + 4αβLσ 2
+
+N + α2β2L2σ2
+
+[ 3072 
+
+νθγ ∆λ
+
++ 384(1 − δ)
+
+η2δ2 + 1
+
+βγ ∆λ
+
+]
+
++ 2560 α4β4L4σ2
+
+N νθ 2βγ 3∆3
+
+> λ
+
+. (139) We now bound the initial term L0. With ϕ0 = x0 = 1 ⊗ x0, y0 = 0, and e0 = 0, we have 
+
+QTϕ0 
+
+> e
+
+= QT(x0 + βe0) = 0 , ¯ϕ0 
+
+> e
+
+= x0, (140a) 
+
+z0 = α∇f (x0). (140b) Hence, 
+
+d0 = V−1
+
+[QTϕ0
+
+> e
+
+QT̂ z0
+
+]
+
+= V−1
+
+[ 0
+
+QTz0 + QT(I − Wθ,γ )e0
+
+]
+
+= αV−1 
+
+> r
+
+QT∇f (x0), (141) and 
+
+L0 = ˜f (x0) + χ1∥d0∥2. (142) Since 8χ1
+
+αβK = 8
+
+αβK · 8αβ 3L2
+
+N ∆θ
+
+= 64 β2L2
+
+N ∆θK , (143) we have 8L0
+
+αβK = 8
+
+αβK ˜f (x0) + 64 α2β2L2
+
+N ∆θK ∥V−1 
+
+> r
+
+QT∇f (x0)∥2
+
+≤ 8
+
+αβK ˜f (x0) + 64 α2β2v2 
+
+> r
+
+L2
+
+N ∆θK ∥QT∇f (x0)∥2(112)(45) 
+
+≤ 8
+
+αβK ˜f (x0) + 128 α2β2L2
+
+νθβγ 2∆2
+
+> λ
+
+K ς20 , (144) where ς20 ≜ 1 
+
+> N
+
+∥QT∇f (x0)∥2 = 1
+
+> N
+
+∥∥∇f (x0) − 1 ⊗ ∇ f (x0)∥∥2 = 1
+
+> N
+
+∑Ni=1 
+
+∥∥∇fi(x0) − ∇ f (x0)∥∥2. Sub-stituting (144) into (139), we obtain 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+(
+
+E ∥∇ f (xk)∥2 + E ∥∇ f ( ¯ϕke )∥2)
+
+≤ Ψ0
+
+αβK + Ψ 1αβ +
+
+(
+
+Ψ2 + ˜Ψ2
+
+K
+
+)
+
+α2β2 + Ψ 3α4β4, (145) 34 where Ψ0 ≜ 8 ˜f (x0) = O
+
+( ˜f (x0)
+
+)
+
+, (146a) Ψ1 ≜ 4Lσ 2
+
+N = O
+
+( Lσ 2
+
+N
+
+)
+
+, (146b) Ψ2 ≜ L2σ2
+
+[ 3072 
+
+νθγ ∆λ
+
++ 384(1 − δ)
+
+η2δ2 + 1
+
+βγ ∆λ
+
+]
+
+= O
+
+(
+
+L2σ2
+
+[ 1
+
+νθγ ∆λ
+
++ 1 − δη2δ2 + 1
+
+βγ ∆λ
+
+]) 
+
+, (146c) 
+
+˜Ψ2 ≜ 128 L2ς20
+
+νθβγ 2∆2
+
+> λ
+
+= O
+
+( L2ς20
+
+νθβγ 2∆2
+
+> λ
+
+)
+
+, (146d) Ψ3 ≜ 2560 L4σ2
+
+N νθ 2βγ 3∆3
+
+> λ
+
+= O
+
+( L4σ2
+
+N νθ 2βγ 3∆3
+
+> λ
+
+)
+
+. (146e) 
+
+C.2 Proof of Corollary 1 
+
+We apply Lemma 8 to obtain a nearly optimal stepsize choice, following the balancing strategy used in [15, 40, 55]. Let τ ≜ αβ and 
+
+τmax ≜ min 
+
+
+
+√νθγ ∆λ
+
+40 L ,
+
+( νβθ 2γ3∆3
+
+> λ
+
+2560 L4
+
+)1/4 .
+
+Then (145) can be written as 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+(
+
+E ∥∇ f (xk)∥2 + E ∥∇ f ( ¯ϕke )∥2)
+
+≤ Ψ0
+
+τ K + Ψ 1τ +
+
+(
+
+Ψ2 + ˜Ψ2
+
+K
+
+)
+
+τ 2 + Ψ 3τ 4. (147) Applying Lemma 8 with 
+
+a0 = Ψ 0, a1 = Ψ 1, a2 = Ψ 2, ˜a2 = ˜Ψ2, a3 = Ψ 3, ¯τ = τmax ,
+
+we choose 
+
+τ = αβ = min 
+
+{( Ψ0
+
+> Ψ1K
+
+)1/2
+
+,
+
+( Ψ0
+
+> (Ψ 2+
+
+˜Ψ2/K )K
+
+)1/3
+
+,
+
+( Ψ0
+
+> Ψ3K
+
+)1/5
+
+, τ max 
+
+}
+
+. (148) Then 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+(
+
+E ∥∇ f (xk)∥2 + E ∥∇ f ( ¯ϕke )∥2)
+
+≤ 2
+
+( Ψ1Ψ0
+
+> K
+
+)1/2
+
++ 2Ψ 1/32
+
+( Ψ0
+
+> K
+
+)2/3
+
++ 2 ˜Ψ1/32Ψ2/30
+
+> K
+
++ 2Ψ 1/53
+
+( Ψ0
+
+> K
+
+)4/5
+
++ Ψ0
+
+τmax K .
+
+(149) 35 Using the definitions in (146), and hiding constants depending only on L and ˜f (x0), we obtain 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+(
+
+E ∥∇ f (xk)∥2 + E ∥∇ f ( ¯ϕke )∥2)
+
+≤ O 
+
+√
+
+σ2
+
+N K 
+
+ + O
+
+[ σ2
+
+K2
+
+( 1
+
+νθγ ∆λ
+
++ 1
+
+η2δ2 + 1
+
+βγ ∆λ
+
+)]1/3
+
++ O
+
+[ ς20
+
+νθβγ 2∆2
+
+> λ
+
+K3
+
+]1/3 + O
+
+[ σ2
+
+N νθ 2βγ 3∆3
+
+> λ
+
+K4
+
+]1/5 + O
+
+( 1
+
+τmax K
+
+)
+
+. (150) Using the heavy-compression scaling ν, θ, η = Θ(1), 
+
+β ≍ δ∆λ
+
+∆λ
+
+, γ ≍ δ∆λ
+
+∆2
+
+> λ
+
+, 1 − δ = Θ(1) ,
+
+we have 1
+
+τmax 
+
+= O
+
+( ∆2
+
+> λ
+
+δ∆2
+
+> λ
+
+)
+
+.
+
+Moreover, 1
+
+νθγ ∆λ
+
++ 1
+
+η2δ2 + 1
+
+βγ ∆λ
+
+= O
+
+( ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
+,
+
+and 1
+
+νθβγ 2∆2
+
+> λ
+
+= O
+
+( ∆5
+
+> λ
+
+δ3∆5
+
+> λ
+
+)
+
+, 1
+
+νθ 2βγ 3∆3
+
+> λ
+
+= O
+
+( ∆7
+
+> λ
+
+δ4∆7
+
+> λ
+
+)
+
+.
+
+Therefore, the optimized rate is 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+(
+
+E ∥∇ f (xk)∥2 + E ∥∇ f ( ¯ϕke )∥2)
+
+≤ O 
+
+(√ σ2
+
+> N K
+
+)
+
++ O
+
+(( σ ∆λ
+
+> δ∆λ
+
+)2/3 1
+
+K2/3
+
+)
+
++ O
+
+(( σ2
+
+> N
+
+)1/5( ∆λ
+
+> ∆λ
+
+)7/5 1
+
+> δ4/5K4/5
+
+)
+
++ O
+
+(
+
+ς2/30
+
+( ∆λ
+
+> ∆λ
+
+)5/3 1
+
+δK 
+
+)
+
++ O
+
+( ∆2
+
+> λ
+
+δ∆2
+
+> λ
+
+1
+
+K
+
+)
+
+.
+
+(151) 
+
+Transient time. Assume σ > 0. The leading stochastic term in (151) is of order σ/ √N K . We therefore compare each lower-order term with this quantity. First, the K−2/3 term gives 
+
+( σ∆λ
+
+δ∆λ
+
+)2/3 1
+
+K2/3 ≍ σ
+
+√N K =⇒ Ktr ,1 ≍ N 3∆4
+
+> λ
+
+σ2δ4∆4
+
+> λ
+
+.
+
+Second, the K−4/5 term gives 
+
+( σ2
+
+N
+
+)1/5 ( ∆λ
+
+∆λ
+
+)7/5 1
+
+δ4/5K4/5 ≍ σ
+
+√N K =⇒ Ktr ,2 ≍ N ∆14 /3
+
+> λ
+
+σ2δ8/3∆14 /3
+
+> λ
+
+.
+
+36 Third, the ς0-dependent K−1 term gives 
+
+ς2/30
+
+( ∆λ
+
+∆λ
+
+)5/3 1
+
+δK ≍ σ
+
+√N K =⇒ Ktr ,3 ≍ N ς 4/30 ∆10 /3
+
+> λ
+
+σ2δ2∆10 /3
+
+> λ
+
+.
+
+Finally, ∆2
+
+> λ
+
+δ∆2
+
+> λ
+
+K ≍ σ
+
+√N K =⇒ Ktr ,4 ≍ N ∆4
+
+> λ
+
+σ2δ2∆4
+
+> λ
+
+.
+
+Since N ≥ 1 and 0 < δ ≤ 1, Ktr ,4 ≤ Ktr ,1. Taking the maximum of the remaining thresholds gives (12). 
+
+Standard stepsize choice. Here, we derive the rate given in Remark 3 when the stepsize is chosen in a more natural way. Recall that the final admissible upper bound on the product αβ is 
+
+τmax ≜ min 
+
+
+
+√νθγ ∆λ
+
+40 L ,
+
+( νβθ 2γ3∆3
+
+> λ
+
+2560 L4
+
+)1/4 . (152) Let τ ≜ αβ and choose τ =
+
+√ NK . We assume that K is sufficiently large so that K ≥ Nτ 2max 
+
+. Then 
+
+τ ≤ τmax , and hence the stepsize condition (133d) holds. Moreover, 1
+
+τ K = 1
+
+√N K , τ σ 2
+
+N = σ2
+
+√N K , τ 2 = NK , τ 4 = N 2
+
+K2 . (153) In the following, the constants hidden in O(·) may depend on ˜f (x0) and L, but are independent of 
+
+K, N, δ, λ, λ, ν . Under this choice, (145) gives 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+(
+
+E ∥∇ f (xk)∥2 + E ∥∇ f ( ¯ϕke )∥2)
+
+≤ O 
+
+( 1 + σ2
+
+√N K 
+
+)
+
++ O
+
+( N σ 2
+
+K
+
+[ 1
+
+νθγ ∆λ
+
++ 1 − δη2δ2 + 1
+
+βγ ∆λ
+
+])
+
++ O
+
+( N ς 20
+
+K2νθβγ 2∆2
+
+> λ
+
+)
+
++ O
+
+( N σ 2
+
+K2νθ 2βγ 3∆3
+
+> λ
+
+)
+
+. (154) This form contains no division by σ, and the last two terms remain K−2 terms. Now take ν = Θ(1) in (133b). Since θ > 0 and 0 < η ≤ 1 are free, choose 
+
+θ = Θ(1) , η = Θ(1) , β ≍ δ∆λ
+
+∆λ
+
+, γ ≍ β
+
+∆λ
+
+≍ δ∆λ
+
+∆2
+
+> λ
+
+. (155) In the heavy-compression regime 1 − δ = Θ(1), all powers of 1 − δ are absorbed into the constants hidden in O(·). The implicit constants in (155) are chosen sufficiently small so that the admissibility conditions in (133) hold. With (155), we have 
+
+τmax ≍ min 
+
+{ δ∆2
+
+> λ
+
+∆2
+
+> λ
+
+, δ∆7/4
+
+> λ
+
+∆7/4
+
+> λ
+
+}
+
+≍ δ∆2
+
+> λ
+
+∆2
+
+> λ
+
+, 1
+
+τmax 
+
+≲ ∆2
+
+> λ
+
+δ∆2
+
+> λ
+
+, (156) 37 where we used ∆ λ ≤ ∆λ. Hence the large-K condition K ≥ Nτ 2max 
+
+is satisfied whenever K ≳ N ∆4
+
+> λ
+> δ2∆4
+> λ
+
+.Moreover, 1
+
+νθγ ∆λ
+
+≍ ∆2
+
+> λ
+
+δ∆2
+
+> λ
+
+≤ O 
+
+( ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
+, 1 − δη2δ2 ≍ 1
+
+δ2 ≤ O 
+
+( ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
+,
+
+1
+
+βγ ∆λ
+
+≍ ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+, 1
+
+νθβγ 2∆2
+
+> λ
+
+≍ ∆5
+
+> λ
+
+δ3∆5
+
+> λ
+
+,
+
+1
+
+νθ 2βγ 3∆3
+
+> λ
+
+≍ ∆7
+
+> λ
+
+δ4∆7
+
+> λ
+
+.
+
+(157) Substituting (157) into (154) gives 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+(
+
+E ∥∇ f (xk)∥2 + E ∥∇ f ( ¯ϕke )∥2)
+
+≤ O 
+
+( 1 + σ2
+
+√N K 
+
+)
+
++ O
+
+( N σ 2
+
+K · ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
++ O
+
+( N ς 20
+
+K2 · ∆5
+
+> λ
+
+δ3∆5
+
+> λ
+
+)
+
++ O
+
+( N σ 2
+
+K2 · ∆7
+
+> λ
+
+δ4∆7
+
+> λ
+
+)
+
+. (158) 
+
+# D PL convergence proof 
+
+We begin the proof by recalling the key inequality (111), which we restate for the reader’s conve-nience: 
+
+E ˜f ( ¯ϕk+1  
+
+> e
+
+) ≤ E ˜f ( ¯ϕke ) − αβ 
+
+2 Gk − αβ 
+
+4 ¯Gk + A1Dk + A2Ek + A3, (159a) 
+
+Dk+1 ≤ (1 − ∆θ)Dk + B1Ek + B2 ¯Gk + B3, (159b) 
+
+Ek+1 ≤ (1 − μη)Ek + C1Dk + C2Gk + C3. (159c) where μη = ηδ/ 4 and 
+
+Gk ≜ E ∥∇ f ( ¯ϕke )∥2, ¯Gk ≜ E ∥∇ f (xk)∥2, Dk ≜ E ∥dk∥2, Ek ≜ E ∥ek∥2. (160) The coefficients Ai, Bi, and Ci (for i = 1 , 2, 3) are given by 
+
+A1 ≜ 4αβ 3L2
+
+N , A2 ≜ αβ 3L2
+
+N , A3 ≜ α2β2Lσ 2
+
+2N , (161a) 
+
+B1 ≜ 52 β∆λ
+
+νθ ∆λ
+
++ 96 α2β2L2
+
+νθγ ∆λ
+
+, (161b) 
+
+B2 ≜ 10 α4βN L 2
+
+νθγ 2∆2
+
+> λ
+
+, B3 ≜ 10 α4βL 2σ2
+
+νθγ 2∆2
+
+> λ
+
++ 12 α2N σ 2
+
+ν , (161c) 
+
+C1 ≜ 2(1 − δ)
+
+ηδ 
+
+(
+
+24 β2γ2∆2 
+
+> λ
+
++ 24 α2β2L2 + 48 βγ ∆λ
+
+)
+
+, (161d) 
+
+C2 ≜ 12 α2N (1 − δ)
+
+ηδ , C3 ≜ 6(1 − δ)
+
+ηδ α2N σ 2, (161e) where ∆ λ ≜ 1 − λ, ∆ λ ≜ 1 − λ, ∆ θ ≜ 1 − ¯λθ = 1−λθ 
+
+> 2
+
+, and λθ = √1 − θγ ∆λ.38 D.1 Auxiliary results 
+
+The proof relies on the following auxiliary lemma. 
+
+Lemma 7 (PL auxiliary bounds) . Under Assumptions 2 and 5, we have 
+
+Gk ≤ 2L E ˜f ( ¯ϕke ) (162a) ¯Gk ≤ 4L E ˜f ( ¯ϕke ) + 16 β2L2
+
+N Dk + 4β2L2
+
+N Ek. (162b) 
+
+Proof. Using L-smoothness (64) at y = x − 1 
+
+> L
+
+∇f (x) and z = x,
+
+f ⋆ ≤ f
+
+(
+
+x − 1 
+
+> L
+
+∇f (x)
+
+)
+
+≤ f (x) − 12L ∥∇ f (x)∥2 ∀ x ∈ Rn.
+
+Rearranging and taking x = ¯ϕke and expectations gives (162a). Next, by the splitting ∇f (xk) = ∇f ( ¯ϕke ) + (∇f (xk) − ∇ f ( ¯ϕke )), Young’s inequality and L-smoothness, we get 
+
+∥∇ f (xk)∥2 ≤ 2∥∇ f ( ¯ϕke )∥2 + 2L2
+
+N ∥xk − ¯ϕke ∥2 (163) 
+
+> (162a)
+
+≤ 4L ˜f ( ¯ϕke ) + 2L2
+
+N ∥xk − ¯ϕke ∥2. (164) For the second, we use (72), i.e. , ∥xk − ¯ϕke ∥2 ≤ 8β2∥dk∥2 + 2 β2∥ek∥2 and taking expectations to arrive at (162b). The following proposition gives explicit sufficient conditions on the stepsizes that guarantee the PL convergence rate in Theorem 2. 
+
+Proposition 1 (Sufficient conditions for the PL rate) . All the requirements ensuring (159)— namely the descent bound αβL ≤ 12 , (41), (75), and (92a)–(92c)—hold whenever the stepsizes satisfy the following explicit bounds: 0 < γ ≤ 1, 0 < η ≤ 1, (β + θ)2γ∆λ
+
+4β ≤ 12 , ν = 1 − (β + θ)2γ∆λ
+
+4β ≥ 12 , (165a) 
+
+βγ ∆λ ≤ min 
+
+{
+
+1, (ηδ )2
+
+9216(1 − δ)
+
+}
+
+, (165b) 
+
+γθ ∆λ ≤ ηδ 
+
+96 √1 − δ , (165c) 
+
+β ≤ θηδ ∆λ
+
+8192 ∆ λ
+
+√1 − δ , (165d) 
+
+αβ ≤ min 
+
+{ θγ ∆λ
+
+128 L , ηδ 
+
+4μ
+
+}
+
+, (165e) 
+
+α4β3 ≤ μθ 2γ3∆3
+
+> λ
+
+327680 L5 , (165f) 
+
+α2β2 ≤ μ(ηδ )2
+
+8192 L3(1 − δ) , (165g) 
+
+α2β3 ≤ μθ 2γ(ηδ )2∆2
+
+> λ
+
+228 L3∆λ
+
+. (165h) 39 Moreover, these conditions simultaneously ensure that 16 β2L2B2
+
+N ≤ ∆θ
+
+8 , (166a) 
+
+C1 ≤ μη
+
+8 , B1C1 ≤ μη∆θ
+
+64 , (166b) 
+
+sC 1 ≤ A1
+
+2 , (166c) 
+
+r ˜B2 + s ˜C2 ≤ μαβ 
+
+2 , (166d) where 
+
+˜B1 ≜ B1 + 4β2L2B2
+
+N , ˜B2 ≜ 4LB 2, ˜C2 ≜ 2LC 2, r ≜ 4A1
+
+∆θ
+
+, s ≜ 4( A2 + r ˜B1)
+
+μη
+
+. (167) 
+
+Proof. Base-recursion conditions. Condition (165a) implies (41) and gives ν ≥ 12 . Since ν ≥ 12 and ∆θ ≥ θγ ∆λ/4 (by (112)), 
+
+√ν ∆θ
+
+20 ≥ θγ ∆λ
+
+80 √2 ≥ θγ ∆λ
+
+128 , (168) so the bound αβ ≤ θγ ∆λ/(128 L) in (165e) implies (75). By (165b), βγ ∆λ ≤ 1 and 
+
+βγ ∆λ ≤ (ηδ )2
+
+9216(1 − δ) ≤ ηδ 
+
+96 √1 − δ ≤ ηδ 
+
+8√3√1 − δ . (169) The middle step uses ηδ/ (96 √1 − δ) ≤ 1 on the active branch, else βγ ∆λ ≤ 1 ≤ ηδ/ (96 √1 − δ), and thus, (92a) holds. By (165c), γθ ∆λ ≤ ηδ/ (96 √1 − δ) ≤ ηδ/ (8 √6√1 − δ), which gives (92b). By (165e) and (165c), αβL ≤ θγ ∆λ/128 ≤ θγ ∆λ/128 ≤ ηδ/ (96 · 128 √1 − δ) ≤ ηδ/ (4 √6√1 − δ), which is (92c). 
+
+Proof of (166a) . Using ∆ θ ≥ θγ ∆λ/4, μ ≤ 2L, and ν ≥ 12 , we have 16 β2L2B2
+
+N
+
+> (161)
+
+= 160 α4β3L4
+
+νθγ 2∆2
+
+> λ
+
+≤ 320 α4β3L4
+
+θγ 2∆2
+
+> λ
+> (165f)
+
+≤ μθγ ∆λ
+
+1024 L ≤ ∆θ
+
+128 ≤ ∆θ
+
+8 (170) and 4β2L2B2
+
+N ≤ ∆θ
+
+512 . (171) 
+
+Proof of C1 ≤ μη/8. We bound the three terms in C1 = 2(1 −δ) 
+
+> ηδ
+
+(24 β2γ2∆2 
+
+> λ
+
++ 24 α2β2L2 + 48 βγ ∆λ). By (165b), βγ ∆λ ≤ (ηδ )2/(9216(1 − δ)) and βγ ∆λ ≤ 1, so ( βγ ∆λ)2 ≤ βγ ∆λ ≤ (ηδ )2/(9216(1 − δ)). By (165c) and (165e), αβL ≤ ηδ/ (96 √1 − δ), hence ( αβL )2 ≤ (ηδ )2/(9216(1 − δ)). Therefore 96(1 − δ)βγ ∆λ
+
+ηδ ≤ ηδ 
+
+96 , 48(1 − δ)β2γ2∆2
+
+> λ
+
+ηδ ≤ ηδ 
+
+192 , 48(1 − δ)α2β2L2
+
+ηδ ≤ ηδ 
+
+192 , (172) so C1 ≤ ηδ  
+
+> 96
+
++ ηδ  
+
+> 192
+
++ ηδ  
+
+> 192
+
+= ηδ  
+
+> 48
+
+≤ ηδ  
+
+> 32
+
+= μη 
+
+> 8
+
+.40 Proof of B1C1 ≤ μη∆θ/64 . Since (165b) gives βγ ∆λ ≤ 1, 24 β2γ2∆2 
+
+> λ
+
+≤ 24 βγ ∆λ, so C1 ≤ 
+
+> 2(1 −δ)
+> ηδ
+
+(72 βγ ∆λ + 24 α2β2L2). Hence, using B1 = 52 β∆λ 
+
+> νθ ∆λ
+
++ 96 α2β2L2 
+
+> νθγ ∆λ
+
+, we have B1C1 ≤ T1 + T2 + T3,where 
+
+T1 ≜ 7488(1 − δ)β2γ∆2
+
+> λ
+
+νθηδ ∆λ
+
+, T2 ≜ 16320(1 − δ)α2β3L2∆λ
+
+νθηδ ∆λ
+
+, T3 ≜ 4608(1 − δ)α4β4L4
+
+νθηδγ ∆λ
+
+.
+
+For T1, using ν ≥ 1/2 and (165d), 
+
+T1 ≤ 14976(1 − δ)β2γ∆2
+
+> λ
+
+θηδ ∆λ
+
+≤ 14976 θγηδ ∆λ
+
+8192 2(112) 
+
+≤ 59904 ηδ ∆θ
+
+8192 2 ≤ ηδ ∆θ
+
+1024 = μη∆θ
+
+256 .
+
+For T2, using ν ≥ 1/2, (165h), μ ≤ 2L, 1 − δ ≤ 1, and θγ ∆λ ≤ 4∆ θ,
+
+T2 ≤ 32640(1 − δ)α2β3L2∆λ
+
+θηδ ∆λ
+
+≤ 32640(1 − δ)μθγηδ ∆λ
+
+228 L ≤ 261120 ηδ ∆θ
+
+228 ≤ ηδ ∆θ
+
+1024 = μη∆θ
+
+256 .
+
+For T3 we factor α4β4 = ( α4β3)β, apply (165f), and use ν ≥ 1/2, 
+
+T3 ≤ 9216(1 − δ)α4β4L4
+
+θηδγ ∆λ
+
+> (165f)
+
+≤ 9216(1 − δ)μθγ 2∆2
+
+> λ
+
+β
+
+327680 ηδL = 9216(1 − δ)μ (θγ ∆λ)( βγ ∆λ)327680 ηδL .
+
+By (165b), βγ ∆λ ≤ βγ ∆λ ≤ (ηδ )2/(9216(1 − δ)), and θγ ∆λ ≤ 4∆ θ, hence 
+
+T3 ≤ 9216(1 − δ)μ
+
+327680 ηδL · 4∆ θ · (ηδ )2
+
+9216(1 − δ) = 4μηδ ∆θ
+
+327680 L
+
+> μ≤2L
+
+≤ ηδ ∆θ
+
+40960 ≤ μη∆θ
+
+256 .
+
+Combining the three bounds, B1C1 ≤ T1 + T2 + T3 ≤ 3 · μη ∆θ 
+
+> 256
+
+≤ μη ∆θ 
+
+> 64
+
+, which proves (166b). 
+
+Proof of (166c) . Since A2 = A1/4 and (171) gives 4 β2L2B2/N ≤ ∆θ/512, 
+
+A2 + r 4β2L2B2
+
+N ≤ A1
+
+4 + 4A1
+
+∆θ
+
+· ∆θ
+
+512 = 33 A1
+
+128 ≤ A1
+
+3 . (173) By the definitions in (167), sC 1 = 4C1
+
+> μη
+
+(A2 + r 4β2L2B2
+
+> N
+
+) + 4rB 1C1 
+
+> μη
+
+. Using C1 ≤ μη/8 and (173), the first part is at most A1 
+
+> 6
+
+; using r = 4A1 
+
+> ∆θ
+
+and B1C1 ≤ μη ∆θ 
+
+> 64
+
+, the second is 16 A1B1C1  
+
+> μη∆θ
+
+≤ A1 
+
+> 4
+
+. Hence 
+
+sC 1 ≤ A1 
+
+> 6
+
++ A1 
+
+> 4
+
+= 5A1 
+
+> 12
+
+< A1 
+
+> 2
+
+.
+
+Proof of (166d) . By (165f) and θγ ∆λ ≤ 4∆ θ, ν ≥ 12 ,
+
+r ˜B2
+
+αβ = 16 LB 2A1
+
+αβ ∆θ
+
+> (161)
+
+= 640 α4β3L5
+
+ν∆θθγ 2∆2
+
+> λ
+
+≤ 1280 α4β3L5
+
+∆θθγ 2∆2
+
+> λ
+
+≤ μ
+
+64 , (174) so r ˜B2 ≤ μαβ  
+
+> 64
+
+. For s ˜C2 with ˜C2 = 24 α2N L (1 −δ) 
+
+> ηδ
+
+,
+
+s ˜C2 = 4 ˜C2
+
+μη
+
+(A2 + r 4β2L2B2
+
+> N
+
+) + 4rB 1 ˜C2
+
+μη
+
+. (175) Using (173), μη = ηδ/ 4, and (165g), the first part is 4 ˜C2
+
+μη
+
+(A2 + r 4β2L2B2
+
+N
+
+) ≤ 4A1 ˜C2
+
+3μη
+
+≤ 512 α3β3L3(1 − δ)(ηδ )2 ≤ μαβ 
+
+16 . (176) 41 For the second part, with B1 = 52 β∆λ 
+
+> νθ ∆λ
+
++ 96 α2β2L2 
+
+> νθγ ∆λ
+
+,4rB 1 ˜C2
+
+μη
+
+= 319488 α3β4L3(1 − δ)∆ λ
+
+ν(ηδ )2θ∆λ∆θ
+
++ 589824 α5β5L5(1 − δ)
+
+ν(ηδ )2θγ ∆λ∆θ
+
+. (177) For the first term, using ν ≥ 1/2, α3β4 = ( α2β3)( αβ ), (165h), 1 − δ ≤ 1, and θγ ∆λ ≤ 4∆ θ,319488 α3β4L3(1 − δ)∆ λ
+
+ν(ηδ )2θ∆λ∆θ
+
+≤ 638976(1 − δ)μαβθγ ∆λ
+
+228 ∆θ
+
+≤ 2555904 μαβ 
+
+228 ≤ μαβ 
+
+100 . (178) For the second term: factor α5β5 = ( α4β3)( αβ )β, apply (165f), then θγ ∆λ ≤ 4∆ θ and (165b) 
+
+βγ ∆λ ≤ (ηδ )2/(9216(1 − δ)): 589824 α5β5L5(1 − δ)
+
+ν(ηδ )2θγ ∆λ∆θ
+
+≤ 1179648(1 − δ)μ (θγ ∆λ)( βγ ∆λ) ( αβ )327680( ηδ )2∆θ
+
+≤ 1179648(1 − δ)μ (4∆ θ) ( αβ )327680( ηδ )2∆θ
+
+· (ηδ )2
+
+9216(1 − δ) = μαβ 
+
+640 . (179) Plugging (178) and (179) into (177), 4rB 1 ˜C2
+
+μη
+
+≤ μαβ 
+
+100 + μαβ 
+
+640 ≤ μαβ 
+
+32 . (180) Therefore s ˜C2 ≤ μαβ  
+
+> 16
+
++ μαβ  
+
+> 32
+
+≤ μαβ  
+
+> 8
+
+, and 
+
+r ˜B2 + s ˜C2 ≤ μαβ 
+
+64 + μαβ 
+
+8 = 9μαβ 
+
+64 < μαβ 
+
+2 . (181) This proves (166d) and completes the proof. 
+
+D.2 Proof of Theorem 2 
+
+The PL inequality (17) gives Gk ≥ 2μ E ˜f ( ¯ϕke ). Using this in (159a) gives 
+
+E ˜f ( ¯ϕk+1  
+
+> e
+
+) ≤ (1 − μαβ ) E ˜f ( ¯ϕke ) + A1Dk + A2Ek + A3, (182) where we dropped the nonpositive term − αβ  
+
+> 4
+
+¯Gk. Substituting (162b) into (159b) and using (166a), 
+
+Dk+1 ≤ ˜B2 E ˜f ( ¯ϕke ) + 
+
+(
+
+1 − ∆θ
+
+> 2
+
+)
+
+Dk + ˜B1 Ek + B3. (183) Now, using (162a) in the compression-error recursion (159c), we get 
+
+Ek+1 ≤ ˜C2 E ˜f ( ¯ϕke ) + C1Dk + (1 − μη)Ek + C3. (184) Define 
+
+Hk ≜ E ˜f ( ¯ϕke ) + r Dk + s Ek, r = 4A1
+
+∆θ
+
+, s = 4( A2 + r ˜B1)
+
+μη
+
+. (185) Taking (182)+ r·(183)+ s·(184), we get 
+
+Hk+1 ≤ [(1 − μαβ ) + r ˜B2 + s ˜C2] E ˜f ( ¯ϕke )+ [ A1 + r
+
+(
+
+1 − ∆θ
+
+> 2
+
+)
+
++ sC 1]Dk + [ A2 + r ˜B1 + s(1 − μη)] Ek
+
++ A3 + rB 3 + sC 3. (186) We bound each in turn. 42 • Ek-coefficient. By the choice of s in (185) ( A2 + r ˜B1 = sμ η 
+
+> 4
+
+), 
+
+A2 + r ˜B1 + s(1 − μη) = s(1 − 3μη 
+
+> 4
+
+) ≤ s(1 − μη 
+
+> 2
+
+). (187) • Dk-coefficient. By (166c) ( sC 1 ≤ A1/2), and choice of r in (185) ( r∆θ = 4 A1), 
+
+A1 + r(1 − ∆θ 
+
+> 2
+
+) + sC 1 ≤ A1 + r − r∆θ
+
+2 + A1
+
+2 = r − A1
+
+2 = r(1 − ∆θ 
+
+> 8
+
+). (188) • E ˜f ( ¯ϕke )-coefficient. By (166d) ( r ˜B2 + s ˜C2 ≤ μαβ/ 2), (1 − μαβ ) + r ˜B2 + s ˜C2 ≤ 1 − μαβ 
+
+2 . (189) Collecting (187)–(189) and setting 
+
+ρ ≜ min 
+
+{ μαβ  
+
+> 2
+
+, ∆θ 
+
+> 8
+
+, μη
+
+> 2
+
+}
+
+, (190) each coefficient is bounded by (1 − ρ) times the corresponding weight in Hk. Hence, from (186), we get 
+
+Hk+1 ≤ (1 − ρ) Hk + A3 + rB 3 + sC 3. (191) Iterating (191) from 0 to K − 1, 
+
+HK ≤ (1 − ρ)K H0 + A3 + rB 3 + sC 3
+
+ρ . (192) The explicit stepsize conditions ensure that the first term in (190) is the active contraction factor. Indeed, (165e) gives 
+
+μαβ 
+
+2 ≤ ηδ 
+
+8 = μη
+
+2 . (193) Moreover, since μ ≤ L, the other bound in (165e) gives 
+
+μαβ 
+
+2 ≤ θγ ∆λ
+
+256 . (194) Using ∆ θ ≥ θγ ∆λ/4 from (112), we further obtain 
+
+μαβ 
+
+2 ≤ ∆θ
+
+64 ≤ ∆θ
+
+8 . (195) Therefore, ρ = μαβ  
+
+> 2
+
+. Using E ˜f ( ¯ϕKe ) ≤ H K and 1 − ρ ≤ e−ρ, (192) yields 
+
+E ˜f ( ¯ϕKe ) ≤ exp 
+
+(
+
+− μαβK 
+
+> 2
+
+)
+
+H0 + 2( A3 + rB 3 + sC 3)
+
+μαβ . (196) 
+
+Noise floor. Using the definitions of A3, B 3, C 3 in (161), the definitions of r, s, ˜B1, ˜B2, ˜C2 in (167), and the bounds established in Proposition 1, we first estimate 
+
+A3 + rB 3 + sC 3
+
+αβ = A3
+
+αβ + rB 3
+
+αβ + sC 3
+
+αβ . (197) 43 From (161), 
+
+A3
+
+αβ = αβLσ 2
+
+2N . (198) Using the definitions of r in (167) and B3 in (161), together with ∆ θ ≥ θγ ∆λ/4 from (112), we get 
+
+rB 3
+
+αβ = O
+
+( α2β2L2σ2
+
+νθγ ∆λ
+
+)
+
++ O
+
+( α4β4L4σ2
+
+N νθ 2βγ 3∆3
+
+> λ
+
+)
+
+. (199) Next, we bound sC 3/(αβ ). Using the definitions of s and r in (167), we have 
+
+sC 3 = 4C3
+
+μη
+
+(
+
+A2 + r 4β2L2B2
+
+N
+
+)
+
++ 4rB 1C3
+
+μη
+
+> (173)
+
+≤ 4A1C3
+
+3μη
+
++ 16 A1B1C3
+
+μη∆θ
+
+, (200) where we used r = 4 A1/∆θ. We first bound the first term in (200) as follows 4A1C3
+
+3μηαβ = 43μηαβ · 4αβ 3L2
+
+N · 6(1 − δ)
+
+ηδ α2N σ 2
+
+= 128(1 − δ)α2β2L2σ2
+
+(ηδ )2
+
+= O
+
+(
+
+α2β2L2σ2 1 − δη2δ2
+
+)
+
+. (201) We now bound the second term in (200) as follows 16 A1B1C3
+
+μη∆θαβ = 16 
+
+μη∆θαβ · 4αβ 3L2
+
+N · B1 · 6(1 − δ)
+
+ηδ α2N σ 2
+
+= 1536(1 − δ)α2β2L2σ2
+
+(ηδ )2∆θ
+
+B1. (202) Substituting the definition B1 = 52 β∆λ 
+
+> νθ ∆λ
+
++ 96 α2β2L2 
+
+> νθγ ∆λ
+
+, we get 16 A1B1C3
+
+μη∆θαβ = O
+
+( α2β3L2σ2(1 − δ)∆ λ
+
+νη 2δ2θ∆λ∆θ
+
+)
+
++ O
+
+( α4β4L4σ2(1 − δ)
+
+νη 2δ2θγ ∆λ∆θ
+
+)
+
+. (203) Using ∆ θ ≳ θγ ∆λ, the first term becomes 
+
+α2β3L2σ2(1 − δ)∆ λ
+
+νη 2δ2θ∆λ∆θ
+
+= O
+
+( α2β3L2σ2(1 − δ)∆ λ
+
+νη 2δ2θ2γ∆2
+
+> λ
+
+)
+
+= O
+
+( α2β2L2σ2
+
+νβγ ∆λ
+
+· (1 − δ)β2∆2
+
+> λ
+
+η2δ2θ2∆2
+
+> λ
+
+)
+
+. (204) 44 By the admissible scaling β ≲ θηδ ∆λ 
+
+> ∆λ
+> √1−δ
+
+, we have 
+
+α2β3L2σ2(1 − δ)∆ λ
+
+νη 2δ2θ∆λ∆θ
+
+= O
+
+( α2β2L2σ2
+
+νβγ ∆λ
+
+)
+
+. (205) For the second term in (203), again using ∆ θ ≳ θγ ∆λ, we have 
+
+α4β4L4σ2(1 − δ)
+
+νη 2δ2θγ ∆λ∆θ
+
+= O
+
+( α4β4L4σ2(1 − δ)
+
+νη 2δ2θ2γ2∆2
+
+> λ
+
+)
+
+= O
+
+( α2β2L2σ2
+
+νβγ ∆λ
+
+· (1 − δ)α2β3L2∆λ
+
+η2δ2θ2γ∆2
+
+> λ
+
+)
+
+. (206) Using the admissible condition α2β3 ≲ μθ 2γ(ηδ )2∆2
+
+> λ
+> L3∆λ
+
+, and μ ≤ 2L, the second factor is bounded by an absolute constant. Thus 
+
+α4β4L4σ2(1 − δ)
+
+νη 2δ2θγ ∆λ∆θ
+
+= O
+
+( α2β2L2σ2
+
+νβγ ∆λ
+
+)
+
+. (207) Combining (201), (205), and (207), we obtain the direct bound 
+
+sC 3
+
+αβ = O
+
+(
+
+α2β2L2σ2
+
+[ 1 − δη2δ2 + 1
+
+νβγ ∆λ
+
+]) 
+
+. (208) Combining (197), (198), (199), and (208) yields 
+
+A3 + rB 3 + sC 3
+
+αβ = O
+
+( αβLσ 2
+
+N
+
+)
+
++ O
+
+(
+
+α2β2L2σ2
+
+[ 1
+
+νθγ ∆λ
+
++ 1 − δη2δ2 + 1
+
+νβγ ∆λ
+
+]) 
+
++ O
+
+( α4β4L4σ2
+
+N νθ 2βγ 3∆3
+
+> λ
+
+)
+
+. (209) It follows from (196) that 
+
+E ˜f ( ¯ϕKe ) ≤ exp 
+
+(
+
+− μαβK 
+
+> 2
+
+)
+
+H0 + O
+
+( αβLσ 2
+
+μN 
+
+)
+
++ O
+
+( α2β2L2σ2
+
+μ
+
+[ 1
+
+νθγ ∆λ
+
++ 1 − δη2δ2 + 1
+
+νβγ ∆λ
+
+])
+
++ O
+
+( α4β4L4σ2
+
+μN νθ 2βγ 3∆3
+
+> λ
+
+)
+
+.
+
+(210) For the initialization term, using (141), we have 
+
+H0 = ˜f ( ¯ϕ0
+
+> e
+
+) + rD0 ≤ ˜f ( ¯ϕ0
+
+> e
+
+) + rv 2 
+
+> r
+
+α2∥QT∇f (x0)∥2, (211) 45 where ∥V−1 
+
+> r
+
+∥2 ≤ 12βγ (1 −λ)ν = 12βγ ∆λν ≜ v2 
+
+> r
+
+. Using the definition of r = 4A1 
+
+> ∆θ
+
+from (167), the definition of A1 in (161), and τ = αβ , we have 
+
+rD0 ≤ 4A1
+
+∆θ
+
+α2v2 
+
+> r
+
+∥QT∇f (x0)∥2
+
+= 16 αβ 3L2
+
+N ∆θ
+
+α2v2 
+
+> r
+
+∥QT∇f (x0)∥2
+
+= 16 L2v2
+
+> r
+
+∆θ
+
+τ 3ς20
+
+≤ 8L2
+
+νβγ ∆λ∆θ
+
+τ 3ς20
+
+≤ 32 L2
+
+νθβγ 2∆2
+
+> λ
+
+τ 3ς20 , (212) where ς20 ≜ 1 
+
+> N
+
+∥QT∇f (x0)∥2 = 1
+
+> N
+
+∥∥∇f (x0) − 1 ⊗ ∇ f (x0)∥∥2 = 1
+
+> N
+
+∑Ni=1 
+
+∥∥∇fi(x0) − ∇ f (x0)∥∥2. Using (165), we let ¯ τ denote the largest admissible value of τ = αβ :
+
+τ ≤ min 
+
+{ θγ ∆λ
+
+128 L , ηδ 
+
+4μ ,
+
+( μθ 2γ3∆3 
+
+> λ
+
+β
+
+327680 L5
+
+)1/4
+
+,
+
+( μ(ηδ )2
+
+8192 L3(1 − δ)
+
+)1/2
+
+,
+
+( μθ 2γ(ηδ )2∆2
+
+> λ
+
+228 L3∆λ β
+
+)1/2}
+
+≜ ¯τ . (213) Since τ ≤ ¯τ , (212) implies 
+
+rD0 ≤ ˜a2τ 2, ˜a2 ≜ 32¯ τ L 2ς20
+
+νθβγ 2∆2
+
+> λ
+
+. (214) Therefore, (210) becomes 
+
+E ˜f ( ¯ϕKe ) ≤ exp 
+
+(
+
+− μαβK 
+
+> 2
+
+) ( ˜f ( ¯ϕ0
+
+> e
+
+) + ˜a2τ 2)
+
++ O
+
+( αβLσ 2
+
+μN 
+
+)
+
++ O
+
+( α2β2L2σ2
+
+μ
+
+[ 1
+
+νθγ ∆λ
+
++ 1 − δη2δ2 + 1
+
+νβγ ∆λ
+
+])
+
++ O
+
+( α4β4L4σ2
+
+μN νθ 2βγ 3∆3
+
+> λ
+
+)
+
+.
+
+(215) 
+
+D.3 Proof of Corollary 2 
+
+We first find the order of the noise terms in (215) by selecting θ, η, ν = Θ(1) and 
+
+β ≍ δ∆λ
+
+∆λ
+
+√1 − δ , γ ≍ β
+
+∆λ
+
+≍ δ∆λ
+
+∆2
+
+> λ
+
+√1 − δ . (216) The constants hidden in ≍ are chosen sufficiently small so that (165a)–(165d) hold. First, by (216), 1
+
+νθγ ∆λ
+
+= O
+
+( ∆2
+
+> λ
+
+√1 − δδ∆2
+
+> λ
+
+)
+
+≤ O 
+
+( ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
+, (217) 46 where we used 0 < δ ≤ 1 and 1 − δ ≤ 1. Also, 1 − δη2δ2 = O
+
+( 1
+
+δ2
+
+)
+
+≤ O 
+
+( ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
+, (218) because ∆ λ ≤ ∆λ. Finally, again by (216), 1
+
+νβγ ∆λ
+
+= O
+
+( (1 − δ)∆ 2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
+≤ O 
+
+( ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
+. (219) Therefore, (217)–(219) imply 1
+
+νθγ ∆λ
+
++ 1 − δη2δ2 + 1
+
+νβγ ∆λ
+
+= O
+
+( ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
+. (220) Similarly, using (216), 1
+
+νθ 2βγ 3∆3
+
+> λ
+
+= O
+
+( (1 − δ)2∆7
+
+> λ
+
+δ4∆7
+
+> λ
+
+)
+
+≤ O 
+
+( ∆7
+
+> λ
+
+δ4∆7
+
+> λ
+
+)
+
+. (221) Substituting (220) and (221) into (215) gives the rate as a function of the single stepsize parameter 
+
+τ :
+
+E ˜f ( ¯ϕKe ) ≤ exp 
+
+(
+
+− μτ K 
+
+2
+
+) ( ˜f ( ¯ϕ0
+
+> e
+
+) + ˜a2τ 2)
+
++ O
+
+( τ Lσ 2
+
+μN 
+
+)
+
++ O
+
+( τ 2L2σ2
+
+μ
+
+∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+)
+
++ O
+
+( τ 4L4σ2
+
+μN 
+
+∆7
+
+> λ
+
+δ4∆7
+
+> λ
+
+)
+
+. (222) Under the heavy-compression regime 1 −δ = Θ(1), with θ, η, ν = Θ(1), define the condition number 
+
+κ ≜ Lμ ≥ 1. Substituting (216) into (213) gives ¯τ = Θ 
+
+( δL min 
+
+{( ∆λ
+
+∆λ
+
+)2
+
+, κ −1/4
+
+( ∆λ
+
+∆λ
+
+)7/4
+
+, κ −1/2, κ −1/2 ∆λ
+
+∆λ
+
+, κ 
+
+}) 
+
+. (223) Since ∆λ
+
+> ∆λ
+
+≤ 1, κ ≥ 1, the terms of orders κ and κ−1/2 cannot be active: the former is no smaller than (∆ λ/∆λ)2, whereas the latter is no smaller than κ−1/2∆λ/∆λ. Hence, ¯τ = Θ 
+
+( δL min 
+
+{( ∆λ
+
+∆λ
+
+)2
+
+, κ −1/4
+
+( ∆λ
+
+∆λ
+
+)7/4
+
+, κ −1/2 ∆λ
+
+∆λ
+
+}) 
+
+. (224) Consequently, 1
+
+μ¯τ = Θ 
+
+(
+
+max 
+
+{ κ∆2
+
+> λ
+
+δ∆2
+
+> λ
+
+, κ5/4∆7/4
+
+> λ
+
+δ∆7/4
+
+> λ
+
+, κ3/2∆λ
+
+δ∆λ
+
+}) 
+
+. (225) 47 For later use, (224) also implies ¯τ = O
+
+( δ∆2
+
+> λ
+
+L∆2
+
+> λ
+
+)
+
+, (226) 
+
+˜a2 = O
+
+( Lς 20 ∆3
+
+> λ
+
+δ2∆3
+
+> λ
+
+)
+
+, (227) where the second bound follows from (214) and (216). Therefore, 
+
+˜a2 ¯τ 2 = O
+
+( ς20 ∆λ
+
+L∆λ
+
+)
+
+. (228) We now apply Lemma 9 to (222). Comparing (222) with (246), we choose 
+
+a0 = ˜f ( ¯ϕ0
+
+> e
+
+), a1 = Lσ 2
+
+μN , a2 = L2σ2∆2
+
+> λ
+
+μδ 2∆2
+
+> λ
+
+,a3 = 0 , a4 = L4σ2∆7
+
+> λ
+
+μN δ 4∆7
+
+> λ
+
+, ˜a2 = O
+
+( ς20 ∆3
+
+> λ
+
+δ2∆3
+
+> λ
+
+)
+
+. (229) The logarithmic stepsize is chosen as 
+
+τ = min 
+
+{ 2
+
+μK ln TK , ¯τ
+
+}
+
+, TK ≜ max 
+
+{
+
+exp(1) , μ( ˜f ( ¯ϕ0
+
+> e
+
+) + ˜a2 ¯τ 2)Ka1
+
+}
+
+. (230) Therefore, by Lemma 9, 
+
+a1
+
+μK = Lσ 2
+
+μ2N K ,a2
+
+μ2K2 = L2σ2∆2
+
+> λ
+
+μ3δ2∆2
+
+> λ
+
+K2 ,a3
+
+μ3K3 = 0 ,a4
+
+μ4K4 = L4σ2∆7
+
+> λ
+
+μ5N δ 4∆7
+
+> λ
+
+K4 . (231) Combining (231) with (248) gives 
+
+E ˜f ( ¯ϕKe ) = ˜O
+
+( Lσ 2
+
+μ2N K 
+
+)
+
++ ˜O
+
+( L2σ2∆2
+
+> λ
+
+μ3δ2∆2
+
+> λ
+
+K2
+
+)
+
++ ˜O
+
+( L4σ2∆7
+
+> λ
+
+μ5N δ 4∆7
+
+> λ
+
+K4
+
+)
+
++
+
+( ˜f ( ¯ϕ0
+
+> e
+
+) + ˜a2 ¯τ 2)
+
+exp 
+
+(
+
+− μ¯τ K 
+
+2
+
+)
+
+. (232) It remains to derive the transient time. We compare each lower-order term in (232) with the leading term 
+
+˜O
+
+( Lσ 2
+
+μ2N K 
+
+)
+
+.
+
+48 First, the K−2 term is dominated by the leading K−1 term when 
+
+L2σ2∆2
+
+> λ
+
+μ3δ2∆2
+
+> λ
+
+K2 ≤ Lσ 2
+
+μ2N K ⇐⇒ K ≥ N L ∆2
+
+> λ
+
+μδ 2∆2
+
+> λ
+
+= N κ ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+. (233) Second, the K−4 term is dominated by the leading term when 
+
+L4σ2∆7
+
+> λ
+
+μ5N δ 4∆7
+
+> λ
+
+K4 ≤ Lσ 2
+
+μ2N K 
+
+⇐⇒ K3 ≥ L3∆7
+
+> λ
+
+μ3δ4∆7
+
+> λ
+
+⇐⇒ K ≥ κ∆7/3
+
+> λ
+
+δ4/3∆7/3
+
+> λ
+
+. (234) Finally, consider the exponentially decaying term in (232). By the logarithmic stepsize selection, this term is dominated by the leading stochastic term once 
+
+K ≥ ˜O
+
+( 1
+
+μ¯τ
+
+)
+
+.
+
+Using (225), this is equivalent to 
+
+K ≥ ˜O
+
+(
+
+max 
+
+{ κ∆2
+
+> λ
+
+δ∆2
+
+> λ
+
+, κ5/4∆7/4
+
+> λ
+
+δ∆7/4
+
+> λ
+
+, κ3/2∆λ
+
+δ∆λ
+
+}) 
+
+. (235) Here, the logarithmic factors may depend on ˜f ( ¯ϕ0
+
+> e
+
+) + ˜a2 ¯τ 2 through TK ; by (228), the initialization contribution satisfies 
+
+˜a2 ¯τ 2 = O
+
+( ς20 ∆λ
+
+L∆λ
+
+)
+
+.
+
+Taking the maximum of the thresholds in (233), (234), and (235), gives 
+
+K ≥ ˜O
+
+(
+
+max 
+
+{ N κ ∆2
+
+> λ
+
+δ2∆2
+
+> λ
+
+, κ∆7/3
+
+> λ
+
+δ4/3∆7/3
+
+> λ
+
+, κ∆2
+
+> λ
+
+δ∆2
+
+> λ
+
+, κ5/4∆7/4
+
+> λ
+
+δ∆7/4
+
+> λ
+
+, κ3/2∆λ
+
+δ∆λ
+
+}) 
+
+. (236) Keeping only the compression and graph parameters proves (21). 
+
+# E Stepsize selection 
+
+E.1 Nonconvex case 
+
+Lemma 8 (Sublinear rate stepsize selection) . Let K ≥ 1, let ¯ τ > 0, and let a0 > 0 and 
+
+a1, a 2, ˜a2, a 3 ≥ 0. Suppose that, for every τ ∈ (0 , ¯τ ], the nonnegative sequence {E k}K−1 
+
+> k=0
+
+satisfies 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+Ek ≤ a0
+
+τ K + a1τ + a2τ 2 + ˜a2
+
+K τ 2 + a3τ 4. (237) 49 Define ˜a2,K ≜ a2 + ˜a2
+
+K . (238) Adopting the convention that any candidate with zero denominator is set to + ∞, choose 
+
+τ = min 
+
+( a0
+
+a1K
+
+)1/2
+
+,
+
+( a0
+
+˜a2,K K
+
+)1/3
+
+,
+
+( a0
+
+a3K
+
+)1/5
+
+, ¯τ
+
+ . (239) Then, 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+Ek ≤ 2
+
+( a1a0
+
+K
+
+)1/2
+
++ 2 a1/32
+
+( a0
+
+K
+
+)2/3
+
++ 2˜ a1/32
+
+a2/30
+
+K
+
++ 2 a1/53
+
+( a0
+
+K
+
+)4/5
+
++ a0
+
+¯τ K . (240) 
+
+Proof. By the definition of ˜ a2,K , a2τ 2 + ˜a2 
+
+> K
+
+τ 2 = ˜ a2,K τ 2. Hence it is enough to bound ΨK (τ ) ≜ a0
+
+τ K + a1τ + ˜ a2,K τ 2 + a3τ 4.
+
+The convention on zero denominators simply removes the corresponding candidate from the mini-mum. We consider the possible active constraints in (239), derived using term balancing. 1. Case τ = ¯ τ . Then 
+
+a1 ¯τ ≤
+
+( a1a0
+
+K
+
+)1/2
+
+, ˜a2,K ¯τ 2 ≤ ˜a1/32,K 
+
+( a0
+
+K
+
+)2/3
+
+, a3 ¯τ 4 ≤ a1/53
+
+( a0
+
+K
+
+)4/5
+
+.
+
+Therefore, ΨK (¯ τ ) ≤ a0
+
+¯τ K +
+
+( a1a0
+
+K
+
+)1/2
+
++ ˜ a1/32,K 
+
+( a0
+
+K
+
+)2/3
+
++ a1/53
+
+( a0
+
+K
+
+)4/5
+
+. (241) 2. Case τ = ( a0/(a1K)) 1/2. Then 
+
+a0
+
+τ K = a1τ =
+
+( a1a0
+
+K
+
+)1/2
+
+, ˜a2,K τ 2 ≤ ˜a1/32,K 
+
+( a0
+
+K
+
+)2/3
+
+, a3τ 4 ≤ a1/53
+
+( a0
+
+K
+
+)4/5
+
+.
+
+Thus ΨK (τ ) ≤ 2
+
+( a1a0
+
+K
+
+)1/2
+
++ ˜ a1/32,K 
+
+( a0
+
+K
+
+)2/3
+
++ a1/53
+
+( a0
+
+K
+
+)4/5
+
+. (242) 3. Case τ = ( a0/(˜ a2,K K)) 1/3. Then 
+
+a0
+
+τ K = ˜ a2,K τ 2 = ˜ a1/32,K 
+
+( a0
+
+K
+
+)2/3
+
+, a1τ ≤
+
+( a1a0
+
+K
+
+)1/2
+
+, a3τ 4 ≤ a1/53
+
+( a0
+
+K
+
+)4/5
+
+.
+
+Therefore, ΨK (τ ) ≤ 2˜ a1/32,K 
+
+( a0
+
+K
+
+)2/3
+
++
+
+( a1a0
+
+K
+
+)1/2
+
++ a1/53
+
+( a0
+
+K
+
+)4/5
+
+. (243) 50 4. Case τ = ( a0/(a3K)) 1/5. Then 
+
+a0
+
+τ K = a3τ 4 = a1/53
+
+( a0
+
+K
+
+)4/5
+
+, a1τ ≤
+
+( a1a0
+
+K
+
+)1/2
+
+, ˜a2,K τ 2 ≤ ˜a1/32,K 
+
+( a0
+
+K
+
+)2/3
+
+.
+
+Thus ΨK (τ ) ≤ 2a1/53
+
+( a0
+
+K
+
+)4/5
+
++
+
+( a1a0
+
+K
+
+)1/2
+
++ ˜ a1/32,K 
+
+( a0
+
+K
+
+)2/3
+
+. (244) Combining (241)–(244), and using nonnegativity of all terms, gives ΨK (τ ) ≤ 2
+
+( a1a0
+
+K
+
+)1/2
+
++ 2˜ a1/32,K 
+
+( a0
+
+K
+
+)2/3
+
++ 2 a1/53
+
+( a0
+
+K
+
+)4/5
+
++ a0
+
+¯τ K . (245) Substituting this bound into (237) yields 1
+
+K
+
+> K−1
+
+∑
+
+> k=0
+
+Ek ≤ 2
+
+( a1a0
+
+K
+
+)1/2
+
++ 2˜ a1/32,K 
+
+( a0
+
+K
+
+)2/3
+
++ 2 a1/53
+
+( a0
+
+K
+
+)4/5
+
++ a0
+
+¯τ K .
+
+Finally, by (238) and the subadditivity of t 7 → t1/3 on R+,˜a1/32,K =
+
+(
+
+a2 + ˜a2
+
+K
+
+)1/3
+
+≤ a1/32 +
+
+( ˜a2
+
+K
+
+)1/3
+
+.
+
+Hence ˜a1/32,K 
+
+( a0
+
+K
+
+)2/3
+
+≤ a1/32
+
+( a0
+
+K
+
+)2/3
+
++ ˜ a1/32
+
+a2/30
+
+K .
+
+This proves (240). 
+
+E.2 PL case 
+
+Lemma 9 (Logarithmic stepsize for linear rate) . Let K ≥ 1, μ > 0, ¯τ > 0, and let 
+
+˜a2, a 2, a 3, a 4 ≥ 0, a0 > 0, and a1 > 0. Suppose that for every τ ∈ (0 , ¯τ ] a nonnegative quan-tity RK satisfies 
+
+RK ≤ exp 
+
+(
+
+− τ μK 
+
+2
+
+) (
+
+a0 + ˜a2τ 2)
+
++ a1τ + a2τ 2 + a3τ 3 + a4τ 4. (246) With the choice 
+
+τ = min 
+
+{ 2
+
+μK ln TK , ¯τ
+
+}
+
+, TK ≜ max 
+
+{
+
+exp(1) , μ(a0 + ˜a2 ¯τ 2)Ka1
+
+}
+
+, (247) we have 
+
+RK ≤ ˜O
+
+( a1
+
+μK + a2
+
+μ2K2 + a3
+
+μ3K3 + a4
+
+μ4K4
+
+)
+
++
+
+(
+
+a0 + ˜a2 ¯τ 2)
+
+exp 
+
+(
+
+− μ¯τ K 
+
+2
+
+)
+
+. (248) 
+
+Proof. We distinguish the two active cases in (247). 51 • Case 1: τ = 2 
+
+> μK
+
+ln TK ≤ ¯τ . By the definition of τ in (247), exp 
+
+(
+
+− τ μK 
+
+2
+
+)
+
+= 1
+
+TK
+
+≤ a1
+
+μ(a0 + ˜a2 ¯τ 2)K , (249) where the inequality uses the definition of TK in (247). Since τ ≤ ¯τ , the entire exponentially weighted term collapses to: 
+
+(a0 + ˜a2τ 2) exp 
+
+(
+
+− τ μK 
+
+2
+
+)
+
+= a0 + ˜a2τ 2
+
+TKτ ≤¯τ
+
+≤ a0 + ˜a2 ¯τ 2
+
+TK
+
+> (249)
+
+≤ a1
+
+μK . (250) The polynomial terms in (246) satisfy 
+
+a1τ = 2a1 ln TK
+
+μK , a2τ 2 = 4a2 ln 2 TK
+
+μ2K2 ,a3τ 3 = 8a3 ln 3 TK
+
+μ3K3 , a4τ 4 = 16 a4 ln 4 TK
+
+μ4K4 . (251) Substituting (250) and (251) into (246) gives 
+
+RK ≤ (1 + 2 ln TK )a1
+
+μK + 4a2 ln 2 TK
+
+μ2K2 + 8a3 ln 3 TK
+
+μ3K3 + 16 a4 ln 4 TK
+
+μ4K4 . (252) • Case 2: τ = ¯ τ ≤ 2 
+
+> μK
+
+ln TK . Here τ = ¯ τ , so the exponentially weighted term in (246) is exactly 
+
+(a0 + ˜a2 ¯τ 2) exp 
+
+(
+
+− μ¯τ K 
+
+2
+
+)
+
+. (253) Since ¯ τ ≤ 2 
+
+> μK
+
+ln TK by the active-case assumption, the polynomial terms satisfy 
+
+a1 ¯τ ≤ 2a1 ln TK
+
+μK , a2 ¯τ 2 ≤ 4a2 ln 2 TK
+
+μ2K2 ,a3 ¯τ 3 ≤ 8a3 ln 3 TK
+
+μ3K3 , a4 ¯τ 4 ≤ 16 a4 ln 4 TK
+
+μ4K4 . (254) Combining (253) and (254) gives 
+
+RK ≤ (a0 + ˜a2 ¯τ 2) exp 
+
+(
+
+− μ¯τ K 
+
+2
+
+)
+
++ 2a1 ln TK
+
+μK 
+
++ 4a2 ln 2 TK
+
+μ2K2 + 8a3 ln 3 TK
+
+μ3K3 + 16 a4 ln 4 TK
+
+μ4K4 . (255) Combining (252) and (255), and absorbing logarithmic factors in TK into ˜O(·), yields (248). 52 References 
+
+[1] A. Nedic and A. Ozdaglar, “Distributed subgradient methods for multi-agent optimization,” 
+
+IEEE Transactions on Automatic Control , vol. 54, no. 1, pp. 48–61, 2009. [2] A. H. Sayed, “Adaptation, learning, and optimization over neworks.,” Foundations and Trends in Machine Learning , vol. 7, no. 4-5, pp. 311–801, 2014. [3] S. Boyd, N. Parikh, E. Chu, B. Peleato, and J. Eckstein, “Distributed optimization and sta-tistical learning via alternating direction method of multipliers,” Foundations and Trends in Machine Learning , vol. 3, pp. 1–122, Jan. 2011. [4] J. Konevcny, H. B. McMahan, D. Ramage, and P. Richtarik, “Federated optimization: Dis-tributed machine learning for on-device intelligence,” Preprint on arXiv:1610.02527 , 2016. [5] H. B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. A. y Arcas, “Communication-efficient learning of deep networks from decentralized data,” in Proceedings of the International Conference on Artificial Intelligence and Statistics (AISTATS) , (Fort Lauderdale, FL, USA), pp. 1273–1282, PMLR, Apr. 2017. [6] X. Lian, C. Zhang, H. Zhang, C.-J. Hsieh, W. Zhang, and J. Liu, “Can decentralized algorithms outperform centralized algorithms? A case study for decentralized parallel stochastic gradient descent,” in Advances in Neural Information Processing Systems , (Long Beach, CA, USA), pp. 5330–5340, 2017. [7] X. Lian, W. Zhang, C. Zhang, and J. Liu, “Asynchronous decentralized parallel stochastic gra-dient descent,” in Proceedings of the International Conference on Machine Learning (ICML) ,(Stockholm, Sweden), pp. 1–10, 2018. [8] A. Jadbabaie, J. Lin, and A. S. Morse, “Coordination of groups of mobile autonomous agents using nearest neighbor rules,” IEEE Transactions on Automatic Control , vol. 48, no. 6, pp. 988– 1001, 2003. [9] R. Olfati-Saber, “Flocking for multi-agent dynamic systems: Algorithms and theory,” IEEE Transactions on Automatic Control , vol. 51, no. 3, pp. 401–420, 2006. [10] O. Shorinwa, T. Halsted, J. Yu, and M. Schwager, “Distributed optimization methods for multi-robot systems: Part 1—a tutorial [tutorial],” IEEE Robotics & Automation Magazine ,vol. 31, no. 3, pp. 121–138, 2024. [11] J. F. Mota, J. M. Xavier, P. M. Aguiar, and M. P¨ uschel, “Distributed ADMM for model predictive control and congestion control,” in Proceedings of the IEEE Conference on Decision and Control (CDC) , pp. 5110–5115, 2012. [12] I. D. Schizas, A. Ribeiro, and G. B. Giannakis, “Consensus in Ad Hoc WSNs with noisy links—Part I: Distributed estimation of deterministic signals,” IEEE Transactions on Signal Processing , vol. 56, no. 1, pp. 350–364, 2008. [13] J. A. Bazerque and G. B. Giannakis, “Distributed spectrum sensing for cognitive radio net-works by exploiting sparsity,” IEEE Transactions on Signal Processing , vol. 58, no. 3, pp. 1847– 1862, 2010. 53 [14] S. P. Karimireddy, S. Kale, M. Mohri, S. Reddi, S. Stich, and A. T. Suresh, “SCAFFOLD: Stochastic controlled averaging for federated learning,” in Proceedings of the International Conference on Machine Learning (ICML) , vol. 119, (Virtual/online), pp. 5132–5143, PMLR, July 2020. [15] A. Koloskova, N. Loizou, S. Boreiri, M. Jaggi, and S. Stich, “A unified theory of decentralized SGD with changing topology and local updates,” in Proceedings of the International Conference on Machine Learning (ICML) , vol. 119, (Virtual/online), pp. 5381–5393, PMLR, July 2020. [16] J. Wang and G. Joshi, “Cooperative SGD: A unified framework for the design and analysis of local-update SGD algorithms,” Journal of Machine Learning Research , vol. 22, 2021. [17] S. A. Alghunaim, “Local exact-diffusion for decentralized optimization and learning,” IEEE Transactions on Automatic Control , vol. 69, pp. 7371–7386, Nov. 2024. [18] D. Alistarh, T. Hoefler, M. Johansson, N. Konstantinov, S. Khirirat, and C. Renggli, “The convergence of sparsified gradient methods,” in Advances in Neural Information Processing Systems , vol. 31, 2018. [19] P. Richt´ arik, I. Sokolov, and I. Fatkhullin, “Ef21: A new, simpler, theoretically better, and practically faster error feedback,” in Advances in Neural Information Processing Systems ,vol. 34, pp. 4384–4396, 2021. [20] I. Fatkhullin, A. Tyurin, and P. Richt´ arik, “Momentum provably improves error feedback!,” in Advances in Neural Information Processing Systems , vol. 36, pp. 76444–76495, 2023. [21] Y. Gao, R. Islamov, and S. Stich, “EControl: Fast distributed optimization with compression and error control,” in International Conference on Learning Representations (ICLR) , vol. 2024, pp. 43217–43248, 2024. [22] H. Tang, S. Gan, C. Zhang, T. Zhang, and J. Liu, “Communication compression for decentral-ized training,” in Advances in Neural Information Processing Systems , pp. 7652–7662, 2018. [23] A. Koloskova, S. Stich, and M. Jaggi, “Decentralized stochastic optimization and gossip algo-rithms with compressed communication,” in Proceedings of the International Conference on Machine Learning (ICML) , pp. 3478–3487, 2019. [24] A. Koloskova*, T. Lin*, S. U. Stich, and M. Jaggi, “Decentralized deep learning with arbi-trary communication compression,” in International Conference on Learning Representations (ICLR) , 2020. [25] H. Tang, X. Lian, S. Qiu, L. Yuan, C. Zhang, T. Zhang, and J. Liu, “DeepSqueeze: Decen-tralization meets error-compensated compression,” arXiv preprint arXiv:1907.07346 , 2019. [26] M. Carpentiero, V. Matta, and A. H. Sayed, “Distributed adaptive learning under communi-cation constraints,” IEEE Open Journal of Signal Processing , vol. 5, pp. 321–358, 2023. [27] N. Singh, D. Data, J. George, and S. Diggavi, “Sparq-SGD: Event-triggered and compressed communication in decentralized optimization,” IEEE Transactions on Automatic Control ,2022. 54 [28] R. Nassif, S. Vlaski, M. Carpentiero, V. Matta, and A. H. Sayed, “Differential error feedback for communication-efficient decentralized learning,” IEEE Transactions on Signal Processing ,2025. [29] Y. Kajiyama, N. Hayashi, and S. Takai, “Linear convergence of consensus-based quantized optimization for smooth and strongly convex cost functions,” IEEE Transactions on Automatic Control , vol. 66, no. 3, pp. 1254–1261, 2020. [30] S. Magn´ usson, H. Shokri-Ghadikolaei, and N. Li, “On maintaining linear convergence of dis-tributed learning and optimization under limited communication,” IEEE Transactions on Sig-nal Processing , vol. 68, pp. 6101–6116, 2020. [31] D. Kovalev, A. Koloskova, M. Jaggi, P. Richtarik, and S. Stich, “A linearly convergent algo-rithm for decentralized optimization: Sending less bits for free!,” in Proceedings of the Interna-tional Conference on Artificial Intelligence and Statistics (AISTATS) , pp. 4087–4095, PMLR, 2021. [32] X. Liu, Y. Li, R. Wang, J. Tang, and M. Yan, “Linear convergent decentralized optimization with compression,” in International Conference on Learning Representations (ICLR) , 2021. [33] J. Zhang, K. You, and L. Xie, “Innovation compression for communication-efficient distributed optimization with linear convergence,” IEEE Transactions on Automatic Control , vol. 68, no. 11, pp. 6899–6906, 2023. [34] K. Huang and S. Pu, “CEDAS: A compressed decentralized stochastic gradient method with improved convergence,” IEEE Transactions on Automatic Control , vol. 70, no. 4, pp. 2242– 2257, 2025. [35] X. Yi, S. Zhang, T. Yang, T. Chai, and K. H. Johansson, “Communication compression for distributed nonconvex optimization,” IEEE Transactions on Automatic Control , vol. 68, no. 9, pp. 5477–5492, 2022. [36] A. Xie, X. Yi, X. Wang, M. Cao, and X. Ren, “A communication-efficient stochastic gradient descent algorithm for distributed nonconvex optimization,” in IEEE International Conference on Control & Automation (ICCA) , pp. 609–614, 2024. [37] Y. Liao, Z. Li, K. Huang, and S. Pu, “A compressed gradient tracking method for decentralized optimization with linear convergence,” IEEE Transactions on Automatic Control , vol. 67, pp. 5622–5629, Oct. 2022. [38] H. Zhao, B. Li, Z. Li, P. Richt´ arik, and Y. Chi, “BEER: Fast O(1 /T ) rate for decentralized nonconvex optimization with communication compression,” in Advances in Neural Information Processing Systems , vol. 35, pp. 31653–31667, 2022. [39] Y. Yan, J. Chen, P.-Y. Chen, X. Cui, S. Lu, and Y. Xu, “Compressed decentralized proximal stochastic gradient method for nonconvex composite problems with heterogeneous data,” in 
+
+Proceedings of the International Conference on Machine Learning (ICML) , pp. 39035–39061, PMLR, 2023. 55 [40] R. Islamov, Y. Gao, and S. Stich, “Towards faster decentralized stochastic optimization with communication compression,” in International Conference on Learning Representations (ICLR) , vol. 2025, pp. 23066–23099, 2025. [41] G. Faia, S. Vlaski, and R. Nassif, “Communication-efficient exact diffusion for decentralized learning,” in Proceedings of the IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pp. 1–5, 2025. [42] L. Xu, X. Yi, G. Wen, Y. Shi, K. H. Johansson, and T. Yang, “Compressed gradient tracking algorithms for distributed nonconvex optimization,” Automatica , vol. 177, p. 112286, 2025. [43] K. Yuan, B. Ying, X. Zhao, and A. H. Sayed, “Exact diffusion for distributed optimization and learning-Part I: Algorithm development,” IEEE Transactions on Signal Processing , vol. 67, pp. 708–723, Feb. 2019. [44] Z. Li, W. Shi, and M. Yan, “A decentralized proximal-gradient method with network inde-pendent step-sizes and separated convergence rates,” IEEE Transactions on Signal Processing ,vol. 67, pp. 4494–4506, Sept. 2019. [45] C. G. Lopes and A. H. Sayed, “Diffusion least-mean squares over adaptive networks: For-mulation and performance analysis,” IEEE Transactions on Signal Processing , vol. 56, no. 7, pp. 3122–3136, 2008. [46] J. Chen and A. H. Sayed, “Distributed pareto optimization via diffusion strategies,” IEEE Journal of Selected Topics in Signal Processing , vol. 7, pp. 205–220, Apr. 2013. [47] K. Yuan, Q. Ling, and W. Yin, “On the convergence of decentralized gradient descent,” SIAM Journal on Optimization , vol. 26, no. 3, pp. 1835–1854, 2016. [48] P. Di Lorenzo and G. Scutari, “NEXT: In-network nonconvex optimization,” IEEE Transac-tions on Signal and Information Processing over Networks , vol. 2, no. 2, pp. 120–136, 2016. [49] J. Xu, S. Zhu, Y. C. Soh, and L. Xie, “Augmented distributed gradient methods for multi-agent optimization under uncoordinated constant stepsizes,” in Proceedings of the IEEE Conference on Decision and Control (CDC) , (Osaka, Japan), pp. 2055–2060, 2015. [50] W. Shi, Q. Ling, G. Wu, and W. Yin, “EXTRA: An exact first-order algorithm for decentralized consensus optimization,” SIAM Journal on Optimization , vol. 25, no. 2, pp. 944–966, 2015. [51] S. A. Alghunaim, E. K. Ryu, K. Yuan, and A. H. Sayed, “Decentralized proximal gradient algorithms with linear convergence rates,” IEEE Transactions on Automatic Control , vol. 66, pp. 2787–2794, June 2021. [52] S. A. Alghunaim and K. Yuan, “A unified and refined convergence analysis for non-convex decentralized learning,” IEEE Transactions on Signal Processing , vol. 70, pp. 3264–3279, June 2022. [53] A. Nedi´ c, A. Olshevsky, and M. G. Rabbat, “Network topology and communication-computation tradeoffs in decentralized optimization,” Proceedings of the IEEE , vol. 106, no. 5, pp. 953–976, 2018. 56 [54] A. Beznosikov, S. Horv´ ath, P. Richt´ arik, and M. Safaryan, “On biased compression for dis-tributed learning,” Journal of Machine Learning Research , vol. 24, no. 276, pp. 1–50, 2023. [55] S. U. Stich, “Unified optimal analysis of the (stochastic) gradient method,” Preprint on arXiv:1907.04232 , 2019. [56] R. A. Horn and C. R. Johnson, Matrix Analysis . Cambridge University Press, 2012. 57
