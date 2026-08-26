@@ -41,17 +41,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-08-26</span>
+      <span class="dpr-home-dashboard-kicker">2026-08-27</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 3 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 2 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>3</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>0</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>1</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>1</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-08-26 04:10:59 北京时间<br>状态：成功<br>下次更新：约 2026-08-27 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-08-27 04:49:43 北京时间<br>状态：成功<br>下次更新：约 2026-08-28 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -62,9 +62,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日精读两篇高分论文，聚焦图神经网络可扩展训练与多智能体压缩扩散学习。</p>
-<p>最值得关注：双层域分解AdaGrad方法可高效训练大规模GNN；压缩精确扩散算法结合误差反馈优化多智能体协作。</p>
-<p>建议后续可深入对比这两种方法在分布式场景下的收敛速度与通信开销，并关注其实际部署中的稳定性。</p>
+<p>今日精读1篇、速读1篇，共扫描2篇联邦学习与分布式训练论文。</p>
+<p>最值得关注的是《FedCC》（8.0/10），聚焦蒸馏式联邦学习中的标签分布偏移问题。</p>
+<p>建议普通读者优先了解联邦学习在标签不均衡场景下的鲁棒性挑战。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -73,12 +73,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">3 篇</strong>
+    <strong class="dpr-home-dashboard-count">1 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Two-level domain-decomposition AdaGrad method for scalable training of graph neural networks">Two-level domain-decomposition AdaGrad method for scalable training of graph neural networks</span></li><li><span class="dpr-home-dashboard-paper-title" title="CED-EF: Compressed Exact Diffusion with Error Feedback for Multi-Agent Learning">CED-EF: Compressed Exact Diffusion with Error Feedback for Multi-Agent Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="SplitLite: Low-Rank Residual Compression for Split Learning">SplitLite: Low-Rank Residual Compression for Split Learning</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="FedCC: Towards Addressing Label Distribution Skews in Distillation-Based Federated Learning">FedCC: Towards Addressing Label Distribution Skews in Distillation-Based Federated Learning</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>3</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>1</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -86,12 +86,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">0 篇</strong>
+    <strong class="dpr-home-dashboard-count">1 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="ShardMeter: Sharded and Geo-Distributed Training Without the Guesswork">ShardMeter: Sharded and Geo-Distributed Training Without the Guesswork</span></li></ul>
   </div>
-
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>1</strong></span></div>
 </section>
 </div>
 

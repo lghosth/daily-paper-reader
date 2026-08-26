@@ -1,0 +1,39 @@
+{
+  "label": "2026-08-27",
+  "date": "2026-08-26",
+  "generated_at": "2026-08-26T20:49:46",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202608/26/2608.23031v1-fedcc-towards-addressing-label-distribution-skews-in-distillation-based-federated-learning",
+      "section": "deep",
+      "title_en": "FedCC: Towards Addressing Label Distribution Skews in Distillation-Based Federated Learning",
+      "authors": "Wenxuan Ye, Onur Ayan, Xueli An, Georg Carle",
+      "date": "2026-08-24",
+      "pdf": "https://arxiv.org/pdf/2608.23031v1",
+      "score": "8.0",
+      "evidence": "基于蒸馏的联邦学习，客户端仅共享预测结果，降低通信开销",
+      "tldr": "蒸馏式联邦学习中，标签分布倾斜使客户端模型偏向多数类，公共数据集缺乏真实标签，难以校准。本文提出 FedCC，允许客户端将模糊样本标为“unknown”，并采用校准伪标签平衡置信度。在每类仅含一类样本的极端场景，FedCC 达 67.3% 准确率，基线近乎随机。显著优于现有方法。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated Learning (FL) enables distributed clients to collaboratively train models without sharing raw data, making it promising for leveraging massive devices in communication networks. In distillation-based FL, each client applies its local model on an unlabeled public dataset, and shares only prediction results with the server. While heterogeneous local data introduces label distribution skew, thus biasing client models toward majority classes and leading to potentially inaccurate predictions. The lack of ground-truth labels in the public dataset hampers the server's ability to calibrate predictions, which ultimately degrades overall performance. To address this, we propose FedCC, a simple and effective algorithm for mitigating client misclassification. Instead of being forced to classify and risking error propagation, clients are allowed to tag ambiguous samples as 'unknown'. This additional class, together with calibrated pseudo-labels on the public data, balances confidence in majority classes against uncertainty in under-represented ones. Extensive experiments demonstrate that FedCC significantly outperforms existing methods, especially under severe label skew. In the extreme scenario where each client holds samples from only one of ten classes, FedCC achieves 67.3% accuracy, while baselines collapse to near-random results.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/26/2608.23840v1-shardmeter-sharded-and-geo-distributed-training-without-the-guesswork",
+      "section": "quick",
+      "title_en": "ShardMeter: Sharded and Geo-Distributed Training Without the Guesswork",
+      "authors": "Tim Beringer, Patrick Diem, Felix Wolf, Arya Mazaheri",
+      "date": "2026-08-24",
+      "pdf": "https://arxiv.org/pdf/2608.23840v1",
+      "score": "6.0",
+      "evidence": "面向分片与地理分布式训练的解析性能模型，可预测运行时间和吞吐量",
+      "tldr": "大规模模型训练常需分片、多集群和去中心化，但资源分配空间庞大，基准测试与手动调优不可行。ShardMeter是一种轻量级分析性能模型，输入模型特征与硬件拓扑，即可预测端到端运行时间、每GPU/每岛吞吐量、训练成本并定位瓶颈。它揭示了岛屿规模增大时的收益递减规律，量化了计算受限与通信受限阶段的转变，并评估超参数权衡。由此可快速遍历配置空间、选择近优部署方案，避免高成本试错。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Training large-scale AI models often outgrows a single data center, demanding sharded, multi-cluster, and decentralized training. However, the huge space of resource allocations makes exhaustive benchmarking and manual tuning impractical, while performance depends on tightly coupled factors like model size, GPU memory, batch size, bandwidth, and sharding strategy. We introduce ShardMeter, a lightweight analytical performance model that predicts the end-to-end runtime of transformer-based workloads across arbitrary sharded, distributed, and even decentralized training. Given a model's characteristics and a target hardware topology, ShardMeter estimates per-GPU and per-island throughput, training cost, total wall-clock time, and identifies performance bottlenecks. Our analysis reveals diminishing-return regimes as island size increases, quantifies transitions between compute- and communication-bound scaling, evaluates hyperparameter trade-offs, and models cost-throughput for large-scale decentralized training. ShardMeter exposes these insights to quickly explore the configuration space, choose near-optimal deployment plans, and avoid costly trial and error.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
