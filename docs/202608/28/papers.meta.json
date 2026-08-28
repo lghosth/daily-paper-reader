@@ -1,0 +1,69 @@
+{
+  "label": "2026-08-28",
+  "date": "2026-08-28",
+  "generated_at": "2026-08-28T03:17:56",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202608/28/2608.26453v1-distributed-training-using-an-intelligent-network",
+      "section": "deep",
+      "title_en": "Distributed Training using an Intelligent Network",
+      "authors": "Nihar Shah, Ben Blier",
+      "date": "2026-08-26",
+      "pdf": "https://arxiv.org/pdf/2608.26453v1",
+      "score": "9.0",
+      "evidence": "提出利用组播和FPGA聚合的智能网络，实现带宽高效的分布式训练",
+      "tldr": "广域网分布式训练受限于带宽、延迟和拓扑不均，参数交换低效。本文提出让网络主动参与训练：系统侧利用组播复制出站流量和FPGA聚合入站流量，算法侧设计优化框架生成围绕拓扑的旋转clique同步调度。在模拟DoubleZero九城市网络上的实验表明，最优调度随网络能力变化，能显著缩小与同地训练的性能差距。该工作为智能网络支持的跨数据中心训练提供了新路径。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Distributed training across a wide area network (WAN) is challenging, as continuous parameter exchange by islands of compute is constrained by limited bandwidth, high latency, and uneven topology. We propose making the network an active participant in training. On the systems side, such networks should leverage (i) multicast technology to replicate outbound traffic and (ii) in-line FPGAs to aggregate inbound traffic, to ease egress and ingress bottlenecks. These technologies are used for training across workers within a data center, but this paper extends them to the WAN. On the algorithms side, we develop an optimization framework that produces rich synchronization schedules (namely, rotating cliques of islands) around the underlying network topology and these technologies, to maximize information exchange. Finally, we illustrate this on a nine-city topology modeled on the DoubleZero network, a live programmable WAN equipped with both technologies, and show how the optimal schedules shift with the network's capabilities. Together, these can narrow the gap to the gold standard of colocated training.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/28/2608.25535v1-resilient-decentralized-wireless-federated-learning-via-gradient-tracking-with-adamw",
+      "section": "deep",
+      "title_en": "Resilient Decentralized Wireless Federated Learning via Gradient Tracking with AdamW",
+      "authors": "Nguyen Van Thieu, Ti Ti Nguyen, Ons Aouedi, Vu Nguyen Ha, Symeon Chatzinotas",
+      "date": "2026-08-26",
+      "pdf": "https://arxiv.org/pdf/2608.25535v1",
+      "score": "8.0",
+      "evidence": "利用梯度跟踪和量化实现通信高效、抗中断的去中心化联邦学习",
+      "tldr": "无线物联网边缘网络中的去中心化学习同时面临数据异构与通信链路不可靠的双重挑战，现有方法往往通信开销大且性能不稳。针对此问题，论文提出QEF-GT-AdamW算法，融合梯度跟踪、AdamW自适应优化、带误差反馈的双流有损量化，并在广播中断时采用本地回退策略，以提升通信效率与抗中断能力。在异构MNIST和CIFAR-10上的实验表明，该算法相比代表性基线显著提高了鲁棒性与收敛性能，在有限无线资源下取得更好的精度-通信权衡。此外，该工作为压缩及不可靠无线通信下的去中心化学习提供了收敛保证，对物联网边缘部署具有实用意义。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Wireless Internet-of-Things (IoT) edge networks require decentralized learning (DecL) methods that can operate reliably under both heterogeneous local data and communication-constrained wireless links. However, existing decentralized optimization schemes often incur substantial communication overhead and degraded performance when transmissions are constrained by strict airtime budgets, fading channels, and packet losses. This paper proposes QEF-GT-AdamW, a communication-efficient and outage-resilient algorithm for DecL over wireless communication (WCom) networks. The proposed method combines gradient tracking to mitigate the effect of non-IID data, AdamW-based adaptive optimization to improve training stability, and dual-stream biased quantization with error feedback to reduce communication payloads for both model and tracking exchanges. To address unreliable broadcast communication, the proposed framework further employs a local fallback strategy when scheduled packets are not successfully received. We explicitly model the effect of bandwidth, transmit power, airtime constraints, and fading channels on DecL performance, and establish convergence guarantees for the proposed algorithm under compressed and unreliable wireless communication. Experimental results on heterogeneous MNIST and CIFAR-10 settings show that QEF-GT-AdamW consistently improves robustness and convergence performance over representative DecL baselines while achieving favorable accuracy-communication trade-offs under limited wireless resources.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/28/2608.26493v1-a-unified-framework-for-fair-and-personalized-decentralized-learning-under-communication-constraints",
+      "section": "deep",
+      "title_en": "A Unified Framework for Fair and Personalized Decentralized Learning under Communication Constraints",
+      "authors": "Krishnendu S. Tharakan, Carlo Fischione",
+      "date": "2026-08-27",
+      "pdf": "https://arxiv.org/pdf/2608.26493v1",
+      "score": "8.0",
+      "evidence": "通信约束下结合压缩事件触发通信的去中心化学习统一框架",
+      "tldr": "去中心化学习无需中心协调，却面临通信约束、客户端统计异质性与公平性的多重挑战。本文提出统一框架DMFL-SQ，它结合基于图的个性化建模、不可知混合公平目标，并通过稀疏化、量化与事件触发机制大幅压缩通信开销。在一般非凸目标下，算法达到期望平方Moreau包络平稳性O(T^{-1/2})的收敛速率，同时推导出PAC-Bayes泛化保证。在CIFAR-10与MUSMET EEG数据集上的实验验证了其高效性：显著减少通信量，保持甚至提升模型性能与客户端公平性，证明了三者可协同实现。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Decentralized learning systems aim to collaboratively train models across multiple clients without relying on a central coordinator. While decentralization improves scalability, privacy, and robustness, it also exacerbates three fundamental challenges: statistical heterogeneity across clients, fairness in client-level performance, and stringent communication constraints. This raises a natural question: \\emph{how fair can decentralized learning be under limited communication?} We address this question by presenting a unified framework for decentralized learning under communication constraints, bringing together graph-based personalization, agnostic fairness, and compressed event-triggered communication. Specifically, we propose a new algorithm DMFL-SQ, a decentralized multi-task learning algorithm that couples personalized model training over a communication graph with an agnostic mixture fairness objective, while reducing communication through sparsification, quantization, and event-triggered synchronization. We establish convergence guarantees for general non-convex objectives and show that DMFL-SQ achieves an $\\mathcal{O}(T^{-1/2})$ rate in expected squared Moreau-envelope stationarity despite sparse, quantized, and event-triggered communication. We further derive PAC-Bayes generalization guarantees for the fairness-aware mixture objective. Experiments on CIFAR-10 and the real heterogeneous MUSMET EEG dataset demonstrate that DMFL-SQ substantially reduces communication while maintaining predictive performance and improving fairness across clients. Together, our theoretical and empirical results show that personalization, fairness, and communication efficiency can be jointly achieved in decentralized learning while preserving the dominant convergence rate.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/28/2608.23840v1-shardmeter-sharded-and-geo-distributed-training-without-the-guesswork",
+      "section": "quick",
+      "title_en": "ShardMeter: Sharded and Geo-Distributed Training Without the Guesswork",
+      "authors": "Tim Beringer, Patrick Diem, Felix Wolf, Arya Mazaheri",
+      "date": "2026-08-24",
+      "pdf": "https://arxiv.org/pdf/2608.23840v1",
+      "score": "7.0",
+      "evidence": "针对分片与地理分布式训练的分析性能模型，可预测运行时间并识别通信瓶颈",
+      "tldr": "大模型训练常超出单数据中心能力，需分片、多集群与去中心化训练，但资源分配空间巨大，人工调优不切实际。ShardMeter提出轻量级解析性能模型，可预测Transformer工作负载在任意分片、分布式甚至去中心化场景下的端到端运行时间。该模型能估算每GPU及每岛吞吐、训练成本与总耗时，并识别性能瓶颈，揭示收益递减区域与计算/通信受限转换。它帮助快速探索配置空间、选择近优部署方案，避免昂贵试错。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Training large-scale AI models often outgrows a single data center, demanding sharded, multi-cluster, and decentralized training. However, the huge space of resource allocations makes exhaustive benchmarking and manual tuning impractical, while performance depends on tightly coupled factors like model size, GPU memory, batch size, bandwidth, and sharding strategy. We introduce ShardMeter, a lightweight analytical performance model that predicts the end-to-end runtime of transformer-based workloads across arbitrary sharded, distributed, and even decentralized training. Given a model's characteristics and a target hardware topology, ShardMeter estimates per-GPU and per-island throughput, training cost, total wall-clock time, and identifies performance bottlenecks. Our analysis reveals diminishing-return regimes as island size increases, quantifies transitions between compute- and communication-bound scaling, evaluates hyperparameter trade-offs, and models cost-throughput for large-scale decentralized training. ShardMeter exposes these insights to quickly explore the configuration space, choose near-optimal deployment plans, and avoid costly trial and error.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

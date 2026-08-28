@@ -1,0 +1,73 @@
+{
+  "date": "20260828",
+  "date_label": "2026-08-28",
+  "generated_at": "2026-08-28 11:17:53 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2608.26453v1",
+      "route": "202608/28/2608.26453v1-distributed-training-using-an-intelligent-network",
+      "title": "Distributed Training using an Intelligent Network",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "提出利用组播和FPGA聚合的智能网络，实现带宽高效的分布式训练",
+      "first_seen_at": "2026-08-28 11:17:53 北京时间",
+      "updated_at": "2026-08-28 11:17:53 北京时间"
+    },
+    {
+      "paper_id": "2608.25535v1",
+      "route": "202608/28/2608.25535v1-resilient-decentralized-wireless-federated-learning-via-gradient-tracking-with-adamw",
+      "title": "Resilient Decentralized Wireless Federated Learning via Gradient Tracking with AdamW",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "利用梯度跟踪和量化实现通信高效、抗中断的去中心化联邦学习",
+      "first_seen_at": "2026-08-28 11:17:53 北京时间",
+      "updated_at": "2026-08-28 11:17:53 北京时间"
+    },
+    {
+      "paper_id": "2608.26493v1",
+      "route": "202608/28/2608.26493v1-a-unified-framework-for-fair-and-personalized-decentralized-learning-under-communication-constraints",
+      "title": "A Unified Framework for Fair and Personalized Decentralized Learning under Communication Constraints",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通信约束下结合压缩事件触发通信的去中心化学习统一框架",
+      "first_seen_at": "2026-08-28 11:17:53 北京时间",
+      "updated_at": "2026-08-28 11:17:53 北京时间"
+    },
+    {
+      "paper_id": "2608.23840v1",
+      "route": "202608/28/2608.23840v1-shardmeter-sharded-and-geo-distributed-training-without-the-guesswork",
+      "title": "ShardMeter: Sharded and Geo-Distributed Training Without the Guesswork",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "针对分片与地理分布式训练的分析性能模型，可预测运行时间并识别通信瓶颈",
+      "first_seen_at": "2026-08-28 11:17:53 北京时间",
+      "updated_at": "2026-08-28 11:17:53 北京时间"
+    }
+  ]
+}
