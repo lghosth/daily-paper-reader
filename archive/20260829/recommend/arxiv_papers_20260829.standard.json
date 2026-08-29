@@ -1,45 +1,85 @@
 {
   "mode": "standard",
-  "generated_at": "2026-08-29T03:01:25.777741+00:00",
+  "generated_at": "2026-08-29T21:10:15.884639+00:00",
   "stats": {
     "mode": "standard",
     "tag_count": 1,
     "deep_divecandidates": 0,
     "deep_cap": 6,
     "deep_selected": 0,
-    "quick_candidates": 1,
+    "quick_candidates": 2,
     "quick_skim_target": 11,
-    "quick_selected": 1
+    "quick_selected": 2
   },
   "deep_dive": [],
   "quick_skim": [
     {
-      "id": "2608.26220v1",
+      "id": "2608.25903v1",
       "source": "arxiv",
-      "title": "MeshReduce-U: Compiler-Guided Communication Reduction for Irregular Neural Reductions on Mesh NoCs",
-      "abstract": "Many irregular neural workloads induce skewed many-to-one reductions with repeated neighborhoods and nonlocal communication. Conventional NoC mappers optimize placement and routes for a fixed communication graph, even though associative reductions expose legal opportunities to eliminate traffic before routing. We present MeshReduce-U, a compiler-guided communication-reduction and routing framework for mesh-NoC-based spatial accelerators.   MeshReduce-U coalesces colocated sources, forms local aggregation islands, blocks channels with compatible fan-in structure, selects capacity-feasible sinks, and routes the remaining fixed-width carriers using fused usage-aware costs. A deterministic route-replay model reports schedule-derived communication latency, total link usage (TLU), and fused link usage (FusedTLU) separately.   Across a 20-workload lowerable neural-network zoo, MeshReduce-U reduces mean latency, TLU, and FusedTLU by 40.3%, 56.0%, and 48.7%, respectively, relative to an ABC-style source-aggregation baseline, improving all three metrics on every workload. Across 40 synthetic irregular reductions, it reduces mean latency and TLU by 12.3% and 19.7%. A new 30-instance pass-by-pass study further shows that the structural rewrites reduce the global carrier count by 60.9% and replay latency by 63.0%. These results show that rewriting reducible neural communication before routing can be more effective than searching harder over an unreduced traffic graph.",
+      "title": "MetaSieve: Faster Relational Deep Learning through SQL-Based Metapath Selection",
+      "abstract": "Relational Deep Learning (RDL) is an effective approach to machine learning over multi-table relational databases. In RDL, a database is modeled as a graph in which each row is a node and each foreign-key relation is an edge, and a graph neural network (GNN) is trained on this graph. Training a GNN requires sampling a subgraph around every seed node in the training set, and the cost of training is largely determined by the size of these subgraphs. This paper aims to reduce subgraph size by leveraging the join and aggregation capabilities of relational database systems. We observe that sampled subgraphs are obtained by following metapaths composed of foreign-key links, and that many of these metapaths can be pruned without loss of accuracy. We present MetaSieve, a metapath selection layer that determines which metapaths to retain and which to prune. For each candidate metapath extension, MetaSieve computes statistics via SQL join and aggregation queries and evaluates the extension based on a novel scoring function that prefers lightweight but informative candidates. Metapaths whose scores fall below a threshold are deemed uninformative and pruned. Metapath selection in MetaSieve is lightweight since it relies only on database statistics and task labels, and it is independent of GNN parameters, so it integrates with diverse GNN architectures for classification and regression. Our evaluation on the RelBench benchmark with multiple GNN backbones shows that MetaSieve consistently reduces per-epoch training time by large margins while maintaining and often improving accuracy.",
       "authors": [
-        "Amirreza Khorasanian"
+        "Fahim Shahriar Khan",
+        "Ashraf Aboulnaga"
       ],
-      "primary_category": "cs.AR",
+      "primary_category": "cs.DB",
       "categories": [
-        "cs.AR",
-        "cs.DC"
+        "cs.DB",
+        "cs.LG"
       ],
-      "published": "2026-08-26T12:39:14+00:00",
-      "link": "https://arxiv.org/pdf/2608.26220v1",
+      "published": "2026-08-26T15:22:52+00:00",
+      "link": "https://arxiv.org/pdf/2608.25903v1",
       "tags": [
         "keyword:DGNN-NAS",
         "query:DGNN-NAS"
       ],
       "llm_score": 6.0,
-      "llm_evidence_en": "reduces communication for irregular neural reductions with many-to-one patterns, applicable to GNN message passing",
-      "llm_evidence_cn": "针对不规则神经归约中的通信量缩减问题，其多对一模式与GNN消息传递相关",
-      "llm_evidence": "针对不规则神经归约中的通信量缩减问题，其多对一模式与GNN消息传递相关",
-      "canonical_evidence": "针对不规则神经归约中的通信量缩减问题，其多对一模式与GNN消息传递相关",
-      "llm_tldr_en": "Presents a compiler-guided communication reduction and routing framework for irregular neural workloads on mesh NoCs; directly targets communication efficiency in graph-like reductions.",
-      "llm_tldr_cn": "该论文针对网格NoC上不规则神经工作负载的通信冗余问题，提出编译器引导的通信缩减与路由框架MeshReduce-U，通过合并共置源、形成局部聚合岛、阻塞兼容扇入结构等机制减少数据传输。其处理的重复邻域和非局部通信与GNN消息传递高度相似，可为通信高效的图学习系统提供方法借鉴，但应用场景为硬件加速器而非分布式GNN训练。",
-      "llm_tldr": "该论文针对网格NoC上不规则神经工作负载的通信冗余问题，提出编译器引导的通信缩减与路由框架MeshReduce-U，通过合并共置源、形成局部聚合岛、阻塞兼容扇入结构等机制减少数据传输。其处理的重复邻域和非局部通信与GNN消息传递高度相似，可为通信高效的图学习系统提供方法借鉴，但应用场景为硬件加速器而非分布式GNN训练。",
+      "llm_evidence_en": "Prunes metapaths with SQL to shrink GNN training subgraphs, reducing training and communication cost.",
+      "llm_evidence_cn": "利用SQL的连接与聚合能力剪枝元路径，缩小GNN训练子图，降低训练与通信开销。",
+      "llm_evidence": "利用SQL的连接与聚合能力剪枝元路径，缩小GNN训练子图，降低训练与通信开销。",
+      "canonical_evidence": "利用SQL的连接与聚合能力剪枝元路径，缩小GNN训练子图，降低训练与通信开销。",
+      "llm_tldr_en": "MetaSieve speeds up relational deep learning by using SQL to prune metapaths and shrink sampled subgraphs, cutting GNN training cost without hurting accuracy.",
+      "llm_tldr_cn": "关系型深度学习中，GNN训练需要对每个种子节点采样子图，子图大小决定训练开销。本文提出MetaSieve，利用关系数据库的连接和聚合能力识别并剪枝大量无用的元路径，从而显著缩小采样子图而不损失精度。在多个数据集上的实验表明，该方法有效降低了GNN的训练代价，为关系型数据上的图模型训练效率提供了新思路。",
+      "llm_tldr": "关系型深度学习中，GNN训练需要对每个种子节点采样子图，子图大小决定训练开销。本文提出MetaSieve，利用关系数据库的连接和聚合能力识别并剪枝大量无用的元路径，从而显著缩小采样子图而不损失精度。在多个数据集上的实验表明，该方法有效降低了GNN的训练代价，为关系型数据上的图模型训练效率提供了新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "find papers on communication efficient graph learning systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.27413v1",
+      "source": "arxiv",
+      "title": "Scaling Graph Neural Networks for Friend Recommendation: Multi-Hash User Embeddings and Temporal Neighbor Sampling",
+      "abstract": "Friend recommendation is inherently graph-structured: the relevance of a potential connection depends on multi-hop social context rather than user attributes alone. However, deploying message-passing GNNs on a production-scale social graph with hundreds of millions of users and tens of billions of edges requires addressing numerous modeling and systems challenges. We present a scalable end-to-end GNN ranking system for production social graphs, focusing on two design choices that are critical in this setting: multi-hash ID embeddings and temporal neighbor sampling. Multi-hash embeddings are common for high-cardinality features, but industrial GNN systems typically either ignore trainable IDs or accept full embedding tables, exceeding 200 GB for our graph. We integrate multi-hash as the primary node representation, reducing the ID-embedding table size by more than 98 percent while preserving ranking quality. Temporal neighbor sampling is well understood in principle, but existing implementations scan full adjacency lists, which is a non-starter for users with tens of thousands of friends. We implement timestamp-sorted CSR storage with binary search, reducing the per-node temporal sampling cost from $O(deg(v) + k)$ to $O(\\log(deg(v)) + k)$. Beyond these components, we show that this combination scales and yields measurable production impact. On a graph with 194M users and 28B edges, offline ablations isolate each design choice's contribution. In an online A/B test, our system increases friend additions from recommendations by 16 percent and unique friend adders by 11.5 percent over a strong production baseline. We release our framework for distributed training and inference on large temporal graphs.",
+      "authors": [
+        "Maksim Utushkin",
+        "Andrei Ovsiannikov",
+        "Alexander D'yakonov"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.LG",
+        "cs.SI"
+      ],
+      "published": "2026-08-27T17:41:33+00:00",
+      "link": "https://arxiv.org/pdf/2608.27413v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Temporal neighbor sampling for production-scale GNN training, reducing graph traversal and communication.",
+      "llm_evidence_cn": "面向生产级GNN训练的时间邻居采样，减少图遍历与通信开销。",
+      "llm_evidence": "面向生产级GNN训练的时间邻居采样，减少图遍历与通信开销。",
+      "canonical_evidence": "面向生产级GNN训练的时间邻居采样，减少图遍历与通信开销。",
+      "llm_tldr_en": "A production GNN ranking system for friend recommendation uses multi-hash user embeddings and temporal neighbor sampling to scale to hundreds of millions of users and tens of billions of edges.",
+      "llm_tldr_cn": "针对社交网络中亿级用户与百亿边的生产级规模，文中提出一个端到端图神经网络排序系统用于好友推荐。系统引入多哈希用户嵌入以处理高基数ID特征，并采用时间邻居采样以限制多跳消息传递范围，从而缓解部署中的计算与存储压力。在真实大规模图上的实验表明，这些设计在保证推荐效果的同时实现了高效训练和推理。该工作为工业场景下的大规模GNN扩展提供了实用方案。",
+      "llm_tldr": "针对社交网络中亿级用户与百亿边的生产级规模，文中提出一个端到端图神经网络排序系统用于好友推荐。系统引入多哈希用户嵌入以处理高基数ID特征，并采用时间邻居采样以限制多跳消息传递范围，从而缓解部署中的计算与存储压力。在真实大规模图上的实验表明，这些设计在保证推荐效果的同时实现了高效训练和推理。该工作为工业场景下的大规模GNN扩展提供了实用方案。",
       "llm_tags": [
         "query:dgnn-nas"
       ],
