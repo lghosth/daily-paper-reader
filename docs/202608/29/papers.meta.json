@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-29",
+  "date": "2026-08-29",
+  "generated_at": "2026-08-29T03:02:34",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/29/2608.26220v1-meshreduce-u-compiler-guided-communication-reduction-for-irregular-neural-reductions-on-mesh-nocs",
+      "section": "quick",
+      "title_en": "MeshReduce-U: Compiler-Guided Communication Reduction for Irregular Neural Reductions on Mesh NoCs",
+      "authors": "Amirreza Khorasanian",
+      "date": "2026-08-26",
+      "pdf": "https://arxiv.org/pdf/2608.26220v1",
+      "score": "6.0",
+      "evidence": "针对不规则神经归约中的通信量缩减问题，其多对一模式与GNN消息传递相关",
+      "tldr": "网状NoC上的不规则神经归约具有重复、非局部多对一通信，传统映射器在固定流量图上优化路由，忽略了归约可结合的流量消除机会。MeshReduce-U提出编译器引导的通信缩减与路由框架，通过合并共置源、构建局部聚合岛、阻塞扇入兼容通道等方式先改写图再路由。在20个神经网络工作负载上平均降低延迟40.3%、总链路使用56.0%，在40个合成归约上也有明显提升。说明在路由前重写可归约通信比在未缩减图上强化搜索更有效。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Many irregular neural workloads induce skewed many-to-one reductions with repeated neighborhoods and nonlocal communication. Conventional NoC mappers optimize placement and routes for a fixed communication graph, even though associative reductions expose legal opportunities to eliminate traffic before routing. We present MeshReduce-U, a compiler-guided communication-reduction and routing framework for mesh-NoC-based spatial accelerators.   MeshReduce-U coalesces colocated sources, forms local aggregation islands, blocks channels with compatible fan-in structure, selects capacity-feasible sinks, and routes the remaining fixed-width carriers using fused usage-aware costs. A deterministic route-replay model reports schedule-derived communication latency, total link usage (TLU), and fused link usage (FusedTLU) separately.   Across a 20-workload lowerable neural-network zoo, MeshReduce-U reduces mean latency, TLU, and FusedTLU by 40.3%, 56.0%, and 48.7%, respectively, relative to an ABC-style source-aggregation baseline, improving all three metrics on every workload. Across 40 synthetic irregular reductions, it reduces mean latency and TLU by 12.3% and 19.7%. A new 30-instance pass-by-pass study further shows that the structural rewrites reduce the global carrier count by 60.9% and replay latency by 63.0%. These results show that rewriting reducible neural communication before routing can be more effective than searching harder over an unreduced traffic graph.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

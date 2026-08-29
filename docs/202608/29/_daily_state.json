@@ -1,0 +1,25 @@
+{
+  "date": "20260829",
+  "date_label": "2026-08-29",
+  "generated_at": "2026-08-29 11:02:31 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2608.26220v1",
+      "route": "202608/29/2608.26220v1-meshreduce-u-compiler-guided-communication-reduction-for-irregular-neural-reductions-on-mesh-nocs",
+      "title": "MeshReduce-U: Compiler-Guided Communication Reduction for Irregular Neural Reductions on Mesh NoCs",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "针对不规则神经归约中的通信量缩减问题，其多对一模式与GNN消息传递相关",
+      "first_seen_at": "2026-08-29 11:02:31 北京时间",
+      "updated_at": "2026-08-29 11:02:31 北京时间"
+    }
+  ]
+}
