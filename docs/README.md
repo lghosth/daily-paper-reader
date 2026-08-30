@@ -41,17 +41,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-08-30</span>
+      <span class="dpr-home-dashboard-kicker">2026-08-31</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 3 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 0 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
-    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>2 次</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>3</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>0</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-08-30 05:12:17 北京时间<br>状态：成功<br>下次更新：约 2026-08-31 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-08-31 06:00:10 北京时间<br>状态：成功<br>下次更新：约 2026-09-01 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -62,7 +62,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日速读3篇论文，聚焦图神经网络（GNN）与编译器优化。最值得关注的是GNN在推荐系统中的应用，包括SQL元路径选择与多哈希嵌入/时序采样两类优化。建议普通读者从推荐场景的GNN扩展方案入手，快速了解性能提升技巧。</p>
+<p>今日无新推荐，系统未产出可展示论文。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -84,12 +84,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">3 篇</strong>
+    <strong class="dpr-home-dashboard-count">0 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="MetaSieve: Faster Relational Deep Learning through SQL-Based Metapath Selection">MetaSieve: Faster Relational Deep Learning through SQL-Based Metapath Selection</span></li><li><span class="dpr-home-dashboard-paper-title" title="MeshReduce-U: Compiler-Guided Communication Reduction for Irregular Neural Reductions on Mesh NoCs">MeshReduce-U: Compiler-Guided Communication Reduction for Irregular Neural Reductions on Mesh NoCs</span></li><li><span class="dpr-home-dashboard-paper-title" title="Scaling Graph Neural Networks for Friend Recommendation: Multi-Hash User Embeddings and Temporal Neighbor Sampling">Scaling Graph Neural Networks for Friend Recommendation: Multi-Hash User Embeddings and Temporal Neighbor Sampling</span></li></ul>
+<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>3</strong></span></div>
+
 </section>
 </div>
 
