@@ -1,0 +1,57 @@
+{
+  "date": "20260831",
+  "date_label": "2026-09-01",
+  "generated_at": "2026-09-01 07:46:46 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2608.28511v1",
+      "route": "202608/31/2608.28511v1-training-communication-efficient-mixture-of-experts-language-models-with-layer-re-configuration",
+      "title": "Training Communication-Efficient Mixture-of-Experts Language Models with Layer Re-Configuration",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通过层重配置减少MoE专家并行中的全对全通信，直接指向通信高效训练",
+      "first_seen_at": "2026-09-01 07:46:46 北京时间",
+      "updated_at": "2026-09-01 07:46:46 北京时间"
+    },
+    {
+      "paper_id": "2608.26223v1",
+      "route": "202608/31/2608.26223v1-beyond-edge-cuts-activity-weighted-multicast-hypergraph-mapping-for-spiking-neural-networks-on-mesh-nocs",
+      "title": "Beyond Edge Cuts: Activity-Weighted Multicast Hypergraph Mapping for Spiking Neural Networks on Mesh NoCs",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向通信的活动加权多播超图映射与图划分",
+      "first_seen_at": "2026-09-01 07:46:46 北京时间",
+      "updated_at": "2026-09-01 07:46:46 北京时间"
+    },
+    {
+      "paper_id": "2608.27794v1",
+      "route": "202608/31/2608.27794v1-node-wise-feature-encoding-for-neural-performance-prediction",
+      "title": "Node-wise Feature Encoding for Neural Performance Prediction",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向高效神经架构搜索的神经性能预测器，引入逐节点特征编码",
+      "first_seen_at": "2026-09-01 07:46:46 北京时间",
+      "updated_at": "2026-09-01 07:46:46 北京时间"
+    }
+  ]
+}

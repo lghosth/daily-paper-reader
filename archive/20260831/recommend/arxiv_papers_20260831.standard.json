@@ -1,0 +1,129 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-31T23:43:00.628851+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2608.28511v1",
+      "source": "arxiv",
+      "title": "Training Communication-Efficient Mixture-of-Experts Language Models with Layer Re-Configuration",
+      "abstract": "When training Mixture-of-Experts (MoE) language models with expert parallelism, all-to-all token dispatch and combine collectives can consume a substantial fraction of end-to-end training time. In this work, we study communication-efficient MoE models (CE-MoE), in which we adopt a heterogeneous layer pattern that decouples token-mixing and channel-mixing depth. Compared to conventional models which interleave MoE layers after each token-mixing layer (e.g., attention, Mamba-2), CE-MoE models concentrate expert capacity in a select few routed MoE layers, while maintaining depth by adding additional token-mixing and dense-FFN layers. Across a scaling ladder from 2B to 31.5B total parameters, under matched total and activated parameters, CE-MoE models consistently reduce training cost while matching validation loss and downstream benchmarks with full-MoE baselines. At the 31.5B scale, CE-MoE uses 33.3\\% fewer GPU-hours while improving average downstream score and inference throughput.",
+      "authors": [
+        "Simeng Sun",
+        "Roger Waleffe"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-28T16:44:50+00:00",
+      "link": "https://arxiv.org/pdf/2608.28511v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Directly targets communication-efficient training by reducing all-to-all communication in MoE expert parallelism",
+      "llm_evidence_cn": "通过层重配置减少MoE专家并行中的全对全通信，直接指向通信高效训练",
+      "llm_evidence": "通过层重配置减少MoE专家并行中的全对全通信，直接指向通信高效训练",
+      "canonical_evidence": "通过层重配置减少MoE专家并行中的全对全通信，直接指向通信高效训练",
+      "llm_tldr_en": "CE-MoE decouples token-mixing and channel-mixing depth, concentrating MoE layers in a few routed layers and adding dense FFN/token-mixing layers, reducing all-to-all dispatch and combine communication during expert-parallel MoE training across 2B-31.5B models.",
+      "llm_tldr_cn": "专家并行训练MoE语言模型时，token分发与合并的全对全通信占用大量训练时间。CE-MoE采用异构层设计，解耦token混合与通道混合的深度，只在少量路由MoE层集中专家容量，同时增加token混合和稠密FFN层维持深度。在2B到31.5B总参数规模上，匹配总参数量与激活参数量的条件下，该方法显著降低通信开销，实现更高效的MoE扩展训练。",
+      "llm_tldr": "专家并行训练MoE语言模型时，token分发与合并的全对全通信占用大量训练时间。CE-MoE采用异构层设计，解耦token混合与通道混合的深度，只在少量路由MoE层集中专家容量，同时增加token混合和稠密FFN层维持深度。在2B到31.5B总参数规模上，匹配总参数量与激活参数量的条件下，该方法显著降低通信开销，实现更高效的MoE扩展训练。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.26223v1",
+      "source": "arxiv",
+      "title": "Beyond Edge Cuts: Activity-Weighted Multicast Hypergraph Mapping for Spiking Neural Networks on Mesh NoCs",
+      "abstract": "Mapping spiking neural networks (SNNs) onto neuromorphic many-core platforms is often formulated with graph partitioning and pairwise placement costs. That abstraction is convenient, but it does not match the physical communication event: one spike from a source neuron is delivered to a set of postsynaptic destinations, and routes to several destinations can share mesh links. We present M-HySMap, a route-aware, activity-weighted multicast hypergraph mapping framework. Each source neuron induces a directed hyperedge to its postsynaptic fanout, weighted by profiled activity. The mapper starts from strong activity-aware graph/QAP seeds and then optimizes distinct destination-core fanout, the union of deterministic mesh routes, and link congestion. The central algorithmic observation is locality: moving one neuron can change only its own source-rooted hyperedge and the hyperedges of its predecessors. This permits exact incremental gain evaluation while caching every unaffected route contribution. We expose this combinatorial structure in detail, derive a conservative placement lower bound, and describe a portfolio of partition and placement neighborhoods that preserves the best incumbent. Across a 115-job evidence suite on Potjans-inspired recurrent SNNs and mesh NoCs from 4 x 4 to 6 x 6, plus a 7 x 7 stress case, M-HySMap reduces routed multicast hops by 10.6-19.6% over Activity+QAP and 19.7-41.1% over Edge+QAP. Incremental updates accelerate refinement by 4.7-12.7x while matching full recomputation to numerical precision.",
+      "authors": [
+        "Amirreza Khorasanian"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR",
+        "cs.NE"
+      ],
+      "published": "2026-08-26T13:16:43+00:00",
+      "link": "https://arxiv.org/pdf/2608.26223v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "activity-weighted multicast hypergraph mapping with graph partitioning for communication",
+      "llm_evidence_cn": "面向通信的活动加权多播超图映射与图划分",
+      "llm_evidence": "面向通信的活动加权多播超图映射与图划分",
+      "canonical_evidence": "面向通信的活动加权多播超图映射与图划分",
+      "llm_tldr_en": "Presents M-HySMap, a route-aware activity-weighted multicast hypergraph mapping framework for SNNs on mesh NoCs, directly addressing graph partitioning and communication cost; methods transferable to distributed GNN partitioning.",
+      "llm_tldr_cn": "本文面向网格NoC上脉冲神经网络的映射问题，提出M-HySMap框架。该框架将突触传播建模为带权多播超图，并基于活动感知的图划分/QAP种子进行路由感知的映射优化，以匹配实际通信事件。实验表明该映射能显著降低片上通信开销。其活动加权与多播超图划分思想可迁移至分布式GNN的图划分和通信优化，为相关系统设计提供借鉴。",
+      "llm_tldr": "本文面向网格NoC上脉冲神经网络的映射问题，提出M-HySMap框架。该框架将突触传播建模为带权多播超图，并基于活动感知的图划分/QAP种子进行路由感知的映射优化，以匹配实际通信事件。实验表明该映射能显著降低片上通信开销。其活动加权与多播超图划分思想可迁移至分布式GNN的图划分和通信优化，为相关系统设计提供借鉴。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.27794v1",
+      "source": "arxiv",
+      "title": "Node-wise Feature Encoding for Neural Performance Prediction",
+      "abstract": "As neural networks are increasingly deployed on resource constrained edge devices, accurate prediction of latency and energy is critical for efficient neural architecture search. Existing GNN and transformer based predictors achieve strong results but largely ignore node-level computational cost, limiting their ability to model performance critical operations. To address this, we introduce FeatureFormer, a neural performance predictor that incorporates explicit node-wise encodings of FLOPs, parameter counts, and memory proxies within a gated graph attention architecture. We also present NNEQ, a new large-scale energy consumption dataset that enables unified evaluation of latency and energy prediction. Extensive experiments demonstrate that FeatureFormer achieves state-of-the-art performance across both metrics, including challenging out-of-domain settings. Finally, we show that the proposed encoding is broadly applicable and consistently improves existing predictors with negligible overhead.",
+      "authors": [
+        "Matthew Grenier",
+        "William Hammer",
+        "Andrew Heuer",
+        "Nikhil Krishna",
+        "Yi Wang",
+        "Ramtin Zand"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-28T00:20:27+00:00",
+      "link": "https://arxiv.org/pdf/2608.27794v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Neural performance predictor with node-wise encodings to support efficient neural architecture search",
+      "llm_evidence_cn": "面向高效神经架构搜索的神经性能预测器，引入逐节点特征编码",
+      "llm_evidence": "面向高效神经架构搜索的神经性能预测器，引入逐节点特征编码",
+      "canonical_evidence": "面向高效神经架构搜索的神经性能预测器，引入逐节点特征编码",
+      "llm_tldr_en": "FeatureFormer is a neural performance predictor with explicit node-wise FLOPs, parameter count, and memory proxies in a gated graph attention architecture. It also introduces NNEQ, a large-scale energy dataset, enabling unified latency and energy prediction for efficient neural architecture search. Experiments show improved accuracy over existing predictors.",
+      "llm_tldr_cn": "边缘设备部署神经网络需要准确预测延迟和能耗，这对高效神经架构搜索至关重要；现有GNN和transformer预测器却往往忽略节点级计算代价。为此提出FeatureFormer，在门控图注意力架构中引入显式的逐节点FLOPs、参数量和内存代理特征编码，并构建大规模能耗数据集NNEQ。实验表明该方法在延迟和能耗预测上优于现有方案，能统一评估。该工作为资源受限场景下的架构搜索提供了更细粒度的性能预测工具。",
+      "llm_tldr": "边缘设备部署神经网络需要准确预测延迟和能耗，这对高效神经架构搜索至关重要；现有GNN和transformer预测器却往往忽略节点级计算代价。为此提出FeatureFormer，在门控图注意力架构中引入显式的逐节点FLOPs、参数量和内存代理特征编码，并构建大规模能耗数据集NNEQ。实验表明该方法在延迟和能耗预测上优于现有方案，能统一评估。该工作为资源受限场景下的架构搜索提供了更细粒度的性能预测工具。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

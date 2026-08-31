@@ -1,0 +1,54 @@
+{
+  "label": "2026-09-01",
+  "date": "2026-08-31",
+  "generated_at": "2026-08-31T23:46:49",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202608/31/2608.28511v1-training-communication-efficient-mixture-of-experts-language-models-with-layer-re-configuration",
+      "section": "deep",
+      "title_en": "Training Communication-Efficient Mixture-of-Experts Language Models with Layer Re-Configuration",
+      "authors": "Simeng Sun, Roger Waleffe",
+      "date": "2026-08-28",
+      "pdf": "https://arxiv.org/pdf/2608.28511v1",
+      "score": "8.0",
+      "evidence": "通过层重配置减少MoE专家并行中的全对全通信，直接指向通信高效训练",
+      "tldr": "在训练混合专家语言模型时，专家并行中的令牌分派与合并通信占用大量时间，成为效率瓶颈。论文提出CE-MoE：采用异构层模式，解耦token-mixing与channel-mixing深度，将专家容量集中于少数路由MoE层，并用密集前馈层保持深度。在2B到31.5B规模下，匹配全MoE基线的验证损失和下游基准，同时降低训练成本；31.5B模型节省33.3% GPU小时并提升推理吞吐量。该层重配置策略为通信高效的MoE训练提供了新的重要设计思路，具有较强实用价值。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "When training Mixture-of-Experts (MoE) language models with expert parallelism, all-to-all token dispatch and combine collectives can consume a substantial fraction of end-to-end training time. In this work, we study communication-efficient MoE models (CE-MoE), in which we adopt a heterogeneous layer pattern that decouples token-mixing and channel-mixing depth. Compared to conventional models which interleave MoE layers after each token-mixing layer (e.g., attention, Mamba-2), CE-MoE models concentrate expert capacity in a select few routed MoE layers, while maintaining depth by adding additional token-mixing and dense-FFN layers. Across a scaling ladder from 2B to 31.5B total parameters, under matched total and activated parameters, CE-MoE models consistently reduce training cost while matching validation loss and downstream benchmarks with full-MoE baselines. At the 31.5B scale, CE-MoE uses 33.3\\% fewer GPU-hours while improving average downstream score and inference throughput.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/31/2608.26223v1-beyond-edge-cuts-activity-weighted-multicast-hypergraph-mapping-for-spiking-neural-networks-on-mesh-nocs",
+      "section": "quick",
+      "title_en": "Beyond Edge Cuts: Activity-Weighted Multicast Hypergraph Mapping for Spiking Neural Networks on Mesh NoCs",
+      "authors": "Amirreza Khorasanian",
+      "date": "2026-08-26",
+      "pdf": "https://arxiv.org/pdf/2608.26223v1",
+      "score": "7.0",
+      "evidence": "面向通信的活动加权多播超图映射与图划分",
+      "tldr": "映射脉冲神经网络到网格片上网络时，传统图划分与成对放置代价未匹配真实的多播通信事件。M-HySMap提出活动加权多播超图映射框架，以源神经元为超边并加权活动度，利用移动神经元仅影响局部路线的特性实现精确增量增益，同时缓存未受影响路线。在115项测试中，相比Activity+QAP与Edge+QAP，路由多播跳数分别降低10.6-19.6%和19.7-41.1%，增量更新加速4.7-12.7倍。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Mapping spiking neural networks (SNNs) onto neuromorphic many-core platforms is often formulated with graph partitioning and pairwise placement costs. That abstraction is convenient, but it does not match the physical communication event: one spike from a source neuron is delivered to a set of postsynaptic destinations, and routes to several destinations can share mesh links. We present M-HySMap, a route-aware, activity-weighted multicast hypergraph mapping framework. Each source neuron induces a directed hyperedge to its postsynaptic fanout, weighted by profiled activity. The mapper starts from strong activity-aware graph/QAP seeds and then optimizes distinct destination-core fanout, the union of deterministic mesh routes, and link congestion. The central algorithmic observation is locality: moving one neuron can change only its own source-rooted hyperedge and the hyperedges of its predecessors. This permits exact incremental gain evaluation while caching every unaffected route contribution. We expose this combinatorial structure in detail, derive a conservative placement lower bound, and describe a portfolio of partition and placement neighborhoods that preserves the best incumbent. Across a 115-job evidence suite on Potjans-inspired recurrent SNNs and mesh NoCs from 4 x 4 to 6 x 6, plus a 7 x 7 stress case, M-HySMap reduces routed multicast hops by 10.6-19.6% over Activity+QAP and 19.7-41.1% over Edge+QAP. Incremental updates accelerate refinement by 4.7-12.7x while matching full recomputation to numerical precision.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/31/2608.27794v1-node-wise-feature-encoding-for-neural-performance-prediction",
+      "section": "quick",
+      "title_en": "Node-wise Feature Encoding for Neural Performance Prediction",
+      "authors": "Matthew Grenier, William Hammer, Andrew Heuer, Nikhil Krishna, Yi Wang, Ramtin Zand",
+      "date": "2026-08-28",
+      "pdf": "https://arxiv.org/pdf/2608.27794v1",
+      "score": "7.0",
+      "evidence": "面向高效神经架构搜索的神经性能预测器，引入逐节点特征编码",
+      "tldr": "资源受限设备上神经网络延迟与能量预测对神经架构搜索至关重要，但现有GNN和Transformer预测器主要依赖图结构，忽略节点级计算代价。为此提出FeatureFormer，通过门控图注意力机制将FLOPs、参数计数和内存代理逐节点编码进特征。同时构建大规模能耗数据集NNEQ。实验表明，FeatureFormer在延迟和能量预测上均达SOTA，在跨域设定下优势明显。该节点级编码可无缝嵌入现有预测器，以极小开销稳定提升精度，为高效硬件感知搜索提供新思路。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "As neural networks are increasingly deployed on resource constrained edge devices, accurate prediction of latency and energy is critical for efficient neural architecture search. Existing GNN and transformer based predictors achieve strong results but largely ignore node-level computational cost, limiting their ability to model performance critical operations. To address this, we introduce FeatureFormer, a neural performance predictor that incorporates explicit node-wise encodings of FLOPs, parameter counts, and memory proxies within a gated graph attention architecture. We also present NNEQ, a new large-scale energy consumption dataset that enables unified evaluation of latency and energy prediction. Extensive experiments demonstrate that FeatureFormer achieves state-of-the-art performance across both metrics, including challenging out-of-domain settings. Finally, we show that the proposed encoding is broadly applicable and consistently improves existing predictors with negligible overhead.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
