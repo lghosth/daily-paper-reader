@@ -1,0 +1,54 @@
+{
+  "label": "2026-09-03",
+  "date": "2026-09-02",
+  "generated_at": "2026-09-02T22:10:27",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202609/02/2609.00078v1-rw-lora-communication-efficient-decentralized-lora-fine-tuning-via-random-walks",
+      "section": "deep",
+      "title_en": "RW-LoRA: Communication-Efficient Decentralized LoRA Fine-Tuning via Random Walks",
+      "authors": "Xingran Chen, Rohit Bhagat, Ghadir Ayache, Rawad Bitar, Yanmin Gong, Salim El Rouayheb",
+      "date": "2026-08-31",
+      "pdf": "https://arxiv.org/pdf/2609.00078v1",
+      "score": "8.0",
+      "evidence": "通过随机游走顺序更新降低去中心化微调通信开销，与通信高效训练需求直接对应",
+      "tldr": "分布式LoRA微调常依赖中心化聚合或基于gossip的同步，通信开销大且存在多模型更新聚合误差。本文提出基于随机游走的去中心化LoRA方案，让单一模型令牌在网络中顺序遍历节点并用本地目标更新，无需全局同步，显著降低通信与计算成本并避免聚合误差。理论给出非凸目标收敛保证，实验在多种NLP任务和图拓扑上达到竞争性能，通信计算量低于gossip方法。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Parameter-efficient fine-tuning methods such as LoRA have become a standard approach for adapting large foundation models. Adopting fine-tuning to distributed settings faces several challenges. Most existing distributed LoRA methods rely on centralized aggregation, and gossip-based decentralized LoRA requires repeated synchronization among multiple model copies. Both methods incur significant communication overhead and introduce errors due to simultaneous aggregation of multiple model updates. In this paper, we take a different perspective and propose a random-walk-based LoRA fine-tuning scheme. Instead of maintaining multiple model replicas, a single model token traverses the network and is updated sequentially using local fine-tuning objectives. This design eliminates the need for global synchronization, substantially reduces communication and computation costs, and avoids aggregation errors. We provide rigorous convergence guarantees for non-convex objectives under standard assumptions. Through empirical results on multiple NLP tasks and graph topologies, we show that the proposed method achieves competitive task performance with substantially less communication and computation than gossip-based LoRA.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/02/2609.00817v1-characterizing-the-scalability-and-performance-of-large-scale-ai-training-under-multi-tenancy",
+      "section": "quick",
+      "title_en": "Characterizing the Scalability and Performance of Large-Scale AI Training Under Multi-Tenancy",
+      "authors": "Jacopo Raffi, Thomas Pasquali, Lorenzo Piarulli, Filippo Spiga, Marco Faltelli, Andreas Herten, Domenico Siracusa, Daniele De Sensi, Flavio Vella",
+      "date": "2026-09-01",
+      "pdf": "https://arxiv.org/pdf/2609.00817v1",
+      "score": "7.0",
+      "evidence": "量化大规模AI训练中不同互连配置下的通信开销，直接关联通信高效训练",
+      "tldr": "大规模AI训练在真实超级计算集群上的多租户行为尚未被充分理解。本研究在高达2400 GPU规模下，评估五种并行策略与多种互联配置，并通过噪声模型模拟并发训练干扰。实验覆盖多个不同架构集群，系统量化了通信开销和性能影响，为分布式训练的性能优化与调度提供实测依据。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Characterising AI workload performance on modern HPC systems requires understanding both their scalability in isolation and their behaviour under concurrent execution. However, the interplay among parallelisation strategies, network congestion, compute capability, and interconnect technologies remains poorly understood. This work investigates the performance and scalability of AI models up to 2400 GPUs. We quantify the communication overheads and their impact across different interconnects by evaluating scale-up, scale-out, and rack-scale configurations under multiple allocation schemes. Finally, we study how multiple concurrent training jobs interfere with each other by designing a realistic noise model. We design a benchmark suite of AI models to evaluate the performance of five distinct parallelisation strategies across different supercomputing clusters, including Alps, Leonardo, LUMI, JUPITER, NVL72 GB300, and DGX A100. Our work provides a systematic characterization of the scalability and execution efficiency of distributed AI training, while offering key insights into performance behavior under realistic multi-tenant scenarios.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/02/2608.30394v1-topgq-fast-gnn-post-training-quantization-leveraging-topology-information",
+      "section": "quick",
+      "title_en": "TopGQ: Fast GNN Post-Training Quantization Leveraging Topology Information",
+      "authors": "Dain Kwon, Kanghyun Choi, Hyeyoon Lee, Sunjong Park, Seoyong Lee, Sukjin Kim, Jinho Lee",
+      "date": "2026-08-31",
+      "pdf": "https://arxiv.org/pdf/2608.30394v1",
+      "score": "6.0",
+      "evidence": "高效的GNN量化作为压缩技术可降低图学习系统的通信和存储开销",
+      "tldr": "现有GNN量化方法存在大量量化开销，限制实际应用。为此提出TopGQ，一种利用拓扑信息的快速后训练量化框架，通过双轴尺度吸收将激活量化沿内外维合并到邻接矩阵中，显著减少冗余开销。同时设计TopPIN作为节点局部结构代理，在量化时聚合拓扑相似节点。实验表明量化时间降低一个数量级且保持精度。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Existing GNN quantization methods suffer from considerable quantization overhead, which severely limits their practical usage in real-world scenarios. To this end, we present TopGQ, an accurate post-training GNN quantization framework, alleviating redundant quantization overhead. We propose dual-axis scale absorption, which enables activation quantization along both the outer and inner dimensions by merging one into the adjacency matrix. On top of that, we introduce TopPIN, a proxy for nodes' local structure, and use it to group nodes with similar topology during quantization. Experimental results show that TopGQ reduces quantization time by an order of magnitude while preserving accuracy.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,57 @@
+{
+  "date": "20260902",
+  "date_label": "2026-09-03",
+  "generated_at": "2026-09-03 06:10:25 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.00078v1",
+      "route": "202609/02/2609.00078v1-rw-lora-communication-efficient-decentralized-lora-fine-tuning-via-random-walks",
+      "title": "RW-LoRA: Communication-Efficient Decentralized LoRA Fine-Tuning via Random Walks",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通过随机游走顺序更新降低去中心化微调通信开销，与通信高效训练需求直接对应",
+      "first_seen_at": "2026-09-03 06:10:25 北京时间",
+      "updated_at": "2026-09-03 06:10:25 北京时间"
+    },
+    {
+      "paper_id": "2609.00817v1",
+      "route": "202609/02/2609.00817v1-characterizing-the-scalability-and-performance-of-large-scale-ai-training-under-multi-tenancy",
+      "title": "Characterizing the Scalability and Performance of Large-Scale AI Training Under Multi-Tenancy",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "量化大规模AI训练中不同互连配置下的通信开销，直接关联通信高效训练",
+      "first_seen_at": "2026-09-03 06:10:25 北京时间",
+      "updated_at": "2026-09-03 06:10:25 北京时间"
+    },
+    {
+      "paper_id": "2608.30394v1",
+      "route": "202609/02/2608.30394v1-topgq-fast-gnn-post-training-quantization-leveraging-topology-information",
+      "title": "TopGQ: Fast GNN Post-Training Quantization Leveraging Topology Information",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "高效的GNN量化作为压缩技术可降低图学习系统的通信和存储开销",
+      "first_seen_at": "2026-09-03 06:10:25 北京时间",
+      "updated_at": "2026-09-03 06:10:25 北京时间"
+    }
+  ]
+}
