@@ -1,0 +1,130 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-03T21:17:20.943808+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2609.01457v1",
+      "source": "arxiv",
+      "title": "Just Talk Once: Communication-Efficient Split Federated LLM Fine-Tuning on Edge Devices",
+      "abstract": "Large language model (LLM) fine-tuning is increasingly shifting toward data generated on edge devices, where memory, computation, bandwidth, and connectivity constraints make conventional federated learning difficult to sustain. Split federated fine-tuning (SFT) improves client-side efficiency by offloading most model parameters and computation to the server but requires step-by-step bidirectional communication loop across the split interface and forces continuous client involvement throughout training. In this paper, we present L-shaped SFT, a split fine-tuning framework that removes this bidirectional bottleneck. Our key insight is that weight tying in modern LLMs enables server-side hidden activations to be directly supervised using target embeddings, allowing the training loss to be computed on the server without returning server outputs to the client. To further eliminate the need for continuous client participation, based on L-shaped SFT, we introduce one-shot SFT, in which clients upload activations once and then go offline while the server continues optimization over cached representations. We implement our design in a real system testbed with heterogeneous edge clients, including commercial smartphones and NVIDIA developer boards. Experiments demonstrate that our schemes significantly reduce communication costs and client online time compared with existing SFT baselines.",
+      "authors": [
+        "Jiaxiang Geng",
+        "Xianhao Chen",
+        "Bing Luo"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-09-01T16:00:29+00:00",
+      "link": "https://arxiv.org/pdf/2609.01457v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Directly targets communication-efficient training via split federated fine-tuning that removes bidirectional communication loop.",
+      "llm_evidence_cn": "直接针对通信高效训练问题，以拆分联邦微调消除双向通信瓶颈。",
+      "llm_evidence": "直接针对通信高效训练问题，以拆分联邦微调消除双向通信瓶颈。",
+      "canonical_evidence": "直接针对通信高效训练问题，以拆分联邦微调消除双向通信瓶颈。",
+      "llm_tldr_en": "Presents L-shaped SFT for split federated LLM fine-tuning, removing the step-by-step bidirectional loop. It exploits weight tying so server-side hidden activations are directly supervised, letting clients communicate only once and greatly improving communication efficiency on edge devices.",
+      "llm_tldr_cn": "标准拆分联邦微调在服务端与边缘客户端之间需要逐轮双向通信，边缘设备带宽有限且需持续在线。论文提出L形SFT，利用现代大模型中的权重共享性质使服务端可以直接监督隐藏激活，从而删除逐轮回传环节。实验显示客户端只需一次通信即可完成微调，显著降低通信开销。该工作属于通信高效训练的通用技术路径，可为图神经网络分布式训练提供方法上的启发。",
+      "llm_tldr": "标准拆分联邦微调在服务端与边缘客户端之间需要逐轮双向通信，边缘设备带宽有限且需持续在线。论文提出L形SFT，利用现代大模型中的权重共享性质使服务端可以直接监督隐藏激活，从而删除逐轮回传环节。实验显示客户端只需一次通信即可完成微调，显著降低通信开销。该工作属于通信高效训练的通用技术路径，可为图神经网络分布式训练提供方法上的启发。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.01983v1",
+      "source": "arxiv",
+      "title": "Dual-Metric Partitioning with Adaptive Kernel Execution for Efficient GCN Acceleration",
+      "abstract": "Graph Convolutional Networks (GCNs) are widely used for large graph-structured data, including social, citation, and e-commerce networks, but their deployment is constrained by irregular memory access and severe GPU workload imbalance. These challenges arise in two dimensions: width imbalance from power-law degree distributions and depth imbalance from heterogeneous neighborhood connectivity.We present DualGCN, a GPU acceleration framework addressing both dimensions through dual-metric graph partitioning and adaptive kernel execution. DualGCN combines node degree, reflecting aggregation width, with neighborhood density estimated by anonymous random walks, capturing multihop connectivity and access depth. This hybrid workload metric enables connectivity-aware partitioning of large graphs into sparse and dense regions while reducing workload imbalance from linear to logarithmic complexity. DualGCN then selects partition-specific execution strategies: sparse partitions use warp-level parallelism and coalesced memory access, whereas dense partitions exploit instruction-level parallelism to hide latency and improve GPU utilization. Experiments on twelve real-world graph datasets show that DualGCN consistently accelerates GCN computation, achieving average speedups of 2.53x, 3.8x, and 2.13x over cuSPARSE, GNNAdvisor, and ACCEL, respectively. These results demonstrate that jointly optimizing graph partitioning and kernel execution provides an effective solution for processing large-scale graph and socialnetwork workloads.",
+      "authors": [
+        "Lingling Zhang",
+        "Hang Zeng",
+        "Pengpeng Qiao",
+        "Zhiwei Zhang",
+        "Ye Yuan",
+        "Guoren Wang"
+      ],
+      "primary_category": "cs.DB",
+      "categories": [
+        "cs.DB"
+      ],
+      "published": "2026-09-02T01:37:47+00:00",
+      "link": "https://arxiv.org/pdf/2609.01983v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "dual-metric graph partitioning for efficient GCN execution",
+      "llm_evidence_cn": "面向GCN高效执行的双度量图划分方法",
+      "llm_evidence": "面向GCN高效执行的双度量图划分方法",
+      "canonical_evidence": "面向GCN高效执行的双度量图划分方法",
+      "llm_tldr_en": "DualGCN accelerates GCN execution by combining node degree and neighborhood density from anonymous random walks into a hybrid workload metric for dual-metric graph partitioning and adaptive kernel execution, reducing width and depth imbalance.",
+      "llm_tldr_cn": "问题：GCN在GPU上因不规则访存和负载不均衡而难以高效部署，功率律度数导致宽度失衡，异质邻居连接导致深度失衡。方法：DualGCN用节点度数与匿名游走估计的邻域密度组成混合工作负载指标，执行双度量图划分与自适应核调度。结果：该方法同时缓解了聚合宽度和访问深度两个维度的负载失衡，提升了GCN加速效率。意义：为大图上的GCN系统提供了有效的图划分与执行协同优化策略。",
+      "llm_tldr": "问题：GCN在GPU上因不规则访存和负载不均衡而难以高效部署，功率律度数导致宽度失衡，异质邻居连接导致深度失衡。方法：DualGCN用节点度数与匿名游走估计的邻域密度组成混合工作负载指标，执行双度量图划分与自适应核调度。结果：该方法同时缓解了聚合宽度和访问深度两个维度的负载失衡，提升了GCN加速效率。意义：为大图上的GCN系统提供了有效的图划分与执行协同优化策略。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.28910v1",
+      "source": "arxiv",
+      "title": "Learning-Theoretic Foundation for General Coded Computing: The Straggler Setting",
+      "abstract": "Coded computing has emerged as a powerful paradigm for mitigating the impact of straggling workers in distributed computing systems. However, existing coded-computing schemes are predominantly designed for the exact recovery of highly structured computations, such as polynomial evaluation and matrix multiplication, and typically rely on strict recovery thresholds. These assumptions significantly limit their applicability to modern machine-learning workloads, particularly deep neural networks (DNNs), whose computations generally lack rigid algebraic structure and, in many applications, require only accurate approximations rather than exact recovery.   To address this gap, we revisit coded computing from a learning-theoretic perspective and introduce General Coded Computing (GCC). Rather than adopting existing algebraic tools, GCC formulates coded computing through a natural end-to-end mean-squared error loss that directly measures the discrepancy between the desired computations and their recovered estimates. By deriving suitable upper bounds and restricting the encoder and decoder to a reproducing kernel Hilbert space (RKHS) with mild smoothness constraints, we show that both the encoder and decoder admit specific representations as linear combinations of RKHS kernel functions. This representation allows the corresponding coefficients to be computed efficiently. Moreover, this framework enables us to establish theoretical performance guarantees for GCC under two complementary straggler regimes. In the worst-case setting with $N$ worker nodes, and at most $S$ stragglers, we show that the end-to-end loss decays at least at rate $O(S^3N^{-3})$ for standard configurations. We then study a probabilistic setting in which each worker independently straggles with probability $p$. We prove that the expected loss can still converge at rate $O(\\log_{1/p}^3(N)N^{-3})$.",
+      "authors": [
+        "Parsa Moradi",
+        "Behrooz Tahmasebi",
+        "Mohammad Ali Maddah-Ali"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-28T22:18:22+00:00",
+      "link": "https://arxiv.org/pdf/2608.28910v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "learning-theoretic coded computing framework mitigates stragglers in distributed DNN and machine learning workloads, supporting communication-efficient distributed training",
+      "llm_evidence_cn": "研究编码计算在掉队者场景下的理论基础，适用于缓解分布式训练中的延迟与通信问题",
+      "llm_evidence": "研究编码计算在掉队者场景下的理论基础，适用于缓解分布式训练中的延迟与通信问题",
+      "canonical_evidence": "研究编码计算在掉队者场景下的理论基础，适用于缓解分布式训练中的延迟与通信问题",
+      "llm_tldr_en": "Revisits coded computing from a learning-theoretic perspective for modern DNN workloads, removing exact-recovery constraints and enabling approximate coded computation to reduce stragglers in distributed training.",
+      "llm_tldr_cn": "针对编码计算依赖严格恢复阈值、难以适配现代深度网络近似计算负载的问题，该文从学习理论视角重新构建通用编码计算框架。它放宽精确恢复要求，为掉队者场景下的分布式机器学习建立理论支撑。该框架使编码计算可用于深度网络的近似训练，为提升分布式训练鲁棒性和通信效率提供新思路。",
+      "llm_tldr": "针对编码计算依赖严格恢复阈值、难以适配现代深度网络近似计算负载的问题，该文从学习理论视角重新构建通用编码计算框架。它放宽精确恢复要求，为掉队者场景下的分布式机器学习建立理论支撑。该框架使编码计算可用于深度网络的近似训练，为提升分布式训练鲁棒性和通信效率提供新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

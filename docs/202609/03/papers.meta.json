@@ -1,0 +1,54 @@
+{
+  "label": "2026-09-04",
+  "date": "2026-09-03",
+  "generated_at": "2026-09-03T21:21:28",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202609/03/2609.01457v1-just-talk-once-communication-efficient-split-federated-llm-fine-tuning-on-edge-devices",
+      "section": "deep",
+      "title_en": "Just Talk Once: Communication-Efficient Split Federated LLM Fine-Tuning on Edge Devices",
+      "authors": "Jiaxiang Geng, Xianhao Chen, Bing Luo",
+      "date": "2026-09-01",
+      "pdf": "https://arxiv.org/pdf/2609.01457v1",
+      "score": "9.0",
+      "evidence": "直接针对通信高效训练问题，以拆分联邦微调消除双向通信瓶颈。",
+      "tldr": "边缘端大模型微调受带宽与算力约束，传统分割联邦学习需逐轮同步、客户端长期在线。提出L-shaped SFT，借助权重绑定使服务端直接监督隐藏激活，客户端仅上传一次；one-shot SFT进一步允许客户端离线，由服务端缓存表示完成后续优化。真实异构边缘测试表明通信开销与在线时间大幅下降。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Large language model (LLM) fine-tuning is increasingly shifting toward data generated on edge devices, where memory, computation, bandwidth, and connectivity constraints make conventional federated learning difficult to sustain. Split federated fine-tuning (SFT) improves client-side efficiency by offloading most model parameters and computation to the server but requires step-by-step bidirectional communication loop across the split interface and forces continuous client involvement throughout training. In this paper, we present L-shaped SFT, a split fine-tuning framework that removes this bidirectional bottleneck. Our key insight is that weight tying in modern LLMs enables server-side hidden activations to be directly supervised using target embeddings, allowing the training loss to be computed on the server without returning server outputs to the client. To further eliminate the need for continuous client participation, based on L-shaped SFT, we introduce one-shot SFT, in which clients upload activations once and then go offline while the server continues optimization over cached representations. We implement our design in a real system testbed with heterogeneous edge clients, including commercial smartphones and NVIDIA developer boards. Experiments demonstrate that our schemes significantly reduce communication costs and client online time compared with existing SFT baselines.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/03/2609.01983v1-dual-metric-partitioning-with-adaptive-kernel-execution-for-efficient-gcn-acceleration",
+      "section": "deep",
+      "title_en": "Dual-Metric Partitioning with Adaptive Kernel Execution for Efficient GCN Acceleration",
+      "authors": "Lingling Zhang, Hang Zeng, Pengpeng Qiao, Zhiwei Zhang, Ye Yuan, Guoren Wang",
+      "date": "2026-09-02",
+      "pdf": "https://arxiv.org/pdf/2609.01983v1",
+      "score": "8.0",
+      "evidence": "面向GCN高效执行的双度量图划分方法",
+      "tldr": "图卷积网络处理大规模图时，常因节点度幂律分布与邻域连接异构遭遇负载失衡，体现在聚合宽度和访存深度两方面。双度量框架融合节点度与匿名随机游走密度，执行连通性感知划分，将负载不均衡复杂度由线性降为对数。划分后结合区域特征选用适配内核：稀疏区利用线程束级并行和合并访存，稠密区依靠指令级并行隐藏延迟。在十二个真实图数据集上，该方法相对多个主流加速器普遍获得数倍提速，证实协同优化分区与内核对大规模图计算高效可行。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Graph Convolutional Networks (GCNs) are widely used for large graph-structured data, including social, citation, and e-commerce networks, but their deployment is constrained by irregular memory access and severe GPU workload imbalance. These challenges arise in two dimensions: width imbalance from power-law degree distributions and depth imbalance from heterogeneous neighborhood connectivity.We present DualGCN, a GPU acceleration framework addressing both dimensions through dual-metric graph partitioning and adaptive kernel execution. DualGCN combines node degree, reflecting aggregation width, with neighborhood density estimated by anonymous random walks, capturing multihop connectivity and access depth. This hybrid workload metric enables connectivity-aware partitioning of large graphs into sparse and dense regions while reducing workload imbalance from linear to logarithmic complexity. DualGCN then selects partition-specific execution strategies: sparse partitions use warp-level parallelism and coalesced memory access, whereas dense partitions exploit instruction-level parallelism to hide latency and improve GPU utilization. Experiments on twelve real-world graph datasets show that DualGCN consistently accelerates GCN computation, achieving average speedups of 2.53x, 3.8x, and 2.13x over cuSPARSE, GNNAdvisor, and ACCEL, respectively. These results demonstrate that jointly optimizing graph partitioning and kernel execution provides an effective solution for processing large-scale graph and socialnetwork workloads.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/03/2608.28910v1-learning-theoretic-foundation-for-general-coded-computing-the-straggler-setting",
+      "section": "quick",
+      "title_en": "Learning-Theoretic Foundation for General Coded Computing: The Straggler Setting",
+      "authors": "Parsa Moradi, Behrooz Tahmasebi, Mohammad Ali Maddah-Ali",
+      "date": "2026-08-28",
+      "pdf": "https://arxiv.org/pdf/2608.28910v1",
+      "score": "6.0",
+      "evidence": "研究编码计算在掉队者场景下的理论基础，适用于缓解分布式训练中的延迟与通信问题",
+      "tldr": "现有编码计算依赖严格代数结构与精确恢复，难用于深度神经网络等无刚性结构的机器学习任务。本文提出通用编码计算框架，从学习理论出发，以端到端均方误差为损失，限制编解码器在再生核希尔伯特空间中，从而获得可高效计算的内核表示。理论上证明最坏情况下损失以O(S^3N^{-3})衰减，概率场景下期望损失以O(log_{1/p}^3(N)N^{-3})收敛，为一般编码计算提供了理论保证与实用方案。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Coded computing has emerged as a powerful paradigm for mitigating the impact of straggling workers in distributed computing systems. However, existing coded-computing schemes are predominantly designed for the exact recovery of highly structured computations, such as polynomial evaluation and matrix multiplication, and typically rely on strict recovery thresholds. These assumptions significantly limit their applicability to modern machine-learning workloads, particularly deep neural networks (DNNs), whose computations generally lack rigid algebraic structure and, in many applications, require only accurate approximations rather than exact recovery.   To address this gap, we revisit coded computing from a learning-theoretic perspective and introduce General Coded Computing (GCC). Rather than adopting existing algebraic tools, GCC formulates coded computing through a natural end-to-end mean-squared error loss that directly measures the discrepancy between the desired computations and their recovered estimates. By deriving suitable upper bounds and restricting the encoder and decoder to a reproducing kernel Hilbert space (RKHS) with mild smoothness constraints, we show that both the encoder and decoder admit specific representations as linear combinations of RKHS kernel functions. This representation allows the corresponding coefficients to be computed efficiently. Moreover, this framework enables us to establish theoretical performance guarantees for GCC under two complementary straggler regimes. In the worst-case setting with $N$ worker nodes, and at most $S$ stragglers, we show that the end-to-end loss decays at least at rate $O(S^3N^{-3})$ for standard configurations. We then study a probabilistic setting in which each worker independently straggles with probability $p$. We prove that the expected loss can still converge at rate $O(\\log_{1/p}^3(N)N^{-3})$.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
