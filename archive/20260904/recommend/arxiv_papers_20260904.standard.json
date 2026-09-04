@@ -1,0 +1,107 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-04T20:58:57.275794+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.02967v1",
+      "source": "arxiv",
+      "title": "Privacy-Preserving Topology-Guided Safety for LLM-Based Multi-Agent Systems via Federated Graph Learning",
+      "abstract": "Topology-guided safeguards for LLM-based multi-agent systems (MAS) train a GNN over the inter-agent communication graph to localize risky agents and intervene on the topology---but they assume one operator can pool all labeled traces. Across organizations that assumption breaks: episodes contain private prompts, tool outputs, and proprietary workflows, and no silo alone sees the full attack distribution. We cast privacy-preserving MAS safeguarding as graph federated learning and instantiate FGLGuard: each operator fits an edge-featured graph attention detector on its own judge-labeled episode graphs and shares only model updates. The method couples a proximal local objective for non-IID clients, domain-balanced aggregation, over-refusal-constrained threshold calibration, corroborated upstream scoring, and a guarded rewrite for blocked answers. Federation is not optional: off-the-shelf transfer collapses under distribution shift (AUROC 0.51 to 0.70 only after in-domain retraining), so a deployable guard must adapt on each site's private traces. On Agent-SafetyBench, R-Judge, and AgentDojo, federated FGLGuard exceeds the in-domain centralized ceiling on all three benchmarks without pooling any data---where unsupervised anomaly guards and local-only training fail. One guard federated across four different-domain operators comes within 0.03 AUROC of multi-domain centralization, while any single-domain guard collapses on the others. Live FGLGuard cuts AgentDojo's ground-truth attack-success rate by 43% at near-unguarded utility, zero API cost, and negligible capability loss.",
+      "authors": [
+        "Jinxi Yu",
+        "Eric Hanchen Jiang",
+        "Levina Li",
+        "Dong Liu",
+        "Zhi Zhang",
+        "Wenxiao Zhao",
+        "Yanxuan Yu",
+        "Kai-Wei Chang",
+        "Ying Nian Wu"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR",
+        "cs.AI",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-09-02T07:57:12+00:00",
+      "link": "https://arxiv.org/pdf/2609.02967v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Federated graph learning over private agent communication graphs trains edge-featured graph attention detectors while sharing only model updates",
+      "llm_evidence_cn": "在私有智能体通信图上进行联邦GNN训练，各参与方仅共享模型更新以协作检测风险拓扑",
+      "llm_evidence": "在私有智能体通信图上进行联邦GNN训练，各参与方仅共享模型更新以协作检测风险拓扑",
+      "canonical_evidence": "在私有智能体通信图上进行联邦GNN训练，各参与方仅共享模型更新以协作检测风险拓扑",
+      "llm_tldr_en": "Topology-guided GNN safeguards for multi-agent systems require pooling private traces by one operator. FGLGuard recasts this as federated graph learning: local edge-featured graph attention detectors are trained on each operator's episodes and only model updates are shared, preserving privacy while enabling distributed topology guarding.",
+      "llm_tldr_cn": "跨机构的LLM多智能体系统需要根据交互拓扑识别风险智能体，但集中式方法要求共享私有轨迹，跨组织不可行。FGLGuard将这种安全防护建模为图联邦学习：各机构在本地智能体通信图上训练边特征图注意力检测器，只共享模型更新，并用近端正则与域平衡聚合应对非独立同分布数据。该方法在避免暴露原始提示、工具输出和工作流的条件下仍能进行风险拓扑检测，展示了联邦图学习在隐私保护智能体安全中的应用价值。",
+      "llm_tldr": "跨机构的LLM多智能体系统需要根据交互拓扑识别风险智能体，但集中式方法要求共享私有轨迹，跨组织不可行。FGLGuard将这种安全防护建模为图联邦学习：各机构在本地智能体通信图上训练边特征图注意力检测器，只共享模型更新，并用近端正则与域平衡聚合应对非独立同分布数据。该方法在避免暴露原始提示、工具输出和工作流的条件下仍能进行风险拓扑检测，展示了联邦图学习在隐私保护智能体安全中的应用价值。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "distributed training systems for graph neural networks",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.03905v1",
+      "source": "arxiv",
+      "title": "Every Kernel Is a Join: Automatic Multi-GPU Parallelism for AI Computations in Einsummable",
+      "abstract": "Distributing an AI computation across the GPUs of a multi-GPU server is one of the central problems in systems-for-AI. We present Einsummable, a prototype system that accepts a PyTorch-like description of an AI computation and automatically distributes it across a multi-GPU server, with no device assignments, sharding annotations, or communication operations written by the programmer. Einsummable models every operation as a relational join followed by an aggregation over tensor relations, in which the tuples contain sub-tensors. Each operation exposes its possible decompositions through what we call \"join-agg specs\". An optimizer then selects decompositions across the whole computation to minimize a communication-cost proxy. Because it searches decompositions rather than a menu of named strategies, Einsummable discovers plans that mesh-based auto-parallelizers cannot. Each decomposed operation is implemented by synthesizing an exchange program, which is a topology-aware generalization of Volcano's exchange operator. Einsummable invokes no canned collectives: all communication and aggregation is special-purpose, derived at compile time. Despite being fully automatic, Einsummable can outperform custom-designed implementations. For example, on LLaMA transformer blocks on an eight-GPU A100 server, Einsummable achieves a geometric-mean runtime of 8.97 ms, versus 13.80 ms for hand-tuned PyTorch and 15.90 ms for vLLM.",
+      "authors": [
+        "Zhimin Ding",
+        "Chen-Kuan Liao",
+        "Chima Adiole",
+        "Brianna Barrow",
+        "Fangzhou Du",
+        "Yu Hsiao",
+        "Ge Huang",
+        "Yicheng Jin",
+        "Ismail Syed",
+        "Chris Jermaine"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-09-03T14:24:02+00:00",
+      "link": "https://arxiv.org/pdf/2609.03905v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "automatic multi-GPU parallelization of AI computation that minimizes communication cost",
+      "llm_evidence_cn": "面向AI计算的自动多GPU并行并最小化通信代价",
+      "llm_evidence": "面向AI计算的自动多GPU并行并最小化通信代价",
+      "canonical_evidence": "面向AI计算的自动多GPU并行并最小化通信代价",
+      "llm_tldr_en": "Introduces Einsummable, which automatically distributes PyTorch-like AI computations over multi-GPU servers by modeling every kernel as a join and aggregation over tensor relations and minimizing a communication-cost proxy; no manual device assignments or communication operations are required.",
+      "llm_tldr_cn": "针对AI计算在多GPU服务器上难以自动划分和通信优化的问题，提出Einsummable原型系统，把每个算子看作张量关系上的连接加聚合，并利用join-agg规格暴露不同分解选择。优化器以通信代价代理为目标自动选择跨整体计算的分解，从而无需用户手工指定设备分配、分片注释或通信操作。该方法可降低并行系统编程开销，对分布式训练系统的自动并行设计具有方法借鉴价值。",
+      "llm_tldr": "针对AI计算在多GPU服务器上难以自动划分和通信优化的问题，提出Einsummable原型系统，把每个算子看作张量关系上的连接加聚合，并利用join-agg规格暴露不同分解选择。优化器以通信代价代理为目标自动选择跨整体计算的分解，从而无需用户手工指定设备分配、分片注释或通信操作。该方法可降低并行系统编程开销，对分布式训练系统的自动并行设计具有方法借鉴价值。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
