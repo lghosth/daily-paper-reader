@@ -48,7 +48,7 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-05</span>
+      <span class="dpr-home-dashboard-kicker">2026-09-06</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
     <strong class="dpr-home-dashboard-count">共 2 篇</strong>
@@ -58,7 +58,7 @@
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>2</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-09-05 05:00:15 北京时间<br>状态：成功<br>下次更新：约 2026-09-06 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-09-06 05:23:38 北京时间<br>状态：成功<br>下次更新：约 2026-09-07 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日速读2篇论文，聚焦大模型安全与AI并行计算两大前沿方向。最值得关注的是：用联邦图学习为LLM多智能体系统提供隐私保护拓扑安全，以及将计算内核视为“join”实现多GPU自动并行。建议对这两篇6.0分论文可进一步精读，对照自身场景评估其适用性。</p>
+<p>今日速读2篇，聚焦图结构数据下的协同学习与隐私遗忘。</p>
+<p>最值得关注：协同学习从欧氏数据迈向图结构的系统综述，以及基于空间熵的时空图数据遗忘方法。</p>
+<p>建议先从综述入手建立框架，再深入了解图学习中“遗忘”这一新兴隐私保护方向。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -94,7 +96,7 @@
     <strong class="dpr-home-dashboard-count">2 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Privacy-Preserving Topology-Guided Safety for LLM-Based Multi-Agent Systems via Federated Graph Learning">Privacy-Preserving Topology-Guided Safety for LLM-Based Multi-Agent Systems via Federated Graph Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="Every Kernel Is a Join: Automatic Multi-GPU Parallelism for AI Computations in Einsummable">Every Kernel Is a Join: Automatic Multi-GPU Parallelism for AI Computations in Einsummable</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="From Euclidean to Graph-Structured Data: A Survey of Collaborative Learning">From Euclidean to Graph-Structured Data: A Survey of Collaborative Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="Spatial Entropy based Partitioning for Spatiotemporal Graph Unlearning">Spatial Entropy based Partitioning for Spatiotemporal Graph Unlearning</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>2</strong></span></div>
 </section>

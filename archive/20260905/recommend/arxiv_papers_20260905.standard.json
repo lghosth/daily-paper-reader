@@ -1,0 +1,94 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-05T21:20:14.579705+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.02984v1",
+      "source": "arxiv",
+      "title": "From Euclidean to Graph-Structured Data: A Survey of Collaborative Learning",
+      "abstract": "The conventional approach to machine learning, that is, collecting data, training models, and performing inference in a single location, faces fundamental limitations, including scalability and privacy, that restrict its applicability. To address these challenges, recent research has explored collaborative learning approaches, including federated learning and decentralized learning, where individual agents perform training and inference locally, with limited collaboration. Most collaborative learning research focuses on Euclidean data with regular, grid-like structure (e.g., images, text). However, these approaches fail to capture the relational patterns in many real-world applications, best represented by graphs. Learning on graphs relies on message-passing mechanisms to propagate information between connected nodes, making it conceptually well-suited for collaborative environments where agents must exchange information. Yet, the opportunities and challenges of learning on graph-structured data in collaborative settings remain largely underexplored. This survey provides a comprehensive investigation of collaborative learning from Euclidean to graph-structured data, aiming to consolidate this emerging field. We begin by reviewing its foundational principles for Euclidean data, organizing them along three core dimensions: learning effectiveness, efficiency, and privacy preservation. We then extend the discussion to graph-structured data, introducing a taxonomy of graph distribution scenarios, characterizing associated statistical heterogeneities, and developing standardized problem formulations and algorithmic frameworks. Finally, we systematically identify open challenges and promising research directions.",
+      "authors": [
+        "Rémi Bourgerie",
+        "Šarūnas Girdzijauskas",
+        "Viktoria Fodor"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.MA",
+        "cs.SI"
+      ],
+      "published": "2026-09-02T13:49:46+00:00",
+      "link": "https://arxiv.org/pdf/2609.02984v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Survey of collaborative learning for graph-structured data, covering federated and decentralized GNN training",
+      "llm_evidence_cn": "面向图结构数据协作学习综述，涵盖分布式与联邦GNN训练",
+      "llm_evidence": "面向图结构数据协作学习综述，涵盖分布式与联邦GNN训练",
+      "canonical_evidence": "面向图结构数据协作学习综述，涵盖分布式与联邦GNN训练",
+      "llm_tldr_en": "This survey reviews collaborative learning on graph-structured data, covering federated and decentralized training methods and discussing scalability, privacy, and communication challenges for graph neural networks.",
+      "llm_tldr_cn": "集中式学习受可扩展性和隐私限制，协作学习成为重要范式，但现有方法多面向欧氏数据。该综述聚焦图结构数据的协作学习，梳理联邦学习与去中心化学习在图上的应用，并分析图神经网络训练中的消息传递、通信开销和数据异质性等挑战。其系统化归纳可为分布式GNN训练系统与通信优化研究提供参照。",
+      "llm_tldr": "集中式学习受可扩展性和隐私限制，协作学习成为重要范式，但现有方法多面向欧氏数据。该综述聚焦图结构数据的协作学习，梳理联邦学习与去中心化学习在图上的应用，并分析图神经网络训练中的消息传递、通信开销和数据异质性等挑战。其系统化归纳可为分布式GNN训练系统与通信优化研究提供参照。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "distributed training systems for graph neural networks",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.29360v1",
+      "source": "arxiv",
+      "title": "Spatial Entropy based Partitioning for Spatiotemporal Graph Unlearning",
+      "abstract": "Spatiotemporal graphs underpin applications such as traffic forecasting, weather forecasting, and healthcare monitoring. Privacy regulations such as the GDPR and the CCPA require the complete removal of unauthorized data from trained models, but achieving this on a spatiotemporal graph is difficult: because information propagates globally through both spatial and temporal message passing, fully erasing a node's influence forces costly full-graph retraining. ST-graph unlearning requires both exactness and efficiency. We propose IsleNet, which uses spatial-entropy-guided partitioning to create balanced, locally coherent subgraphs and reconnects them with lightweight virtual edges. Upon an unlearning request, only the affected subgraph encoder and virtual-edge layer are retrained, ensuring exact removal with low cost. Experiments on four real-world benchmarks show that IsleNet attains up to 94% of full-graph accuracy while reducing unlearning time by up to an order of magnitude. Our code is publicly available at https://github.com/wenlu-lab/STGraphUnlearning.",
+      "authors": [
+        "Qiming Guo",
+        "Wenbo Sun",
+        "Ye Wang",
+        "Wenlu Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-29T16:49:00+00:00",
+      "link": "https://arxiv.org/pdf/2608.29360v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Spatial-entropy-guided graph partitioning into balanced locally coherent subgraphs with lightweight virtual edges; transferable to distributed GNN graph partition",
+      "llm_evidence_cn": "提出空间熵引导的图分区策略生成平衡子图，可迁移至分布式GNN的图划分需求",
+      "llm_evidence": "提出空间熵引导的图分区策略生成平衡子图，可迁移至分布式GNN的图划分需求",
+      "canonical_evidence": "提出空间熵引导的图分区策略生成平衡子图，可迁移至分布式GNN的图划分需求",
+      "llm_tldr_en": "Introduces IsleNet for exact and efficient spatiotemporal graph unlearning by spatial-entropy-guided partitioning into locally coherent subgraphs connected with virtual edges, retraining only affected parts; partitioning idea is transferable to distributed graph learning.",
+      "llm_tldr_cn": "针对时空图遗忘中信息全局传播导致全图重训代价高的问题，提出IsleNet，利用空间熵引导分区将图划分为平衡且局部连贯的子图，并通过轻量虚拟边重连；收到遗忘请求时，只需重训受影响子图的编码器和虚拟边。实验表明该方法在保持精确遗忘的同时显著提升效率，其平衡子图划分策略对分布式图神经网络中的图分区设计也有借鉴意义。",
+      "llm_tldr": "针对时空图遗忘中信息全局传播导致全图重训代价高的问题，提出IsleNet，利用空间熵引导分区将图划分为平衡且局部连贯的子图，并通过轻量虚拟边重连；收到遗忘请求时，只需重训受影响子图的编码器和虚拟边。实验表明该方法在保持精确遗忘的同时显著提升效率，其平衡子图划分策略对分布式图神经网络中的图分区设计也有借鉴意义。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
