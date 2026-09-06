@@ -1,0 +1,2630 @@
+Title: D-FROST: Decentralized Federated pRompt-tuning via Optimal tranSporT for Non-IID and Imbalanced Data
+
+URL Source: https://arxiv.org/pdf/2609.01802v1
+
+Published Time: Thu, 03 Sep 2026 00:14:37 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+# D-FROST: Decentralized Federated pRompt-tuning via Optimal tranSporT for Non-IID and Imbalanced Data 
+
+# Quan Minh Nguyen 1∗, Hoang M. Ngo 1∗, Trong Nghia Hoang 2, My T. Thai 1†
+
+> 1
+
+University of Florida, FL, USA 
+
+> 2
+
+Washington State University, WA, USA 
+
+> †
+
+Correspondence to: mythai@cise.ufl.edu 
+
+Abstract 
+
+Prompt tuning provides a parameter-efficient way to adapt foundation models (FMs) by freezing the pretrained back-bone and updating only a small set of learnable prompts. This property makes prompt tuning especially suitable for decentralized federated learning (DFL), where exchanging full-model updates can be prohibitively expensive. However, prompt tuning in DFL introduces new challenges. Prompt sets learned from heterogeneous local data may not be index-wise aligned, making standard decentralized averaging unsuitable. In addition, the algorithm should be theoretically guaranteed to achieve consensus and make progress toward the shared objective. In this work, we provide the first study of prompt tuning in DFL. We formulate decentralized prompt tuning as a Wasserstein-based optimization problem over prompt measures, which captures the set-valued structure of prompts. We then propose D-FROST, an optimal-transport-based (OT-based) decentralized prompt-tuning algorithm that merges neighborhood prompts into compact representative prompt sets through transportation-based matching. We further ana-lyze D-FROST by bounding the Wasserstein consensus error across clients, and establishing convergence of the network-level prompt barycenter to a neighborhood of stationarity. Experiments under heterogeneous client data demonstrate the effectiveness of D-FROST for decentralized prompt tuning. 
+
+# 1 Introductions 
+
+Foundation models (FMs) have become a dominant founda-tion for modern AI systems, but adapting them to downstream tasks remains costly when all model parameters must be fine-tuned. Prompt tuning provides a parameter-efficient al-ternative by freezing the pretrained backbone and optimizing only a small set of learnable prompts (Li and Liang 2021; Lester, Al-Rfou, and Constant 2021). This makes prompt tun-ing particularly attractive in federated learning (FL), where data are distributed across clients and communication costs are a major bottleneck. Instead of transmitting full model updates, federated prompt tuning only exchanges lightweight prompt parameters. As state-of-the-art models now increas-ingly rely on on fine-tuning foundation models like LLMs and Vision Transformers, prompt tuning in FL has emerged as a promising way to fine-tune large pretrained models over 
+
+> ∗
+
+These authors contributed equally. 
+
+> †
+
+Corresponding author. 
+
+distributed data without centralizing raw information. (Zhao et al. 2023; Che et al. 2023; Weng et al. 2024). Decentralized federated learning (DFL) is a server-free variant of FL where clients communicate only with graph neighbors. For pre-trained model adaptation in DFL, prompt tuning offers a natural way to reduce communication by exchanging only lightweight prompt parameters. However, prompt tuning in DFL introduces two challenges. First, a prompt-tuning algorithm in DFL must ensure convergence, where local prompt states reach consensus and the network-level model progresses toward the shared objective. To the best of our knowledge, no prior work studies convergence of prompt tuning in DFL. Existing convergence studies for full-model DFL are not directly applicable because they rely on coordinate-aligned parameter vectors and Euclidean averaging, while prompt-tuning DFL operates on unordered prompt sets (Yuan, Ling, and Yin 2016; Lian et al. 2017; Tang et al. 2018; Koloskova et al. 2020). Second, prompts learned from heterogeneous data may not be index-wise aligned, leading to a prompt misalignment issue where directly averaging prompts by index can merge unrelated prompt directions. In literature, PFPT (Weng et al. 2024) addresses this issue in centralized FL through probabilistic prompt aggregation. However, extending this idea to decentralized communication is nontrivial, since each client only observes local neighborhood prompts rather than a global collection. 
+
+Contributions. To the best of our knowledge, this is the first work to study prompt tuning in decentralized federated learning. The key contributions and insights of this work are summarized as follows: (i) We formulate decentralized prompt tuning as aWasserstein-based optimization problem over prompt mea-sures. This formulation preserves the standard DFL goal of learning a shared model state, while replacing Euclidean parameter consensus with Wasserstein prompt-measure consensus. As a result, it naturally captures the set-valued structure of client prompts. (ii) We propose D-FROST, an OT-based decentralized prompt-tuning algorithm. Each client first updates its local prompts and then applies an OT-based Merge function to summa-rize neighborhood prompts into a compact representative prompt set. This merge operator avoids direct index-wise averaging and addresses prompt misalignment by match-ing prompts according to their geometry in the prompt arXiv:2609.01802v1 [cs.LG] 1 Sep 2026 embedding space. (iii) We provide a convergence analysis of D-FROST. We first show that the local OT-based Merge solver becomes sta-ble as the number of inner OT steps increases. We then establish that D-FROST controls the Wasserstein consen-sus error across clients and that the network-level prompt barycenter converges to a neighborhood of stationarity for the shared prompt-tuning objective. (iv) We empirically evaluate D-FROST against various de-centralized federated prompt-tuning baselines based on existing DFL techniques. Through extensive experiments across a combination of eight diverse vision datasets, our results consistently show that our method is effective in data imbalance and extremely heterogeneous scenarios in decentralized federated prompt-tuning. 
+
+# 2 Related Works 
+
+2.1 Prompt Tuning and Federated Prompt Tuning 
+
+Prompt tuning aims to adapt pretrained models by optimizing a small set of learnable prompt parameters while keeping the backbone model frozen. Early representative works include prefix tuning, which optimizes continuous prefixes for genera-tion tasks (Li and Liang 2021), and soft prompt tuning, which learns task-specific continuous prompts and becomes com-petitive with full fine-tuning as model scale increases (Lester, Al-Rfou, and Constant 2021). Recent works extend prompt tuning to federated learning. FedPrompt aggregates prompt parameters rather than full models to reduce communication and storage costs (Zhao et al. 2023), while PFPT uses probabilistic prompt aggregation to address non-IID and imbalanced data (Weng et al. 2024). However, these methods rely on centralized server aggregation and do not consider decentralized communication among graph neighbors. Moreover, heterogeneous clients may learn unaligned prompt sets, making index-wise averaging prone to combining mismatched prompt directions. 
+
+2.2 Decentralized Federated Learning 
+
+Unlike centralized FL, decetralized FL removes the server and lets clients communicate only with their neighbors over a graph. Early methods, such as distributed subgradient and decentralized gradient descent, combine local optimization with neighbor averaging (Yuan, Ling, and Yin 2016). Later decentralized SGD analyses established competitive conver-gence under suitable mixing conditions (Lian et al. 2017; Tang et al. 2018; Koloskova et al. 2020). DFedAvgM (Sun, Li, and Wang 2022) adapted the FedAvg approach of multiple local SGD iterations to the decentralized setting. DFedSAM (Shi et al. 2023) employed the sharpness-aware minimization optimizer to reduce the in consistency of local models. NTK-DFL (Thompson et al. 2025) improves robustness to data heterogeneity through neural tangent kernel dynamics, but does not scale well to CNNs or Transformers. Most decentralized learning methods assume that client states are coordinate-aligned model parameter vectors, so 
+
+Merge is implemented by weighted averaging through a mix-ing matrix. This assumption does not hold for decentralized prompt tuning, where prompts form unordered, potentially misaligned sets.Thus, our work replaces parameter averaging with OT-based merging for Wasserstein consensus. 
+
+# 3 Preliminaries 
+
+3.1 Decentralized Federated Learning (DFL) 
+
+DFL considers a network of clients that collaboratively opti-mize a learning objective without relying on a central server. The clients are connected through a communication graph 
+
+G = ( V, E ), where each node u ∈ V represents a client and each edge (u, v ) ∈ E indicates direct communication. Each client u owns a private dataset Du, and the data distributions can be heterogeneous across clients. Let N (u) = {v ∈ V : ( u, v ) ∈ E} denote the neighbor set of client u. The communication topology is often represented by a mixing matrix W ∈ Rm×m, where Wuv > 0 only if 
+
+v = u or v ∈ N (u). The graph connectivity is characterized by ρ := W − 1 
+
+> m
+
+11 ⊤ 
+
+> 2
+
+, where ρ < 1 for a connected graph. A smaller ρ indicates faster information mixing and stronger consensus among clients. A decentralized learning round consists of two steps: 
+
+LocalUpdate and Merge . Each client first updates its local state using private data, then exchanges states with neighboring clients and aggregates the received information. In classical full-model decentralized training, the local state is the parameter vector of a shared architecture. Accordingly, 
+
+LocalUpdate typically performs one or more stochastic gradient steps, while Merge applies mixing-matrix-weighted averaging over neighboring parameters (Lian et al. 2017; Tang et al. 2018; Koloskova et al. 2020). In this work, we study DFL with prompt tuning, where the pretrained backbone is frozen and only a small set of learnable prompt parameters is updated. Therefore, the client state is a prompt set rather than the full model parameter vector, and both LocalUpdate and Merge take different forms from full-model decentralized training. 
+
+3.2 Measure Space and Wasserstein Distance 
+
+In our setting, each client maintains a set of learnable prompts as its state. A more natural view is to treat each prompt set as a distribution over the prompt embedding space. Under this view, comparing two prompt sets becomes a problem of comparing two probability measures. Let P(Rd) denote the space of probability measures on 
+
+Rd, and let P2(Rd) denote the subset of probability measures with finite second moment: 
+
+P2(Rd) := 
+
+
+
+μ ∈ P (Rd) : 
+
+Z
+
+> Rd
+
+∥x∥2dμ (x) < ∞
+
+
+
+.
+
+This space provides a geometric setting for studying distri-butions supported in a Euclidean embedding space, such as prompt embeddings. Given two probability measures 
+
+μ, ν ∈ P 2(Rd), a coupling between them is a joint prob-ability measure π ∈ P (Rd × Rd) whose marginals are μ and 
+
+ν. We denote the set of all such couplings by 
+
+Π( μ, ν ) := {π ∈ P (Rd × Rd) : π(A × Rd) = μ(A),π(Rd × B) = ν(B)}.The squared 2-Wasserstein distance between μ and ν is defined as 
+
+W 22 (μ, ν ) := inf 
+
+> π∈Π( μ,ν )
+
+Z
+
+> Rd×Rd
+
+∥x − y∥2dπ (x, y ).
+
+Intuitively, W 22 (μ, ν ) measures the minimum transportation cost required to move the mass of μ to match ν under the squared Euclidean cost. For empirical measures, 
+
+μ =
+
+> N
+
+X
+
+> a=1
+
+raδxa , ν =
+
+> M
+
+X
+
+> i=1
+
+ciδyi ,
+
+where ra, c i ≥ 0, PNa=1 ra = 1 , and PMi=1 ci = 1 , the coupling can be represented by a transport matrix P ∈ RN ×M 
+
+> +
+
+.The feasible set is 
+
+Π( r, c ) := P ∈ RN ×M 
+
+> +
+
+: P 1M = r, P ⊤1N = c .
+
+In this discrete case, the squared 2-Wasserstein distance is: 
+
+W 22 (μ, ν ) = min  
+
+> P∈Π( r,c )
+> N
+
+X
+
+> a=1
+> M
+
+X
+
+> i=1
+
+Pai ∥xa − yi∥2.
+
+Therefore, Wasserstein distance compares two empirical distributions by optimizing over all possible matchings be-tween their support points, rather than assuming a fixed ordering. This property is particularly useful for prompt sets, where the elements are not naturally ordered and can be misaligned across clients. 
+
+# 4 Decentralized Wasserstein Prompt Tuning 
+
+In this section, we first introduce the decentralized prompt tuning setup. Then, we define the global objective as learning a shared prompt measure in the Wasserstein space. Finally, we propose an OT-based algorithm to approximately solve the decentralized prompt tuning problem. 
+
+4.1 Setup 
+
+Let G = ( V, E ) be an undirected communication graph with 
+
+|V | = M clients. Each client u ∈ V owns a private local dataset Du. The clients collaboratively adapt a pretrained backbone model F while keeping the backbone parameters fixed. Therefore, each client only maintains and updates a local prompt set. At communication round t, client u maintains 
+
+ω(t) 
+
+> u
+
+= ω(t) 
+
+> u1
+
+, . . . , ω (t) 
+
+> un
+
+, ω(t) 
+
+> ui
+
+∈ Rd,
+
+where n is the number of prompts and d is the prompt dimension. We view this set as an empirical probability measure 
+
+μ(t) 
+
+> u
+
+:= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+δω(t)
+
+> ui
+
+.
+
+This representation treats the prompt state as an unordered set of support points in the prompt embedding space. Let N (u) = {v ∈ V : ( u, v ) ∈ E} denote the neighbor set of client u. Since each client updates prompts using its own data distribution, neighboring prompt sets may become misaligned. Wasserstein distance provides a natural way to compare such prompt measures because it compares sets through optimal transport rather than assuming index-wise correspondence. 
+
+4.2 Decentralized Wasserstein Prompt Tuning Objective 
+
+As in classical DFL, our goal is to learn one shared model state. In our setting, this shared state is a prompt measure rather than a full model parameter vector. Let P2(Rd) denote the space of probability measures with finite second moment over the prompt embedding space. We define the global prompt-tuning objective as 
+
+min 
+
+> μ∈P 2(Rd)
+
+F(μ) := 1
+
+M
+
+> M
+
+X
+
+> u=1
+
+Lu(μ), (1) where Lu(μ) is the local prompt-tuning loss of client u
+
+evaluated at prompt measure μ.In practice, there is no central server that directly maintains the shared prompt measure μ. Instead, each client u maintains a local empirical prompt measure μ(t) 
+
+> u
+
+= 1
+
+> n
+
+Pni=1 δω(t)
+
+> ui
+
+.
+
+These local prompt measures can be viewed as decentralized approximations of the shared prompt measure in (1). To describe the collective state of the network, we use a network-level prompt barycenter, denoted by μ(t)avg . Formally, it can be viewed as a Wasserstein barycenter of the local prompt measures: 
+
+μ(t)avg ∈ arg min 
+
+> μ∈P 2(Rd)
+
+1
+
+M
+
+> M
+
+X
+
+> u=1
+
+W 22
+
+ μ, μ (t)
+
+> u
+
+. (2) This barycenter provides a useful analytical object for describ-ing the collective behavior of the decentralized system. Under this view, the objective of decentralized prompt tuning follows the same two-fold principle as classical DFL. First, the decentralized trajectory should make progress to-ward minimizing the shared global objective in (1). Second, the local client states should achieve network consensus. In our setting, consensus means that the local prompt measures become close in Wasserstein distance. We therefore mea-sure the disagreement among local prompt measures by the Wasserstein consensus error 
+
+ε(t) := 1
+
+M
+
+> M
+
+X
+
+> u=1
+
+W 22
+
+ μ(t) 
+
+> u
+
+, μ (t)avg 
+
+. (3) A smaller value of ε(t) indicates that the decentralized local prompt measures are more tightly concentrated around the network-level prompt barycenter, and hence that the clients have better prompt-level consensus. This problem definition is natural for decentralized prompt tuning for two reasons. First, it preserves the standard DFL objective structure. In details, the target is still a single shared model state that minimizes the average client loss, rather than a separate personalized objective for each client. Second, it replaces Euclidean parameter consensus with Wasserstein prompt-measure consensus, which is more appropriate for set-valued prompt states. Since prompt indices across clients may not be aligned, Wasserstein distance compares prompt sets through optimal matching instead of forcing coordinate-wise or index-wise correspondence. 4.3 OT-Based Decentralized Algorithm 
+
+We now propose an OT-based decentralized algorithm, named D-FROST, for solving the decentralized prompt-tuning prob-lem. The algorithm aims to make progress on the shared objective in (1) while maintaining Wasserstein consensus among the local prompt measures, as measured by (3). The details are summarized in Algorithm 1. In general, each com-munication round of D-FROST consists of two steps: a local prompt update and a neighbor merging step. The local update makes progress on the local loss, while the neighbor merging step promotes consensus among local prompt measures. We first describe the local prompt update. 
+
+˜ω(t) 
+
+> u
+
+← LocalUpdate  F, D u, ω (t−1) 
+
+> u
+
+. (4) This step produces the locally adapted prompt set ˜ω(t) 
+
+> u
+
+before neighbor communication. Next, client u exchanges ˜ω(t) 
+
+> u
+
+with its neighbors and forms the neighborhood prompt collection 
+
+Ω(t) 
+
+> u
+
+:= ˜ ω(t)
+
+> u
+
+] ] 
+
+> v∈N (u)
+
+˜ω(t) 
+
+> v
+
+, N (t) 
+
+> u
+
+:= Ω(t) 
+
+> u
+
+. (5) The collection Ω(t) 
+
+> u
+
+contains prompt information from client u
+
+and its neighbors. This exchange supports decentralized con-sensus by incorporating neighborhood knowledge. However, retaining all received prompts can increase storage and com-putation costs, so Ω(t) 
+
+> u
+
+should be summarized by a compact prompt set that preserves the essential information. In D-FROST, this compact set is obtained through an OT-based prompt merging problem. The merge step approximates the collection Ω(t) 
+
+> u
+
+by a compact empirical measure under a transportation-based geometry. Thus, the OT-based Merge 
+
+function summarizes received prompts while supporting Wasserstein consensus among local prompt measures. We now describe the OT-based prompt merging problem. Given Ω(t) 
+
+> u
+
+= za  
+
+> N(t)
+> u
+> a=1
+
+, the goal is to construct a representa-tive prompt set 
+
+Φ = {ϕi}ni=1 , ϕi ∈ Rd.
+
+We introduce a transport plan P ∈ RN (t)  
+
+> u×n
+> +
+
+, where Pai 
+
+measures how much the neighborhood prompt za contributes to the representative prompt ϕi. The matching cost is 
+
+Cai (Φ) := 12σ2 ∥za − ϕi∥2 , (6) where σ2 controls the spatial scale of the cost. We assign uniform source mass to the neighborhood prompts: 
+
+q := 1
+
+N (t)
+
+> u
+
+1N (t)
+
+> u
+
+,
+
+and impose the source marginal constraint P 1n = q. This ensures that every neighborhood prompt participates in the merge. We do not impose a fixed target marginal over the representative prompts, so different merged prompts can receive different amounts of mass based on the geometry of 
+
+Ω(t) 
+
+> u
+
+.Client u computes the merged prompt set by solving 
+
+min    
+
+> P≥0,Φ
+
+Ju(P, Φ) := ⟨P, C (Φ) ⟩
+
+| {z }
+
+> spatial matching
+
++ε 
+
+> N(t)
+> u
+
+X
+
+> a=1
+> n
+
+X
+
+> i=1
+
+Pai (log Pai − 1) 
+
+| {z }
+
+> entropy regularization
+
++ λ
+
+2σ2
+
+> n
+
+X
+
+> i=1
+
+∥ϕi∥2
+
+| {z } 
+
+> L2regularization
+
+s.t. P 1n = q. (7) 
+
+Here, ε > 0 controls the softness of the assignments, and 
+
+λ > 0 controls the regularization strength. The spatial term matches neighborhood prompts to representative prompts, the entropy term produces soft transport assignments, and the 
+
+L2 term stabilizes the representatives. The objective in (7) is block-wise tractable. Fixing Φ gives a closed-form update for P , and fixing P gives a closed-form update for Φ. Thus, each client solves the OT merge problem by alternating between transport and barycenter updates. 
+
+Transport step. Given the current representative prompts 
+
+Φ(s−1) , client u updates the transport plan. Since the source marginal constraint fixes only the row sums of P , the rows of 
+
+P decouple, yielding the closed-form update 
+
+P (s) 
+
+> ai
+
+= 1
+
+N (t)
+
+> u
+
+exp   − Cai (Φ (s−1) )/ε Pnj=1 exp   − Caj (Φ (s−1) )/ε  . (8) This update softly assigns each neighborhood prompt to the representative prompts. Smaller ε gives sharper assignments, while larger ε gives smoother mixing. 
+
+Barycenter step. Given the updated transport plan P (s),client u updates each representative prompt by setting the gradient of (7) with respect to ϕi to zero, yielding 
+
+ϕ(s) 
+
+> i
+
+=
+
+PN (t) 
+
+> u
+> a=1
+
+P (s) 
+
+> ai
+
+za
+
+PN (t) 
+
+> u
+> a=1
+
+P (s) 
+
+> ai
+
++ λ. (9) Thus, each representative prompt is a regularized weighted average of the neighborhood prompts assigned to it. This step moves the representatives toward dominant prompt directions without relying on index-wise averaging. After S alternating steps, client u sets 
+
+ω(t) 
+
+> u
+
+← Merge OT 
+
+ Ω(t)
+
+> u
+
+ := Φ (S).
+
+This completes the OT-based Merge step. The overall proce-dure alternates between local adaptation, which improves the client-specific prompt loss, and OT-based neighbor merging, which promotes consensus among prompt measures. 
+
+# 5 Theoretical Analysis of D-FROST 
+
+In this section, we analyze the theoretical properties of D-FROST. First, we show that the local OT-based Merge step becomes stable as the number of inner OT steps increases. Second, we analyze the global behavior of D-FROST and show that the local prompt measures remain close to a network-level barycenter, which then converges to a neighborhood of Wasserstein stationarity for the shared prompt-tuning objec-tive in (1). All proofs are deferred to appendix B. Figure 1: Test accuracy of all methods on FiveDataset (50 clients) under three non-IID settings. 
+
+5.1 Stability of the Local OT-Based Merge 
+
+We first analyze the local OT-based Merge operator. Recall that after client u forms the neighborhood prompt collection 
+
+Ω(t) 
+
+> u
+
+, it solves the local OT problem in (7) by alternating between the transport update and the barycenter update. Since the merged prompt set is used as the client state for the next communication round, the inner OT solver should produce a stable representative prompt set. 
+
+Theorem 1 (Stability of the Alternating OT Solver) . Let ∆(s)
+
+be defined as above, and let μ := min  ε, λσ2
+
+ > 0. After 
+
+S alternating OT steps, the minimum iterate difference is bounded by an O(1 /√S) rate: 
+
+min  
+
+> 1≤s≤S
+
+∆(s) ≤
+
+s
+
+4 Ju(P (0) , Φ(0) ) − J ∗
+
+μS .
+
+Let ∆(s) := ∥P (s) − P (s−1) ∥F + ∥Φ(s) − Φ(s−1) ∥F de-note the discrepancy between two consecutive inner iterations. Theorem 1 provides a quantitative stability guarantee for the local OT-based Merge step. It shows that among the first S
+
+alternating iterations, there exists an iterate whose change from the previous iterate ∆(s) is bounded by O(1 /√S).Thus, increasing the number of inner OT steps makes the local merge output progressively more stable. The bound also shows that stability depends on the initial objective gap Ju(P (0) , Φ(0) ) − J ∗ and the effective strong-convexity parameter μ = min( ε, λ/σ 2). This local control is crucial be-cause the approximation error of the OT-based merge directly affects network-level consensus and global convergence. 
+
+5.2 Global Wasserstein Consensus and Stationarity 
+
+We now analyze the global behavior of D-FROST. The analysis establishes two main results. First, D-FROST controls the consensus error ε(t) defined in (3), meaning that the local prompt measures remain close to a network-level barycenter 
+
+μ(t)avg . Second, this barycenter converges to a neighborhood of stationarity for the shared prompt-tuning objective in (1). For each client u, we represent its prompt set at round t as the empirical measure μ(t) 
+
+> u
+
+. We have μ(t)avg as the Wasserstein barycenter of the local prompt measures, as defined in (2). With the learning rate η, we model the local update as: 
+
+μ+( t) 
+
+> u
+
+=  I − η∇W2 Fu
+
+
+
+> #
+
+μ(t−1)  
+
+> u
+
+.
+
+The subsequent OT-based Merge step approximates the ideal neighborhood barycenter using a compact representative prompt measure. We capture the approximation error of this finite-prompt OT merge by the following bounded-error: 
+
+E
+
+
+
+˜v(t) − v(t) 2 
+
+> L2(μ(t−1) avg )
+
+
+
+≤ δ2
+
+> n
+
+(S),
+
+where ˜v(t) denotes the ideal displacement induced by the un-compressed barycenter, v(t) denotes the actual displacement induced by the OT-merged barycenter, and δ2
+
+> n
+
+(S) captures the approximation error caused by the finite prompt budget n
+
+and the finite number of OT steps S.We use the following standard assumptions. 
+
+Assumption 1 (Wasserstein Smoothness) . Each local loss functional Fu(μ) is L-smooth over the 2-Wasserstein space. Consequently, the global functional F(μ) = 1
+
+> M
+
+PMu=1 Fu(μ)
+
+is also L-smooth and bounded below by F∗ > −∞ .
+
+Assumption 2 (Bounded Gradient Variance) . The local Wasserstein gradients have uniformly bounded second mo-ment: 
+
+E ∥∇ W2 Fu(μ)∥2
+
+> L2
+
+ ≤ G2. (10) 
+
+Assumption 3 (Bounded Prompt Support) . There exists a constant D > 0 such that for all clients, prompts, and communication rounds, 
+
+∥ω(t) 
+
+> ui
+
+∥ ≤ D. (11) 
+
+Assumption 4 (Graph Mixing) . The communication matrix 
+
+W ∈ RM ×M is symmetric and doubly stochastic. Its mixing factor satisfies 
+
+ρ := W − 1
+
+M 11 ⊤
+
+> 2
+
+< 1. (12) The next theorem states that the local prompt measures remain close to the network-level barycenter. 
+
+Theorem 2 (Wasserstein Consensus Bound) . Suppose As-sumptions 1–4. the expected network consensus error ε(t)Algorithm 1: Decentralized Wasserstein Prompt Tuning 
+
+Require: Graph G = ( V, E ), backbone F , local datasets 
+
+{Du}u∈V , rounds T , OT steps S, number of prompts n,entropy weight ε, regularization weight λ, scale σ2 
+
+> 1:
+
+Initialize local prompt sets ω(0)  
+
+> u
+
+for all u ∈ V 
+
+> 2:
+
+for t = 1 to T do  
+
+> 3:
+
+for all u ∈ V in parallel do  
+
+> 4:
+
+Local update: 
+
+˜ω(t) 
+
+> u
+
+← LocalUpdate  F, D u, ω (t−1) 
+
+> u
+
+ 
+
+> 5:
+
+Neighbor exchange: send ˜ω(t) 
+
+> u
+
+to neighbors and receive {˜ω(t) 
+
+> v
+
+: v ∈ N (u)} 
+
+> 6:
+
+Neighborhood collection: 
+
+Ω(t) 
+
+> u
+
+= ˜ ω(t)
+
+> u
+
+] ] 
+
+> v∈N (u)
+
+˜ω(t) 
+
+> v
+> 7:
+
+Write Ω(t) 
+
+> u
+
+= {ωa}N (t) 
+
+> u
+> a=1
+> 8:
+
+Initialize representative prompts Φ(0) = {ϕ(0)  
+
+> i
+
+}ni=1 
+
+from Ω(t) 
+
+> u
+
+or from ω(t−1)  
+
+> u
+> 9:
+
+for s = 1 to S do  
+
+> 10:
+
+Construct cost matrix C(Φ (s−1) ) using (6)  
+
+> 11:
+
+Update transport plan P (s) using (8)  
+
+> 12:
+
+Update representative prompts Φ(s) using (9)  
+
+> 13:
+
+end for  
+
+> 14:
+
+Merge output: set ω(t) 
+
+> u
+
+← Φ(S) 
+
+> 15:
+
+end for  
+
+> 16:
+
+end for  
+
+> 17:
+
+return Final local prompt sets {ω(T ) 
+
+> u
+
+}u∈V
+
+converges asymptotically to a stationary bounded neighbor-hood. Specifically, for any t → ∞ :
+
+ε(t) ≤ β
+
+1 − α = O
+
+ δ2
+
+> n
+
+(S)1 − D ρ2 + η2G2
+
+1 − D ρ2
+
+
+
+, (13) 
+
+where α = 6 Dρ2(1 + η2L2) < 1, and β = 6 δ2
+
+> n
+
+(S) + 6Dρ2η2G2, and D > 0 is a metric translation constant. 
+
+Theorem 2 shows that D-FROST controls prompt disagree-ment in Wasserstein space. The consensus neighborhood has two sources. The first term, δ2
+
+> n
+
+(S), is the approximation error introduced by representing the exchanged neighborhood prompts with a compact OT-merged prompt set. The second term, η2G2, is caused by heterogeneous local updates. The denominator depends on the graph mixing factor ρ. Specifi-cally, better-connected graphs have smaller ρ and therefore tighter consensus neighborhoods. Finally, we state the stationarity result. 
+
+Theorem 3 (Convergence to a Wasserstein Stationarity Neigh-borhood) . Suppose Assumptions 1–4. Let η ≤ 1/L and α < 1.Then after T communication rounds, D-FROST satisfies             
+
+> 1
+> T
+> TX
+> t=1
+> E
+> 
+> ∇W2F
+> 
+> μ(t−1) avg
+> 2
+> L2(μ(t−1) avg )
+> 
+> ≤
+> 2
+> 
+> F(μ(0) avg )− F ∗
+> 
+> ηT
+> +O
+> η2L2G2
+> 1− D ρ2
+> 
+> +O
+> L2δ2
+> n(S)1− D ρ2+δ2
+> n(S)
+> η2
+> 
+> .
+
+Figure 2: Total Wasserstein consensus error across all clients on FiveDataset under Dirichlet α = 0 .1.
+
+Figure 3: Topology-aware performance across communication topologies on FiveDataset under Dirichlet α = 0 .1.Theorem 3 shows that D-FROST converges to a neigh-borhood of Wasserstein stationarity. The first term is the standard optimization term and vanishes as T increases. The second term reflects the effect of local gradient variance and graph-induced consensus error. The third term captures the approximation error of the OT-based Merge step. Thus, more accurate local merging, achieved by increasing the prompt budget n or using more OT steps S, leads to a tighter stationarity neighborhood. 
+
+# 6 Experiments 
+
+6.1 Experiment Setup 
+
+Dataset and Data Partition We induce data heterogene-ity by pooling classification datasets from different visual domains. FourDataset (Weng et al. 2024) combines MNIST-M, Fashion-MNIST, CINIC-10, and MMAFEDB and Five-Dataset (Wang et al. 2022) combines CIFAR-10, MNIST, Fashion-MNIST, SVHN, and notMNIST. Their combination introduces substantial distributional heterogeneity. We use two partition regimes. In the Dirichlet split , each client draws a class-proportion vector pu ∼ Dirichlet( α · 1s) over its s
+
+domain classes; smaller α means stronger skew, and we report 
+
+α = 0 .1 and α = 0 .5. In the extreme non-IID split , each client is dominated by a single class ( 99% of its samples), with the remaining 1% pooled and spread across the others (Weng et al. 2024). Both schemes are applied within each domain and the resulting client subsets merged. 
+
+Baselines We compare our method against three popular DFL baselines: D-PSGD-PT (Lian et al. 2017), DFedAvgM-PT (Sun, Li, and Wang 2022), and DFedSAM-PT (Shi et al. Figure 4: Robustness of D-FROST under varying network conditions on FiveDataset ( α = 0 .1). Left: increasing link drop probability p. Center: increasing the number of clients. Right: decreasing the number of clients sampled per round. 2023). For all methods, the pretrained backbone is frozen, while only the prompts and classification head are locally updated and communicated. 
+
+Implementation Details The number of clients is set to 
+
+40 for FourDataset and 50 for FiveDataset , with all clients participating in every communication round. We use the Adam optimizer with batch size 16 and an initial learning rate of 10 −4. All methods run 5 local epochs per communication round, except D-PSGD, which runs only 1. We use ViT-B/32 as the frozen backbone, with 10 trainable prompt tokens of dimension d = 768 prepended to the patch-embedding sequence before it enters the frozen transformer blocks. 
+
+Communication Topologies As our standard network topology, we employ a time-varying κ-regular graph where 
+
+κ = 5 for FiveDataset and κ = 4 for FourDataset . Specifi-cally, during each communication round t, we sample a new random graph G(t) = ( V, E (t)) with a uniform degree of 
+
+κ, meaning every client u connects to exactly |N (u)| = κ
+
+neighbors. To evaluate the algorithmic robustness across dif-ferent network structures, we also benchmark performance on Ring, Grid, Erdős-Rényi, Regular Graph, and Fully connected topologies. More details are given in Appx. C. 
+
+6.2 Experimental Results 
+
+Performance and Convergence. We report the accuracy of D-FROST and the DFL baselines on FiveDataset under the two Dirichlet splits ( α = 0 .5, α = 0 .1) and the extreme non-IID (imbalance) split in Figure 1. Across all settings, D-FROST consistently achieves the best accuracy and fastest convergence. Specifically, it reaches 81 .95% , 79 .36% , and 
+
+70 .46% , yielding improvements of 6.67 , 8.48 , and 18 .57 
+
+points. The performance gap widens sharply as heterogeneity increases, particularly under the extreme non-IID split where index-wise prompt averaging often merges misaligned prompt directions. Detailed and additional results on FourDataset are given in Appx. D. Beyond final accuracy, Figure 1 shows that D-FROST separates from the baselines within a few rounds and reaches target accuracy faster. Theorem 3 supports this behavior by establishing an ( O(1 /T )) convergence rate to a neighborhood determined by the merge error ( δ2
+
+> n
+
+(S)) and gradient variance. Meanwhile, index-wise averaging baselines ignores prompt misalignment, leading to larger consensus error under severe data skew and slower convergence (see Figure 2). We further study factors that impact the consensus error in Appx. E. 
+
+Topology-aware performance. Figure 3 evaluates accu-racy across five topologies, ordered by decreasing sparsity (mixing factor ρ): Ring > Grid > Erdős-Rényi ( E[κ] = 5 )
+
+≈ Regular ( κ = 5 ) > Fully-connected. D-FROST consis-tently outperforms all baselines across every structure. As connectivity increases ( ρ decreases), performance improves for all methods. For D-FROST, this aligns with Theorem 2: a smaller ρ yields a tighter Wasserstein consensus neighbor-hood, enabling faster network agreement. Despite baseline improvements in denser networks, the substantial performance gap in favor of D-FROST persists throughout. 
+
+Robustness to network conditions. We further stress-test D-FROST along three axes that degrade decentralized train-ing: unreliable links, network scale, and partial participation. Figure 4 reports test accuracy as each factor is made harsher. Under link dropout (left), where each edge fails with prob-ability p, D-FROST declines only mildly from 79 .36% at 
+
+p = 0 .0 to 77 .29% at p = 0 .4. As the number of clients in the network grows to 100 (center), D-FROST leads over the strongest baseline by 11% . Under partial participation (right): with only 10 of the clients active per round, D-FROST retains 
+
+64 .88% , a margin of nearly 12 points over DFedAvgM. 
+
+Further Experiments. We analyze the cost of D-FROST in Appx. F and provide ablation studies that further analyze the impact of different deployment settings in Appx. G. 
+
+# 7 Conclusion 
+
+We presented the first study of prompt tuning in decentralized federated learning. We formulate it as a Wasserstein opti-mization over prompt measures and propose D-FROST , an optimal-transport-based algorithm that merges neighborhood prompts into a compact representative set without index-wise averaging. Theoretically, we proved that the local OT solver is stable, that the Wasserstein consensus error across clients stays within a bounded neighborhood, and that the network-level prompt barycenter converges to a neighborhood of stationarity for the shared objective. Across eight datasets, D-FROST consistently outperforms decentralized baselines, with the largest gains under extreme non-IID data. References 
+
+Bulatov, Y. 2011. NotMNIST Dataset. http://yaroslavvb. blogspot.com/2011/09/notmnist-dataset.html. Che, T.; Liu, J.; Zhou, Y.; Ren, J.; jiwen zhou; Sheng, V. S.; Dai, H.; and Dou, D. 2023. Federated Learning of Large Language Models with Parameter-Efficient Prompt Tuning and Adaptive Optimization. In The 2023 Conference on Empirical Methods in Natural Language Processing .Cuturi, M. 2013. Sinkhorn distances: Lightspeed computa-tion of optimal transport. Advances in neural information processing systems , 26. Cuturi, M.; and Doucet, A. 2014. Fast Computation of Wasserstein Barycenters. In Xing, E. P.; and Jebara, T., eds., 
+
+Proceedings of the 31st International Conference on Machine Learning , volume 32 of Proceedings of Machine Learning Research , 685–693. Bejing, China: PMLR. Darlow, L. N.; Crowley, E. J.; Antoniou, A.; and Storkey, A. J. 2018. Cinic-10 is not imagenet or cifar-10. arXiv preprint arXiv:1810.03505 .d’Ascoli, S.; Touvron, H.; Leavitt, M. L.; Morcos, A. S.; Biroli, G.; and Sagun, L. 2021. Convit: Improving vision transformers with soft convolutional inductive biases. In 
+
+International conference on machine learning , 2286–2296. PMLR. Foret, P.; Kleiner, A.; Mobahi, H.; and Neyshabur, B. 2020. Sharpness-aware minimization for efficiently improving gen-eralization. arXiv preprint arXiv:2010.01412 .Ganin, Y.; Ustinova, E.; Ajakan, H.; Germain, P.; Larochelle, H.; Laviolette, F.; March, M.; and Lempitsky, V. 2016. Domain-adversarial training of neural networks. Journal of machine learning research , 17(59): 1–35. Koloskova, A.; Loizou, N.; Boreiri, S.; Jaggi, M.; and Stich, S. 2020. A Unified Theory of Decentralized SGD with Changing Topology and Local Updates. In III, H. D.; and Singh, A., eds., Proceedings of the 37th International Conference on Machine Learning , volume 119 of Proceedings of Machine Learning Research , 5381–5393. PMLR. Krizhevsky, A.; Hinton, G.; et al. 2009. Learning multiple layers of features from tiny images. LeCun, Y. 1998. The MNIST database of handwritten digits. 
+
+http://yann. lecun. com/exdb/mnist/ .Lester, B.; Al-Rfou, R.; and Constant, N. 2021. The Power of Scale for Parameter-Efficient Prompt Tuning. In Conference on Empirical Methods in Natural Language Processing .Li, X. L.; and Liang, P. 2021. Prefix-Tuning: Optimizing Continuous Prompts for Generation. Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers) , 4582– 4597. Lian, X.; Zhang, C.; Zhang, H.; Hsieh, C.-J.; Zhang, W.; and Liu, J. 2017. Can decentralized algorithms outperform centralized algorithms? a case study for decentralized paral-lel stochastic gradient descent. In Proceedings of the 31st International Conference on Neural Information Processing Systems , NIPS’17, 5336–5346. Red Hook, NY, USA: Curran Associates Inc. ISBN 9781510860964. Nedic, A.; and Ozdaglar, A. 2009. Distributed Subgradient Methods for Multi-Agent Optimization. IEEE Transactions on Automatic Control , 54(1): 48–61. Netzer, Y.; Wang, T.; Coates, A.; Bissacco, A.; Wu, B.; Ng, A. Y.; et al. 2011. Reading digits in natural images with unsupervised feature learning. In NIPS workshop on deep learning and unsupervised feature learning , volume 2011, 4. Granada. Peyré, G.; and Cuturi, M. 2019. Computational optimal trans-port: With applications to data science . Now Foundations and Trends. Schmitzer, B. 2019. Stabilized sparse scaling algorithms for entropy regularized transport problems. SIAM Journal on Scientific Computing , 41(3): A1443–A1481. Shi, Y.; Shen, L.; Wei, K.; Sun, Y.; Yuan, B.; Wang, X.; and Tao, D. 2023. Improving the model consistency of decentralized federated learning. In International Conference on Machine Learning , 31269–31291. PMLR. Sun, T.; Li, D.; and Wang, B. 2022. Decentralized feder-ated averaging. IEEE Transactions on Pattern Analysis and Machine Intelligence , 45(4): 4289–4301. Tang, H.; Lian, X.; Yan, M.; Zhang, C.; and Liu, J. 2018. D2:Decentralized Training over Decentralized Data. In Dy, J.; and Krause, A., eds., Proceedings of the 35th International Conference on Machine Learning , volume 80 of Proceedings of Machine Learning Research , 4848–4856. PMLR. Thompson, G.; Yue, K.; Wong, C.-W.; and Dai, H. 2025. NTK-DFL: Enhancing Decentralized Federated Learning in Heterogeneous Settings via Neural Tangent Kernel. In In-ternational Conference on Machine Learning , 59470–59491. PMLR. Touvron, H.; Cord, M.; Douze, M.; Massa, F.; Sablayrolles, A.; and Jégou, H. 2021. Training data-efficient image transformers & distillation through attention. In International conference on machine learning , 10347–10357. PMLR. Wang, Z.; Zhang, Z.; Lee, C.-Y.; Zhang, H.; Sun, R.; Ren, X.; Su, G.; Perot, V.; Dy, J.; and Pfister, T. 2022. Learn-ing to prompt for continual learning. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 139–149. Weed, J.; and Bach, F. R. 2017. Sharp asymptotic and finite-sample rates of convergence of empirical measures in Wasserstein distance. Bernoulli .Weng, P.-Y.; Hoang, M.; Nguyen, L. M.; Thai, M. T.; Weng, T.-W.; and Hoang, T. N. 2024. Probabilistic Federated Prompt-Tuning with Non-IID and Imbalanced Data. In The Thirty-eighth Annual Conference on Neural Information Processing Systems .Yuan, K.; Ling, Q.; and Yin, W. 2016. On the Convergence of Decentralized Gradient Descent. SIAM Journal on Opti-mization , 26(3): 1835–1854. Zhao, H.; Du, W.; Li, F.; Li, P.; and Liu, G. 2023. FedPrompt: Communication-Efficient and Privacy-Preserving Prompt Tuning in Federated Learning. In ICASSP 2023 - 2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , 1–5. A Additional Preliminaries 
+
+A.1 Prompt Tuning with a Frozen Backbone 
+
+Let Fθ denote a pretrained backbone model parameterized by θ. In prompt tuning, the backbone parameters are kept frozen, and only a small set of prompt parameters is optimized for downstream adaptation. This parameter-efficient design substantially reduces the number of trainable parameters and makes prompt tuning attractive for decentralized learning, where communication and local computation are constrained. For each client u, we denote its local dataset by Du and its prompt set at communication round t by 
+
+ω(t) 
+
+> u
+
+= ω(t) 
+
+> u1
+
+, . . . , ω (t) 
+
+> un
+
+, ω(t) 
+
+> ui
+
+∈ Rd,
+
+where n is the number of prompts maintained by each client and d is the prompt dimension. The prompts are inserted into the frozen backbone to condition the model prediction. Given an input-label pair (x, y ) ∈ Du, the client-side loss can be written as 
+
+ℓ Fθ (x; ω(t) 
+
+> u
+
+), y ,
+
+where the notation Fθ (x; ω(t) 
+
+> u
+
+) emphasizes that the prediction depends on the prompt set while the backbone parameters θ
+
+remain fixed. At each communication round, client u performs a local prompt update by optimizing only its prompt parameters: 
+
+ω+( t) 
+
+> u
+
+← LocalUpdate  Fθ , D u, ω (t−1) 
+
+> u
+
+.
+
+Equivalently, this local update approximately minimizes the empirical prompt-tuning objective 
+
+min 
+
+> ωu
+
+Lu(ωu) := 1
+
+|Du|
+
+X
+
+> (x,y )∈Du
+
+ℓ Fθ (x; ωu), y , θ fixed .
+
+On the other hand, the Merge function in decentralized prompt tuning is fundamentally different from the standard merge operation in full-model decentralized training. In full-model training, model parameters are naturally coordinate-aligned across clients, so neighboring models can often be merged by coordinate-wise weighted averaging. However, prompt sets may not have a direct index-wise correspon-dence across clients. Since each client optimizes prompts using its own local data distribution, the learned prompts may drift toward client-specific directions. Therefore, a naive prompt-level Merge function that averages prompts by index may combine semantically misaligned prompts and produce less representative local states. This motivates a specialized 
+
+Merge function that aligns and summarizes exchanged neigh-borhood prompts before producing the updated local prompt set. 
+
+A.2 Decentralized Federated Learning Baselines 
+
+We compare D-FROST against three representative DFL methods, each adapted to the prompt-tuning protocol. Under this protocol, the pretrained ViT-B/32 backbone is kept frozen throughout training, and only the learnable prompt tokens and the task-specific classification head are updated locally and exchanged during each communication round. We refer to the adapted versions as D-PSGD-PT , DFedAvgM-PT , and 
+
+DFedSAM-PT , respectively. In all three baselines, the Merge step is implemented as coordinate-wise weighted averaging through the doubly stochastic mixing matrix W . Concretely, after local updates, each client u receives the updated prompt parameters ˜ω(t)
+
+> v
+
+from each neighbor v ∈ N (u) and sets 
+
+ω(t) 
+
+> u
+
+← X 
+
+> v∈N (u)∪{ u}
+
+Wuv ˜ω(t) 
+
+> v
+
+. (14) This index-wise average assumes that prompt tokens at the same position index across clients represent semantically comparable directions, an assumption that fails under hetero-geneous data, where locally optimized prompts are free to drift into client-specific subspaces. 
+
+D-PSGD (Lian et al. 2017). D-PSGD is a classic decen-tralized parallel SGD method that uses one-step SGD to train local models in each communication round. Each client per-forms one local mini-batch update with plain SGD, followed by a neighbor-averaging Merge step through W . Following the standard protocol, the training epoch in D-PSGD is set to 
+
+1, whereas it is set to 5 for all other baselines and D-FROST, so D-PSGD performs strictly less local computation per round. 
+
+DFedAvgM (Sun, Li, and Wang 2022). DFedAvgM ex-tends FedAvg to the decentralized setting by allowing clients to perform multiple local SGD iterations with momentum be-fore communicating, reducing the number of communication rounds needed for convergence compared to D-PSGD. After local training, the Merge step applies index-wise weighted averaging through W .
+
+DFedSAM (Shi et al. 2023). DFedSAM improves upon DFedAvgM by replacing local SGD with Sharpness-Aware Minimization (SAM) (Foret et al. 2020), which seeks parameters that lie in flat loss neighborhoods, thereby reducing the inconsistency that arises among local models trained on heterogeneous data. Each local update consists of a two-step SAM procedure: a perturbation step that moves parameters toward the neighborhood of highest loss, followed by a gradient step evaluated at the perturbed point. As with the other baselines, the Merge step performs index-wise weighted averaging through W .Beyond these baselines, we also discuss several other related FL protocols. 
+
+NTK-DFL (Thompson et al. 2025). NTK-DFL replaces stochastic gradient updates with Neural Tangent Kernel-based weight evolution to improve convergence under heterogeneous data, achieving 4.6× fewer communication rounds than DFe-dAvgM on Fashion-MNIST. However, the NTK linearization is currently restricted to small two-layer MLPs and the authors explicitly acknowledge that scaling to CNNs or Transformers remains an open problem. 
+
+PFPT (Weng et al. 2024). PFPT is a centralized federated prompt-tuning method that addresses prompt misalignment under non-IID and imbalanced data by treating prompt ag-gregation as a distributed set modeling problem, with a Figure 5: Average number of local prompts per client in decentralized PFPT ( κ = 4 , 20 clients, Fashion-MNIST). The number of prompts increases exponentially across rounds. dynamically sized global pool maintained by a central server. The pool expands to accommodate new, semantically distinct prompts contributed by clients with heterogeneous local distri-butions, while prompts that are sufficiently similar are merged to suppress redundancy and keep the prompt pool compact. In the centralized FL setting, the prompt pool slightly expands in early rounds then stabilizes as the server merges semantically similar prompts from all clients. However, extending this idea to decentralized communi-cation is nontrivial, since each client only observes local neighbor- hood prompts rather than a global collection. When this method is naively extended to DFL by replacing the cen-tral server with neighborhood-level aggregation, local prompt pools grow exponentially across rounds, inflating local model size rapidly (Figure 5). As each client merges only with its neighbors’ prompts, and under high data heterogeneity these neighborhood pools share little semantic overlap, so their union rarely contracts. The problem compounds because each client starts every round from its own diverged local pool rather than a shared global one as in PFPT. 
+
+# B Theoretical Analysis of D-FROST (More Details) 
+
+In this section, we analyze the theoretical properties of D-FROST. The analysis is organized around the two key com-ponents of the algorithm. We first study the local OT-based prompt merging problem and show that its alternating solver is stable. We then analyze the global behavior of D-FROST in the decentralized network. By viewing each client prompt set as an empirical measure in the Wasserstein space, we establish that the network-level prompt barycenter converges to a neighborhood of Wasserstein stationarity for the shared prompt-tuning objective in (1). 
+
+B.1 Stability of the Local OT-Based Merge 
+
+We first analyze the local OT-based Merge operator used in D-FROST. Recall that after client u forms the neighborhood prompt collection Ω(t) 
+
+> u
+
+, it solves the local OT problem in (7) by alternating between the transport update and the barycenter update. Since the merged prompt set is used as the client state for the next communication round, the inner OT solver should produce a stable representative prompt set. The main result of this subsection shows that the alternating OT solver becomes stable as the number of inner steps increases. In Lemma 1, we first establish a lower bound on the local OT objective, which is used to control the total objective decrease across the inner iterations. 
+
+Lemma 1 (Lower Bound of the Local OT Objective) . For any feasible transport plan P satisfying P 1n = q and any representative prompt set Φ, the local OT merge objective 
+
+Ju(P, Φ) in (7) is bounded from below: 
+
+Ju(P, Φ) ≥ J ∗ := −ε  log 
+
+
+
+nN (t)
+
+> u
+
+
+
++ 1 .
+
+Proof. The spatial matching term is non-negative because 
+
+Cai (Φ) = 12σ2 ∥za − ϕi∥2 ≥ 0,
+
+and therefore ⟨P, C (Φ) ⟩ ≥ 0. The L2 regularization term is also non-negative: 
+
+λ
+
+2σ2
+
+> n
+
+X
+
+> i=1
+
+∥ϕi∥2 ≥ 0.
+
+It remains to lower-bound the entropy term. Since P 1n = q
+
+and q = 1 
+
+> N(t)
+> u
+
+1N (t)
+
+> u
+
+, we have  
+
+> N(t)
+> u
+
+X
+
+> a=1
+> n
+
+X
+
+> i=1
+
+Pai = 1 .
+
+The quantity P 
+
+> a,i
+
+Pai log Pai is minimized over the proba-bility simplex when the mass is uniformly distributed, i.e., 
+
+Pai = 1 
+
+> nN (t)
+> u
+
+, ∀a, i. . Thus, we have: 
+
+ε 
+
+> N(t)
+> u
+
+X
+
+> a=1
+> n
+
+X
+
+> i=1
+
+Pai (log Pai − 1) ≥ ε 
+
+> N(t)
+> u
+
+X
+
+> a=1
+> n
+
+X
+
+> i=1
+
+1
+
+nN (t)
+
+> u
+
+log 1
+
+nN (t)
+
+> u
+
+− ε 
+
+> N(t)
+> u
+
+X
+
+> a=1
+> n
+
+X
+
+> i=1
+
+Pai 
+
+= −ε log 
+
+
+
+nN (t)
+
+> u
+
+
+
+− ε
+
+= −ε  log 
+
+
+
+nN (t)
+
+> u
+
+
+
++ 1 .
+
+Combining this entropy lower bound with the non-negativity of the spatial matching and L2 terms gives the claimed lower bound. We now use Lemma 1 to show that the alternating solver stabilizes. Let 
+
+∆(s) := ∥P (s) − P (s−1) ∥F + ∥Φ(s) − Φ(s−1) ∥F
+
+denote the discrepancy between two consecutive inner itera-tions. We have Theorem 1 as follows: 
+
+Theorem 1 (Stability of the Alternating OT Solver) . Let ∆(s)
+
+be defined as above, and let μ := min  ε, λσ2
+
+ > 0. After 
+
+S alternating OT steps, the minimum iterate difference is bounded by an O(1 /√S) rate: 
+
+min  
+
+> 1≤s≤S
+
+∆(s) ≤
+
+s
+
+4 Ju(P (0) , Φ(0) ) − J ∗
+
+μS .Proof. The alternating solver consists of two exact block minimization steps. We first consider the transport step. With 
+
+Φ(s−1) fixed, the transport subproblem is 
+
+min  
+
+> P≥0
+
+⟨P, C (Φ (s−1) )⟩ + ε 
+
+> N(t)
+> u
+
+X
+
+> a=1
+> n
+
+X
+
+> i=1
+
+Pai (log Pai − 1) 
+
+
+
+s.t. P 1n = q. 
+
+The entropy term makes this subproblem strongly convex in 
+
+P . Therefore, since P (s) is the exact minimizer, we obtain 
+
+Ju(P (s−1) , Φ(s−1) ) − J u(P (s), Φ(s−1) ) ≥ ε
+
+2 ∥P (s) − P (s−1) ∥2 
+
+> F
+
+.
+
+(15) 
+
+Next, consider the barycenter step. With P (s) fixed, the representative prompt update solves 
+
+min 
+
+> Φ
+
+(
+
+⟨P (s), C (Φ) ⟩ + λ
+
+2σ2
+
+> n
+
+X
+
+> i=1
+
+∥ϕi∥2
+
+)
+
+.
+
+For each representative prompt ϕi, the Hessian of this sub-problem is 
+
+1
+
+σ2
+
+ 
+
+> N(t)
+> u
+
+X
+
+> a=1
+
+P (s) 
+
+> ai
+
++ λ
+
+ I. 
+
+Since P (s) 
+
+> ai
+
+≥ 0, the minimum eigenvalue is at least λ/σ 2.Hence, the barycenter subproblem is λ/σ 2-strongly convex. Since Φ(s) is the exact minimizer, we have 
+
+Ju(P (s), Φ(s−1) ) − J u(P (s), Φ(s)) ≥ λ
+
+2σ2 ∥Φ(s) − Φ(s−1) ∥2 
+
+> F
+
+.
+
+(16) Combining (15) and (16), and defining μ = min  ε, λσ2
+
+ ,
+
+we obtain 
+
+Ju(P (s−1) , Φ(s−1) ) − J u(P (s), Φ(s))
+
+≥ μ
+
+2
+
+
+
+∥P (s) − P (s−1) ∥2 
+
+> F
+
++ ∥Φ(s) − Φ(s−1) ∥2
+
+> F
+
+
+
+≥ μ
+
+4
+
+
+
+∥P (s) − P (s−1) ∥F + ∥Φ(s) − Φ(s−1) ∥F
+
+2
+
+= μ
+
+4
+
+ ∆(s)2.
+
+Summing over s = 1 , . . . , S gives 
+
+> S
+
+X
+
+> s=1
+
+ ∆(s)2 ≤ 4
+
+μ
+
+> S
+
+X
+
+> s=1
+
+h
+
+Ju(P (s−1) , Φ(s−1) ) − J u(P (s), Φ(s))
+
+i
+
+= 4
+
+μ
+
+h
+
+Ju(P (0) , Φ(0) ) − J u(P (S), Φ(S))
+
+i
+
+.
+
+By Lemma 1, Ju(P (S), Φ(S)) ≥ J ∗. Therefore, 
+
+> S
+
+X
+
+> s=1
+
+ ∆(s)2 ≤ 4
+
+μ
+
+h
+
+Ju(P (0) , Φ(0) ) − J ∗i
+
+.
+
+Finally, since we have 
+
+S min 
+
+> 1≤s≤S
+
+ ∆(s)2 ≤
+
+> S
+
+X
+
+> s=1
+
+ ∆(s)2,
+
+we obtain 
+
+min  
+
+> 1≤s≤S
+
+∆(s) ≤
+
+s
+
+4 Ju(P (0) , Φ(0) ) − J ∗
+
+μS .
+
+Theorem 1 provides a quantitative stability guarantee for the local OT-based Merge step. It shows that, among the first 
+
+S alternating iterations, there exists at least one iterate whose change from the previous iterate is bounded by O(1 /√S).Therefore, increasing the number of inner OT steps makes the local merge solution progressively more stable. The bound also makes explicit how the stability depends on the initial objective gap Ju(P (0) , Φ(0) ) − J ∗ and the effective strong-convexity parameter μ = min( ε, λ/σ 2).This result has two implications for D-FROST. First, the OT-based Merge step does not behave as an uncontrolled heuristic. Specifically, its alternating updates have a provable descent structure and converge toward a stable local represen-tative prompt set. Second, the number of inner steps S controls the quality of the local merge output. A larger S reduces the in-ner solver instability, which in turn reduces the approximation error introduced when replacing the neighborhood prompt collection by the compact representative set Φ(S). This local control is the basis for the subsequent network-level analysis, where the error of the OT-based merge affects Wasserstein consensus and the convergence of the network barycenter. 
+
+B.2 Global Wasserstein Consensus and Stationarity 
+
+We now analyze the global behavior of D-FROST. The analysis establishes two main results. First, the local prompt measures remain close to a network-level barycenter, showing that D-FROST controls the Wasserstein consensus error across clients. Second, this network-level barycenter makes progress toward stationarity of the shared prompt-tuning objective in (1). First of all, we define notions needed for our analysis. For each client u, we represent its prompt set at round t as the empirical measure 
+
+μ(t) 
+
+> u
+
+:= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+δω(t)
+
+> ui
+
+. (17) Let μ(t)avg denote the Wasserstein barycenter of the local prompt measures, as defined in (2). 
+
+Local Update. During local training, client u updates its prompts via standard backpropagation. In measure space, this is strictly equivalent to updating the discrete empirical measure via the push-forward of the Wasserstein gradient: 
+
+μ+( t) 
+
+> u
+
+=  I − η∇W2 Fu
+
+
+
+> #
+
+μ(t−1)  
+
+> u
+
+. (18) Ideal Reference States. During communication, the net-work seeks consensus over the doubly stochastic graph topol-ogy W . If communication were exact, the neighborhood would converge to the Wasserstein barycenter. We define these theoretical targets for both the local neighborhood and the global network: 1. The ideal local barycenter ν(t) 
+
+> u
+
+:
+
+ν(t) 
+
+> u
+
+:= arg min 
+
+> ν∈P 2(Rd)
+> m
+
+X
+
+> v=1
+
+Wuv W 22
+
+ ν, μ +( t)
+
+> v
+
+. (19) 2. The ideal global state ν(t)avg , tracking the exact network center of mass: 
+
+ν(t)avg := arg min 
+
+> ν∈P 2(Rd)
+
+1
+
+m
+
+> m
+
+X
+
+> u=1
+
+W 22
+
+ ν, μ +( t)
+
+> u
+
+. (20) 
+
+Practical Aggregation and Consensus Error. Because computing the exact barycenters causes the prompt support size to grow indefinitely, Algorithm 1 applies a fixed-budget optimal transport estimator. We denote this optimal transport compression operator as Cn
+
+> OT
+
+, which projects the neighbor-hood updates onto a strict n-point summarizing measure: 
+
+μ(t) 
+
+> u
+
+:= Cn
+
+> OT
+
+μ+( t)  
+
+> vv∈N (u)∪{ u}
+
+
+
+. (21) Consequently, the actual global state of the network is simply the barycenter of these compressed measures: 
+
+μ(t)avg := arg min 
+
+> μ∈P 2(Rd)
+
+1
+
+m
+
+> m
+
+X
+
+> u=1
+
+W 22
+
+ μ, μ (t)
+
+> u
+
+. (22) To track the convergence of the network, we define the 
+
+network consensus error at round t as the average squared 2-Wasserstein distance between the individual clients’ com-pressed states and the actual global state: 
+
+ε(t) := 1
+
+m
+
+> m
+
+X
+
+> u=1
+
+W 22
+
+ μ(t) 
+
+> u
+
+, μ (t)avg 
+
+. (23) 
+
+Optimal Transport Displacement and Bounded Compres-sion. To rigorously isolate the algorithmic distortion of 
+
+Cn 
+
+> OT
+
+and track the network’s optimization trajectory, we must geometrically map the movement of these measures. In the 2-Wasserstein space, the displacement between two proba-bility measures is defined by the vector field that optimally transports one measure into the other. For any two absolutely continuous measures μ, ν ∈ P 2(Rd), let Tμ→ν be the opti-mal transport map. The optimal transport displacement is the vector field v ∈ L2(μ; Rd) defined as v(x) := Tμ→ν (x) − x.We denote this mapping as the inverse exponential map: 
+
+v = exp −1 
+
+> μ
+
+(ν). (24) By definition, the squared L2(μ) norm of this vector field equals the squared 2-Wasserstein distance: ∥v∥2 
+
+> L2(μ)
+
+=
+
+W 22 (μ, ν ).Let ˜v(t) = exp −1
+
+> μ(t−1) avg
+
+(ν(t)avg ) be the ideal displacement map-ping to the uncompressed global barycenter, and v(t) =
+
+exp −1
+
+> μ(t−1) avg
+
+(μ(t)avg ) be the actual displacement mapping to the OT-compressed global barycenter. By comparing these two vector fields, the expected projection error of the Cn 
+
+> OT
+
+com-pressor is bounded by: 
+
+E
+
+
+
+˜v(t) − v(t) 2 
+
+> L2(μ(t−1) avg )
+
+
+
+≤ δ2
+
+> n
+
+(S), (25) where S is the number of steps Cn 
+
+> OT
+
+is allowed to run. Crucially, established theoretical results on the finite-sample approxi-mation of Wasserstein barycenters (Cuturi and Doucet 2014) and the convergence rates of empirical measures (Weed and Bach 2017) guarantee that this error is bounded above. The approximation error δ2
+
+> n
+
+(S) monotonically decays as the client prompt budget n and the number of iterative solver steps S
+
+increase. To complete the convergence framework, we introduce the standard assumptions. 
+
+Assumption 1 (Wasserstein Smoothness) . The local loss functional Fu(μ) is L-smooth over the 2-Wasserstein space. Consequently, the global functional F(μ) is also L-smooth and bounded below by F∗ > −∞ .
+
+By the mathematical definition of L-smoothness in the 2-Wasserstein space, Assumption 1 guarantees that for any two absolutely continuous probability measures μ and ν connected by the optimal transport displacement v = exp −1 
+
+> μ
+
+(ν), the functional satisfies the Taylor-type upper bound: 
+
+F(ν) ≤ F (μ) + ⟨∇ W2 F(μ), v ⟩L2(μ) + L
+
+2 ∥v∥2
+
+> L2(μ)
+
+. (26) 
+
+Assumption 2 (Bounded Variance) . The variance of the local Wasserstein gradients is uniformly bounded: 
+
+E[∥∇ W2 Fu(μ)∥2 
+
+> L2
+
+] ≤ G2.
+
+Assumption 3 (Bounded Prompt Support) . The support of the prompt distributions remains within a bounded domain. Specifically, there exists a constant D > 0 such that for all prompts ω(t) 
+
+> ui
+
+, ∥ω(t) 
+
+> ui
+
+∥ ≤ D.
+
+Assumption 4 (Graph Spectral Gap) . The communication matrix W ∈ Rm×m is symmetric and doubly stochastic. Its second largest eigenvalue magnitude governs the spectral gap, defining the network contraction factor: 
+
+ρ := W − 1
+
+m 11 ⊤
+
+> 2
+
+< 1. (27) Assumption 4 dictates the standard network topology con-ditions in decentralized optimization literature (Nedic and Ozdaglar 2009; Lian et al. 2017). The doubly stochastic prop-erty guarantees that the exact global average of the network is strictly preserved during the gossip step. The symmetry of W implies bidirectional communication channels with equal weightings. Finally, the spectral gap condition ρ < 1 is algebraically equivalent to assuming the underlying commu-nication graph is connected and non-bipartite. This geometric property ensures that information from any isolated client will eventually propagate to all other clients, providing the mathematical engine that drives the linear contraction of local states toward the global mean (Koloskova et al. 2020). Step 1. Network Consensus in the Wasserstein Space. 
+
+Before we can establish the final optimization convergence rate of the decentralized algorithm, we must first prove that the network successfully reaches a state of geometric consensus. The central theoretical challenge is that local prompt-tuning pulls the clients’ distributions apart, while the graph commu-nication and Optimal Transport (OT) compression attempt to pull them together. To rigorously bound this dynamic, we decompose the network’s behavior into three fundamental mechanics: 1. Global Average Preservation (Lemma 2): We prove that the doubly stochastic graph topology strictly preserves the exact center of mass of the network. 2. Local Dispersion (Lemma 3): We bound how far the local gradient updates drag the clients away from this global center of mass. 3. Graph Contraction (Lemma 4): We map the distribu-tions into a flat kernel space to prove that the communica-tion step strictly contracts this dispersion by the graph’s spectral gap. By combining these three mechanics, we construct a linear recurrence relation that permanently traps the network consen-sus error ε(t) within a bounded mathematical neighborhood. 
+
+Lemma 2 (Preservation of the Global Average) . Let μ+( t)avg := 
+
+> 1
+> m
+
+Pmu=1 μ+( t) 
+
+> u
+
+be the average of the locally updated states. During the gossip communication step, the ideal continuous barycenter of the network exactly equals this updated average: 
+
+ν(t)avg = μ+( t)avg ∀t. (28) 
+
+Proof. By expanding the definition of the ideal global barycenter ν(t)avg and exchanging the order of summation, we obtain: 
+
+ν(t)avg = 1
+
+m
+
+> m
+
+X
+
+> u=1
+
+ν(t) 
+
+> u
+
+= 1
+
+m
+
+> m
+
+X
+
+> u=1
+> m
+
+X
+
+> v=1
+
+Wuv μ+( t)
+
+> v
+
+= 1
+
+m
+
+> m
+
+X
+
+> v=1
+
+μ+( t)
+
+> v
+> m
+
+X
+
+> u=1
+
+Wuv 
+
+!
+
+.
+
+Because the communication matrix W is column-stochastic (Assumption 4), the inner sum strictly equals 1 for all v. The expression immediately simplifies to μ+( t)avg .
+
+Lemma 3 (Local Dispersion Bound) . Under the L-Lipschitz smoothness and bounded gradient variance ( G2) assumptions, the geometric dispersion of the locally updated states from their global average is bounded by the previous consensus error ε(t−1) :
+
+1
+
+m
+
+> m
+
+X
+
+> u=1
+
+W 22
+
+
+
+μ+( t) 
+
+> u
+
+, μ +( t)avg 
+
+
+
+≤ 4(1 + η2L2)ε(t−1) + 4 η2G2.
+
+(29) 
+
+Proof. We introduce an intermediate virtual state, μ(t)mid := 
+
+ I − η∇W2 F(μ(t−1) avg )
+
+> #
+
+μ(t−1) avg , which represents a perfectly synchronized gradient step. Applying the relaxed triangle inequality W 22 (a, c ) ≤ 2W 22 (a, b )+2 W 22 (b, c ) and averaging over m clients, we have: 
+
+1
+
+m
+
+> m
+
+X
+
+> u=1
+
+W 22
+
+
+
+μ+( t) 
+
+> u
+
+, μ +( t)avg 
+
+
+
+≤ 2W 22
+
+
+
+μ(t)mid , μ +( t)avg 
+
+
+
++ 2
+
+m
+
+> m
+
+X
+
+> u=1
+
+W 22
+
+
+
+μ+( t) 
+
+> u
+
+, μ (t)mid 
+
+
+
+.
+
+For the second term, we bound the distance between the local push-forward map and the synchronized push-forward map. By adding and subtracting the local gradients evaluated at the global average, and utilizing the L-smoothness and variance bounds, the L2 mapping error is strictly bounded by 
+
+(1 + η2L2)ε(t−1) + η2G2.Applying a similar push-forward expansion to the first term via Jensen’s inequality isolates the gradient deviations across the network. Summing the symmetric bounds together absorbs the remaining distances. 
+
+Lemma 4 (Graph Contraction via MMD Equivalence) . Let the prompt distributions satisfy the bounded support con-straint D (Assumption 3). The gossip communication step strictly contracts the network dispersion by the graph’s spec-tral gap ρ2:
+
+1
+
+m
+
+> m
+
+X
+
+> u=1
+
+W 22
+
+
+
+ν(t) 
+
+> u
+
+, ν (t)avg 
+
+
+
+≤ D ρ2 1
+
+m
+
+> m
+
+X
+
+> u=1
+
+W 22
+
+
+
+μ+( t) 
+
+> u
+
+, μ +( t)avg 
+
+
+
+,
+
+(30) 
+
+where D > 0 is a metric translation constant. Proof. Because Wasserstein space is non-linear, we map the empirical measures into a Reproducing Kernel Hilbert Space (RKHS) using the kernel mean embedding Φ( μ). Let 
+
+θu := Φ( μ+( t) 
+
+> u
+
+) and yu := Φ( ν(t) 
+
+> u
+
+). Because the embedding is linear, the graph mixing applies directly to the RKHS vectors: yu = P 
+
+> v
+
+Wuv xv . By defining the mean-centered vectors ¯xu and ¯yu, standard Euclidean algebraic graph theory provides the spectral bound: 
+
+> m
+
+X
+
+> u=1
+
+∥¯yu∥2 
+
+> Hk
+
+≤ W − 1
+
+m 11 ⊤
+
+> 2op
+> m
+
+X
+
+> u=1
+
+∥¯xu∥2 
+
+> Hk
+
+= ρ2
+
+> m
+
+X
+
+> u=1
+
+∥¯xu∥2 
+
+> Hk
+
+.
+
+Because the RKHS norm is precisely the Maximum Mean Discrepancy (MMD), this establishes the contraction in MMD: 
+
+P 
+
+> u
+
+MMD 2(ν(t) 
+
+> u
+
+, ν (t)avg ) ≤ ρ2 P 
+
+> u
+
+MMD 2(μ+( t) 
+
+> u
+
+, μ +( t)avg ).Under the bounded support constraint, MMD and 2-Wasserstein metrics are topologically equivalent. Conse-quently, there exist strict constants C1 
+
+> D
+
+, C 2 
+
+> D
+
+> 0 such that 
+
+C1 
+
+> D
+
+W 22 ≤ MMD 2 ≤ C2 
+
+> D
+
+W 22 . Dividing these boundary con-straints yields the metric translation constant D = C2 
+
+> D
+
+/C 1
+
+> D
+
+,converting the RKHS contraction back into the Wasserstein space. 
+
+Theorem 2 (Rigorous Wasserstein Consensus Bound) . Un-der the assumptions of bounded gradients, bounded prompt support, and a doubly stochastic mixing matrix, the expected network consensus error ε(t) converges asymptotically to a stationary bounded neighborhood. Specifically, for any 
+
+t → ∞ :
+
+ε(t) ≤ β
+
+1 − α = O
+
+ δ2
+
+> n
+
+(S)1 − D ρ2 + η2G2
+
+1 − D ρ2
+
+
+
+, (31) where α = 6 Dρ2(1 + η2L2) < 1, and β = 6 δ2
+
+> n
+
+(S) + 6Dρ2η2G2.Proof. We expand the consensus error ε(t) by chaining the discrete mapping steps through the relaxed three-way triangle inequality (a + b + c)2 ≤ 3( a2 + b2 + c2):
+
+W 22
+
+ μ(t) 
+
+> u
+
+, μ (t)avg 
+
+ ≤ 3W 22
+
+ μ(t) 
+
+> u
+
+, ν (t)
+
+> u
+
+ + 3 W 22
+
+ ν(t) 
+
+> u
+
+, ν (t)avg 
+
+
+
++ 3 W 22
+
+ ν(t)avg , μ (t)avg 
+
+.
+
+We bound each of the three segments by averaging over all m clients. First, the term 1
+
+> m
+
+P 
+
+> u
+
+W 22 (μ(t) 
+
+> u
+
+, ν (t) 
+
+> u
+
+) explicitly represents the projection error of the OT compressor, which is bounded by δ2
+
+> n
+
+(S). Second, by the joint convexity of the Wasserstein metric, the divergence between the actual compressed global average and the ideal global average, 
+
+W 22 (μ(t)avg , ν (t)avg ), is identically bounded by the average of the local compression errors, yielding another δ2
+
+> n
+
+(S).For the central graph tracking term, we sequentially apply the contraction bound from Lemma 4 and the dispersion bound from Lemma 3: 
+
+1
+
+m
+
+> m
+
+X
+
+> u=1
+
+W 22
+
+
+
+ν(t) 
+
+> u
+
+, ν (t)avg 
+
+
+
+≤ 2Dρ2 
+
+(1 + η2L2)ε(t−1) + η2G2
+
+.
+
+Plugging these three bounds back into the triangle expansion collapses the dynamics into a single linear recurrence relation: 
+
+ε(t) ≤ 6Dρ2(1 + η2L2)| {z }
+
+> := α
+
+ε(t−1) + 6δ2
+
+> n
+
+(S) + 6 Dρ2η2G2| {z }
+
+> := β
+
+.
+
+To strictly ensure geometric convergence ( α < 1), we require a learning rate satisfying η2 < 1
+
+> L2
+
+  16Dρ2 − 1. Unrolling the recurrence relation as t → ∞ yields the infinite geometric series bound β/ (1 − α).
+
+Step 2. Global Optimization Convergence. With the network geometrically trapped in a tight consensus neigh-borhood, we can now bound the deviation of the network’s gradient trajectory from the ideal centralized trajectory. 
+
+Lemma 5 (Tangent-Space Tracking Error) . Let ˆv(t) =
+
+−η∇W2 F(μ(t−1) avg ) be the virtual global gradient displace-ment, and let v(t) = exp −1
+
+> μ(t−1) avg
+
+(μ(t)avg ) be the actual optimal transport map to the true network barycenter. Under Assump-tion 1, the expected tangent-space tracking error is strictly bounded by: 
+
+E ˆv(t) − v(t) 2 
+
+> L2(μ(t−1) avg )
+
+≤ 2η2L2
+
+m
+
+> m
+
+X
+
+> u=1
+
+E
+
+h
+
+W 22 (μ(t−1) avg , μ (t−1)  
+
+> u
+
+)
+
+i
+
++ 2 δ2
+
+> n
+
+(S). (32) 
+
+Proof. We bound the divergence between the virtual map and the actual map by introducing the intermediate ideal displacement field ˜v(t) = exp −1
+
+> μ(t−1) avg
+
+(ν(t)avg ), which maps to the uncompressed global barycenter. Applying the relaxed triangle inequality in the Hilbert space L2(μ(t−1) avg ), we have: 
+
+ˆv(t) − v(t) 2
+
+> L2
+
+≤ 2 ˆv(t) − ˜v(t) 2
+
+> L2
+
++ 2 ˜v(t) − v(t) 2
+
+> L2
+
+.
+
+(33) For the second term, ˜v(t) points to the uncompressed barycen-ter ν(t)avg , while v(t) points to the OT-compressed barycenter 
+
+μ(t)avg . By the bounded compression property established in (25), this term is bounded by δ2
+
+> n
+
+(S).For the first term, the virtual map ˆv(t) aggregates gradients evaluated at the synchronized global state μ(t−1) avg , while the ideal map ˜v(t) aggregates gradients evaluated at the scattered local states μ(t−1)  
+
+> u
+
+. By Jensen’s inequality and the L-Lipschitz property of the gradients (Assumption 1), we have: 
+
+ˆv(t) − ˜v(t) 2
+
+> L2
+
+≤ η2L2
+
+m
+
+> m
+
+X
+
+> u=1
+
+W 22 (μ(t−1) avg , μ (t−1)  
+
+> u
+
+). (34) Summing these bounds and taking the expectation completes the proof. 
+
+Theorem 3 (Convergence to a Wasserstein stationarity neigh-borhood) . Suppose Assumptions 1–4 and the bounded com-pression property (25) hold. Let the learning rate satisfy 
+
+η ≤ 1/L . Then after T communication rounds, the decentral-ized OT-based prompt aggregation procedure satisfies 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+
+
+∇W2 F
+
+
+
+μ(t−1) avg 
+
+ 2 
+
+> L2(μ(t−1) avg )
+
+
+
+≤
+
+2
+
+
+
+F(μ(0) avg ) − F ∗
+
+
+
+ηT 
+
++ O
+
+ η2L2G2
+
+1 − D ρ2
+
+
+
++ O
+
+ L2δ2
+
+> n
+
+(S)1 − D ρ2 + δ2
+
+> n
+
+(S)
+
+η2
+
+
+
+.
+
+Proof. Because μ(t)avg is a Wasserstein barycenter, we expand the L-smooth global functional F around the previous state 
+
+μ(t−1) avg using (26): 
+
+E[F(μ(t)avg )] ≤ E[F(μ(t−1) avg )] + E
+
+h
+
+⟨∇ W2 F(μ(t−1) avg ), v (t)⟩L2
+
+i
+
++ L
+
+2 E
+
+h
+
+∥v(t)∥2
+
+> L2
+
+i
+
+.
+
+Applying the polarization identity to the inner product with the virtual gradient ˆv(t) = −η∇W2 F(μ(t−1) avg ) and utilizing the condition η ≤ 1/L to discard the non-positive ∥v(t)∥2
+
+coefficient, we obtain the descent inequality: 
+
+E[F(μ(t)avg )] ≤ E[F(μ(t−1) avg )] − η
+
+2 E ∇W2 F(μ(t−1) avg ) 2
+
+> L2
+
++ 12η E ˆv(t) − v(t) 2
+
+> L2
+
+.
+
+Substituting the tracking error bound from Lemma 5 and recognizing that the trailing summation 1
+
+> m
+
+P 
+
+> u
+
+W 22 is exactly our asymptotic network consensus error ε(t−1) defined in (23) and bounded in Theorem 2, we find: 
+
+E[F(μ(t)avg )] ≤ E[F(μ(t−1) avg )] − η
+
+2 E ∇W2 F(μ(t−1) avg ) 2
+
+> L2
+
++ O
+
+ η3L2G2
+
+1 − D ρ2 + ηL 2δ2
+
+> n
+
+(S)1 − D ρ2
+
+
+
++ δ2
+
+> n
+
+(S)
+
+η .
+
+Telescoping across T rounds and dividing by ηT / 2 yields the final result. Interpretation. Theorem 3 demonstrates that the procedure converges to a neighborhood of stationarity. The neighbor-hood size is determined by the gradient variance G2 and the aggregation noise δ2
+
+> n
+
+(S) induced by the fixed-budget OT constraint. Notably, the δ2
+
+> n
+
+(S)/η 2 penalty indicates that the approximation error in the communication step sets a floor on the achievable stationarity, a common characteristic in decentralized optimization with lossy compression. 
+
+# C Additional Experiment Settings 
+
+C.1 Datasets and Partitions 
+
+Our experiments are conducted on two synthetic, multi-domain datasets constructed by pooling together several heterogeneous image classification benchmarks. These com-posite datasets are designed to simulate realistic federated learning scenarios in which clients not only disagree on class distributions, but also hold data drawn from different visual domains. 
+
+4-dataset (Weng et al. 2024): The first composite dataset combines four sub-datasets: MNIST-M (Ganin et al. 2016), Fashion-MNIST, CINIC-10 (Darlow et al. 2018), and MMAFEDB (available on Kaggle) 1. These sub-datasets span diverse visual domains ranging from colorized digit images to fashion items, natural scene photographs, and facial ex-pressions. Together they constitute 37 classes (10 + 10 + 10 + 7, respectively). For the training partition, we sample 30,000 examples per sub-dataset, yielding 120,000 training images in total. For the test partition, we sample 2,500 examples per sub-dataset, yielding 10,000 test images in total. We simulate 
+
+m = 40 clients by assigning 10 clients to each sub-dataset, so that each client only ever holds data from one visual domain. 
+
+5-dataset (Wang et al. 2022): The second composite dataset combines five sub-datasets: CIFAR-10 (Krizhevsky, Hinton et al. 2009), MNIST (LeCun 1998), Fashion-MNIST, SVHN (Netzer et al. 2011), and NotMNIST (Bulatov 2011), each contributing 10 classes for a total of 50 classes. This col-lection spans natural image classification, handwritten digit recognition, grayscale fashion item recognition, street-view digit recognition, and printed character recognition, covering a broad range of low-level statistics and label semantics. For the training partition, we sample 20,000 examples per sub-dataset, yielding 100,000 training images in total. For the test partition, we sample 2,000 examples per sub-dataset, yielding 10,000 test images in total. We simulate m = 50 clients by assigning 10 clients to each sub-dataset. 
+
+Heterogeneous Partition. We partition each sub-dataset in-dependently among its 10 assigned clients using a Dirichlet (α·
+
+1s) distribution over the s-class simplex, where s is the num-ber of classes in that sub-dataset. Each client receives a proportion vector drawn from this distribution, controlling what fraction of each class is allocated to that client. Smaller values of α produce more skewed, heterogeneous distribu-tions. We run experiments with α = 0 .1, which produces high heterogeneity, and α = 0 .5, which produces moder-ate heterogeneity. Because the Dirichlet draws are applied 
+
+> 1https://www.kaggle.com/datasets/yuulind/mmafedb-clean
+
+independently per sub-dataset using a shared random seed, the resulting distributions are statistically comparable across sub-datasets within the same run. 
+
+Extreme Non-iid Partition. We additionally evaluate a manual extreme-heterogeneity setting that produces maxi-mally imbalanced local datasets. For each sub-dataset, 99% of the data belonging to each class is assigned exclusively to one designated client, while the remaining 1% is distributed among non-designated clients via a symmetric Dirichlet dis-tribution with concentration parameter α = 1 . Since each sub-dataset contains exactly 10 classes and is partitioned among exactly 10 clients, this scheme results in a bijective assignment in which every client is dominated by exactly one class, with only trace amounts of the remaining classes present in its local dataset. The above partitioning schemes are applied only to the training split. Evaluation is performed globally on the full held-out test partition of each composite dataset. 
+
+C.2 Hyperparameter Settings 
+
+For details regarding Prompt-tuning protocol and DFL base-lines, please refer to Appendix A. 
+
+Shared settings. All methods share the same backbone, op-timizer, batch size, number of communication rounds, prompt configuration, communication topology, participation rate, and evaluation schedule; only the method-specific parameters listed below differ. Concretely, every method uses a frozen ViT-B/32 backbone with n = 10 learnable prompt tokens of dimension d = 768 prepended to the patch-embedding sequence, optimized with Adam at learning rate η = 10 −4
+
+and batch size 16 . Training runs for 40 communication rounds. All clients participate in every round (full participation). The number of clients is 40 for FourDataset and 50 for Five-Dataset, with the default communication topology being a time-varying κ-regular graph ( κ = 4 for FourDataset, κ = 5 
+
+for FiveDataset). 
+
+D-FROST. D-FROST runs 5 local epochs per round with Adam. The OT-based Merge step runs S = 50 alternat-ing inner iterations, with entropy regularization weight 
+
+ε = 0 .01 , spatial scale σ2 = 1 .0, and L2 regularization weight λ = 0 .001 . ε = 0 .01 follows standard entropic-OT practice of choosing small ε for sharp, stable transport (Cu-turi 2013; Peyré and Cuturi 2019). We also explore ε an-nealing (Schmitzer 2019) in Appendix G.4. Due to the low computation cost of the OT-based Merge step (see Ap-pendix F), we can afford a large number of inner iterations 
+
+S to drive the merge error δ2
+
+> n
+
+(S) low and ensure the solver converges. We found that S = 50 is sufficient. 
+
+DFedAvgM-PT. DFedAvgM-PT runs 5 local epochs per round using SGD with momentum β = 0 .99 .
+
+DFedSAM-PT. DFedSAM-PT runs 5 local epochs per round using adaptive SAM with perturbation radius ρ = 0 .01 ,following prior work. 
+
+D-PSGD-PT. D-PSGD-PT runs 1 local epoch per round using SGD with momentum 0.Figure 6: Communication topologies used in our experiments ( m = 20 nodes shown for clarity). From left to right: Ring, Grid, Erdős-Rényi, Regular ( κ = 5 ), and Fully Connected. 
+
+Implementation Details. Experiments, including the run-time measurements in Appendix F, were conducted on a Linux workstation running Ubuntu 20.04 LTS, equipped with an Intel Xeon E5-2697 v4 CPU @ 2.30 GHz (18 cores, 36 threads), 384 GB RAM, and a NVIDIA RTX A6000 GPU (48 GB VRAM). Our implementation is based on PyTorch 2.0 with CUDA 12.2. 
+
+C.3 Network Topologies 
+
+We evaluate all methods on five undirected communication topologies of varying connectivity. Each topology is instanti-ated over m clients and represented by a symmetric doubly stochastic mixing matrix W ∈ Rm×m, where Wuv > 0 only if u = v or (u, v ) is an edge. The spectral mixing factor 
+
+ρ = ∥W − 1 
+
+> m
+
+11 ⊤∥2 characterizes how quickly information spreads: a smaller ρ indicates faster mixing and tighter Wasser-stein consensus (Theorem 2). The five topologies, ordered from sparsest to densest ( ρ decreasing), are as follows. 
+
+Ring. Each client connects to exactly two neighbors ar-ranged in a cycle. With m clients, every node has degree 2,making the ring the sparsest topology and the one with the largest mixing factor ρ. Node identities are randomly per-muted at each communication round while the cyclic structure is preserved. 
+
+Grid. Clients are arranged in a two-dimensional lattice with 
+
+r × c = m cells, where r = max {k ≤ ⌊ √m⌋ : k | m} and 
+
+c = m/r . For FiveDataset ( m = 50 ) this yields a 5 × 10 
+
+lattice; for FourDataset ( m = 40 ) a 5 × 8 lattice. Interior nodes have degree 4, boundary nodes degree 3 or 2, and corner nodes degree 2. Each round, node identities are randomly permuted at each communication round while the lattice structure is preserved, so neighbor assignments change over time. 
+
+Erdős-Rényi. Each pair of clients is connected indepen-dently with probability p = κ/ (m−1) , matching the expected degree of the κ-regular topology ( κ = 5 , p ≈ 0.1 for m = 50 ). Unlike the regular graph, the ER graph has degree variance, so some nodes acquire fewer links than others. A fresh ER graph is resampled each round. 
+
+Regular (default). Each client is connected to exactly κ
+
+randomly chosen neighbors, forming a κ-regular graph. We use κ = 5 for FiveDataset and κ = 4 for FourDataset. As our 
+
+standard topology, we employ a time-varying κ-regular graph: at each communication round t, a fresh random κ-regular graph G(t) = ( V, E (t)) is independently sampled, so the neighbor set of each client changes every round. This models realistic wireless or peer-to-peer networks with transient link availability. 
+
+Fully Connected. Every pair of clients communicates di-rectly, yielding a complete graph of degree m−1. The mixing matrix is W = 1 
+
+> m
+
+11 ⊤, giving ρ = 0 and perfect one-hop consensus. This topology represents an idealized upper bound on connectivity. 
+
+Mixing matrix construction. For all topologies, the mix-ing matrix W is symmetric and doubly stochastic for any undirected graph, satisfying Assumption 4. 
+
+# D Additional Experiment Results 
+
+Tables 1 and 2 report final test accuracy on FourDataset and FiveDataset under the two Dirichlet splits ( α = 0 .5, α =0.1) and the extreme non-IID partition, and Table 3 breaks down FiveDataset ( α = 0 .1) across the five communication topologies. D-FROST achieves the best accuracy in every setting, and its margin over the strongest baseline widens as heterogeneity increases. The gains are also consistent across all topologies, confirming that the advantage of OT-based merging does not depend on a particular graph structure. Figure 7 shows the performance comparison on Four-Dataset. Specifically, it reaches 69 .06% , 63 .94% , and 58 .24% ,improving over the strongest baseline (DFedAvgM) by 5.78 ,
+
+4.22 , and 12 .19 points, respectively. Table 1: Test Accuracy (%) achieved on the Fourdataset by D-FROST and other baselines. Algorithm α = 0 .5 α = 0 .1 Ex. non-iid D-PSGD-PT 24.47 21.45 12.38 DFedSAM-PT 62.30 59.49 43.29 DFedAvgM-PT 63.28 59.72 46.05 D-FROST 69.06 63.94 58.24 
+
+# E Factors Impacting Network Consensus Error 
+
+Theorem 2 bounds the network consensus error by ε(t) ≤
+
+β/ (1 − α) = O  δ2
+
+> n(S)+ η2G2
+> 1−Dρ 2
+
+, whose denominator is gov-Figure 7: Test accuracy of all methods on FourDataset (40 clients) under three non-IID settings: Dirichlet α=0 .5, Dirichlet 
+
+α=0 .1, and the extreme non-IID partition. Table 2: Test Accuracy (%) achieved on the Fivedataset by D-FROST and other baselines. Algorithm α = 0 .5 α = 0 .1 Ex. non-iid D-PSGD-PT 23.23 18.14 9.92 DFedSAM-PT 70.31 66.74 45.29 DFedAvgM-PT 75.28 70.88 51.89 D-FROST 81.95 79.36 70.46 
+
+Table 3: Test accuracy (%) in various network topologies on FiveDataset under Dirichlet α = 0 .1. All methods follow the prompt-tuning (PT) protocol. Algorithm Ring Grid Erdos Regular Full D-PSGD 16.42 17.69 18.29 18.14 19.00 DFedSAM 64.21 65.85 65.97 66.74 69.80 DFedAvgM 67.37 68.57 70.64 70.88 72.74 D-FROST 75.88 77.84 78.96 79.36 82.28 
+
+erned by the mixing factor ρ: weaker mixing (larger ρ) enlarges the consensus neighborhood. We probe this prediction by de-grading the network along three axes: topology connectivity, link dropout, and partial participation, and tracking the total consensus error over the communication rounds (Figure 8). The curves separate exactly as the bound predicts. The denser Grid mixes fastest and sits well below the sparse Ring at every round. Introducing link dropout ( p = 0 .2) on Ring topology degrades its effective mixing and lifts its curve to the top of the plot, while partial participation ( 30 of 50 clients per round) slows mixing and places it between the clean Ring and the dropout case. The result confirms that every factor weakening graph mixing enlarges the consensus floor through the same 1/(1 − Dρ 2) mechanism. Across all four settings, however, ε(t) still contracts monotonically, showing that the OT-based merge keeps the network converging even under sparse, unreliable, or partially participating topologies. 
+
+Figure 8: Total Wasserstein consensus error of D-FROST across all clients on FiveDataset under Dirichlet α = 0 .1.
+
+# F Cost Analysis of D-FROST 
+
+We analyze the per-round cost the OT-based Merge step (Algorithm 1), asymptotically and in wall-clock time. 
+
+Setup. At round t, client u forms the neighborhood col-lection Ω(t) 
+
+> u
+
+= ˜ ω(t) 
+
+> u
+
+⊎ U  
+
+> v∈N (u)
+
+˜ω(t) 
+
+> v
+
+of size N (t) 
+
+> u
+
+:= |Ω(t) 
+
+> u
+
+|
+
+(Eq. (5)); with n prompts per client and a κ-regular topology, 
+
+N (t) 
+
+> u
+
+= ( κ + 1) n. The representative set Φ = {ϕi}ni=1 stays size n throughout, so the merged prompt-set size is preserved. 
+
+Complexity. Each of the S inner iterations runs three closed-form steps: the cost matrix C ∈ RN (t)  
+
+> u×n
+
+(Eq. (6)), the transport plan P (Eq. (8)), and the barycenter update (Eq. (9)). It is dominated by the two matrix products ΩuΦ⊤ and P ⊤Ωu.This gives 
+
+TOT = O S (κ + 1) n2d (35) quadratic in the prompt budget n and linear in κ + 1 , d, and S.With our settings ( S=50 , κ=5 , n=10 , d=768 , so N (t) 
+
+> u
+
+=60 ), the merge costs ≈ 4.6 × 10 7 MACs, which is negligible compared to a forward/backward pass of the frozen ViT-B/32 model. 
+
+Wall-clock overhead. Table 4 reports per-client, per-round times on FiveDataset ( κ=5 , n=10 ). The OT merge takes 0.63 s versus 0.26 s for index-wise averaging. The OT merge step only accounts for ≈ 1.5% of round time, which is dominated by local training ( ≈ 42 .3 s). Table 4: Per-round wall-clock times (seconds) for one client on FiveDataset, using a time-varying κ-regular graph ( κ=5 ). 
+
+Agg. is the Merge step only; Round is total (train + merge). Method Train (s) Agg. (s) Round (s) D-PSGD-PT 8.42 0.26 8.68 
+
+DFedAvgM-PT 42 .43 0.26 42 .69 
+
+D-FROST (ours) 42 .30 0.63 42 .94 
+
+DFedSAM-PT 80 .51 0.25 80 .75 
+
+Communication overhead. The OT cost matrix C and transport plan P are computed locally and never transmit-ted ; clients exchange only their updated prompt sets ˜ω(t)
+
+> v
+
+(n prompts of dimension d), exactly as the parametric base-lines do. The OT-based merge therefore incurs no extra communication cost over index-wise averaging. 
+
+Accuracy-efficiency trade-off. Figure 9 plots final accuracy against average wall-clock time per round per client on Five-Dataset. D-FROST reaches the highest accuracy ( 79 .36% ) at 
+
+42 .93 s/round and lies on the Pareto frontier. DFedSAM-PT is the most expensive method at 80 .75 s/round yet reaches only 
+
+66 .74% . The cheaper baselines (D-PSGD-PT at 8.68 s/round and DFedAvgM-PT at 42 .69 s/round) run faster per round but plateau far below D-FROST in accuracy. Furthermore, while the OT-based aggregation procedure introduces a marginal computational overhead compared to index-wise averaging, it yields substantial accuracy gains without incurring any extra communication cost. We analyze D-FROST’s overhead in detail in Appendix F. 
+
+Figure 9: Accuracy versus per-round wall-clock per client cost on FiveDataset ( α = 0 .1). 
+
+# G Ablation Studies 
+
+G.1 Impact of Client Prompt Budget n
+
+The prompt budget n is the number of representative prompts each client retains after the OT-based Merge step, i.e. the size of Φ = {ϕi}ni=1 . It controls how faithfully the merged 
+
+Figure 10: Impact of client prompt budget n.set summarizes the neighborhood collection Ω(t) 
+
+> u
+
+: a larger 
+
+n lowers the merge error δ2
+
+> n
+
+(S) (Eq. (25)), which by The-orems 2 and 3 tightens both the consensus and stationarity neighborhoods and thus raises attainable accuracy. On FiveDataset under the extreme non-IID partition, shrink-ing the budget to n = 5 drops accuracy from 70 .46% to 
+
+63 .35% . We use n = 10 as the default in all main experi-ments. 
+
+G.2 Impact of Different Frozen Backbones 
+
+Figure 11: Impact of different pre-trained backbones. D-FROST treats the backbone as a frozen feature extractor and performs all aggregation in the d-dimensional prompt embedding space (Eq. (6)). Since the OT-based Merge never inspects the backbone weights or architecture, the method transfers across ViT architectures. Figure 11 verifies this on FiveDataset ( α = 0 .1) with three frozen backbones: ViT-B/32, DeiT-B/16 (Touvron et al. 2021) and ConViT-Base (d’Ascoli et al. 2021). 
+
+G.3 Comparison with Improved Baselines 
+
+Beyond the results in the main text, we compare D-FROST against a stronger set of baselines. Each DFL baseline is augmented with a client-specific prompt-selection mecha-nism (Wang et al. 2022; Weng et al. 2024), which lets every client contextualize its local data by selecting the most rele-vant prompts from a shared pool rather than collapsing distinct contexts into the same prompts. Concretely, each client main-tains a prompt pool of size 20 and, for each input, selects 10 
+
+most relevant prompts from this pool to prepend using a query mechanism. Setting the pool size to 10 recovers the original Figure 12: D-FROST versus the improved baselines (denoted 
+
++) on FiveDataset under the extreme non-IID partition. Each baseline is augmented with an L2P-style prompt-selection mechanism (Wang et al. 2022). baseline, since every input then uses all 10 prompts and no selection takes place. We denote these improved variants with a +: D-PSGD-PT +, DFedAvgM-PT +, and DFedSAM-PT +.Figure 12 reports the comparison on FiveDataset under the extreme non-IID partition. Prompt selection substantially raises the baselines over their original counterparts, yet D-FROST still outperforms all of them by a clear margin at every round: it separates within the first few rounds and con-verges to roughly 79% , while the strongest improved baseline, DFedAvgM +, plateaus near 63% , followed by DFedSAM +
+
+(≈ 58% ) and D-PSGD + (≈ 30% ). 
+
+G.4 Entropy Value Selection Strategies 
+
+Figure 13: Impact of Entropy Value Selection Strategies The entropy weight ε in the OT merge objective (7) scales the regularizer ε P 
+
+> a,i
+
+Pai (log Pai − 1) , the standard entropic regularization of optimal transport (Cuturi 2013; Peyré and Cuturi 2019): a small ε keeps the plan close to the exact OT solution and yields sharp assignments. We experiment with ε-scaling (Schmitzer 2019), a geometric schedule that starts from a large εinit and anneals it down to the target 
+
+ε = 0 .01 over the S inner iterations. On FiveDataset under Dirichlet α = 0 .1 (Figure 13), annealing does not improve over the fixed schedule. For simplicity we therefore use a fixed ε = 0 .01 in all experiments.

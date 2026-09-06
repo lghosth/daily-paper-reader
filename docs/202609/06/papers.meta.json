@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-07",
+  "date": "2026-09-06",
+  "generated_at": "2026-09-06T21:33:03",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/06/2609.01802v1-d-frost-decentralized-federated-prompt-tuning-via-optimal-transport-for-non-iid-and-imbalanced-data",
+      "section": "deep",
+      "title_en": "D-FROST: Decentralized Federated pRompt-tuning via Optimal tranSporT for Non-IID and Imbalanced Data",
+      "authors": "Quan Minh Nguyen, Hoang M. Ngo, Trong Nghia Hoang, My T. Thai",
+      "date": "2026-09-01",
+      "pdf": "https://arxiv.org/pdf/2609.01802v1",
+      "score": "8.0",
+      "evidence": "去中心化联邦提示微调只交换提示参数以降低通信开销，直接切合通信高效训练主题",
+      "tldr": "联邦微调大模型时， decentralized 场景下交换全模型参数开销大，prompt tuning虽省参数，但本地异构数据学习的prompt集存在索引错位，无法直接平均。本文首次将prompt tuning引入去中心化联邦，用Wasserstein距离建模prompt度量，提出基于最优传输的D-FROST算法，通过传输匹配合并邻域prompt。理论证明了Wasserstein共识误差有界且网络prompt重心收敛到驻点邻域，实验验证其在非IID数据上的有效性。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Prompt tuning provides a parameter-efficient way to adapt foundation models (FMs) by freezing the pretrained backbone and updating only a small set of learnable prompts. This property makes prompt tuning especially suitable for decentralized federated learning (DFL), where exchanging full-model updates can be prohibitively expensive. However, prompt tuning in DFL introduces new challenges. Prompt sets learned from heterogeneous local data may not be index-wise aligned, making standard decentralized averaging unsuitable. In addition, the algorithm should be theoretically guaranteed to achieve consensus and make progress toward the shared objective. In this work, we provide the first study of prompt tuning in DFL. We formulate decentralized prompt tuning as a Wasserstein-based optimization problem over prompt measures, which captures the set-valued structure of prompts. We then propose D-FROST, an optimal-transport-based (OT-based) decentralized prompt-tuning algorithm that merges neighborhood prompts into compact representative prompt sets through transportation-based matching. We further analyze D-FROST by bounding the Wasserstein consensus error across clients, and establishing convergence of the network-level prompt barycenter to a neighborhood of stationarity. Experiments under heterogeneous client data demonstrate the effectiveness of D-FROST for decentralized prompt tuning.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/06/2609.03151v1-basp-communication-efficient-batch-aware-sequence-parallelism-for-llm-training",
+      "section": "quick",
+      "title_en": "BASP: Communication-Efficient Batch-Aware Sequence Parallelism for LLM Training",
+      "authors": "Bigyan Ghimire, Jon C. Calhoun",
+      "date": "2026-09-02",
+      "pdf": "https://arxiv.org/pdf/2609.03151v1",
+      "score": "6.0",
+      "evidence": "提出批感知序列并行降低长文本大模型训练的通信开销，符合通信高效训练要求；但应用场景为LLM而非GNN。",
+      "tldr": "长序列训练中序列并行开销大，现有方法batch无关，通信低效。BASP根据微批次大小将GPU划分为不相交的序列并行组，缩小all-to-all通信域，本地化通信，提升Llama和Qwen训练效率1.17-1.31倍，且精度与内存不变。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Long-context reasoning for large language models (LLMs) is becoming increasingly important, but training over long sequences remains challenging due to massive memory and communication requirements. Sequence parallelism has emerged as an essential technique for addressing bottlenecks in long sequence LLM training. However, we observe that existing sequence parallelism methods are batch-agnostic and apply uniform sequence partitioning across all batch sizes, resulting in inefficient communication. In this paper, we introduce Batch- Aware Sequence Parallelism (BASP), a sequence parallelism approach that leverages batch structure to reduce communication overhead. BASP exploits batch structure by partitioning GPUs into disjoint sequence-parallel groups according to the micro- batch size. This design reduces the all-to-all communication group size, thereby localizing communication and improving training efficiency. Experimental results on an NVIDIA A100 cluster show that BASP improves end-to-end training time by up to 1.17 - 1.31x in Llama and Qwen models compared to standard sequence parallel baselines, while preserving identical model accuracy and memory usage.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

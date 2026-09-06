@@ -1,0 +1,92 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-06T21:31:33.127495+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2609.01802v1",
+      "source": "arxiv",
+      "title": "D-FROST: Decentralized Federated pRompt-tuning via Optimal tranSporT for Non-IID and Imbalanced Data",
+      "abstract": "Prompt tuning provides a parameter-efficient way to adapt foundation models (FMs) by freezing the pretrained backbone and updating only a small set of learnable prompts. This property makes prompt tuning especially suitable for decentralized federated learning (DFL), where exchanging full-model updates can be prohibitively expensive. However, prompt tuning in DFL introduces new challenges. Prompt sets learned from heterogeneous local data may not be index-wise aligned, making standard decentralized averaging unsuitable. In addition, the algorithm should be theoretically guaranteed to achieve consensus and make progress toward the shared objective. In this work, we provide the first study of prompt tuning in DFL. We formulate decentralized prompt tuning as a Wasserstein-based optimization problem over prompt measures, which captures the set-valued structure of prompts. We then propose D-FROST, an optimal-transport-based (OT-based) decentralized prompt-tuning algorithm that merges neighborhood prompts into compact representative prompt sets through transportation-based matching. We further analyze D-FROST by bounding the Wasserstein consensus error across clients, and establishing convergence of the network-level prompt barycenter to a neighborhood of stationarity. Experiments under heterogeneous client data demonstrate the effectiveness of D-FROST for decentralized prompt tuning.",
+      "authors": [
+        "Quan Minh Nguyen",
+        "Hoang M. Ngo",
+        "Trong Nghia Hoang",
+        "My T. Thai"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-01T19:16:14+00:00",
+      "link": "https://arxiv.org/pdf/2609.01802v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Decentralized federated prompt tuning that exchanges only low-cost prompts to cut communication, a direct communication-efficient training paper",
+      "llm_evidence_cn": "去中心化联邦提示微调只交换提示参数以降低通信开销，直接切合通信高效训练主题",
+      "llm_evidence": "去中心化联邦提示微调只交换提示参数以降低通信开销，直接切合通信高效训练主题",
+      "canonical_evidence": "去中心化联邦提示微调只交换提示参数以降低通信开销，直接切合通信高效训练主题",
+      "llm_tldr_en": "D-FROST reduces communication in decentralized federated learning by tuning prompts instead of full models and uses optimal transport to align heterogeneous prompt sets across non-IID clients, while retaining convergence guarantees.",
+      "llm_tldr_cn": "去中心化联邦学习中交换完整模型参数非常昂贵；提示微调只需更新少量轻量提示，天然适合通信受限环境。但各客户端学到的提示集索引并不对应，常规平均不可行。D-FROST利用最优运输把提示集对齐到共同语义空间，在非IID和不平衡数据下保持收敛并显著减少通信。该工作为通信高效训练提供了提示级范式，可迁移到图学习系统以降低同步开销。",
+      "llm_tldr": "去中心化联邦学习中交换完整模型参数非常昂贵；提示微调只需更新少量轻量提示，天然适合通信受限环境。但各客户端学到的提示集索引并不对应，常规平均不可行。D-FROST利用最优运输把提示集对齐到共同语义空间，在非IID和不平衡数据下保持收敛并显著减少通信。该工作为通信高效训练提供了提示级范式，可迁移到图学习系统以降低同步开销。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.03151v1",
+      "source": "arxiv",
+      "title": "BASP: Communication-Efficient Batch-Aware Sequence Parallelism for LLM Training",
+      "abstract": "Long-context reasoning for large language models (LLMs) is becoming increasingly important, but training over long sequences remains challenging due to massive memory and communication requirements. Sequence parallelism has emerged as an essential technique for addressing bottlenecks in long sequence LLM training. However, we observe that existing sequence parallelism methods are batch-agnostic and apply uniform sequence partitioning across all batch sizes, resulting in inefficient communication. In this paper, we introduce Batch- Aware Sequence Parallelism (BASP), a sequence parallelism approach that leverages batch structure to reduce communication overhead. BASP exploits batch structure by partitioning GPUs into disjoint sequence-parallel groups according to the micro- batch size. This design reduces the all-to-all communication group size, thereby localizing communication and improving training efficiency. Experimental results on an NVIDIA A100 cluster show that BASP improves end-to-end training time by up to 1.17 - 1.31x in Llama and Qwen models compared to standard sequence parallel baselines, while preserving identical model accuracy and memory usage.",
+      "authors": [
+        "Bigyan Ghimire",
+        "Jon C. Calhoun"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-09-02T20:33:23+00:00",
+      "link": "https://arxiv.org/pdf/2609.03151v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Communication-efficient sequence parallelism for LLM training; matches direct subquery on communication-efficient training but not graph-specific.",
+      "llm_evidence_cn": "提出批感知序列并行降低长文本大模型训练的通信开销，符合通信高效训练要求；但应用场景为LLM而非GNN。",
+      "llm_evidence": "提出批感知序列并行降低长文本大模型训练的通信开销，符合通信高效训练要求；但应用场景为LLM而非GNN。",
+      "canonical_evidence": "提出批感知序列并行降低长文本大模型训练的通信开销，符合通信高效训练要求；但应用场景为LLM而非GNN。",
+      "llm_tldr_en": "BASP reduces communication overhead in long-context LLM training via batch-aware GPU sequence partitioning; aligns with communication-efficient training, though not graph-specific.",
+      "llm_tldr_cn": "现有序列并行技术在长序列语言模型训练中对所有批大小使用统一的划分方式，造成不必要的通信开销。为此BASP提出按批结构将GPU划分成不相交的序列并行组，使并行划分配置适应实际批次特征，从而压缩通信量。实验表明，BASP相比既有方法能更有效地处理长序列训练中的通信瓶颈，同时保持较好的训练表现。这项研究展示了在通信高效训练中考虑数据批量结构的重要价值。",
+      "llm_tldr": "现有序列并行技术在长序列语言模型训练中对所有批大小使用统一的划分方式，造成不必要的通信开销。为此BASP提出按批结构将GPU划分成不相交的序列并行组，使并行划分配置适应实际批次特征，从而压缩通信量。实验表明，BASP相比既有方法能更有效地处理长序列训练中的通信瓶颈，同时保持较好的训练表现。这项研究展示了在通信高效训练中考虑数据批量结构的重要价值。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
