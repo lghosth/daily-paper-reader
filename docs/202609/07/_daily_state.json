@@ -1,0 +1,89 @@
+{
+  "date": "20260907",
+  "date_label": "2026-09-08",
+  "generated_at": "2026-09-08 06:49:54 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.04830v1",
+      "route": "202609/07/2609.04830v1-communication-efficient-personalized-federated-learning-via-layer-wise-multi-threshold-random-sketching",
+      "title": "Communication-Efficient Personalized Federated Learning via Layer-Wise Multi-Threshold Random Sketching",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过分层多阈值随机草图实现通信高效的个性化联邦学习",
+      "first_seen_at": "2026-09-08 06:49:54 北京时间",
+      "updated_at": "2026-09-08 06:49:54 北京时间"
+    },
+    {
+      "paper_id": "2609.04945v1",
+      "route": "202609/07/2609.04945v1-task-oriented-framework-for-communication-efficient-federated-learning-from-isolated-optimization-to-holistic-synergy",
+      "title": "Task-oriented Framework for Communication-Efficient Federated Learning: From Isolated Optimization to Holistic Synergy",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "提出面向通信高效联邦学习的任务导向框架，涵盖模型压缩、客户端选择与资源分配",
+      "first_seen_at": "2026-09-08 06:49:54 北京时间",
+      "updated_at": "2026-09-08 06:49:54 北京时间"
+    },
+    {
+      "paper_id": "2609.04832v1",
+      "route": "202609/07/2609.04832v1-pace-propagation-aware-collaborative-correction-for-one-shot-personalized-federated-graph-learning",
+      "title": "PACE: Propagation-Aware Collaborative Correction for One-Shot Personalized Federated Graph Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "客户端仅上传低秩载体与消息矩草图、服务端构造传播感知校正，面向一次性通信高效的图联邦学习",
+      "first_seen_at": "2026-09-08 06:49:54 北京时间",
+      "updated_at": "2026-09-08 06:49:54 北京时间"
+    },
+    {
+      "paper_id": "2609.01952v1",
+      "route": "202609/07/2609.01952v1-convergence-theory-of-knowledge-distillation-in-asynchronous-p2p-gossip-learning-network",
+      "title": "Convergence Theory of Knowledge Distillation in Asynchronous P2P Gossip Learning Network",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "为异步P2P gossip知识蒸馏提供收敛理论，支撑去中心化异步训练系统",
+      "first_seen_at": "2026-09-08 06:49:54 北京时间",
+      "updated_at": "2026-09-08 06:49:54 北京时间"
+    },
+    {
+      "paper_id": "2609.04417v1",
+      "route": "202609/07/2609.04417v1-tuning-collective-patterns-to-alleviate-congestion-in-shared-ai-clusters",
+      "title": "Tuning Collective Patterns to Alleviate Congestion in Shared AI Clusters",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "针对共享AI集群中的分布式训练通信拥塞，自适应调整通信集合模式以提高通信效率",
+      "first_seen_at": "2026-09-08 06:49:54 北京时间",
+      "updated_at": "2026-09-08 06:49:54 北京时间"
+    }
+  ]
+}

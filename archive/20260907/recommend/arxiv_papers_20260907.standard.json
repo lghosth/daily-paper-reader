@@ -1,0 +1,213 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-07T22:43:28.655844+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2609.04830v1",
+      "source": "arxiv",
+      "title": "Communication-Efficient Personalized Federated Learning via Layer-Wise Multi-Threshold Random Sketching",
+      "abstract": "Personalized federated learning (PFL) is a promising paradigm for collaborative learning over distributed devices, where edge nodes collaboratively train personalized models without sharing raw data. Although PFL addresses data heterogeneity by learning client-specific models, it still suffers from substantial uplink and downlink communication costs when exchanging high-dimensional parameters in bandwidth-constrained systems. Recent one-bit methods achieve extreme compression, but they usually rely on a single thresholding rule applied to the whole model. This design has two limitations. First, it overlooks layer-wise differences in parameter distributions and quantization sensitivities. Second, a single threshold provides only coarse binary information and cannot capture fine-grained variations in parameter distributions. To address these issues, we propose a communication-efficient PFL framework via layer-wise multi-threshold random sketching. In the proposed method, each layer is assigned its own set of quantization thresholds, so that the compressed representation can adapt to layer-specific statistics while using multiple intervals to provide a finer low-bit description of sketched parameters. The proposed method supports bidirectional communication using compact low-bit sketches and improves the communication-accuracy tradeoff compared with existing one-bit compression approaches.",
+      "authors": [
+        "Xu Zhang",
+        "Xingyu Hou",
+        "Jiacheng Cheng",
+        "Kaiyuan Feng",
+        "Maoguo Gong"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-04T07:35:24+00:00",
+      "link": "https://arxiv.org/pdf/2609.04830v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "communication-efficient personalized federated learning via layer-wise multi-threshold random sketching",
+      "llm_evidence_cn": "通过分层多阈值随机草图实现通信高效的个性化联邦学习",
+      "llm_evidence": "通过分层多阈值随机草图实现通信高效的个性化联邦学习",
+      "canonical_evidence": "通过分层多阈值随机草图实现通信高效的个性化联邦学习",
+      "llm_tldr_en": "Targets communication cost in personalized FL by proposing layer-wise multi-threshold random sketching, overcoming limitations of single-threshold one-bit compression through adaptive parameter-specific compression.",
+      "llm_tldr_cn": "个性化联邦学习在带宽受限的边缘系统交换高维参数时仍产生大量上下行通信。现有一比特压缩方法对整模型使用单一阈值，忽略层间参数分布与量化敏感性差异。论文提出分层多阈值随机草图方法，按层自适应设计阈值来兼顾压缩率与信息保留，在保持个性化能力的同时显著降低通信开销。该方法改进了极端压缩策略在异构模型各层上的适用性，有助于推动分布式个性化训练在低带宽场景的部署。",
+      "llm_tldr": "个性化联邦学习在带宽受限的边缘系统交换高维参数时仍产生大量上下行通信。现有一比特压缩方法对整模型使用单一阈值，忽略层间参数分布与量化敏感性差异。论文提出分层多阈值随机草图方法，按层自适应设计阈值来兼顾压缩率与信息保留，在保持个性化能力的同时显著降低通信开销。该方法改进了极端压缩策略在异构模型各层上的适用性，有助于推动分布式个性化训练在低带宽场景的部署。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.04945v1",
+      "source": "arxiv",
+      "title": "Task-oriented Framework for Communication-Efficient Federated Learning: From Isolated Optimization to Holistic Synergy",
+      "abstract": "Communication bottlenecks remain a primary obstacle to the large-scale deployment of federated learning (FL). This article proposes a comprehensive framework for building communication-efficient FL, founded on three fundamental pillars: model compression, client selection, and resource allocation. We first survey state-of-the-art techniques for each pillar, specifically elucidating how quantization, pruning, and low-rank approximation reduce payloads; how intelligent client schedulers exploit heterogeneity; and how emerging communication paradigms such as Integrated Sensing and Communication (ISAC) and Over-the-Air Computation (AirComp) redefine bandwidth and energy utilization. Subsequently, these insights are unified through a task-oriented design philosophy that couples strategy selection with cross-layer, multi-objective optimization. To validate the proposed framework, we present an autonomous driving case study with two complementary experiments: a task-oriented client scheduling strategy that improves object detection accuracy under the same communication time budget, and a joint quantization-bandwidth optimization that further reduces total training time under dynamic networks. Together, the experiments demonstrate the advantages of holistic task-oriented design for real-world FL deployment.",
+      "authors": [
+        "Fuqiang Pan",
+        "Yan Liu",
+        "Erwu Liu",
+        "Arumugam Nallanathan"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP"
+      ],
+      "published": "2026-09-04T09:53:56+00:00",
+      "link": "https://arxiv.org/pdf/2609.04945v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes a comprehensive framework for communication-efficient federated learning via compression, client selection, and resource allocation",
+      "llm_evidence_cn": "提出面向通信高效联邦学习的任务导向框架，涵盖模型压缩、客户端选择与资源分配",
+      "llm_evidence": "提出面向通信高效联邦学习的任务导向框架，涵盖模型压缩、客户端选择与资源分配",
+      "canonical_evidence": "提出面向通信高效联邦学习的任务导向框架，涵盖模型压缩、客户端选择与资源分配",
+      "llm_tldr_en": "Proposes a task-oriented framework for communication-efficient FL structured around model compression, client selection, and resource allocation, and surveys methods such as quantization, pruning, low-rank approximation, ISAC, and AirComp.",
+      "llm_tldr_cn": "通信瓶颈是联邦学习大规模部署的主要障碍。该文章提出一个以任务为导向的通信高效联邦学习框架，将模型压缩、客户端选择与资源分配三个支柱进行协同设计，系统梳理了量化、剪枝与低秩近似在减少负载上的作用，并介绍了智能客户端调度和ISAC、AirComp等新通信范式。框架将原本孤立的优化环节整合为协同整体，为通信受限场景下的联邦学习系统提供了普适设计与技术路线。",
+      "llm_tldr": "通信瓶颈是联邦学习大规模部署的主要障碍。该文章提出一个以任务为导向的通信高效联邦学习框架，将模型压缩、客户端选择与资源分配三个支柱进行协同设计，系统梳理了量化、剪枝与低秩近似在减少负载上的作用，并介绍了智能客户端调度和ISAC、AirComp等新通信范式。框架将原本孤立的优化环节整合为协同整体，为通信受限场景下的联邦学习系统提供了普适设计与技术路线。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.04832v1",
+      "source": "arxiv",
+      "title": "PACE: Propagation-Aware Collaborative Correction for One-Shot Personalized Federated Graph Learning",
+      "abstract": "Client heterogeneity creates both an opportunity and a risk in personalized federated graph learning. Knowledge held by other subgraphs may complement a receiver's Local model, but an incompatible transfer can override reliable predictions. One-shot communication sharpens this tension because an unsuitable server return cannot be corrected later. We introduce PACE, which treats collaborative knowledge as a compact correction to a complete Local predictor rather than as its replacement. Each client uploads a rank-r update carrier and a diagonal sketch of propagated message moments. The server uses them to construct a propagation-aware, receiver-anchored correction, while the receiver retains its full Local model. Convex negative-log-likelihood calibration (CNLL) then selects one coefficient between Local and External logits using validation nodes; model parameters remain fixed and no feedback is sent. At Rank-6, personalized returns occupy 9.6-17.6% of dense tensor bytes across the six evaluated datasets. The correction receives nonzero weight and improves both Accuracy and weighted-F1 over Local on five datasets; on ogbn-arxiv, CNLL assigns zero predictive weight to the correction and preserves Local predictions exactly. Applying the same CNLL rule to matched baselines on three citation datasets does not account for these gains. The central result is therefore that a small transported correction can augment a complete Local model when receiver evidence supports it while leaving the Local prediction unchanged otherwise.",
+      "authors": [
+        "Ruizhe Huang",
+        "Chengran Li",
+        "Xiaochuan Shi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-04T07:44:12+00:00",
+      "link": "https://arxiv.org/pdf/2609.04832v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "One-shot personalized federated graph learning with compact correction uploads; directly targets communication-efficient graph learning",
+      "llm_evidence_cn": "客户端仅上传低秩载体与消息矩草图、服务端构造传播感知校正，面向一次性通信高效的图联邦学习",
+      "llm_evidence": "客户端仅上传低秩载体与消息矩草图、服务端构造传播感知校正，面向一次性通信高效的图联邦学习",
+      "canonical_evidence": "客户端仅上传低秩载体与消息矩草图、服务端构造传播感知校正，面向一次性通信高效的图联邦学习",
+      "llm_tldr_en": "PACE turns collaborative knowledge into a compact correction for one-shot personalized federated graph learning: low-rank update carriers and diagonal message-moment sketches are uploaded, and the server builds propagation-aware receiver-anchored corrections without replacing local models.",
+      "llm_tldr_cn": "联邦图学习面临客户端子图分布差异大与通信轮次受限的问题：一次性通信中，服务端若直接返回聚合模型可能覆盖本地可靠预测。PACE将协作知识视为对本地完整预测器的一种紧凑修正，客户端只需上传低秩更新载体和消息传播矩的对角草图，由服务端构造传播感知、接收端锚定的校正项。实验表明该方法在保留本地模型的基础上充分利用其他子图知识，降低了通信成本并提升个性化性能，为面向图数据的一次性联邦学习提供了更稳健的范式。",
+      "llm_tldr": "联邦图学习面临客户端子图分布差异大与通信轮次受限的问题：一次性通信中，服务端若直接返回聚合模型可能覆盖本地可靠预测。PACE将协作知识视为对本地完整预测器的一种紧凑修正，客户端只需上传低秩更新载体和消息传播矩的对角草图，由服务端构造传播感知、接收端锚定的校正项。实验表明该方法在保留本地模型的基础上充分利用其他子图知识，降低了通信成本并提升个性化性能，为面向图数据的一次性联邦学习提供了更稳健的范式。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "find papers on communication efficient graph learning systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.01952v1",
+      "source": "arxiv",
+      "title": "Convergence Theory of Knowledge Distillation in Asynchronous P2P Gossip Learning Network",
+      "abstract": "Decentralized, serverless learning increasingly connects devices running different architectures, where the standard tool, decentralized SGD, is undefined as models with different parameter counts cannot be averaged. Knowledge distillation (KD) exchanges soft predictions rather than weights and sidesteps this obstacle, yet convergence theory for fully decentralized, asynchronous peer-to-peer (P2P) KD is lacking. We provide one, relocating consensus from parameter space to function (output) space: a KD event is a geometric contraction operator in logit space on the peers' predictive distributions, which we analyse in the Hilbert space of predictions on a reference measure. Under standard smoothness/variance assumptions and two realizability assumptions, one bridging parameter SGD to the functional step and one controlling restricted task/KD alignment, the time-averaged functional stationarity and function-space disagreement converge at rate $O(1/(ηT))$ to an $O(η)+O(B_f^2)+O(ζ_f^2)$ neighbourhood. Here $B_f$ is the distance from the task optimum to the peers' reachable classes and $ζ_f$ measures persistent local-task heterogeneity. Across homogeneous, width-heterogeneous, and mixed-family networks of the experiments, KD contracts function disagreement by $40-61\\times$, while isolated training does not. The sampled stationarity diagnostic has late transient exponents $0.99-1.90$ on the shared-skeleton main runs, and the four-point step-size sweep exhibits the predicted transient: neighbourhood tradeoff.",
+      "authors": [
+        "Lucas Qingyang Fang",
+        "Tiyao Liu",
+        "Jinhao Jing",
+        "Zeji Li",
+        "Kaijie Chen",
+        "Harikrishna Kuttivelil",
+        "Katia Obraczka"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-01T23:52:01+00:00",
+      "link": "https://arxiv.org/pdf/2609.01952v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "convergence theory for asynchronous peer-to-peer knowledge distillation in decentralized training",
+      "llm_evidence_cn": "为异步P2P gossip知识蒸馏提供收敛理论，支撑去中心化异步训练系统",
+      "llm_evidence": "为异步P2P gossip知识蒸馏提供收敛理论，支撑去中心化异步训练系统",
+      "canonical_evidence": "为异步P2P gossip知识蒸馏提供收敛理论，支撑去中心化异步训练系统",
+      "llm_tldr_en": "Develops convergence theory for knowledge distillation in fully decentralized asynchronous P2P gossip networks, where KD is modeled as a geometric contraction in function space, enabling heterogeneous models to be trained without shared parameters.",
+      "llm_tldr_cn": "去中心化无服务器训练常连接不同架构的设备，而标准去中心化SGD因参数维度不同无法做平均；知识蒸馏用软标签交换取代权重交换从而绕开该障碍，但缺少异步P2P场景的收敛理论。论文将共识从参数空间移到函数空间，把一次KD视为预测分布上的几何收缩算子，并以Hilbert空间分析收敛性。在平滑性与方差假设下给出收敛保证，为异步去中心化环境中异构模型的协调训练奠定理论基础。该方法可推广到任意需要异步通信的分布式神经网络训练系统。",
+      "llm_tldr": "去中心化无服务器训练常连接不同架构的设备，而标准去中心化SGD因参数维度不同无法做平均；知识蒸馏用软标签交换取代权重交换从而绕开该障碍，但缺少异步P2P场景的收敛理论。论文将共识从参数空间移到函数空间，把一次KD视为预测分布上的几何收缩算子，并以Hilbert空间分析收敛性。在平滑性与方差假设下给出收敛保证，为异步去中心化环境中异构模型的协调训练奠定理论基础。该方法可推广到任意需要异步通信的分布式神经网络训练系统。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "find papers on distributed GNN training systems with data parallel or asynchronous execution",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.04417v1",
+      "source": "arxiv",
+      "title": "Tuning Collective Patterns to Alleviate Congestion in Shared AI Clusters",
+      "abstract": "Distributed AI training involves recurring rounds of data exchange between multiple pairs of GPU nodes. Slowdown in even one flow due to congestion can cause the entire communication round to slowdown. Current approaches for evading congestion in AI clusters assume global control over the entire workload (e.g. coordinating the schedule of all jobs) or assume infrastructural support (e.g. adaptive routing in switches). They are thus ill-suited in a shared cloud setting where AI jobs belonging to one user can face external congestion from other users' jobs or background traffic beyond its own control. In this paper, we build a system, REACT, that tunes the recurring pattern of data exchange between GPU nodes (known as communication collectives) in response to congestion. REACT works at the application (communication library) layer, where it detects congestion at runtime using readily available flow stats, and tunes the collective pattern to alleviate congestion - changing the set of incident flows while retaining the semantics of information exchange (e.g. selecting which node aggregates data in an AllReduce tree). REACT requires no explicit support from the underlying network infrastructure and can be unilaterally deployed by individual users in a shared cloud setting. We prototype REACT as a shim layer over NCCL, and evaluate it on a shared academic GPU cluster - enabling REACT improves communication performance (algorithm bandwidth) by 13%-38% under network congestion. Our simulations across a range of congestion scenarios further reveal up to 75% performance improvement, highlighting the effectiveness of our approach.",
+      "authors": [
+        "Eashan Gupta",
+        "Yongzhou Chen",
+        "Apoorve Mohan",
+        "Pavlos Maniotis",
+        "Abdullah Kayi",
+        "Radhika Mittal"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI",
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-09-03T19:32:40+00:00",
+      "link": "https://arxiv.org/pdf/2609.04417v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Dynamically adjusts communication collective patterns in distributed AI training to avoid congestion, improving communication efficiency",
+      "llm_evidence_cn": "针对共享AI集群中的分布式训练通信拥塞，自适应调整通信集合模式以提高通信效率",
+      "llm_evidence": "针对共享AI集群中的分布式训练通信拥塞，自适应调整通信集合模式以提高通信效率",
+      "canonical_evidence": "针对共享AI集群中的分布式训练通信拥塞，自适应调整通信集合模式以提高通信效率",
+      "llm_tldr_en": "REACT tunes recurring communication collective patterns between GPU nodes to avoid congestion in shared AI clusters, targeting communication-efficient distributed training without global scheduling or adaptive routing infrastructure.",
+      "llm_tldr_cn": "共享AI集群中，一条数据流的拥塞都可能拖慢整轮分布式训练通信，而现有方法要么假设全局作业调度，要么依赖交换机自适应路由，难以应对多租户外部流量。REACT面向共享云环境，通过感知网络拥塞并动态调整GPU节点间通信集合的交换模式来规避慢流，不要求掌控全部作业或改造基础设施。该机制为分布式训练通信效率提供了新的系统级途径。",
+      "llm_tldr": "共享AI集群中，一条数据流的拥塞都可能拖慢整轮分布式训练通信，而现有方法要么假设全局作业调度，要么依赖交换机自适应路由，难以应对多租户外部流量。REACT面向共享云环境，通过感知网络拥塞并动态调整GPU节点间通信集合的交换模式来规避慢流，不要求掌控全部作业或改造基础设施。该机制为分布式训练通信效率提供了新的系统级途径。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
