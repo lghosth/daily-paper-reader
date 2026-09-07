@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-06",
+  "date": "2026-09-05",
+  "generated_at": "2026-09-05T21:23:40",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/05/2609.02984v1-from-euclidean-to-graph-structured-data-a-survey-of-collaborative-learning",
+      "section": "quick",
+      "title_en": "From Euclidean to Graph-Structured Data: A Survey of Collaborative Learning",
+      "authors": "Rémi Bourgerie, Šarūnas Girdzijauskas, Viktoria Fodor",
+      "date": "2026-09-02",
+      "pdf": "https://arxiv.org/pdf/2609.02984v1",
+      "score": "7.0",
+      "evidence": "面向图结构数据协作学习综述，涵盖分布式与联邦GNN训练",
+      "tldr": "传统机器学习集中式收集数据训练推理，面临隐私与扩展性瓶颈。协作学习（如联邦学习、去中心学习）允许本地训练与有限协作，但多针对图像、文本等欧氏数据，难以建模关系型图结构。由于图学习天然依赖节点间消息传递，与协作环境高度契合，但该交叉领域研究尚浅。本综述系统梳理从欧氏到图结构数据的协作学习，围绕有效性、效率与隐私三方面归纳基础成果，并提出图分布场景分类与统计异质性刻画，给出问题形式化与算法框架，最后指明开放挑战。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "The conventional approach to machine learning, that is, collecting data, training models, and performing inference in a single location, faces fundamental limitations, including scalability and privacy, that restrict its applicability. To address these challenges, recent research has explored collaborative learning approaches, including federated learning and decentralized learning, where individual agents perform training and inference locally, with limited collaboration. Most collaborative learning research focuses on Euclidean data with regular, grid-like structure (e.g., images, text). However, these approaches fail to capture the relational patterns in many real-world applications, best represented by graphs. Learning on graphs relies on message-passing mechanisms to propagate information between connected nodes, making it conceptually well-suited for collaborative environments where agents must exchange information. Yet, the opportunities and challenges of learning on graph-structured data in collaborative settings remain largely underexplored. This survey provides a comprehensive investigation of collaborative learning from Euclidean to graph-structured data, aiming to consolidate this emerging field. We begin by reviewing its foundational principles for Euclidean data, organizing them along three core dimensions: learning effectiveness, efficiency, and privacy preservation. We then extend the discussion to graph-structured data, introducing a taxonomy of graph distribution scenarios, characterizing associated statistical heterogeneities, and developing standardized problem formulations and algorithmic frameworks. Finally, we systematically identify open challenges and promising research directions.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/05/2608.29360v1-spatial-entropy-based-partitioning-for-spatiotemporal-graph-unlearning",
+      "section": "quick",
+      "title_en": "Spatial Entropy based Partitioning for Spatiotemporal Graph Unlearning",
+      "authors": "Qiming Guo, Wenbo Sun, Ye Wang, Wenlu Wang",
+      "date": "2026-08-29",
+      "pdf": "https://arxiv.org/pdf/2608.29360v1",
+      "score": "6.0",
+      "evidence": "提出空间熵引导的图分区策略生成平衡子图，可迁移至分布式GNN的图划分需求",
+      "tldr": "时空图学习面临数据删除难题，因信息沿时空传播，完全擦除节点影响需全图重训，成本高。现有方法难以兼顾精确与高效。本文提出IsleNet，以空间熵引导划分出局部连贯子图，用虚拟边轻量连接，卸载请求时仅重训受影响子图编码器与虚拟边层。实验表明在四基准上达94%全图精度，卸载时间缩减一数量级。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Spatiotemporal graphs underpin applications such as traffic forecasting, weather forecasting, and healthcare monitoring. Privacy regulations such as the GDPR and the CCPA require the complete removal of unauthorized data from trained models, but achieving this on a spatiotemporal graph is difficult: because information propagates globally through both spatial and temporal message passing, fully erasing a node's influence forces costly full-graph retraining. ST-graph unlearning requires both exactness and efficiency. We propose IsleNet, which uses spatial-entropy-guided partitioning to create balanced, locally coherent subgraphs and reconnects them with lightweight virtual edges. Upon an unlearning request, only the affected subgraph encoder and virtual-edge layer are retrained, ensuring exact removal with low cost. Experiments on four real-world benchmarks show that IsleNet attains up to 94% of full-graph accuracy while reducing unlearning time by up to an order of magnitude. Our code is publicly available at https://github.com/wenlu-lab/STGraphUnlearning.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

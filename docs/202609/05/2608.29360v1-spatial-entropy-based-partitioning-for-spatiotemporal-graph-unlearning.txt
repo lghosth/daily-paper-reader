@@ -1,0 +1,623 @@
+Title: Spatial Entropy based Partitioning for Spatiotemporal Graph Unlearning
+
+URL Source: https://arxiv.org/pdf/2608.29360v1
+
+Published Time: Tue, 01 Sep 2026 00:51:17 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Spatial Entropy based Partitioning for Spatiotemporal Graph Unlearning 
+
+## Qiming Guo ‡ Wenbo Sun ∗ Ye Wang † Wenlu Wang ‡
+
+Abstract. Spatiotemporal graphs underpin applica-tions such as traffic forecasting, weather forecasting, and healthcare monitoring. Privacy regulations such as the GDPR and the CCPA require the complete removal of unau-thorized data from trained models, but achieving this on a spatiotemporal graph is difficult: because information prop-agates globally through both spatial and temporal message passing, fully erasing a node’s influence forces costly full-graph retraining. ST-graph unlearning requires both exact-ness and efficiency. We propose IsleNet, which uses spatial-entropy-guided partitioning to create balanced, locally co-herent subgraphs and reconnects them with lightweight vir-tual edges. Upon an unlearning request, only the affected subgraph encoder and virtual-edge layer are retrained, en-suring exact removal with low cost. Experiments on four real-world benchmarks show that IsleNet attains up to 94% of full-graph accuracy while reducing unlearning time by up to an order of magnitude. Our code is publicly available at https://github.com/wenlu-lab/STGraphUnlearning. 
+
+Key words: machine unlearning, graph unlearn-ing, spatiotemporal graph unlearning, spatial entropy, graph neural networks, privacy-preserving learning. 
+
+1 Introduction. Privacy regulations such as the GDPR [9] and the CCPA [3] grant individuals the right to have their data erased from trained machine learn-ing models. For spatiotemporal graph neural networks (ST-GNNs), which underpin applications from traffic forecasting to healthcare monitoring, honoring such re-quests is particularly difficult. To fully erase the influ-ence of a requested node, the standard recourse is to retrain the entire ST-graph from scratch, because every node’s features propagate globally through both spatial and temporal message passing, and any residual path can leak the deleted data back into the model. But full retraining has two severe consequences (Figure 1.1): it breaks the information-propagation walks that hold the ST-graph together and can even structurally iso-late nodes that were never requested for deletion, and it costs as much time and compute as training the orig-     
+
+> ∗Delft University of Technology, Netherlands (w.sun-2@tudelft.nl).
+> †Biogen, Cambridge, MA, USA (ye.wang@biogen.com).
+> ‡Texas A&M University - Corpus Christi, Corpus Christi, TX, USA (qguo2@islander.tamucc.edu, wenlu.wang@tamucc.edu).
+
+inal model. Spatiotemporal graph unlearning therefore requires simultaneously meeting two goals: exactness, meaning the deleted data’s influence must be completely removed, and efficiency, meaning the process must be fast without sacrificing post-unlearning accuracy. A natural remedy is to partition the graph into in-dependent subgraphs, train each in isolation, and re-train only affected partitions upon deletion. Spectral clustering [27] groups topologically tight nodes into lo-cally coherent subgraphs (Figure 3.1), letting each en-coder exploit dense local message passing. The remain-ing challenge is balance: if one subgraph collapses to a trivially small cluster its encoder degenerates. We use spatial entropy as the verification criterion, since a well-balanced partition produces subgraphs of compara-ble entropy, and our normalized partition entropy ¯HP
+
+triggers redistribution when balance fails. We propose IsleNet (Island Network for Unlearning Spatiotemporal Graphs). In Stage 1, the ST-graph is partitioned into M entropy-verified subgraphs using spatial-entropy-guided partitioning, each trained by an independent encoder with gradient-isolated optimizers. In Stage 2, encoders are frozen and lightweight virtual edges are optimized to compensate for severed cross-subgraph dependencies. Because the virtual edges are structurally decoupled from the encoders, an unlearning request only retrains the affected subgraph encoder and the virtual-edge layer, achieving exact localized deletion. This design simultaneously satisfies both exactness and efficiency on spatiotemporal graphs. Our main contributions are: 
+
+1. Spatial entropy as a partition balance crite-rion. We propose a new concept “spatial entropy” as a principled measure for verifying that spectral partition-ing produces balanced, non-degenerate subgraphs, each preserving dense local connectivity so that its encoder can fully exploit local spatiotemporal correlations. 
+
+2. Virtual edges for decoupled global integra-tion. We design a two-stage training protocol in which independently trained subgraph encoders are connected through lightweight virtual edges. The strict gradient isolation between stages guarantees exact unlearning: retraining is confined to the affected subgraph and the virtual-edge parameters. 
+
+3. Comprehensive empirical validation. Across                            
+
+> Accepted at the SIAM International Conference on Data Mining (SDM 2026) arXiv:2608.29360v1 [cs.LG] 29 Aug 2026 a. Complete ST-Graph b. Nodes Marked for Unlearning c. Nodes Removed d. ST-Graph Retrained
+> High Accuracy Interrupted and Fragmented Altered Node Features
+> Nodes | Edges |Unlearning Target |Walk Halo (size = influence, color = walk identity)
+> UN
+> Remove (N,E )Retrain STGraph
+> Walk A
+> Walk B
+> Walk A
+> Walk B
+> UN
+> UN Walk B
+> Walk A Walk A
+> Walk B
+> 1111
+> 22
+> 22
+> 3333
+> 4444Walk C Walk C
+> 5555
+
+Figure 1.1: The challenge of unlearning on spatiotemporal graphs. (a) In a complete ST-graph, walks propagate node influence globally (e.g., v4 reaches v5 via Walk C; v3 lies on Walks A and B). (b) Target nodes are marked for unlearning ( UN ), blocking every walk through them. (c) After removal, Walk A no longer reaches v1
+
+or v3, Walk B no longer reaches v2, and uninvolved v4 loses all outgoing paths, a structural cascade. (d) Retraining the fragmented graph alters the remaining node features ( v1, v 2, v 3, v 5) and fades the walk halos that encode global context, while costing as much as full training. ST-graph unlearning must therefore be exact (deleted influence fully removed) and efficient (fast without sacrificing post-unlearning accuracy). four real-world datasets spanning 23 to 3,220 nodes and four ST-GNN backbones, IsleNet attains up to 94% of full-graph accuracy while reducing unlearning time by up to 12 ×, outperforming five baselines. 
+
+2 Related Work. A Spatiotemporal Graph 
+
+G = (V, E, X) has N nodes with adjacency matrix 
+
+A ∈ RN ×N and features X ∈ RT ×N ×F spanning 
+
+T timesteps. ST-GNNs such as STGCN [27], ST-GAT [25], and DCRNN [21] couple spatial message pass-ing with recurrent or convolutional temporal operators, producing per-node forecasts. This coupling is precisely what makes unlearning expensive: each node’s features propagate through both dimensions, so a single deletion can require full retraining. General-purpose unlearning falls into two camps. Exact methods retrain affected subsets of the model: SISA [2] partitions data into independent shards so only affected shards are retrained; Ginart et al. [11] de-rive deletion-efficient k-means variants. Approximate methods modify trained parameters directly: certified removal [13] uses Newton updates with differential-privacy noise, and weight scrubbing [12] perturbs weights along Fisher-information directions. Exact methods offer formal guarantees; approximate meth-ods are faster but lack provable deletion. Gra-phEraser [4] pioneered graph unlearning through bal-anced partitioning (BLPA/BEKM) with learned aggre-gation; GUIDE [26] extends this with fairness-aware dy-namic partitioning. GNNDelete [5] avoids partitioning by learning layer-wise deletion operators, while PRO-JECTOR [6] provides exact deletion for linear GNNs via orthogonal projection. These methods target static graph node classification; none address spatiotempo-ral forecasting, where temporal message passing am-plifies residual influence. For spatiotemporal settings, STEPS [14] applies spectral partitioning with weighted aggregation to ST-GNN forecasting, handling up to 15% node removal with order-of-magnitude speedups, but lacks formal deletion proofs and requires preset parti-tion scales. Graph Revoke [28] unlearns dynamic edges in continuous-time graphs via ML-Mixer gradient trans-formation, achieving 7.23 × speedups on link prediction, but offers no theoretical deletion guarantees and may face scalability bottlenecks. Information-theoretic measures have a long history in graph analysis [7, 18, 20] and in partition quality as-sessment [24, 8]. Spatial entropy specifically has been used in geographic information science to measure the evenness of point distributions [1, 19]. To our knowl-edge, no prior work applies entropy-based criteria to ver-ify partition quality in spatiotemporal graph unlearning. 
+
+3 Method. IsleNet partitions the ST-graph into locally coherent subgraphs that preserve dense internal connectivity, with spatial entropy verifying that no sub-graph degenerates. Lightweight virtual edges, struc-turally decoupled from the encoders, compensate for severed long-range dependencies. A two-stage protocol first trains each encoder in isolation, then freezes them and trains only the virtual edges, confining each node’s influence to one subgraph so that unlearning retrains only the affected encoder and the virtual-edge layer. 
+
+3.1 Problem Formulation. Consider a spa-tiotemporal graph G = ( V, E, X), where V is a set of   
+
+> Accepted at the SIAM International Conference on Data Mining (SDM 2026) c. Degenerate Partition d. Balanced Partition
+> a. Low Spatial Entropy b. High Spatial Entropy
+
+Figure 3.1: Spatial entropy in IsleNet. Top: 
+
+Spatial entropy Hs (Eq. 3.2) quantifies how a subgraph’s nodes are distributed across space. (a) Low: nodes concentrate in narrow regions. (b) High: nodes spread uniformly. Bottom: IsleNet uses spatial entropy to verify partition quality: blue and red halos mark the two subgraphs, and the dashed line separates them. (c) A degenerate partition: one subgraph shrinks to a small corner, so IsleNet detects the imbalance and redistributes nodes. (d) A balanced partition: both subgraphs cover comparable spatial extents. 
+
+N nodes, E encodes edges in a binary adjacency matrix 
+
+A ∈ { 0, 1}N ×N , and X ∈ RT ×N ×F contains temporal features of length T with F -dimensional features per node. A GNN model fθ : ( X, A) 7 → Y predicts future node states Y ∈ RN ×H over a horizon H. The unlearn-ing task is to remove a subset of nodes UN ⊂ V and their edges UE = {(u, v ) ∈ E : u ∈ U N or v ∈ U N }, producing a new model fθ′ that approximates the performance of a model retrained from scratch on the remaining graph 
+
+G′ = ( V \ U N , E \ U E , X′).Formally, given a loss function L (e.g., L1 loss), the unlearning objective is: (3.1) θ′ ≈ arg min  
+
+> θ
+
+E(X′,Y′)L(fθ (X′, A′), Y′),
+
+where A′ is the adjacency matrix of G′, and X′, Y′
+
+exclude data associated with UN . Following the SISA framework [2], we say that unlearning is exact if the post-unlearning model fθ′ is statistically indistinguish-able from a model retrained from scratch under the same partition and training protocol on G′. IsleNet satisfies this condition because gradient isolation (Eq. 3.7) en-sures that no encoder parameter outside the affected subgraph was ever influenced by the deleted nodes, and the virtual-edge layer is re-initialized and re-trained on the remaining data. 
+
+3.2 IsleNet Architecture. IsleNet decom-poses the graph into M independent subgraphs and in-tegrates them via a virtual edge mechanism to balance local isolation and global information flow. The archi-tecture comprises three components: spatial-entropy-guided partitioning, subgraph-independent spatiotem-poral encoding, and virtual edges. 
+
+3.2.1 Spatial-Entropy-Guided Partition-ing. We partition G into M disjoint subgraphs 
+
+{G 1, . . . , GM }, where Gi = (Vi, Ei, Xi), Vi ∩ V j = ∅
+
+for i̸ = j, and S 
+
+> i
+
+Vi = V. A key insight of IsleNet is that locally coherent subgraphs with dense inter-nal connectivity allow each encoder to fully exploit spatiotemporal correlations through GCN message passing. However, the partition must also be balanced: no subgraph should degenerate to a trivially small or collapsed cluster. We use spatial entropy to formalize and verify this balance property. We define Spatial Entropy by discretizing the spatial domain of G into R non-overlapping regions (e.g., grid cells based on node coordinates). For any node subset V′ ⊆ V , let pr (V′) = |{ v ∈ V ′ : sv ∈
+
+region r}| /|V ′| denote the fraction of nodes falling in region r. The spatial entropy of V′ is defined as: (3.2) Hs(V′) = −
+
+> R
+
+X
+
+> r=1
+
+pr (V′) log pr (V′),
+
+where 0 log 0 ≜ 0. The maximum entropy Hmax  
+
+> s
+
+= log R
+
+is attained when nodes are uniformly distributed across all regions. For a partition P = {V 1, . . . , VM }, we define the 
+
+partitioning entropy as the minimum spatial entropy across all subgraphs, together with its normalized form: 
+
+HP = min   
+
+> i∈{ 1,...,M }
+
+Hs(Vi),(3.3) 
+
+¯HP = HP
+
+Hs(V) .(3.4) 
+
+¯HP ranges from 0 (a degenerate partition where one subgraph has collapsed) to 1 (all subgraphs have com-parable spatial extent). We accept a partition when 
+
+¯HP ≥ 1 − ϵ; otherwise balanced redistribution is trig-gered (detailed below). IsleNet seeks a partition that minimizes inter-subgraph edge cuts (preserving local connectivity) subject to balance constraints verified by partition entropy: (3.5) 
+
+min 
+
+> P
+> M
+
+X
+
+> i=1
+
+X
+
+> u∈V i
+> v / ∈V i
+
+Auv s.t. |V i| − NM ≤ δ, ¯HP ≥ 1 − ϵ, 
+
+> Accepted at the SIAM International Conference on Data Mining (SDM 2026)
+
+# A BA
+
+Training Phase  Unlearning Phase Initialization 
+
+# C
+
+1.  Input 
+
+Graph  G
+
+= (V, E,
+
+X)              
+
+> 2. Spectral Graph Partitioning
+> Partitioning & Subgraph Training
+> 3. Subgraph Encoder Training
+> Output: { G1,
+> . . . , GM}
+> Virtual Edge
+> Construction
+> Output: { Ki}
+> 6. Inter-Subgraph
+> Virtual Edge
+> 7. Virtual Edge Optimization
+> 4. Key Node
+> Selection(PageRank)
+> 5. Intra-Subgraph
+> Virtual Edge
+> Output: { fθi}Output: Intra-
+> Subgraph Edges
+> Output: Inter-Subgraph Edges
+> Output: B
+> Output:
+> Saffected
+> 8. Affected Subgraph Identification
+> 9. Virtual Edge Update
+> Affected Subgraph Identification
+> & Virtual Edge Update Retrain & Re-Optimize
+> 10. Affected Subgraph Retraining
+> 11. Virtual Edge Re-Optimization
+> Output: Bnew
+> Output: Updated { fθi}
+> Subgraph 1
+> Subgraph 2 Subgraph 3
+> Retrain Affected Subgraphs
+> a. b. c. d.
+> Virtual
+> Edge
+> Retrain
+> Subgraph 3
+> RM
+> Virtual
+> Edge
+> Virtual
+> Edge
+> Virtual
+> Edge
+> Virtual
+> Edge
+> Virtual
+> Edge
+> Subgraph 2
+> Subgraph 1
+> Subgraph 3
+> Subgraph 1
+> Subgraph 2
+
+Figure 3.2: Framework of IsleNet. (a) The original graph. (b) Split into smaller subgraphs, each with its own encoder. (c) Virtual edges (green) reconnect subgraphs; on a deletion request, edges touching the target are marked for removal (RM). (d) Only the affected subgraph is retrained and virtual edges are rebuilt; other subgraphs stay untouched. How it works: Spatial entropy guides the split so no subgraph degenerates. Each encoder trains in isolation, and virtual edges stitch subgraphs back together. To unlearn, IsleNet retrains only the affected encoder and rebuilds the virtual edges from scratch. Untouched subgraphs keep their weights, making unlearning fast and exact. where δ controls size tolerance and ¯HP (defined in Eq. 3.4) is the normalized partition entropy. Algorith-mically, we first run spectral clustering on the graph Laplacian L = D − A with balance constraint |V i| ≈ 
+
+N/M , producing an initial partition P(0) . We then compute ¯HP(0) over a discretized grid on the node co-ordinates. If ¯HP(0) ≥ 1 − ϵ the partition is accepted; otherwise, a balanced redistribution procedure (below) is invoked to produce a spatially non-degenerate parti-tion. We use ϵ = 0 .1 throughout. When ¯HP(0) < 1 − ϵ, we iteratively rebalance: at each step, we identify the subgraph Vi∗ with the lowest spatial entropy, select the node farthest (in Euclidean distance) from its centroid, and reassign it to the sub-graph with highest entropy among those with |V j | <N/M + δ; then recompute ¯HP . The procedure ter-minates when ¯HP ≥ 1 − ϵ or after three iterations; on failure we fall back to a size-balanced random par-tition. To quantify balance across subgraphs be-yond the minimum criterion, we also monitor the en-tropy variance σ2 
+
+> H
+
+= 1
+
+> M
+
+PMi=1 (Hs(Vi) − ¯Hs)2, where 
+
+¯Hs = 1
+
+> M
+
+P 
+
+> i
+
+Hs(Vi). A partition is spatially adequate 
+
+if both ¯HP ≥ 1 − ϵ (non-degeneracy) and σ2 
+
+> H
+
+≤ τ (low imbalance). IsleNet’s spectral clustering with balance constraints satisfies both on all benchmarks with ϵ ≤ 0.1
+
+and τ ≤ 0.01 .
+
+Proposition 3.1 (Representational Fidelity). If a partition P satisfies Hs(Vi) ≥ Hs(V) − ϵ for all 
+
+i, then each subgraph Gi occupies at least a fraction 
+
+(1 − ϵ) of the spatial regions of G, so no subgraph is spatially degenerate and every encoder receives a non-trivial portion of the graph’s extent. Proof. Let Ri = |{ r : pr (Vi) > 0}| . Since Hs(Vi) ≤
+
+log Ri, we have Ri ≥ eHs(Vi) ≥ eHs(V)−ϵ. When V
+
+approximately uniformly covers R+ occupied regions, 
+
+Hs(V) ≈ log R+, so Ri/R + ≥ e−ϵ ≥ 1 − ϵ.
+
+Theorem 3.2 (Post-Unlearning Entropy Bound). 
+
+Under a spatially adequate partition P, removing a fraction γi = |U N ∩ V i|/|V i| of nodes from Vi yields 
+
+Hs(Vi \ U N ) ≥ Hs(Vi) − γi log R, so the retrained subgraph preserves enough spatial coverage for small-fraction unlearning. Proof. Removing γi|V i| nodes reduces entropy by at most γi log R (the information content of uniformly-distributed removed nodes). Combined with Hs(Vi) ≥
+
+(1 − ϵ)Hs(V), the post-unlearning entropy remains close to Hs(V) for small γi.
+
+3.2.2 Subgraph-Independent Spatiotempo-ral Encoding. Each subgraph Gi is processed by a dedicated encoder fθi (e.g., STGCN), taking features 
+
+Xi ∈ RB×T ×|V i|× F and edge index Ei ⊆ E i, producing embeddings Hi ∈ RB×|V i|× H :(3.6) Hi = fθi (Xi, Ei).
+
+> Accepted at the SIAM International Conference on Data Mining (SDM 2026)
+
+The encoder applies graph convolutions for spatial mod-eling and recurrent units for temporal modeling, out-putting per-node predictions. Independence is ensured by gradient isolation: (3.7) ∂Li
+
+∂θ j
+
+= 0 ∀i̸ = j, 
+
+where Li is the loss on subgraph i. Isolation is enforced mechanically: each encoder fθi has its own Adam opti-mizer operating on a disjoint parameter group, and Li
+
+is computed only from (Xi, Ei, yi), so the computation graph for encoder j̸ = i is never instantiated during a step that updates encoder i. Consequently, no param-eter in θj can depend on any node in Vi, which is the prerequisite for exact localized unlearning. 
+
+Gradient Isolation Bound. For a deletion frac-tion γ = |U N |/N , the post-unlearning loss satisfies 
+
+Lunlearn ≤ L orig +O(γ P 
+
+> i∈S affected
+
+Li), ensuring minimal error increase since |S affected | ≤ M .
+
+3.2.3 Virtual Edge Construction. To re-store global connectivity lost during partitioning, we introduce virtual edges comprising intra-subgraph and inter-subgraph connections, which aggregate informa-tion via attention-based embeddings. In principle, vir-tual edges can be parameterized by any network de-signed for information summarization; in this work, we adopt a multilayer perceptron. For each subgraph Gi, we select the top ki =max(2 , ⌈0.1·|V i|⌉ ) structurally influential nodes Ki using PageRank centrality [23]. The PageRank vector p ∈
+
+R|V i| is computed via the standard power iteration with damping factor α, and the key node set is: (3.8) Ki = TopK (p, k i).
+
+These key nodes serve as endpoints for the virtual edges that restore cross-subgraph information flow. Each virtual edge aggregates embeddings from a set of key nodes Ksrc via scaled dot-product attention followed by an MLP. Let HK ∈ RB×n×D collect the embeddings of n selected key nodes. The virtual-edge feature is computed as: 
+
+W = softmax 
+
+ HKH⊤K
+
+D
+
+
+
+,(3.9) 
+
+hb = MLP (flatten (WH K)) ,(3.10) where MLP : RnD → RDb is a two-layer network with ReLU activation. We instantiate two types of virtual edges: intra-subgraph edges that connect the top-2 key nodes within each subgraph ( n=2 , yielding M edges), and inter-subgraph edges that connect the top-3 key nodes from each pair of subgraphs ( n=6 , yielding  M
+
+> 2
+
+
+
+edges). The total number of virtual edges is M + M
+
+> 2
+
+. The top-2/top-3 choice is a parameter-efficiency trade-off: the  M
+
+> 2
+
+ inter-subgraph edges dominate the parameter budget, so a larger receptive field there (six key nodes) is more impactful than widening the M intra-subgraph edges. Virtual-edge features are aggregated residually: (3.11) Henhanced = H + β X
+
+> b∈B
+
+PbProj (hb),
+
+where H = [H1; . . . ; HM ] ∈ RB×N ×D concatenates subgraph embeddings, Proj : RDb → RD is a linear layer, β > 0 is a residual scaling factor tuned on a validation set to balance local and global contributions (we use β=0 .1 throughout), and Pb ∈ { 0, 1}N ×1 maps virtual edge b to its connected nodes. This approximates 
+
+A with a low-rank structure, ensuring efficient global information flow. The attention weights W (Eq. 3.9) are row-stochastic with ∥W∥2 ≤ 1, ensuring stable informa-tion propagation . The M + M
+
+> 2
+
+ virtual edges approxi-mate the full adjacency A with only O(M 2) parameters, maintaining global connectivity at low cost. 
+
+3.3 Two-Stage Training Protocol. Stage 1 trains each encoder fθi independently to minimize an 
+
+L1 loss on its own subgraph: (3.12) Li = 1
+
+> B
+
+X
+
+> b
+
+X
+
+> v∈V i
+
+∥yi,b,v − fθi (Xi,b , Ei)v ∥1.
+
+Stage 2 freezes all encoders and trains only the virtual edges on a full-graph L1 loss with L2 regularization: (3.13) 
+
+Lve = 1
+
+> B
+
+X
+
+> b
+
+X
+
+> v∈V
+
+∥yb,v − IsleNet (Xb, E)v ∥1 + λ∥W ve ∥22.
+
+Freezing preserves subgraph gradient isolation while virtual edges learn global connectivity. 
+
+3.4 Efficient Unlearning Protocol. Unlearn-ing localizes retraining to affected subgraphs. Given UN ,we identify: (3.14) Saffected = {i : Vi ∩ U N̸ = ∅} .
+
+Virtual edges connected to UN are removed: (3.15) Bnew = {b ∈ B : Kb ∩ U N = ∅} ,
+
+and rebuilt using Eq. (3.9)–(3.10). For each i ∈ S affected ,retrain fθi on Vi \ U N :(3.16) θnew  
+
+> i
+
+= arg min  
+
+> θ
+
+Li(θ, X′
+
+> i
+
+, E′
+
+> i
+
+, y′
+
+> i
+
+).
+
+Encoders are frozen, and virtual edges are re-optimized using Eq. (3.13). Finally, encoders are unfrozen to enable future fine-tuning, ensuring flexibility without compromising the unlearned state. 
+
+> Accepted at the SIAM International Conference on Data Mining (SDM 2026)
+
+Algorithm 1: IsleNet Training and Unlearning  
+
+> 1:
+
+Input : G = ( V, E, X), partitions M , forget nodes 
+
+UN 
+
+> 2:
+
+// Training  
+
+> 3:
+
+Partition G into {G i}Mi=1 via spectral clustering (Eq. 3.5)  
+
+> 4:
+
+If ¯HP < 1 − ϵ, apply balanced redistribution  
+
+> 5:
+
+For each i: train fθi (Eq. 3.12); select Ki via PageRank  
+
+> 6:
+
+Construct B via attention + MLP (Eq. 3.9–3.10)  
+
+> 7:
+
+Freeze {fθi }; optimize B (Eq. 3.13)  
+
+> 8:
+
+// Unlearning  
+
+> 9:
+
+Identify Saffected (Eq. 3.14)  
+
+> 10:
+
+Drop B edges incident to UN 
+
+> 11:
+
+For each i ∈ S affected : retrain fθi on Vi \ U N 
+
+> 12:
+
+Re-initialize and re-train Bnew with frozen encoders (Eq. 3.13)  
+
+> 13:
+
+Output : Unlearned IsleNet 
+
+4 Experiments. We assess IsleNet on: 1) ac-curacy parity with a full-graph model (Scratch) be-fore deletion; 2) resilience after erasure of a chosen node/edge subset; and 3) component and efficiency analysis via ablations plus timing and memory profil-ing on large graphs. 
+
+4.1 Experimental Setup. Dataset: To evaluate the scalability of our method, we selected spatiotemporal graph data spanning a range of sizes, with up to 3,220 nodes. These datasets include: RWW [15], a 23-node network representing water depth in a sewage system; PeMS08 [16], a 170-node traffic flow network in California; Global Weather [22], a 1,000-node global daily temperature network; and Human Mobility Flow [17], a 3,220-node mobility network capturing daily population movement. The datasets consist of time series ranging from 3,000 to 18,000 time steps, making them large-scale. We split the data temporally into training (70%), validation (15%), and test (15%) sets. 
+
+Baselines: We compare our approach against sev-eral state-of-the-art baselines: Scratch (full graph train-ing with no unlearning), SISA [2], STEPS [14], Gra-phEraser [4], and GraphRevoker [28], evaluated on four spatiotemporal graph backbones: STGCN, ST-SAGE, ST-GAT, and ST-GATV2. We fix the num-ber of subgraphs M = 4 . We note that GraphEraser and GraphRevoker were originally designed for recom-mender systems with static or discrete-time dynamic graphs; we include them as general-purpose graph-unlearning baselines to provide context rather than as ST-specific competitors. 
+
+Metrics: We record evaluation metrics including MAE, MSE, RMSE, Trend F1, and R2. MAE are reported in the Results section on the original scale, with mean and standard deviation. Runtime, memory, and CPU costs are also measured. 
+
+Fair and Robust Setup: Model parameters are tuned to reach R2 > 0.9 on RWW, PeMS08, and Mobility; Weather caps at R2 ≈ 0.67 due to high per-station stochasticity, so we report MAE as the primary met-ric on Weather. To control capacity differences across partitions, the hidden dimension of each subgraph en-coder is scaled to the unlearning proportion so that the non-unlearned model matches full-graph R2. We eval-uate at 10% unlearning, a large proportion relative to typical real-world requests, with 5 fixed random seeds for reproducibility. 
+
+Implementation Details: For partitioning, we use spectral clustering with M = 4 subgraphs and nor-malized entropy threshold ϵ = 0.1 (Eq. 3.5). The PageRank damping factor is α = 0 .85 . For virtual edges, the residual scaling factor is β = 0 .1 (Eq. 3.11) and the regularization weight is λ = 10 −4 (Eq. 3.13). Stage 1 uses Adam with learning rate 10 −3; Stage 2 uses Adam with learning rate 5 × 10 −4. Early stopping patience is 10 epochs for both stages. Batch size is 32. For datasets without explicit node coordinates, we de-rive two-dimensional topological coordinates via force-directed graph layout on the adjacency matrix [10]; spa-tial entropy is then computed on a 10 × 10 grid over these coordinates. All experiments are conducted on an NVIDIA A100 GPU with 5 fixed random seeds. 
+
+4.2 Results. As shown in Table 4.1, at 0% unlearning IsleNet closely matches Scratch-100%: on PeMS08 with STGCN its MAE is 30.532 ± 0.045, only 
+
+∼6.2% above Scratch (28.751 ± 0.117), i.e., ∼94% of full-graph performance, and on Weather it is nearly identical (3.603 ± 0.016 vs. 3.597 ± 0.014). Baselines degrade sharply: GraphEraser and GraphRevoker, de-signed for recommender systems, reach MAEs up to 
+
+∼208% worse than Scratch on PeMS08 (e.g., 88.685 ±
+
+5.865 for GraphRevoker); STEPS, using uniform par-titioning and weighted averaging, is adequate only on Weather (5.449 vs. 3.597) and fails on PeMS08 and Mo-bility (82.404 ± 9.043 on PeMS08); SISA, relying on overlapping partitions, is the strongest baseline (34.271 
+
+± 0.527 on PeMS08) yet remains clearly inferior to IsleNet. At 10% unlearning (Table 4.2), simulating extensive concurrent requests, all methods degrade, but IsleNet stays comparable to Scratch-90%: on PeMS08 with STGCN, 31.564 ± 0.121 vs. 30.810 ± 0.147 ( ∼2.4% 
+
+gap), with similarly modest increases elsewhere ( ∼8.7% 
+
+on RWW: 0.025 vs. 0.023; ∼3.4% on Weather: 3.703 vs. 3.581). Baselines suffer far larger losses on PeMS08: STEPS (99.807 ± 12.190) and GraphRevoker (97.568 ±
+
+> Accepted at the SIAM International Conference on Data Mining (SDM 2026)
+
+Table 4.1: Prediction Performance of Different Methods Before Unlearning (0% Unlearning). 
+
+Dataset Model Scratch-100% Baseline Methods IsleNet SISA STEPS GraphEraser GraphRevoker 
+
+RWW 
+
+STGCN 0.020 ± 0.001 0.035 ± 0.007 0.082 ± 0.003 0.179 ± 0.060 0.177 ± 0.000 0.024 ± 0.001 
+
+ST-GAT 0.022 ± 0.002 0.035 ± 0.013 0.075 ± 0.004 0.179 ± 0.059 0.177 ± 0.001 0.025 ± 0.001 
+
+ST-GATV2 0.022 ± 0.002 0.036 ± 0.008 0.085 ± 0.008 0.179 ± 0.059 0.177 ± 0.001 0.024 ± 0.001 
+
+ST-SAGE 0.022 ± 0.003 0.036 ± 0.010 0.081 ± 0.008 0.179 ± 0.059 0.178 ± 0.000 0.025 ± 0.001 
+
+PeMS08 
+
+STGCN 28.751 ± 0.117 34.271 ± 0.527 82.404 ± 9.043 58.994 ± 1.663 88.685 ± 5.865 30.532 ± 0.045 
+
+ST-GAT 28.733 ± 0.095 34.404 ± 0.297 82.244 ± 7.516 58.248 ± 1.175 90.995 ± 4.683 30.573 ± 0.203 
+
+ST-GATV2 28.802 ± 0.023 34.601 ± 1.342 80.876 ± 10.800 57.938 ± 3.973 87.081 ± 7.951 30.634 ± 0.067 
+
+ST-SAGE 29.120 ± 0.178 34.133 ± 0.622 82.128 ± 8.982 64.277 ± 2.043 98.164 ± 0.878 30.394 ± 0.108 
+
+Weather 
+
+STGCN 3.597 ± 0.014 3.913 ± 0.008 5.449 ± 0.029 5.398 ± 0.214 5.870 ± 0.300 3.603 ± 0.016 
+
+ST-GAT 3.560 ± 0.035 3.902 ± 0.008 5.691 ± 0.089 4.938 ± 0.382 5.852 ± 0.398 3.654 ± 0.020 
+
+ST-GATV2 3.561 ± 0.021 3.918 ± 0.007 5.557 ± 0.048 4.865 ± 0.232 6.083 ± 0.618 3.631 ± 0.033 
+
+ST-SAGE 3.572 ± 0.011 3.928 ± 0.011 5.460 ± 0.071 5.874 ± 0.098 6.034 ± 0.148 3.607 ± 0.030 
+
+Mobility 
+
+STGCN 38 102 ± 500 48 183 ± 1 268 96 095 ± 13 820 65 172 ± 19 092 129 602 ± 20 108 41 466 ± 3 073 
+
+ST-GAT 36 938 ± 402 47 557 ± 1 330 95 649 ± 10 803 61 125 ± 11 715 139 513 ± 14 559 42 379 ± 4 209 
+
+ST-GATV2 37 346 ± 544 47 034 ± 1 148 100 220 ± 11 833 77 432 ± 18 665 136 966 ± 11 282 42 539 ± 3 492 
+
+ST-SAGE 39 068 ± 777 50 204 ± 1 451 86 902 ± 10 102 61 016 ± 9 939 125 962 ± 15 331 41 567 ± 4 511 
+
+Table 4.2: Prediction Performance of Different Methods After Unlearning (10% Unlearning). 
+
+Dataset Model Scratch-90% Baseline Methods IsleNet SISA STEPS GraphEraser GraphRevoker 
+
+RWW 
+
+STGCN 0.023 ± 0.001 0.036 ± 0.007 0.095 ± 0.022 0.188 ± 0.067 0.178 ± 0.006 0.025 ± 0.002 
+
+ST-GAT 0.023 ± 0.001 0.038 ± 0.006 0.097 ± 0.025 0.188 ± 0.080 0.178 ± 0.005 0.026 ± 0.003 
+
+ST-GATV2 0.024 ± 0.002 0.035 ± 0.003 0.090 ± 0.023 0.188 ± 0.081 0.177 ± 0.005 0.026 ± 0.002 
+
+ST-SAGE 0.023 ± 0.002 0.037 ± 0.011 0.092 ± 0.023 0.188 ± 0.085 0.178 ± 0.005 0.026 ± 0.003 
+
+PeMS08 
+
+STGCN 30.810 ± 0.147 34.332 ± 0.515 99.807 ± 12.190 61.315 ± 4.643 97.568 ± 3.789 31.564 ± 0.121 
+
+ST-GAT 30.145 ± 0.080 34.592 ± 0.594 92.950 ± 15.728 60.680 ± 3.484 91.816 ± 5.783 31.752 ± 0.220 
+
+ST-GATV2 30.054 ± 0.143 33.724 ± 0.271 91.348 ± 17.671 59.433 ± 1.374 91.973 ± 8.148 32.011 ± 0.135 
+
+ST-SAGE 30.304 ± 0.327 35.259 ± 0.517 94.038 ± 13.147 59.925 ± 1.202 96.225 ± 1.806 31.953 ± 0.198 
+
+Weather 
+
+STGCN 3.581 ± 0.020 3.956 ± 0.011 5.480 ± 0.061 5.816 ± 0.089 5.989 ± 0.380 3.703 ± 0.013 
+
+ST-GAT 3.590 ± 0.002 3.919 ± 0.009 5.475 ± 0.114 5.153 ± 0.491 5.944 ± 0.365 3.751 ± 0.062 
+
+ST-GATV2 3.569 ± 0.009 3.975 ± 0.010 5.766 ± 0.027 5.016 ± 0.632 5.545 ± 0.653 3.801 ± 0.034 
+
+ST-SAGE 3.584 ± 0.005 3.996 ± 0.020 5.520 ± 0.166 5.399 ± 0.264 6.312 ± 0.499 3.811 ± 0.054 
+
+Mobility 
+
+STGCN 38 602 ± 758 48 938 ± 1 039 100 059 ± 16 828 73 745 ± 17 019 131 529 ± 14 613 44 298 ± 5 420 
+
+ST-GAT 37 815 ± 806 47 807 ± 1 297 102 763 ± 13 037 65 775 ± 14 700 124 914 ± 15 670 44 383 ± 5 362 
+
+ST-GATV2 37 472 ± 741 49 129 ± 1 285 94 374 ± 12 208 76 865 ± 16 989 128 456 ± 18 644 45 944 ± 6 343 
+
+ST-SAGE 39 066 ± 596 50 254 ± 1 770 89 163 ± 10 121 60 593 ± 10 043 122 181 ± 15 292 43 920 ± 4 706 
+
+3.789) degrade extremely, while GraphEraser (61.315 ±
+
+4.643) and SISA (34.332 ± 0.515) perform better but remain inferior. To summarize proximity to the full-graph base-line, we compute two measures between each method’s MAE and Scratch’s MAE: Bounded Similarity =max(0 , 1 − | MAE m − MAE s|/MAE s) and Ratio Score 
+
+= min(MAE m, MAE s)/ max(MAE m, MAE s), averaged across all datasets, backbones, and unlearning rates. Table 4.3 confirms that IsleNet (95.4%/95.7%) is closest to Scratch; SISA follows at 86.2%/89.5%; other base-lines fall below 72% on both measures. 
+
+4.3 Ablation Study. We ablate IsleNet’s four components on PeMS08 with STGCN (Table 4.4). Re-placing entropy-verified spectral partitioning with ran-dom partitioning raises MAE by 49.5%/58.2% (0%/10% Table 4.3: Average similarity to Scratch models (higher is better). Computed across 4 datasets, 4 backbones, and 2 unlearning rates (0% and 10%). 
+
+Method Bounded Sim (%) Ratio Score (%) 
+
+SISA 86.22 89.51 STEPS 50.81 67.15 GraphEraser 58.26 71.35 GraphRevoker 52.39 65.16 IsleNet 95.35 95.65 
+
+unlearning), confirming that locally coherent, balanced subgraphs are essential. Removing virtual edges costs 15.7%/26.2%, showing global context via attention-based key-node communication matters. Replacing two-stage training with joint training raises MAE by over 
+
+Accepted at the SIAM International Conference on Data Mining (SDM 2026) 25% due to gradient interference between structural modules. Replacing localized unlearning with full re-training costs ∼22% MAE and ∼10 × throughput. To-gether these confirm the combined value of entropy-verified partitioning, virtual edges, staged optimization, and localized unlearning. Table 4.4: Ablation study on PeMS08 with STGCN.                 
+
+> Configuration 0% Unl. MAE 10% Unl. MAE
+> Baselines
+> Full Graph (Scratch) 28.751 –Retrained Graph (90%) –30.810
+> IsleNet Variants
+> Full IsleNet 30.532 31.564 Random Part. 45.635 49.938 No Virtual Edges 35.322 39.840 No Two-Stage Tr. 38.261 39.551 No Localized Unl. 37.295 37.764
+
+4.4 Efficiency and Capacity. We evaluate scalability on PeMS08 (STGCN backbone, 10% node unlearning, 5 seeds). The monolithic ST-GNN needs 
+
+∼600 s to train and ∼60 s to unlearn 17 nodes. IsleNet with M =4 cuts training to ∼360 s and unlearning to 
+
+∼5s (a ∼12 × wall-clock speedup) by retraining only af-fected subgraphs (Eq. 3.14–3.16). At M =8 , total train-ing stays ∼360 s as the growing  M
+
+> 2
+
+ virtual-edge cost (Eq. 3.9) offsets smaller per-subgraph cost; unlearning remains ∼4.5s. At M =16 , training is ∼380 s and un-learning drops to ∼4s with ∼10 -node subgraphs. IsleNet is thus especially efficient under frequent unlearning (see also Section 4.3). 
+
+5 Conclusion. We introduced IsleNet, a spatial-entropy-verified partitioning framework for spatiotem-poral graph unlearning. Its two components (entropy-verified spectral partitioning and decoupled virtual edges) together enable exact localized unlearning with minimal accuracy loss. Across four real-world bench-marks IsleNet retains up to 94% of full-graph accuracy while cutting unlearning time by an order of magni-tude. Validation on industry-scale graphs with millions of nodes and a dedicated ablation isolating entropy ver-ification from spectral clustering are natural next steps. 
+
+Acknowledgment. This work was partially sup-ported by NSF Awards No. 2318641 and No. 2112631. 
+
+References 
+
+[1] M. Batty , Spatial entropy , Geographical Analy-sis, 6 (1974), pp. 1–31, https://doi.org/10.1111/j. 1538-4632.1974.tb01014.x. [2] L. Bourtoule, V. Chandrasekaran, C. A. Choquette-Choo, H. Jia, A. Travers, B. Zhang, D. Lie, and N. Papernot , Machine unlearning , in 2021 IEEE symposium on security and privacy (SP), IEEE, 2021, pp. 141–159. [3] California State Legislature , California con-sumer privacy act (CCPA) of 2018, as amended by the california privacy rights act (CPRA) . https: //oag.ca.gov/privacy/ccpa, 2018. Updated March 13, 2024. Accessed May 14, 2025. [4] M. Chen, Z. Zhang, T. Wang, M. Backes, M. Humbert, and Y. Zhang , Graph unlearn-ing , in Proceedings of the 2022 ACM SIGSAC Conference on Computer and Communications Se-curity, CCS ’22, Association for Computing Ma-chinery, 2022, p. 499–513, https://doi.org/10.1145/ 3548606.3559352. [5] J. Cheng, G. Dasoulas, H. He, C. Agarwal, and M. Zitnik , GNNDelete: A general strategy for unlearning in graph neural networks , in Inter-national Conference on Learning Representations (ICLR), 2023. [6] W. Cong and M. Mahdavi , Efficiently for-getting what you have learned in graph represen-tation learning via projection , in Proceedings of The 26th International Conference on Artificial Intelligence and Statistics, vol. 206 of Proceed-ings of Machine Learning Research, PMLR, 25–27 Apr 2023, pp. 6674–6703, https://proceedings.mlr. press/v206/cong23a.html. [7] M. Dehmer and A. Mowshowitz , A history of graph entropy measures , Information Sciences, 181 (2011), pp. 57–78, https://doi.org/10.1016/j. ins.2010.08.041. [8] I. S. Dhillon, Y. Guan, and B. Kulis , Kernel k-means, spectral clustering and normalized cuts ,in Proceedings of the Tenth ACM SIGKDD Inter-national Conference on Knowledge Discovery and Data Mining, 2004, pp. 551–556, https://doi.org/ 10.1145/1014052.1014118. [9] European Union , General data protection regu-lation (GDPR): Regulation (eu) 2016/679 . https: //gdpr-info.eu/, 2016. Accessed May 14, 2025. [10] T. M. J. Fruchterman and E. M. Rein-gold , Graph drawing by force-directed place-ment , Software: Practice and Experience, 21 (1991), pp. 1129–1164, https://doi.org/10.1002/ spe.4380211102. 
+
+> Accepted at the SIAM International Conference on Data Mining (SDM 2026)
+
+[11] A. A. Ginart, M. Y. Guan, G. Valiant, and J. Zou , Making ai forget you: data deletion in ma-chine learning , in Proceedings of the 33rd Interna-tional Conference on Neural Information Process-ing Systems, Curran Associates Inc., 2019, https: //dl.acm.org/doi/pdf/10.5555/3454287.3454603. [12] A. Golatkar, A. Achille, and S. Soatto ,
+
+Eternal sunshine of the spotless net: Selective for-getting in deep networks , in 2020 IEEE/CVF Con-ference on Computer Vision and Pattern Recogni-tion (CVPR), 2020, pp. 9301–9309, https://arxiv. org/abs/1911.04933. [13] C. Guo, T. Goldstein, A. Hannun, and L. Van Der Maaten , Certified data removal from machine learning models , in Proceedings of the 37th International Conference on Machine Learn-ing (ICML), ICML’20, PMLR, 2020, https://arxiv. org/abs/1911.03030. [14] Q. Guo, C. Pan, H. Zhang, and W. Wang , Efficient unlearning for spatio-temporal graph (student abstract) , Proceed-ings of the AAAI Conference on Artificial Intelligence, 39 (2025), pp. 29382–29384, https://doi.org/10.1609/aaai.v39i28.35259, https://ojs.aaai.org/index.php/AAAI/article/ view/35259. [15] Q. Guo and W. Wang , Hydronet: A spatio-temporal graph neural network for modeling hy-draulic dependencies in urban wastewater systems ,in Proceedings of the 32nd ACM International Conference on Advances in Geographic Information Systems, 2024, pp. 717–718. [16] H. He , California traffic network datasets: Metr-la, pems-bay, pems04 and pems08 for traffic speed and flow analysis , 2025, https://doi.org/10.21227/ j49q-ch56, https://dx.doi.org/10.21227/j49q-ch56. [17] Y. Kang, S. Gao, Y. Liang, M. Li, and J. Kruse , Multiscale dynamic human mobility flow dataset in the u.s. during the covid-19 epidemic ,Scientific Data, (2020), pp. 1–13. [18] J. Körner , Coding of an information source hav-ing ambiguous alphabet and the entropy of graphs ,in Transactions of the 6th Prague Conference on Information Theory, Academia, Prague, 1973, pp. 411–425. [19] D. G. Leibovici , Defining spatial entropy from multivariate distributions of co-occurrences , in Spa-tial Information Theory, Springer, 2009, pp. 392– 404. [20] A. Li and Y. Pan , Structural information and dy-namical complexity of networks , IEEE Transactions on Information Theory, 62 (2016), pp. 3290–3339, https://doi.org/10.1109/TIT.2016.2555904. [21] Y. Li, R. Yu, C. Shahabi, and Y. Liu ,
+
+Diffusion convolutional recurrent neural network: Data-driven traffic forecasting , International Con-ference on Learning Representations, (2018), https: //arxiv.org/abs/1707.01926. Available at https: //arxiv.org/abs/1707.01926. [22] NOAA Physical Sciences Laboratory , Cpc global temperature and precipitation datasets , 2025, https://downloads.psl.noaa.gov/Datasets/cpc_ global_precip. Accessed: 2025-05-15. [23] L. Page, S. Brin, R. Motwani, and T. Wino-grad , The PageRank citation ranking: Bringing order to the Web , Tech. Report 1999-66, Stanford InfoLab, 1999. Previous number = SIDL-WP-1999-0120. [24] M. Rosvall and C. T. Bergstrom , Maps of random walks on complex networks reveal commu-nity structure , Proceedings of the National Acad-emy of Sciences, 105 (2008), pp. 1118–1123, https: //doi.org/10.1073/pnas.0706851105. [25] P. Veličković, G. Cucurull, A. Casanova, A. Romero, P. Liò, and Y. Bengio , Graph attention networks , International Conference on Learning Representations, (2018), https://arxiv. org/abs/1710.10903. [26] C.-L. Wang, M. Huai, and D. Wang , Induc-tive graph unlearning , in Proceedings of the 32nd USENIX Conference on Security Symposium, SEC ’23, USENIX Association, 2023, https://arxiv.org/ abs/2304.03093. [27] B. Yu, H. Yin, and Z. Zhu , Spatio-temporal graph convolutional networks: A deep learn-ing framework for traffic forecasting , Interna-tional Joint Conference on Artificial Intelligence, (2018), pp. 3634–3640, https://doi.org/10.24963/ ijcai.2018/505. [28] H. Zhang, B. Wu, X. Yang, X. Yuan, X. Liu, and X. Yi , Dynamic graph unlearn-ing: A general and efficient post-processing method via gradient transformation , in Proceedings of the ACM on Web Conference 2025, WWW ’25, New York, NY, USA, 2025, Association for Computing Machinery, p. 931–944, https://doi. org/10.1145/3696410.3714911, https://doi.org/10. 1145/3696410.3714911.
