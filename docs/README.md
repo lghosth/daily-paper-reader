@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-08</span>
+      <span class="dpr-home-dashboard-kicker">2026-09-09</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 5 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 0 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>3</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>2</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>0</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-09-08 06:49:54 北京时间<br>状态：成功<br>下次更新：约 2026-09-09 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-09-09 06:37:35 北京时间<br>状态：成功<br>下次更新：约 2026-09-10 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日共读5篇论文，精读2篇、速读3篇（注：速读列表实为2篇），核心聚焦联邦学习效率优化。最值得关注的是两篇9.0分工作：基于分层多阈值随机草图的个性化联邦学习，以及任务导向的通信高效联邦学习框架，后者强调从孤立优化转向全局协同。建议普通读者优先理解“随机压缩通信”与“任务导向全局设计”这两条提升联邦学习效率的技术路线。</p>
+<p>今日无新推荐，系统未产出可展示论文。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -78,12 +78,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">3 篇</strong>
+    <strong class="dpr-home-dashboard-count">0 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Communication-Efficient Personalized Federated Learning via Layer-Wise Multi-Threshold Random Sketching">Communication-Efficient Personalized Federated Learning via Layer-Wise Multi-Threshold Random Sketching</span></li><li><span class="dpr-home-dashboard-paper-title" title="Task-oriented Framework for Communication-Efficient Federated Learning: From Isolated Optimization to Holistic Synergy">Task-oriented Framework for Communication-Efficient Federated Learning: From Isolated Optimization to Holistic Synergy</span></li><li><span class="dpr-home-dashboard-paper-title" title="PACE: Propagation-Aware Collaborative Correction for One-Shot Personalized Federated Graph Learning">PACE: Propagation-Aware Collaborative Correction for One-Shot Personalized Federated Graph Learning</span></li></ul>
+<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>3</strong></span></div>
+
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -91,12 +91,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">2 篇</strong>
+    <strong class="dpr-home-dashboard-count">0 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Convergence Theory of Knowledge Distillation in Asynchronous P2P Gossip Learning Network">Convergence Theory of Knowledge Distillation in Asynchronous P2P Gossip Learning Network</span></li><li><span class="dpr-home-dashboard-paper-title" title="Tuning Collective Patterns to Alleviate Congestion in Shared AI Clusters">Tuning Collective Patterns to Alleviate Congestion in Shared AI Clusters</span></li></ul>
+<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>2</strong></span></div>
+
 </section>
 </div>
 
