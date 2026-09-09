@@ -1,0 +1,215 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-09T21:15:45.216740+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2609.06154v1",
+      "source": "arxiv",
+      "title": "Rethinking One-Shot Federated Graph Learning: Training-Free Statistical Estimation",
+      "abstract": "One-shot federated graph learning generally aims to train Graph Neural Networks (GNNs) across clients with disconnected subgraphs in a single communication round. Existing methods predominantly design advanced optimization strategies under the premise that local GNN training is indispensable. However, empirical observations reveal that under extreme non-IID conditions, local GNN training suffers from severe cross-client representation misalignment, becoming a major source of error rather than a remedy. Motivated by this, we reformulate one-shot FGL as a statistical estimation problem. We propose SPEAR (Statistical Prototype Estimation with Adaptive Reliability), a completely training-free framework that directly computes topology-smoothed class prototypes from local graphs in the original feature space. The server then aggregates these prototypes using a sample-size-adaptive shrinkage estimator that down-weights unreliable local estimates, producing robust global class prototypes. Extensive experiments across seven benchmarks demonstrate that SPEAR consistently achieves state-of-the-art accuracy under extreme heterogeneity. Moreover, SPEAR delivers at least an order-of-magnitude speedup over all baselines, reaching several orders of magnitude against generative and distillation-based methods. Our findings suggest that training-free statistical estimation, rather than local GNN optimization, provides the key to robust and efficient one-shot federated graph learning. The code is available at https://github.com/Yodeesy/SPEAR .",
+      "authors": [
+        "Shutong Zheng",
+        "Sijia Chen"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-05T15:55:22+00:00",
+      "link": "https://arxiv.org/pdf/2609.06154v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Training-free statistical estimation for one-shot federated GNN; direct match to communication-efficient graph learning.",
+      "llm_evidence_cn": "无训练统计估计实现单次联邦图学习，直接匹配通信高效的图学习目标。",
+      "llm_evidence": "无训练统计估计实现单次联邦图学习，直接匹配通信高效的图学习目标。",
+      "canonical_evidence": "无训练统计估计实现单次联邦图学习，直接匹配通信高效的图学习目标。",
+      "llm_tldr_en": "SPEAR reformulates one-shot federated graph learning as statistical estimation. Instead of training local GNNs, whose representations misalign under extreme non-IID data, it directly estimates topology-smoothed prototypes with adaptive reliability. This removes cross-client misalignment and keeps graph learning to a single efficient communication round.",
+      "llm_tldr_cn": "SPEAR重新思考单次联邦图学习，将其从有监督的优化问题转变为统计估计问题。针对极端非独立同分布下本地GNN训练造成严重跨客户端表示错位的现象，它提出完全训练-free的原型估计框架，直接计算拓扑平滑的类别原型，并以自适应可靠性筛选客户端信息。实验表明该方法能在单次通信内完成分布式图学习，避免本地训练误差的累积并显著降低通信开销，为通信高效的GNN联邦学习提供了一条简化而有启发性的替代路线。",
+      "llm_tldr": "SPEAR重新思考单次联邦图学习，将其从有监督的优化问题转变为统计估计问题。针对极端非独立同分布下本地GNN训练造成严重跨客户端表示错位的现象，它提出完全训练-free的原型估计框架，直接计算拓扑平滑的类别原型，并以自适应可靠性筛选客户端信息。实验表明该方法能在单次通信内完成分布式图学习，避免本地训练误差的累积并显著降低通信开销，为通信高效的GNN联邦学习提供了一条简化而有启发性的替代路线。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "find papers on communication efficient graph learning systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.06506v1",
+      "source": "arxiv",
+      "title": "Sharing a Fabric with Collective Communication: Two Storage Penalties in Deep Learning Training",
+      "abstract": "Distributed DL training on HPC systems often shares one network fabric between NCCL/RCCL collective communication and parallel-filesystem I/O. Using a real GNN training workload on a Slingshot-11 system, we show that this sharing imposes two distinct costs. The primary cost is heavy-tailed DataLoader stalls: the typical DataLoader wait is just 15 ms at steady state, yet spikes to multiple seconds in 28% of Lustre iterations and 12% of VAST iterations. The secondary cost is traffic-class contention on collective communication: Lustre I/O stalls the all-reduce by up to 145$\\times$ in an isolated benchmark. The two costs arise from different mechanisms. I/O stall latency affects any storage path that traverses the shared fabric, whereas all-reduce network contention occurs only when storage and collective communication share the same traffic class. Their common root cause is that storage I/O traverses the shared fabric. This work shows that node-local NVMe staging via DYAD (Our code is publicly available at https://github.com/flux-framework/dyad) eliminates both effects by keeping storage I/O off that path. Across a full training epoch, DYAD achieves a 7.4 times speedup over direct Lustre reads and a 1.06 times speedup over VAST. By the second epoch, once the local cache is fully warmed, DataLoader stalls are eliminated entirely, allowing DYAD to reach a 1.31 times speedup over VAST.",
+      "authors": [
+        "Chen Wang",
+        "Wenzhao Wu",
+        "Hyojin Kim",
+        "Jae-Sung Yeom"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.PF"
+      ],
+      "published": "2026-09-06T09:46:19+00:00",
+      "link": "https://arxiv.org/pdf/2609.06506v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Uses a real GNN training workload to measure communication-I/O interference and collective-communication stalls in distributed training.",
+      "llm_evidence_cn": "基于真实GNN训练负载测量分布式训练中通信与I/O的相互干扰及集合通信停顿。",
+      "llm_evidence": "基于真实GNN训练负载测量分布式训练中通信与I/O的相互干扰及集合通信停顿。",
+      "canonical_evidence": "基于真实GNN训练负载测量分布式训练中通信与I/O的相互干扰及集合通信停顿。",
+      "llm_tldr_en": "Measures real GNN workload on HPC; when NCCL/RCCL and parallel-filesystem I/O share the fabric, DataLoader stalls spike to seconds and I/O can delay all-reduce by up to 145x, revealing two distinct penalty mechanisms.",
+      "llm_tldr_cn": "分布式GNN训练在高性能计算系统中常使集合通信与并行文件系统I/O共用同一网络，带来两类代价。论文基于真实GNN负载观测发现，DataLoader等待典型为15毫秒，但28%的Lustre迭代和12%的VAST迭代会飙至数秒；流量级竞争可使all-reduce被I/O阻塞最多145倍。作者将两种成本归因于存储路径延时与通信流量分类竞争的不同机制。工作为分布式GNN系统设计提供了存储与通信共织网络下关键的性能量化与分析。",
+      "llm_tldr": "分布式GNN训练在高性能计算系统中常使集合通信与并行文件系统I/O共用同一网络，带来两类代价。论文基于真实GNN负载观测发现，DataLoader等待典型为15毫秒，但28%的Lustre迭代和12%的VAST迭代会飙至数秒；流量级竞争可使all-reduce被I/O阻塞最多145倍。作者将两种成本归因于存储路径延时与通信流量分类竞争的不同机制。工作为分布式GNN系统设计提供了存储与通信共织网络下关键的性能量化与分析。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.06499v1",
+      "source": "arxiv",
+      "title": "Structural Entropy-Driven Graph Diffusion Generation for One-Shot Federated Graph Learning",
+      "abstract": "One-shot federated graph learning (FGL) requires the server to estimate client contributions from highly compressed information, yet conventional volume-based weighting captures the amount of client data while overlooking how its connectivity is organized. In this paper, we propose SPIRE, a Structural Entropy-Driven Graph Diffusion Generation method that introduces topology-aware client differentiation into one-shot FGL. Specifically, we employ first-order degree-distribution structural entropy as a compact descriptor of degree-mass dispersion and use it to derive structural client weights, providing an inductive bias that accounts for differences in graph topology beyond data volume. On the generation side, a graph diffusion model on the server synthesizes pseudographs conditioned on the weighted client prototypes, capturing both semantic and structural information without requiring additional client-side training. The generated pseudographs are then assembled via disjoint union fusion to train a global graph neural network. Extensive experiments on seven real-world graph datasets demonstrate that SPIRE consistently outperforms conventional and one-shot FGL methods, with particularly strong gains under highly heterogeneous (non-IID) and graph-perturbed settings.",
+      "authors": [
+        "Shutong Zheng",
+        "Lele Fu",
+        "Sheng Huang",
+        "Wei Yang Bryan Lim",
+        "Chuan Chen"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-06T09:31:12+00:00",
+      "link": "https://arxiv.org/pdf/2609.06499v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "One-shot federated graph learning inherently uses a single communication round; adds topology-aware client weighting via structural entropy.",
+      "llm_evidence_cn": "一次性联邦图学习天然只需单轮通信，并利用结构熵进行拓扑感知的客户端加权。",
+      "llm_evidence": "一次性联邦图学习天然只需单轮通信，并利用结构熵进行拓扑感知的客户端加权。",
+      "canonical_evidence": "一次性联邦图学习天然只需单轮通信，并利用结构熵进行拓扑感知的客户端加权。",
+      "llm_tldr_en": "For one-shot federated graph learning, proposes structural-entropy client weights and graph diffusion generation so the server captures connectivity beyond data volume, improving aggregation from highly compressed single-round updates.",
+      "llm_tldr_cn": "现有一次性联邦图学习通常仅按数据量估计客户端贡献，忽略了图连接结构。本文提出SPIRE，用度分布结构熵刻画拓扑差异并生成结构化客户端权重，配合图扩散模型在单轮通信下完成聚合与生成。实验表明，拓扑感知的加权方式优于纯数据量式权重。该方法为通信高效、信息高度压缩的联邦图学习提供了关键改进。",
+      "llm_tldr": "现有一次性联邦图学习通常仅按数据量估计客户端贡献，忽略了图连接结构。本文提出SPIRE，用度分布结构熵刻画拓扑差异并生成结构化客户端权重，配合图扩散模型在单轮通信下完成聚合与生成。实验表明，拓扑感知的加权方式优于纯数据量式权重。该方法为通信高效、信息高度压缩的联邦图学习提供了关键改进。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "find papers on communication efficient graph learning systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.06073v1",
+      "source": "arxiv",
+      "title": "FedSubMuon: Communication-Efficient Federated LLM Fine-Tuning via Structured Subspace Muon",
+      "abstract": "Federated fine-tuning adapts large language models (LLMs) to decentralized client data, but its scalability in cross-device training is often limited by the high communication cost. Muon is an optimizer that improves optimization performance by orthogonalizing momentum for matrix-valued parameters. Existing federated Muon methods demonstrate the benefit of matrix-aware optimization in federated learning, but still require transmitting full layer-size updates and optimizer state. A natural way to reduce communication is to directly apply Muon to LoRA factors, but this changes the optimized object and weakens Muon's matrix-aware update geometry. We propose FedSubMuon, a communication-efficient federated Muon fine-tuning method that optimizes compact coefficient matrices within shared structured subspaces. This design keeps Muon on a single matrix-valued trainable object, while reducing the client upload to compact coefficient matrices. We further introduce FedSubMuon-GT, an accuracy-oriented extension that uses projected gradients to adapt tracked subspace bases toward task-relevant gradient directions. Experiments on instruction tuning and mathematical reasoning show that FedSubMuon-GT achieves the best overall accuracy on four of five dataset-model pairs, while FedSubMuon performs best under all matched communication budgets. On Dolly-15K, the closest communication baseline requires 5.5 times and 1.4 times more total communication on Llama-1B and Qwen-4B, respectively.",
+      "authors": [
+        "Shaolong Chen",
+        "Youming Tao",
+        "Shuzhen Chen",
+        "Falko Dressler",
+        "Qingqing Ye",
+        "Di Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-05T13:07:13+00:00",
+      "link": "https://arxiv.org/pdf/2609.06073v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Communication-efficient federated fine-tuning via structured subspace Muon addresses communication-efficient training",
+      "llm_evidence_cn": "面向联邦大模型微调的通信高效方法，紧扣通信高效训练主题",
+      "llm_evidence": "面向联邦大模型微调的通信高效方法，紧扣通信高效训练主题",
+      "canonical_evidence": "面向联邦大模型微调的通信高效方法，紧扣通信高效训练主题",
+      "llm_tldr_en": "FedSubMuon compresses federated LLM fine-tuning updates using structured subspace Muon, retaining matrix-aware geometry with fewer transmitted parameters; method could inspire distributed GNN optimizer design.",
+      "llm_tldr_cn": "联邦大模型微调在跨设备扩展时常受通信成本限制，现有联邦Muon优化器需要传输全尺寸矩阵更新与优化器状态，而直接将其加到LoRA低秩因子上会改变原本的矩阵感知更新几何。作者提出FedSubMuon，把Muon的矩阵正交化更新约束到结构化子空间内，以低通信量近似完整几何更新。该方法保留了优化器对矩阵结构的好处，同时压缩了联邦大模型微调中的上下行通信，对高效联邦优化具有参考意义。",
+      "llm_tldr": "联邦大模型微调在跨设备扩展时常受通信成本限制，现有联邦Muon优化器需要传输全尺寸矩阵更新与优化器状态，而直接将其加到LoRA低秩因子上会改变原本的矩阵感知更新几何。作者提出FedSubMuon，把Muon的矩阵正交化更新约束到结构化子空间内，以低通信量近似完整几何更新。该方法保留了优化器对矩阵结构的好处，同时压缩了联邦大模型微调中的上下行通信，对高效联邦优化具有参考意义。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.06106v1",
+      "source": "arxiv",
+      "title": "FANS: Federated Adaptive Network Search Learning for Heterogeneous Devices",
+      "abstract": "Heterogeneous Federated Learning (HFL) aims to train models across devices with diverse resource budgets while preserving data privacy. Existing HFL methods typically bind training to a small predefined menu of model configurations, which limits architectural coverage. To address this bottleneck, we introduce Federated Adaptive Network Search (FANS), a hypernetwork-based framework that learns a shared architecture space rather than a fixed set of client models. To optimize this shared space efficiently, we propose the Federated Parallel Scaling (FPS) algorithm, which jointly trains multiple sampled subnetworks in parallel with self-distillation so that larger sampled subnetworks can supervise smaller ones during local updates. We evaluate FANS on CIFAR-10, CIFAR-100, and MNLI using ResNet-18, DenseNet-121, and BERT-base, respectively. Across all benchmarks, FANS expands the feasible subnetwork pool by orders of magnitude (e.g., 4,680 candidates for ResNet-18 vs. 4 in existing methods) and improves the average accuracy-efficiency trade-off relative to representative HFL baselines. Device heterogeneity is emulated through resource tiers, and evaluation covers accuracy, parameter count, and MACs.",
+      "authors": [
+        "Jiaxin Zhang",
+        "Xingwei Wang",
+        "Bo Yi",
+        "Liang Zhao",
+        "Alireza Furutanpey",
+        "Ziyi Chen",
+        "Qiang He",
+        "Keqin Li",
+        "Schahram Dustdar"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "published": "2026-09-05T13:57:56+00:00",
+      "link": "https://arxiv.org/pdf/2609.06106v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Adaptive network search in federated heterogeneous settings; transferable to distributed GNN NAS by learning a shared architecture space.",
+      "llm_evidence_cn": "在联邦异构环境中进行自适应网络搜索，学习共享架构空间，方法可迁移至分布式GNN NAS场景。",
+      "llm_evidence": "在联邦异构环境中进行自适应网络搜索，学习共享架构空间，方法可迁移至分布式GNN NAS场景。",
+      "canonical_evidence": "在联邦异构环境中进行自适应网络搜索，学习共享架构空间，方法可迁移至分布式GNN NAS场景。",
+      "llm_tldr_en": "Hypernetwork-based federated adaptive network search over a shared architecture space with parallel sampled subnetwork training and self-distillation, broadening design coverage for heterogeneous devices.",
+      "llm_tldr_cn": "异构联邦学习通常被限定在少量预定义模型菜单中，架构覆盖严重受限。本文提出FANS框架，使用超网络学习一个共享架构空间，以支持不同资源预算的设备。配套的联邦并行缩放算法在本地更新时并行训练多个采样子网络，并让大子网通过自蒸馏监督小子网。该框架在异构设备上提高了模型性能与架构覆盖率，也为分布式场景下的GNN架构搜索提供了可借鉴的自适应搜索与并行训练思路。",
+      "llm_tldr": "异构联邦学习通常被限定在少量预定义模型菜单中，架构覆盖严重受限。本文提出FANS框架，使用超网络学习一个共享架构空间，以支持不同资源预算的设备。配套的联邦并行缩放算法在本地更新时并行训练多个采样子网络，并让大子网通过自蒸馏监督小子网。该框架在异构设备上提高了模型性能与架构覆盖率，也为分布式场景下的GNN架构搜索提供了可借鉴的自适应搜索与并行训练思路。",
+      "llm_tags": [
+        "query:dgnn-nas:composite"
+      ],
+      "matched_query_tag": "query:dgnn-nas:composite",
+      "matched_query_text": "Papers central to 分布式GNN训练系统与GNN NAS检索, especially work that connects or combines: communication-efficient training; graph partitioning strategies for distributed GNN; graph neural architecture search; distributed training systems for graph neural networks; find papers on communication efficient graph learning systems; find papers on distributed GNN training systems with data parallel or asynchronous execution.",
+      "matched_requirement_id": "req-composite-dgnn-nas",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "date": "20260909",
+  "date_label": "2026-09-10",
+  "generated_at": "2026-09-10 05:24:43 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.06154v1",
+      "route": "202609/09/2609.06154v1-rethinking-one-shot-federated-graph-learning-training-free-statistical-estimation",
+      "title": "Rethinking One-Shot Federated Graph Learning: Training-Free Statistical Estimation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "无训练统计估计实现单次联邦图学习，直接匹配通信高效的图学习目标。",
+      "first_seen_at": "2026-09-10 05:24:43 北京时间",
+      "updated_at": "2026-09-10 05:24:43 北京时间"
+    },
+    {
+      "paper_id": "2609.06506v1",
+      "route": "202609/09/2609.06506v1-sharing-a-fabric-with-collective-communication-two-storage-penalties-in-deep-learning-training",
+      "title": "Sharing a Fabric with Collective Communication: Two Storage Penalties in Deep Learning Training",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "基于真实GNN训练负载测量分布式训练中通信与I/O的相互干扰及集合通信停顿。",
+      "first_seen_at": "2026-09-10 05:24:43 北京时间",
+      "updated_at": "2026-09-10 05:24:43 北京时间"
+    },
+    {
+      "paper_id": "2609.06499v1",
+      "route": "202609/09/2609.06499v1-structural-entropy-driven-graph-diffusion-generation-for-one-shot-federated-graph-learning",
+      "title": "Structural Entropy-Driven Graph Diffusion Generation for One-Shot Federated Graph Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "一次性联邦图学习天然只需单轮通信，并利用结构熵进行拓扑感知的客户端加权。",
+      "first_seen_at": "2026-09-10 05:24:43 北京时间",
+      "updated_at": "2026-09-10 05:24:43 北京时间"
+    },
+    {
+      "paper_id": "2609.06073v1",
+      "route": "202609/09/2609.06073v1-fedsubmuon-communication-efficient-federated-llm-fine-tuning-via-structured-subspace-muon",
+      "title": "FedSubMuon: Communication-Efficient Federated LLM Fine-Tuning via Structured Subspace Muon",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向联邦大模型微调的通信高效方法，紧扣通信高效训练主题",
+      "first_seen_at": "2026-09-10 05:24:43 北京时间",
+      "updated_at": "2026-09-10 05:24:43 北京时间"
+    },
+    {
+      "paper_id": "2609.06106v1",
+      "route": "202609/09/2609.06106v1-fans-federated-adaptive-network-search-learning-for-heterogeneous-devices",
+      "title": "FANS: Federated Adaptive Network Search Learning for Heterogeneous Devices",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "在联邦异构环境中进行自适应网络搜索，学习共享架构空间，方法可迁移至分布式GNN NAS场景。",
+      "first_seen_at": "2026-09-10 05:24:43 北京时间",
+      "updated_at": "2026-09-10 05:24:43 北京时间"
+    }
+  ]
+}
