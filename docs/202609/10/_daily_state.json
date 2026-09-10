@@ -1,0 +1,25 @@
+{
+  "date": "20260910",
+  "date_label": "2026-09-11",
+  "generated_at": "2026-09-11 05:22:05 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.09361v1",
+      "route": "202609/10/2609.09361v1-communication-efficient-admm-over-hierarchical-networks",
+      "title": "Communication-efficient ADMM over Hierarchical Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过查询-响应机制实现通信高效分布式优化",
+      "first_seen_at": "2026-09-11 05:22:05 北京时间",
+      "updated_at": "2026-09-11 05:22:05 北京时间"
+    }
+  ]
+}

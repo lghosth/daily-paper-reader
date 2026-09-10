@@ -1,0 +1,24 @@
+{
+  "label": "2026-09-11",
+  "date": "2026-09-10",
+  "generated_at": "2026-09-10T21:22:07",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202609/10/2609.09361v1-communication-efficient-admm-over-hierarchical-networks",
+      "section": "quick",
+      "title_en": "Communication-efficient ADMM over Hierarchical Networks",
+      "authors": "Binh Nguyen, Shuangqing Wei, Truong X. Nghiem",
+      "date": "2026-09-08",
+      "pdf": "https://arxiv.org/pdf/2609.09361v1",
+      "score": "6.0",
+      "evidence": "通过查询-响应机制实现通信高效分布式优化",
+      "tldr": "针对树形网络上的分层优化问题，现有 ADMM 方法通信开销较高。本文提出分层 ADMM（hADMM），通过重排增广拉格朗日量，在节点间建立查询-响应通信机制，显式利用层级树结构。该算法在凸性假设下保证渐近收敛，并借助线性矩阵不等式分析收敛速率，表明在温和条件下可达线性收敛。三个数值实验验证其兼容任意树结构，且通信效率优于现有方法。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "This paper develops a novel distributed optimization algorithm based on the Alternating Direction Method of Multipliers (ADMM) to solve hierarchical optimization problems over tree-structured networks, termed hierarchical ADMM (hADMM), with a particular focus on enhancing communication efficiency across the network. By rearranging the augmented Lagrangian to establish a query-response communication mechanism between nodes that explicitly exploits the hierarchical tree structure, the proposed algorithm significantly reduces communication costs compared to existing ADMM-based methods for hierarchical optimization. Furthermore, hADMM guarantees asymptotic convergence under convexity assumptions. We also present a convergence rate analysis based on linear matrix inequalities to characterize the maximum theoretically achievable convergence rates across different network topologies, showing that the proposed hADMM attains linear convergence under mild conditions. Three numerical experiments demonstrate that hADMM is compatible with arbitrary tree network structures and outperforms existing approaches in terms of communication efficiency.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-09-11 <!--dpr-date:20260910-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/10/2609.09361v1-communication-efficient-admm-over-hierarchical-networks" data-sidebar-item="{&quot;title&quot;: &quot;Communication-efficient ADMM over Hierarchical Networks&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.09361v1-communication-efficient-admm-over-hierarchical-networks&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;通过查询-响应机制实现通信高效分布式优化&quot;}">Communication-efficient ADMM over Hierarchical Networks</a>
   * 2026-09-10 <!--dpr-date:20260909-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/09/2609.06154v1-rethinking-one-shot-federated-graph-learning-training-free-statistical-estimation" data-sidebar-item="{&quot;title&quot;: &quot;Rethinking One-Shot Federated Graph Learning: Training-Free Statistical Estimation&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.06154v1-rethinking-one-shot-federated-graph-learning-training-free-statistical-estimation&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;无训练统计估计实现单次联邦图学习，直接匹配通信高效的图学习目标。&quot;}">Rethinking One-Shot Federated Graph Learning: Training-Free Statistical Estimation</a>
