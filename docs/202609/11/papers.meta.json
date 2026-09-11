@@ -1,0 +1,24 @@
+{
+  "label": "2026-09-12",
+  "date": "2026-09-11",
+  "generated_at": "2026-09-11T21:28:27",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202609/11/2609.07740v1-scalability-analysis-of-distributed-kolmogorov-arnold-network-training-on-high-performance-computing-systems",
+      "section": "quick",
+      "title_en": "Scalability Analysis of Distributed Kolmogorov-Arnold Network Training on High-Performance Computing Systems",
+      "authors": "Guangneng Chen, David Garcia Selfa, Pablo Quesada Barriuso",
+      "date": "2026-09-07",
+      "pdf": "https://arxiv.org/pdf/2609.07740v1",
+      "score": "6.0",
+      "evidence": "数据并行分布式训练可扩展性与通信开销分析",
+      "tldr": "KAN以边上的可学习一元函数替代MLP固定激活与线性权重，但其多GPU分布式训练的可扩展性尚缺乏系统刻画。本文在FinisTerrae III超算上用PyTorch DDP与最多8块A100、4节点，从强/弱扩展、通信开销和模型规模四维度实证评估数据并行KAN训练。结果显示8卡强扩展并行效率74.7%、加速比5.97x，弱扩展初期吞吐下降后趋稳，通信开销1.3%-6.1%且非单调。研究给出GPU拓扑与模型规模部署建议，并指出KAN算子级与数据并行优化互补。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Kolmogorov-Arnold Networks (KANs) replace the fixed activation functions and linear weights of Multi-Layer Perceptrons (MLPs) with learnable univariate functions on network edges, offering improved interpretability and, in some settings, competitive parameter efficiency. While the approximation properties of KANs have received considerable attention, their behavior under distributed, multi-GPU training has not been systematically characterized. This paper presents an empirical scalability study of data-parallel KAN training on multi-node, multi-GPU high-performance computing (HPC) infrastructure, evaluated along four dimensions: strong scaling, weak scaling, communication overhead, and model-size scaling.   Experiments were conducted on the FinisTerrae III supercomputer using up to 8 NVIDIA A100 GPUs across 4 nodes with PyTorch Distributed Data Parallel (DDP). KAN training reaches 74.7% parallel efficiency at 8 GPUs with a 5.97x speedup, consistent with conventional deep learning workloads. Weak scaling shows an initial single-to-multi-GPU throughput drop followed by strong stability. Communication overhead follows a non-monotonic pattern (1.3%-6.1%), driven primarily by All-Reduce algorithm selection and inter-node latency rather than KAN's edge-wise gradient structure. The parameter-to-memory ratio improves with model size even as training time scales unfavorably.   These results indicate that operator-level and data-parallel optimizations for KAN are complementary. We provide deployment guidelines for GPU topology and model-size selection, and discuss the limitations of a synthetic-regression evaluation.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

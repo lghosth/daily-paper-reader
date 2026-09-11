@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-09-12 <!--dpr-date:20260911-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/11/2609.07740v1-scalability-analysis-of-distributed-kolmogorov-arnold-network-training-on-high-performance-computing-systems" data-sidebar-item="{&quot;title&quot;: &quot;Scalability Analysis of Distributed Kolmogorov-Arnold Network Training on High-Performance Computing Systems&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.07740v1-scalability-analysis-of-distributed-kolmogorov-arnold-network-training-on-high-performance-computing-systems&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;数据并行分布式训练可扩展性与通信开销分析&quot;}">Scalability Analysis of Distributed Kolmogorov-Arnold Network Training on High-Performance Computing Systems</a>
   * 2026-09-11 <!--dpr-date:20260910-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/10/2609.09361v1-communication-efficient-admm-over-hierarchical-networks" data-sidebar-item="{&quot;title&quot;: &quot;Communication-efficient ADMM over Hierarchical Networks&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.09361v1-communication-efficient-admm-over-hierarchical-networks&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;通过查询-响应机制实现通信高效分布式优化&quot;}">Communication-efficient ADMM over Hierarchical Networks</a>

@@ -48,7 +48,7 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-11</span>
+      <span class="dpr-home-dashboard-kicker">2026-09-12</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
     <strong class="dpr-home-dashboard-count">共 1 篇</strong>
@@ -58,7 +58,7 @@
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>1</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-09-11 05:22:05 北京时间<br>状态：成功<br>下次更新：约 2026-09-12 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-09-12 05:28:24 北京时间<br>状态：成功<br>下次更新：约 2026-09-13 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日速读 1 篇：分层网络上的通信高效 ADMM（6.0/10），无精读。该方向值得关注的是如何在多层级网络中降低 ADMM 的通信开销。普通读者可先留意这类分布式优化方法在边缘计算、联邦场景中的落地效果。</p>
+<p>今日无精读、速读1篇，聚焦分布式Kolmogorov-Arnold网络在高性能计算系统上的训练可扩展性分析（6.0/10）。</p>
+<p>最值得看的是它对“分布式KAN+HPC”扩展性评估的思路，适合关注KAN工程化与大规模训练效率的读者。</p>
+<p>普通读者可先浏览其实验设置与扩展性指标，再决定是否精读或复现，不必急着只看结论。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -94,7 +96,7 @@
     <strong class="dpr-home-dashboard-count">1 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Communication-efficient ADMM over Hierarchical Networks">Communication-efficient ADMM over Hierarchical Networks</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Scalability Analysis of Distributed Kolmogorov-Arnold Network Training on High-Performance Computing Systems">Scalability Analysis of Distributed Kolmogorov-Arnold Network Training on High-Performance Computing Systems</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>1</strong></span></div>
 </section>
