@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-13",
+  "date": "2026-09-12",
+  "generated_at": "2026-09-12T20:54:36",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/12/2609.06106v1-fans-federated-adaptive-network-search-learning-for-heterogeneous-devices",
+      "section": "quick",
+      "title_en": "FANS: Federated Adaptive Network Search Learning for Heterogeneous Devices",
+      "authors": "Jiaxin Zhang, Xingwei Wang, Bo Yi, Liang Zhao, Alireza Furutanpey, Ziyi Chen, Qiang He, Keqin Li, Schahram Dustdar",
+      "date": "2026-09-05",
+      "pdf": "https://arxiv.org/pdf/2609.06106v1",
+      "score": "6.0",
+      "evidence": "联邦异构场景下基于超网络的神经架构搜索",
+      "tldr": "针对异构联邦学习中设备资源差异大、现有方法仅支持预设少量模型配置的问题，提出基于超网络的FANS框架，学习共享架构空间而非固定客户端模型。配合联邦并行缩放FPS算法，并行训练多个采样子网络并自蒸馏，让大网络指导小网络。在CIFAR-10/100和MNLI上，候选子网数量扩大数个数量级（如ResNet-18达4680个），平均精度-效率权衡优于代表性HFL基线。这提升了异构设备下架构覆盖与部署灵活性。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Heterogeneous Federated Learning (HFL) aims to train models across devices with diverse resource budgets while preserving data privacy. Existing HFL methods typically bind training to a small predefined menu of model configurations, which limits architectural coverage. To address this bottleneck, we introduce Federated Adaptive Network Search (FANS), a hypernetwork-based framework that learns a shared architecture space rather than a fixed set of client models. To optimize this shared space efficiently, we propose the Federated Parallel Scaling (FPS) algorithm, which jointly trains multiple sampled subnetworks in parallel with self-distillation so that larger sampled subnetworks can supervise smaller ones during local updates. We evaluate FANS on CIFAR-10, CIFAR-100, and MNLI using ResNet-18, DenseNet-121, and BERT-base, respectively. Across all benchmarks, FANS expands the feasible subnetwork pool by orders of magnitude (e.g., 4,680 candidates for ResNet-18 vs. 4 in existing methods) and improves the average accuracy-efficiency trade-off relative to representative HFL baselines. Device heterogeneity is emulated through resource tiers, and evaluation covers accuracy, parameter count, and MACs.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/12/2609.10404v1-hybridflow-sdn-orchestrated-client-partitioning-for-hybrid-federated-learning",
+      "section": "quick",
+      "title_en": "HybridFLow: SDN-Orchestrated Client Partitioning for Hybrid Federated Learning",
+      "authors": "Osama Abu Hamdan, Rabin Pandey, Hao Che, Engin Arslan, Md Arifuzzaman",
+      "date": "2026-09-09",
+      "pdf": "https://arxiv.org/pdf/2609.10404v1",
+      "score": "6.0",
+      "evidence": "面向通信延迟的同步异步混合客户端分区",
+      "tldr": "跨机构联邦学习在广域部署中受通信延迟与掉队者效应制约，混合联邦学习虽结合同步与异步参与，但客户端难以感知共享瓶颈等网络状态。HybridFLow 利用 SDN 控制器全局拓扑视图，在每轮前估计各客户端通信时间，并将其划分为同步与异步组，以平衡轮次延迟与更新陈旧度。每轮后实测通信时间回传控制器，持续校准预测。多拓扑实验表明，其达到 80% 目标精度比 SmartFLow 快 33-40%，平均轮次时长缩短 30-40 秒，FedAsync 在非独立同分布数据下未达标。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Cross-silo Federated Learning (FL) enables geographically distributed institutions to collaboratively train machine learning models without sharing raw data. In wide-area deployments, however, communication delays often dominate round completion time and exacerbate the straggler effect. Hybrid FL addresses this challenge by combining synchronous and asynchronous client participation, but effective partitioning requires visibility into network conditions such as shared bottlenecks, link utilization, and path contention that individual clients cannot observe. We present HybridFLow, a closed-loop SDN-driven orchestration framework that integrates network-layer intelligence directly into hybrid FL. Leveraging the SDN controller's global topology view, HybridFLow generates calibrated per-client communication-time estimates before each training round and uses them to partition clients into synchronous and asynchronous groups while balancing round latency and update staleness. After each round, measured communication times are fed back to the controller to continuously refine future predictions. Experimental results across multiple network topologies show that HybridFLow reaches 80% target accuracy 33-40% faster than SmartFLow and reduces average round duration by 30-40 seconds, while FedAsync fails to reach the target accuracy under non-IID data distributions.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

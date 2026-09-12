@@ -1,0 +1,101 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-12T20:54:18.070773+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.06106v1",
+      "source": "arxiv",
+      "title": "FANS: Federated Adaptive Network Search Learning for Heterogeneous Devices",
+      "abstract": "Heterogeneous Federated Learning (HFL) aims to train models across devices with diverse resource budgets while preserving data privacy. Existing HFL methods typically bind training to a small predefined menu of model configurations, which limits architectural coverage. To address this bottleneck, we introduce Federated Adaptive Network Search (FANS), a hypernetwork-based framework that learns a shared architecture space rather than a fixed set of client models. To optimize this shared space efficiently, we propose the Federated Parallel Scaling (FPS) algorithm, which jointly trains multiple sampled subnetworks in parallel with self-distillation so that larger sampled subnetworks can supervise smaller ones during local updates. We evaluate FANS on CIFAR-10, CIFAR-100, and MNLI using ResNet-18, DenseNet-121, and BERT-base, respectively. Across all benchmarks, FANS expands the feasible subnetwork pool by orders of magnitude (e.g., 4,680 candidates for ResNet-18 vs. 4 in existing methods) and improves the average accuracy-efficiency trade-off relative to representative HFL baselines. Device heterogeneity is emulated through resource tiers, and evaluation covers accuracy, parameter count, and MACs.",
+      "authors": [
+        "Jiaxin Zhang",
+        "Xingwei Wang",
+        "Bo Yi",
+        "Liang Zhao",
+        "Alireza Furutanpey",
+        "Ziyi Chen",
+        "Qiang He",
+        "Keqin Li",
+        "Schahram Dustdar"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "published": "2026-09-05T13:57:56+00:00",
+      "link": "https://arxiv.org/pdf/2609.06106v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "hypernetwork-based neural architecture search in federated heterogeneous setting",
+      "llm_evidence_cn": "联邦异构场景下基于超网络的神经架构搜索",
+      "llm_evidence": "联邦异构场景下基于超网络的神经架构搜索",
+      "canonical_evidence": "联邦异构场景下基于超网络的神经架构搜索",
+      "llm_tldr_en": "FANS is a hypernetwork-based federated framework that learns a shared architecture space instead of a fixed model menu, using parallel scaling with self-distillation to train sampled subnetworks across heterogeneous devices.",
+      "llm_tldr_cn": "该文针对异构联邦学习只能从预设模型菜单中选架构、覆盖面受限的问题，提出基于超网络的联邦自适应网络搜索框架FANS，学习共享的架构空间而非固定模型集合。方法上引入联邦并行缩放算法，并行训练多个采样子网络并以自蒸馏让大网络指导小网络。实验在异构设备上验证了架构覆盖与训练效率的提升。其贡献在于把架构搜索与分布式协同训练结合，对GNN NAS具有方法借鉴意义。",
+      "llm_tldr": "该文针对异构联邦学习只能从预设模型菜单中选架构、覆盖面受限的问题，提出基于超网络的联邦自适应网络搜索框架FANS，学习共享的架构空间而非固定模型集合。方法上引入联邦并行缩放算法，并行训练多个采样子网络并以自蒸馏让大网络指导小网络。实验在异构设备上验证了架构覆盖与训练效率的提升。其贡献在于把架构搜索与分布式协同训练结合，对GNN NAS具有方法借鉴意义。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.10404v1",
+      "source": "arxiv",
+      "title": "HybridFLow: SDN-Orchestrated Client Partitioning for Hybrid Federated Learning",
+      "abstract": "Cross-silo Federated Learning (FL) enables geographically distributed institutions to collaboratively train machine learning models without sharing raw data. In wide-area deployments, however, communication delays often dominate round completion time and exacerbate the straggler effect. Hybrid FL addresses this challenge by combining synchronous and asynchronous client participation, but effective partitioning requires visibility into network conditions such as shared bottlenecks, link utilization, and path contention that individual clients cannot observe. We present HybridFLow, a closed-loop SDN-driven orchestration framework that integrates network-layer intelligence directly into hybrid FL. Leveraging the SDN controller's global topology view, HybridFLow generates calibrated per-client communication-time estimates before each training round and uses them to partition clients into synchronous and asynchronous groups while balancing round latency and update staleness. After each round, measured communication times are fed back to the controller to continuously refine future predictions. Experimental results across multiple network topologies show that HybridFLow reaches 80% target accuracy 33-40% faster than SmartFLow and reduces average round duration by 30-40 seconds, while FedAsync fails to reach the target accuracy under non-IID data distributions.",
+      "authors": [
+        "Osama Abu Hamdan",
+        "Rabin Pandey",
+        "Hao Che",
+        "Engin Arslan",
+        "Md Arifuzzaman"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI",
+        "cs.LG"
+      ],
+      "published": "2026-09-09T16:23:53+00:00",
+      "link": "https://arxiv.org/pdf/2609.10404v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "hybrid synchronous/asynchronous client partitioning to cut communication delays",
+      "llm_evidence_cn": "面向通信延迟的同步异步混合客户端分区",
+      "llm_evidence": "面向通信延迟的同步异步混合客户端分区",
+      "canonical_evidence": "面向通信延迟的同步异步混合客户端分区",
+      "llm_tldr_en": "To curb communication delays and stragglers in wide-area federated learning, this paper proposes an SDN-driven closed-loop framework that partitions hybrid synchronous/asynchronous clients using global network visibility.",
+      "llm_tldr_cn": "跨孤岛联邦学习在广域部署中通信延迟常主导轮次完成时间并加剧掉队者问题。本文提出HybridFLow，一种由SDN驱动的闭环编排框架，利用控制器全局拓扑视图对混合同步/异步客户端进行分区。通过将网络层信息融入混合联邦学习，缓解共享瓶颈与路径竞争，从而提升训练效率。",
+      "llm_tldr": "跨孤岛联邦学习在广域部署中通信延迟常主导轮次完成时间并加剧掉队者问题。本文提出HybridFLow，一种由SDN驱动的闭环编排框架，利用控制器全局拓扑视图对混合同步/异步客户端进行分区。通过将网络层信息融入混合联邦学习，缓解共享瓶颈与路径竞争，从而提升训练效率。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "date": "20260912",
+  "date_label": "2026-09-13",
+  "generated_at": "2026-09-13 04:54:34 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.06106v1",
+      "route": "202609/12/2609.06106v1-fans-federated-adaptive-network-search-learning-for-heterogeneous-devices",
+      "title": "FANS: Federated Adaptive Network Search Learning for Heterogeneous Devices",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "联邦异构场景下基于超网络的神经架构搜索",
+      "first_seen_at": "2026-09-13 04:54:34 北京时间",
+      "updated_at": "2026-09-13 04:54:34 北京时间"
+    },
+    {
+      "paper_id": "2609.10404v1",
+      "route": "202609/12/2609.10404v1-hybridflow-sdn-orchestrated-client-partitioning-for-hybrid-federated-learning",
+      "title": "HybridFLow: SDN-Orchestrated Client Partitioning for Hybrid Federated Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向通信延迟的同步异步混合客户端分区",
+      "first_seen_at": "2026-09-13 04:54:34 北京时间",
+      "updated_at": "2026-09-13 04:54:34 北京时间"
+    }
+  ]
+}
