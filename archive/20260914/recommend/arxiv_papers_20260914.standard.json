@@ -1,0 +1,98 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-14T22:45:30.535711+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.12143v1",
+      "source": "arxiv",
+      "title": "Consensus-based Decentralized Distributed Swarm Learning with Heterogeneous Big Data",
+      "abstract": "Artificial intelligence increasingly relies on large-scale, distributed, and heterogeneous data collected by edge devices. However, the practice of edge intelligence remains challenging due to non-convex objectives, data heterogeneity, and complex wireless network topology. To address these issues, this paper proposes a consensus-based decentralized distributed swarm learning (CD-DSL) framework for wireless edge networks. Our CD-DSL integrates consensus optimization with particle swarm optimization (PSO), by reaching the model consensus among neighboring devices while leveraging the PSO exploration and exploitation. The consensus mechanism supports decentralized coordination without raw-data exchange, while PSO-inspired updates utilize historical and neighbor-shared experience to enhance exploration for non-convex optimization, improve robustness to data heterogeneity, and accelerate convergence. We further develop an adaptive neighbor-mixing strategy that learns performance-aware consensus weights, improving decentralized collaboration among heterogeneous edge devices. Theoretical analysis establishes that CD-DSL maintains participant consistency and achieves non-ergodic convergence to a neighborhood of a stationary point under non-convex objectives. Experimental results show that CD-DSL can mitigate the performance degeneration of existing decentralized baselines caused by heterogeneous data.",
+      "authors": [
+        "Zhuoyu Yao",
+        "Dong Yang",
+        "Yue Wang",
+        "Songyang Zhang",
+        "Yingshu Li",
+        "Zhi Tian",
+        "Zhipeng Cai"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-09-10T19:23:15+00:00",
+      "link": "https://arxiv.org/pdf/2609.12143v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "decentralized distributed learning with consensus and no raw-data exchange for communication efficiency",
+      "llm_evidence_cn": "去中心化分布式学习，共识机制降低通信开销",
+      "llm_evidence": "去中心化分布式学习，共识机制降低通信开销",
+      "canonical_evidence": "去中心化分布式学习，共识机制降低通信开销",
+      "llm_tldr_en": "CD-DSL is a consensus-based decentralized swarm learning framework for wireless edge networks that couples consensus optimization with particle swarm optimization, reaching model consensus among neighbors without raw-data exchange under heterogeneous data.",
+      "llm_tldr_cn": "边缘智能面临非凸目标、数据异构和复杂无线拓扑等挑战，传统分布式学习通信开销大。本文提出基于共识的去中心化分布式群智学习框架CD-DSL，将共识优化与粒子群优化结合，在相邻设备间达成模型共识而无需交换原始数据，并利用群智搜索增强探索与利用。该框架面向异构大数据与无线边缘场景设计，在降低通信负担的同时提升协同学习效果。其意义在于为通信高效的分布式训练提供了一种去中心化范式，可迁移到图学习系统。",
+      "llm_tldr": "边缘智能面临非凸目标、数据异构和复杂无线拓扑等挑战，传统分布式学习通信开销大。本文提出基于共识的去中心化分布式群智学习框架CD-DSL，将共识优化与粒子群优化结合，在相邻设备间达成模型共识而无需交换原始数据，并利用群智搜索增强探索与利用。该框架面向异构大数据与无线边缘场景设计，在降低通信负担的同时提升协同学习效果。其意义在于为通信高效的分布式训练提供了一种去中心化范式，可迁移到图学习系统。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.12418v1",
+      "source": "arxiv",
+      "title": "RiPPLE: Cross-Space Performance Prediction from Early Training for Neural Architecture Search",
+      "abstract": "Neural architecture search (NAS) evaluates candidate networks, but fully training enough architectures to rank an entire space is expensive. Zero-cost proxies score architectures at initialization, yet their ranking quality varies across search spaces. Learned predictors reduce evaluation cost but typically require fully trained labels or partial-training features for individual candidates. We introduce $\\textbf{RiPPLE}$, $\\underline{\\textbf{R}}$anking v$\\underline{\\textbf{i}}$a $\\underline{\\textbf{P}}$refix-$\\underline{\\textbf{P}}$ropagated $\\underline{\\textbf{L}}$abel $\\underline{\\textbf{E}}$xtrapolation, which treats partial training as a source of labels for a small coverage set of anchors. RiPPLE trains these anchors to an early prefix, extrapolates their learning curves to surrogate labels, and propagates the labels over label-free architecture features. The early-training signal remains a label on the anchors rather than a per-candidate feature. Feature, readout, and encoding rules are selected without held-out accuracy and reused across search spaces. We evaluate the method on twelve benchmark cells from four search-space families and on the larger DARTS space. The results examine ranking quality, label efficiency, architecture selection, and the roles of readout, coverage, and propagation. RiPPLE provides a whole-space ranking from a fractional anchor-training budget, with comparisons interpreted under their respective evaluation and cost protocols.",
+      "authors": [
+        "Yifan Yang",
+        "Zhaoyan Wang",
+        "Zheng Gao",
+        "Xiaoyu Li",
+        "Jiaojiao Jiang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CV"
+      ],
+      "published": "2026-09-11T04:12:18+00:00",
+      "link": "https://arxiv.org/pdf/2609.12418v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "neural architecture search with cheap performance prediction",
+      "llm_evidence_cn": "神经架构搜索中的低成本性能预测",
+      "llm_evidence": "神经架构搜索中的低成本性能预测",
+      "canonical_evidence": "神经架构搜索中的低成本性能预测",
+      "llm_tldr_en": "NAS evaluation is costly and zero-cost proxies rank inconsistently. RiPPLE treats partial training as labels for a small anchor set and extrapolates via prefix propagation, enabling cheap cross-space architecture ranking from early training.",
+      "llm_tldr_cn": "神经架构搜索需要评估大量候选网络，完整训练全部架构代价过高，而零成本代理的排序质量随搜索空间波动，学习型预测器又依赖完整训练标签。本文提出RiPPLE，把部分训练结果当作标签来源，先训练一小批覆盖性锚点，再通过前缀传播进行标签外推，从而预测未训练候选的性能。实验显示其能在早期训练阶段对跨搜索空间架构进行有效排序，降低评估成本。该工作为低成本、可迁移的NAS性能预测提供了新思路。",
+      "llm_tldr": "神经架构搜索需要评估大量候选网络，完整训练全部架构代价过高，而零成本代理的排序质量随搜索空间波动，学习型预测器又依赖完整训练标签。本文提出RiPPLE，把部分训练结果当作标签来源，先训练一小批覆盖性锚点，再通过前缀传播进行标签外推，从而预测未训练候选的性能。实验显示其能在早期训练阶段对跨搜索空间架构进行有效排序，降低评估成本。该工作为低成本、可迁移的NAS性能预测提供了新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

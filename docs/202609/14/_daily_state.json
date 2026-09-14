@@ -1,0 +1,41 @@
+{
+  "date": "20260914",
+  "date_label": "2026-09-15",
+  "generated_at": "2026-09-15 06:45:53 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.12143v1",
+      "route": "202609/14/2609.12143v1-consensus-based-decentralized-distributed-swarm-learning-with-heterogeneous-big-data",
+      "title": "Consensus-based Decentralized Distributed Swarm Learning with Heterogeneous Big Data",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "去中心化分布式学习，共识机制降低通信开销",
+      "first_seen_at": "2026-09-15 06:45:53 北京时间",
+      "updated_at": "2026-09-15 06:45:53 北京时间"
+    },
+    {
+      "paper_id": "2609.12418v1",
+      "route": "202609/14/2609.12418v1-ripple-cross-space-performance-prediction-from-early-training-for-neural-architecture-search",
+      "title": "RiPPLE: Cross-Space Performance Prediction from Early Training for Neural Architecture Search",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "神经架构搜索中的低成本性能预测",
+      "first_seen_at": "2026-09-15 06:45:53 北京时间",
+      "updated_at": "2026-09-15 06:45:53 北京时间"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-15",
+  "date": "2026-09-14",
+  "generated_at": "2026-09-14T22:45:56",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/14/2609.12143v1-consensus-based-decentralized-distributed-swarm-learning-with-heterogeneous-big-data",
+      "section": "quick",
+      "title_en": "Consensus-based Decentralized Distributed Swarm Learning with Heterogeneous Big Data",
+      "authors": "Zhuoyu Yao, Dong Yang, Yue Wang, Songyang Zhang, Yingshu Li, Zhi Tian, Zhipeng Cai",
+      "date": "2026-09-10",
+      "pdf": "https://arxiv.org/pdf/2609.12143v1",
+      "score": "6.0",
+      "evidence": "去中心化分布式学习，共识机制降低通信开销",
+      "tldr": "面向无线边缘网络中非凸目标、数据异构与拓扑复杂等挑战，本文提出基于共识的去中心化分布式群体学习框架CD-DSL。该方法将共识优化与粒子群优化结合，在邻居设备间达成模型共识，并利用历史与邻居共享经验增强探索。进一步设计自适应邻居混合策略，学习性能感知的共识权重，实现无需原始数据交换的协同。理论证明其保持参与者一致性并实现非凸非遍历收敛，实验表明可缓解异构数据导致的基线性能退化。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Artificial intelligence increasingly relies on large-scale, distributed, and heterogeneous data collected by edge devices. However, the practice of edge intelligence remains challenging due to non-convex objectives, data heterogeneity, and complex wireless network topology. To address these issues, this paper proposes a consensus-based decentralized distributed swarm learning (CD-DSL) framework for wireless edge networks. Our CD-DSL integrates consensus optimization with particle swarm optimization (PSO), by reaching the model consensus among neighboring devices while leveraging the PSO exploration and exploitation. The consensus mechanism supports decentralized coordination without raw-data exchange, while PSO-inspired updates utilize historical and neighbor-shared experience to enhance exploration for non-convex optimization, improve robustness to data heterogeneity, and accelerate convergence. We further develop an adaptive neighbor-mixing strategy that learns performance-aware consensus weights, improving decentralized collaboration among heterogeneous edge devices. Theoretical analysis establishes that CD-DSL maintains participant consistency and achieves non-ergodic convergence to a neighborhood of a stationary point under non-convex objectives. Experimental results show that CD-DSL can mitigate the performance degeneration of existing decentralized baselines caused by heterogeneous data.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/14/2609.12418v1-ripple-cross-space-performance-prediction-from-early-training-for-neural-architecture-search",
+      "section": "quick",
+      "title_en": "RiPPLE: Cross-Space Performance Prediction from Early Training for Neural Architecture Search",
+      "authors": "Yifan Yang, Zhaoyan Wang, Zheng Gao, Xiaoyu Li, Jiaojiao Jiang",
+      "date": "2026-09-11",
+      "pdf": "https://arxiv.org/pdf/2609.12418v1",
+      "score": "6.0",
+      "evidence": "神经架构搜索中的低成本性能预测",
+      "tldr": "神经架构搜索需评估大量候选网络，完整训练代价高昂，零成本代理排序质量又因搜索空间而异。RiPPLE 将少量锚架构的早期训练视为标签来源，外推学习曲线生成代理标签，并在无标签架构特征上传播，从而预测全空间性能。方法无需逐候选的部分训练特征，特征、读出与编码规则无需留出准确率即可选定并跨空间复用。在四类搜索空间共12个基准单元及DARTS空间上，它用分数级锚训练预算实现全空间排序，并检验排序质量、标签效率与架构选择。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Neural architecture search (NAS) evaluates candidate networks, but fully training enough architectures to rank an entire space is expensive. Zero-cost proxies score architectures at initialization, yet their ranking quality varies across search spaces. Learned predictors reduce evaluation cost but typically require fully trained labels or partial-training features for individual candidates. We introduce $\\textbf{RiPPLE}$, $\\underline{\\textbf{R}}$anking v$\\underline{\\textbf{i}}$a $\\underline{\\textbf{P}}$refix-$\\underline{\\textbf{P}}$ropagated $\\underline{\\textbf{L}}$abel $\\underline{\\textbf{E}}$xtrapolation, which treats partial training as a source of labels for a small coverage set of anchors. RiPPLE trains these anchors to an early prefix, extrapolates their learning curves to surrogate labels, and propagates the labels over label-free architecture features. The early-training signal remains a label on the anchors rather than a per-candidate feature. Feature, readout, and encoding rules are selected without held-out accuracy and reused across search spaces. We evaluate the method on twelve benchmark cells from four search-space families and on the larger DARTS space. The results examine ranking quality, label efficiency, architecture selection, and the roles of readout, coverage, and propagation. RiPPLE provides a whole-space ranking from a fractional anchor-training budget, with comparisons interpreted under their respective evaluation and cost protocols.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
