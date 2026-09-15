@@ -1,0 +1,73 @@
+{
+  "date": "20260915",
+  "date_label": "2026-09-16",
+  "generated_at": "2026-09-16 05:58:11 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.14339v1",
+      "route": "202609/15/2609.14339v1-communication-efficient-llm-adaptation-over-decentralized-gpu-meshes",
+      "title": "Communication-Efficient LLM Adaptation over Decentralized GPU Meshes",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "压缩数据并行与异步回路的通信高效去中心化训练",
+      "first_seen_at": "2026-09-16 05:58:11 北京时间",
+      "updated_at": "2026-09-16 05:58:11 北京时间"
+    },
+    {
+      "paper_id": "2609.13512v1",
+      "route": "202609/15/2609.13512v1-adaptive-phase-switching-for-communication-efficient-federated-lora-fine-tuning",
+      "title": "Adaptive Phase-Switching for Communication-Efficient Federated LoRA Fine-Tuning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通信高效的联邦LoRA与自适应聚合前沿",
+      "first_seen_at": "2026-09-16 05:58:11 北京时间",
+      "updated_at": "2026-09-16 05:58:11 北京时间"
+    },
+    {
+      "paper_id": "2609.13585v1",
+      "route": "202609/15/2609.13585v1-mkernel-fast-multi-gpu-multi-node-fused-kernels",
+      "title": "mKernel: Fast Multi-GPU, Multi-Node Fused Kernels",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "多GPU多节点融合内核，重叠计算与通信以降低分布式训练通信开销",
+      "first_seen_at": "2026-09-16 05:58:11 北京时间",
+      "updated_at": "2026-09-16 05:58:11 北京时间"
+    },
+    {
+      "paper_id": "2609.13664v1",
+      "route": "202609/15/2609.13664v1-cost-characterization-of-vertically-partitioned-federated-knowledge-graphs",
+      "title": "Cost Characterization of Vertically Partitioned Federated Knowledge Graphs",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "比较图划分策略并刻画分布式知识图谱中的通信成本",
+      "first_seen_at": "2026-09-16 05:58:11 北京时间",
+      "updated_at": "2026-09-16 05:58:11 北京时间"
+    }
+  ]
+}

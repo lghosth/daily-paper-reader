@@ -1,0 +1,182 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-15T21:55:43.610927+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2609.14339v1",
+      "source": "arxiv",
+      "title": "Communication-Efficient LLM Adaptation over Decentralized GPU Meshes",
+      "abstract": "Decentralized training enables large-model training over low-end GPUs and internet-grade connections, but communication along both data-parallel and pipeline-parallel axes becomes the primary bottleneck. We study post-pretraining adaptation in this setting. We propose an asynchronous two-circuit system: a fast compressed training circuit drives throughput using activation masking for pipeline-parallel (PP) transfer and compressed data-parallel (DP) synchronization, while a slow anchor circuit runs occasional unmasked forward--backward passes off the critical path. Then, we introduce a spectral correction optimizer that uses these delayed anchor priors to denoise masked gradients without blocking the fast stream. Although prior work has found aggressive activation compression unreliable, we show that masking supports post-pretraining adaptation at high compression rates when anchored this way. Pipeline-parallel compression alone yields up to a $9\\times$ throughput gain, and combining it with data-parallel compression increases beyond $40\\times$ over internet-grade $\\sim 200$Mbps connections, while matching dense uncompressed performance across domain adaptation and continual pretraining.",
+      "authors": [
+        "Sameera Ramasinghe",
+        "Shamane Siriwardhana",
+        "Thalaiyasingam Ajanthan",
+        "Hadi Mohaghegh Dolatabadi",
+        "Chamin P Hewa Koneputugodage",
+        "Gil Avraham",
+        "Violetta Shevchenko",
+        "James Snewin",
+        "Karol Pajak",
+        "Harry Xi",
+        "Alexander Long"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-13T06:56:50+00:00",
+      "link": "https://arxiv.org/pdf/2609.14339v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "communication-efficient decentralized training with compressed data-parallel and asynchronous circuits",
+      "llm_evidence_cn": "压缩数据并行与异步回路的通信高效去中心化训练",
+      "llm_evidence": "压缩数据并行与异步回路的通信高效去中心化训练",
+      "canonical_evidence": "压缩数据并行与异步回路的通信高效去中心化训练",
+      "llm_tldr_en": "Decentralized training over low-end GPUs is bottlenecked by data- and pipeline-parallel communication; an asynchronous two-circuit system with compressed sync and spectral correction improves efficiency.",
+      "llm_tldr_cn": "去中心化训练可在低端GPU和互联网级连接上训练大模型，但数据并行与流水线并行两条轴上的通信成为主要瓶颈。论文研究预训练后的适配问题，提出异步双回路系统：快速压缩训练回路用激活掩码处理流水线传输、用压缩同步处理数据并行，慢速锚点回路在关键路径外偶尔执行未掩码前反向。作者进一步引入谱校正优化器，利用延迟锚点先验对掩码梯度去噪。结果在保持吞吐的同时改善了通信效率，为通信高效的分布式训练系统提供了新范式。",
+      "llm_tldr": "去中心化训练可在低端GPU和互联网级连接上训练大模型，但数据并行与流水线并行两条轴上的通信成为主要瓶颈。论文研究预训练后的适配问题，提出异步双回路系统：快速压缩训练回路用激活掩码处理流水线传输、用压缩同步处理数据并行，慢速锚点回路在关键路径外偶尔执行未掩码前反向。作者进一步引入谱校正优化器，利用延迟锚点先验对掩码梯度去噪。结果在保持吞吐的同时改善了通信效率，为通信高效的分布式训练系统提供了新范式。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.13512v1",
+      "source": "arxiv",
+      "title": "Adaptive Phase-Switching for Communication-Efficient Federated LoRA Fine-Tuning",
+      "abstract": "Federated fine-tuning of large language models with low-rank adaptation reduces per-client trainable parameters, but client-to-server communication remains the dominant cost. Existing accounting for federated LoRA protocols omits the asymmetric transition round when a protocol changes aggregation mode, and reports savings that ignore grouped-query attention shapes. This paper measures per-round upload and download bytes for a bidirectional B-only federated LoRA protocol and places five methods, three from prior work, on a single communication-quality frontier. The frontier has a knee, which an adaptive phase-switching aggregator, ReverseAdaptive, locates by monitoring the relative improvement in global training loss against a dimensionless threshold rather than by fixing a phase boundary in advance. On TinyLlama-1.1B-Chat with Alpaca, ReverseAdaptive attains 40.5 percent measured round-trip savings over FLoRA at a held-out instruction-following loss cost of 0.0063. It outperforms FFA-LoRA, which freezes the first of the two LoRA factors at initialization, by 0.0182 in held-out loss, more than twenty times the largest per-method seed standard deviation on that metric, so learning that factor before freezing it produces better adapters. The same threshold transfers across model scales without retuning, and the quality cost of the transition is stable across the two datasets tested.",
+      "authors": [
+        "Jerry Adams Franklin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.DC"
+      ],
+      "published": "2026-09-11T20:24:39+00:00",
+      "link": "https://arxiv.org/pdf/2609.13512v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "communication-efficient federated LoRA with adaptive aggregation frontier",
+      "llm_evidence_cn": "通信高效的联邦LoRA与自适应聚合前沿",
+      "llm_evidence": "通信高效的联邦LoRA与自适应聚合前沿",
+      "canonical_evidence": "通信高效的联邦LoRA与自适应聚合前沿",
+      "llm_tldr_en": "Federated LoRA still dominated by client-server communication; the paper measures per-round bytes, builds a communication-quality frontier, and adds an adaptive phase-switching aggregator.",
+      "llm_tldr_cn": "联邦LoRA微调虽减少每客户端可训练参数，但客户端与服务器间的通信仍是主要开销，且现有通信核算忽略了协议切换的过渡轮次与分组查询注意力形状。论文逐轮测量双向B-only联邦LoRA协议的上传下载字节，将五种方法放在统一的通信-质量前沿上，并提出自适应相位切换聚合器ReverseAdaptive，通过监测全局训练损失相对改进定位前沿拐点。结果显示该方法能在通信与质量间取得更优权衡，为通信高效训练协议设计提供量化依据。",
+      "llm_tldr": "联邦LoRA微调虽减少每客户端可训练参数，但客户端与服务器间的通信仍是主要开销，且现有通信核算忽略了协议切换的过渡轮次与分组查询注意力形状。论文逐轮测量双向B-only联邦LoRA协议的上传下载字节，将五种方法放在统一的通信-质量前沿上，并提出自适应相位切换聚合器ReverseAdaptive，通过监测全局训练损失相对改进定位前沿拐点。结果显示该方法能在通信与质量间取得更优权衡，为通信高效训练协议设计提供量化依据。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.13664v1",
+      "source": "arxiv",
+      "title": "Cost Characterization of Vertically Partitioned Federated Knowledge Graphs",
+      "abstract": "Knowledge graphs are increasingly distributed across autonomous organizations that share an entity space but own disjoint subsets of relations, forming a vertical partition. Answering a multi-hop query may require combining facts from several silos, making the partitioning strategy a key data management decision that affects communication, indexing, load balance, and query latency. However, the costs associated with different partitioning strategies remain insufficiently studied. We formalize vertical partitioning as a design space and compare four strategies: semantic domain grouping, frequency-balanced partitioning, co-occurrence graph-cut partitioning, and random partitioning. We evaluate them using five metrics: communication cost, candidate index size, cross-silo path length, load balance, and end-to-end query latency. Three of the five prove to be determined by the graph and the silo count rather than by the partition, which reduces the design problem to two conflicting axes, cross-silo path length and load balance. Experiments on MetaQA and PathQuestion use a fixed federated knowledge graph question-answering architecture based on TransE embeddings and a frozen BERT encoder across three silo configurations. By keeping the learning model unchanged, we isolate the effect of partitioning and show that the trade-off between locality and balance holds only where each silo can hold several relations, weakening as the number of silos increases. The study provides practical guidance for deployments constrained by cross-silo reasoning or by silo load.",
+      "authors": [
+        "Md Saikat Islam Khan Bappy",
+        "Oshani Seneviratne"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.DB",
+        "cs.IR"
+      ],
+      "published": "2026-09-12T02:47:14+00:00",
+      "link": "https://arxiv.org/pdf/2609.13664v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "compares graph partitioning strategies and characterizes their communication cost in distributed knowledge graphs",
+      "llm_evidence_cn": "比较图划分策略并刻画分布式知识图谱中的通信成本",
+      "llm_evidence": "比较图划分策略并刻画分布式知识图谱中的通信成本",
+      "canonical_evidence": "比较图划分策略并刻画分布式知识图谱中的通信成本",
+      "llm_tldr_en": "Distributed knowledge graphs partitioned across silos make partitioning strategy a key design decision. This work formalizes vertical partitioning as a design space and compares four strategies using metrics including communication cost, indexing, load balance and query latency.",
+      "llm_tldr_cn": "针对知识图谱跨组织垂直划分后多跳查询需跨多个数据孤岛、而不同划分策略的成本缺乏系统研究的问题，该工作把垂直划分形式化为设计空间，比较语义域分组、频率均衡划分、共现图割划分与随机划分四种策略，并用通信成本、候选规模、索引、负载均衡与查询延迟等指标进行评测。它为分布式图数据的划分与通信开销权衡提供了实证依据，对分布式GNN的图划分策略具有方法上的借鉴意义。",
+      "llm_tldr": "针对知识图谱跨组织垂直划分后多跳查询需跨多个数据孤岛、而不同划分策略的成本缺乏系统研究的问题，该工作把垂直划分形式化为设计空间，比较语义域分组、频率均衡划分、共现图割划分与随机划分四种策略，并用通信成本、候选规模、索引、负载均衡与查询延迟等指标进行评测。它为分布式图数据的划分与通信开销权衡提供了实证依据，对分布式GNN的图划分策略具有方法上的借鉴意义。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.13585v1",
+      "source": "arxiv",
+      "title": "mKernel: Fast Multi-GPU, Multi-Node Fused Kernels",
+      "abstract": "Communication has become a bottleneck in distributed training and inference of large models. Overlapping communication with computation at the granularity of kernels, on separate streams, reduces only part of this communication cost. Fused kernels often have better performance by transmitting each output tile as soon as it is produced, but existing fused kernels are largely confined to a single NVLink domain. We present mKernel, a library of multi-GPU, multi-node fused kernels that overlap computation, intra-node NVLink communication, and inter-node RDMA at tile granularity. mKernel partitions the streaming multiprocessors (SMs) of a persistent kernel into compute and communication roles, and an on-GPU controller tunes the SM partition adaptively at run time, since the best SM partition varies with the kernel and the input shape. It structures data movement hierarchically so that data traversing the inter-node network is minimized. Finally, it drives the network from the GPU through a lightweight command queue and host proxy implemented directly on RDMA verbs, which allows the same kernels to run on any network backend (e.g. InfiniBand and on AWS EFA); we observe, surprisingly, that GPUDirect Async (IBGDA) yields little additional benefit over host-assisted GPU-initiated communication. We implement five kernels spanning tensor, sequence, and expert parallelism. On two 16-GPU H200 clusters, mKernel achieves speedups of up to 1.72x on GEMM+AllReduce and $1.88\\times$ on Ring Attention.",
+      "authors": [
+        "Ziming Mao",
+        "Yihan Zhang",
+        "Shawn Wei Chew",
+        "Shuang Ma",
+        "Costin Raiciu",
+        "Yang Zhou",
+        "Scott Shenker",
+        "Ion Stoica"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.LG",
+        "cs.NI"
+      ],
+      "published": "2026-09-11T22:50:04+00:00",
+      "link": "https://arxiv.org/pdf/2609.13585v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "multi-GPU multi-node fused kernels overlapping communication with computation to cut distributed training communication cost",
+      "llm_evidence_cn": "多GPU多节点融合内核，重叠计算与通信以降低分布式训练通信开销",
+      "llm_evidence": "多GPU多节点融合内核，重叠计算与通信以降低分布式训练通信开销",
+      "canonical_evidence": "多GPU多节点融合内核，重叠计算与通信以降低分布式训练通信开销",
+      "llm_tldr_en": "Communication is the bottleneck in distributed training. mKernel is a multi-GPU, multi-node fused kernel library that overlaps compute with NVLink and RDMA communication at tile granularity, adaptively partitioning SMs between compute and communication roles at runtime.",
+      "llm_tldr_cn": "针对分布式训练与推理中通信成为瓶颈、现有融合内核多局限于单个NVLink域的问题，mKernel提出多GPU、多节点的融合内核库，在tile粒度上重叠计算、节点内NVLink通信与节点间RDMA传输，并将持久内核的流多处理器划分为计算与通信角色，由片上控制器在运行时自适应调优。该工作为通信高效的分布式训练系统提供了内核级的可复用优化方案，具有明显的迁移价值。",
+      "llm_tldr": "针对分布式训练与推理中通信成为瓶颈、现有融合内核多局限于单个NVLink域的问题，mKernel提出多GPU、多节点的融合内核库，在tile粒度上重叠计算、节点内NVLink通信与节点间RDMA传输，并将持久内核的流多处理器划分为计算与通信角色，由片上控制器在运行时自适应调优。该工作为通信高效的分布式训练系统提供了内核级的可复用优化方案，具有明显的迁移价值。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-15</span>
+      <span class="dpr-home-dashboard-kicker">2026-09-16</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 2 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 4 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>2</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>1</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>3</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-09-15 06:45:53 北京时间<br>状态：成功<br>下次更新：约 2026-09-16 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-09-16 05:58:11 北京时间<br>状态：成功<br>下次更新：约 2026-09-17 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,9 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日速读2篇、精读0篇，聚焦去中心化群体学习与神经架构搜索性能预测。</p>
-<p>两篇速读均6.0/10，值得关注异构大数据下的共识式去中心化群体学习，以及RiPPLE用早期训练做跨空间NAS性能预测。</p>
-<p>普通读者可先看这两篇速读摘要，重点了解方法适用场景和效果，再决定是否深入。</p>
+<p>今日4篇：去中心化GPU网格LLM适配领衔，通信效率成分布式AI焦点。</p>
+<p>最值得看精读8.0《Communication-Efficient LLM Adaptation over Decentralized GPU Meshes》，以及7.0的联邦LoRA自适应相位切换，主线都指向降低分布式通信开销。</p>
+<p>普通读者可先从精读入手，再按兴趣速览mKernel与联邦知识图谱成本分析，关注通信与多GPU多节点效率。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -80,12 +80,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">0 篇</strong>
+    <strong class="dpr-home-dashboard-count">1 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Communication-Efficient LLM Adaptation over Decentralized GPU Meshes">Communication-Efficient LLM Adaptation over Decentralized GPU Meshes</span></li></ul>
   </div>
-
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>1</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -93,12 +93,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">2 篇</strong>
+    <strong class="dpr-home-dashboard-count">3 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Consensus-based Decentralized Distributed Swarm Learning with Heterogeneous Big Data">Consensus-based Decentralized Distributed Swarm Learning with Heterogeneous Big Data</span></li><li><span class="dpr-home-dashboard-paper-title" title="RiPPLE: Cross-Space Performance Prediction from Early Training for Neural Architecture Search">RiPPLE: Cross-Space Performance Prediction from Early Training for Neural Architecture Search</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Adaptive Phase-Switching for Communication-Efficient Federated LoRA Fine-Tuning">Adaptive Phase-Switching for Communication-Efficient Federated LoRA Fine-Tuning</span></li><li><span class="dpr-home-dashboard-paper-title" title="mKernel: Fast Multi-GPU, Multi-Node Fused Kernels">mKernel: Fast Multi-GPU, Multi-Node Fused Kernels</span></li><li><span class="dpr-home-dashboard-paper-title" title="Cost Characterization of Vertically Partitioned Federated Knowledge Graphs">Cost Characterization of Vertically Partitioned Federated Knowledge Graphs</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>2</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>3</strong></span></div>
 </section>
 </div>
 

@@ -1,0 +1,69 @@
+{
+  "label": "2026-09-16",
+  "date": "2026-09-15",
+  "generated_at": "2026-09-15T21:58:15",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202609/15/2609.14339v1-communication-efficient-llm-adaptation-over-decentralized-gpu-meshes",
+      "section": "deep",
+      "title_en": "Communication-Efficient LLM Adaptation over Decentralized GPU Meshes",
+      "authors": "Sameera Ramasinghe, Shamane Siriwardhana, Thalaiyasingam Ajanthan, Hadi Mohaghegh Dolatabadi, Chamin P Hewa Koneputugodage, Gil Avraham, Violetta Shevchenko, James Snewin, Karol Pajak, Harry Xi, Alexander Long",
+      "date": "2026-09-13",
+      "pdf": "https://arxiv.org/pdf/2609.14339v1",
+      "score": "8.0",
+      "evidence": "压缩数据并行与异步回路的通信高效去中心化训练",
+      "tldr": "去中心化训练可让低端GPU与互联网级连接训练大模型，但数据并行与流水线并行通信成为主要瓶颈。本文提出异步双回路系统：快回路用激活掩码压缩PP传输和DP同步，慢回路偶尔执行无掩码前反向，并以谱校正优化器利用延迟锚点先验去噪掩码梯度。在约200Mbps连接上，PP压缩单独带来最高9倍吞吐，结合DP压缩超40倍，且性能匹配稠密未压缩。该工作表明锚定式激活掩码可使高压缩率下的后预训练适配可靠。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Decentralized training enables large-model training over low-end GPUs and internet-grade connections, but communication along both data-parallel and pipeline-parallel axes becomes the primary bottleneck. We study post-pretraining adaptation in this setting. We propose an asynchronous two-circuit system: a fast compressed training circuit drives throughput using activation masking for pipeline-parallel (PP) transfer and compressed data-parallel (DP) synchronization, while a slow anchor circuit runs occasional unmasked forward--backward passes off the critical path. Then, we introduce a spectral correction optimizer that uses these delayed anchor priors to denoise masked gradients without blocking the fast stream. Although prior work has found aggressive activation compression unreliable, we show that masking supports post-pretraining adaptation at high compression rates when anchored this way. Pipeline-parallel compression alone yields up to a $9\\times$ throughput gain, and combining it with data-parallel compression increases beyond $40\\times$ over internet-grade $\\sim 200$Mbps connections, while matching dense uncompressed performance across domain adaptation and continual pretraining.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/15/2609.13512v1-adaptive-phase-switching-for-communication-efficient-federated-lora-fine-tuning",
+      "section": "quick",
+      "title_en": "Adaptive Phase-Switching for Communication-Efficient Federated LoRA Fine-Tuning",
+      "authors": "Jerry Adams Franklin",
+      "date": "2026-09-11",
+      "pdf": "https://arxiv.org/pdf/2609.13512v1",
+      "score": "7.0",
+      "evidence": "通信高效的联邦LoRA与自适应聚合前沿",
+      "tldr": "联邦LoRA微调虽降低可训练参数量，但客户端-服务器通信仍是主要开销，且既有核算忽略切换轮与GQA形状。本文测量双向仅B的联邦LoRA逐轮上下行字节，将五种方法置于通信-质量前沿，并提出自适应相位切换聚合器ReverseAdaptive，用全局训练损失相对改善与无量纲阈值定位前沿拐点。在TinyLlama-1.1B-Chat与Alpaca上，它较FLoRA节省40.5%往返通信，留出指令跟随损失代价仅0.0063，并优于FFA-LoRA 0.0182。阈值可跨模型规模免调迁移，贡献在于更准确的通信核算与自适应高效联邦LoRA方案。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated fine-tuning of large language models with low-rank adaptation reduces per-client trainable parameters, but client-to-server communication remains the dominant cost. Existing accounting for federated LoRA protocols omits the asymmetric transition round when a protocol changes aggregation mode, and reports savings that ignore grouped-query attention shapes. This paper measures per-round upload and download bytes for a bidirectional B-only federated LoRA protocol and places five methods, three from prior work, on a single communication-quality frontier. The frontier has a knee, which an adaptive phase-switching aggregator, ReverseAdaptive, locates by monitoring the relative improvement in global training loss against a dimensionless threshold rather than by fixing a phase boundary in advance. On TinyLlama-1.1B-Chat with Alpaca, ReverseAdaptive attains 40.5 percent measured round-trip savings over FLoRA at a held-out instruction-following loss cost of 0.0063. It outperforms FFA-LoRA, which freezes the first of the two LoRA factors at initialization, by 0.0182 in held-out loss, more than twenty times the largest per-method seed standard deviation on that metric, so learning that factor before freezing it produces better adapters. The same threshold transfers across model scales without retuning, and the quality cost of the transition is stable across the two datasets tested.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/15/2609.13585v1-mkernel-fast-multi-gpu-multi-node-fused-kernels",
+      "section": "quick",
+      "title_en": "mKernel: Fast Multi-GPU, Multi-Node Fused Kernels",
+      "authors": "Ziming Mao, Yihan Zhang, Shawn Wei Chew, Shuang Ma, Costin Raiciu, Yang Zhou, Scott Shenker, Ion Stoica",
+      "date": "2026-09-11",
+      "pdf": "https://arxiv.org/pdf/2609.13585v1",
+      "score": "7.0",
+      "evidence": "多GPU多节点融合内核，重叠计算与通信以降低分布式训练通信开销",
+      "tldr": "大模型分布式训练与推理中通信已成瓶颈，现有内核级重叠仅能部分缓解。mKernel 提出多GPU、多节点融合内核库，将持久内核的SM划分为计算与通信角色，并由GPU控制器运行时自适应调优，按tile粒度重叠计算、NVLink与RDMA。它采用层次化数据移动并基于RDMA verbs驱动网络，在16卡H200集群上GEMM+AllReduce最高加速1.72倍，Ring Attention最高1.88倍。该工作把融合内核扩展到跨节点场景，降低通信开销。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Communication has become a bottleneck in distributed training and inference of large models. Overlapping communication with computation at the granularity of kernels, on separate streams, reduces only part of this communication cost. Fused kernels often have better performance by transmitting each output tile as soon as it is produced, but existing fused kernels are largely confined to a single NVLink domain. We present mKernel, a library of multi-GPU, multi-node fused kernels that overlap computation, intra-node NVLink communication, and inter-node RDMA at tile granularity. mKernel partitions the streaming multiprocessors (SMs) of a persistent kernel into compute and communication roles, and an on-GPU controller tunes the SM partition adaptively at run time, since the best SM partition varies with the kernel and the input shape. It structures data movement hierarchically so that data traversing the inter-node network is minimized. Finally, it drives the network from the GPU through a lightweight command queue and host proxy implemented directly on RDMA verbs, which allows the same kernels to run on any network backend (e.g. InfiniBand and on AWS EFA); we observe, surprisingly, that GPUDirect Async (IBGDA) yields little additional benefit over host-assisted GPU-initiated communication. We implement five kernels spanning tensor, sequence, and expert parallelism. On two 16-GPU H200 clusters, mKernel achieves speedups of up to 1.72x on GEMM+AllReduce and $1.88\\times$ on Ring Attention.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/15/2609.13664v1-cost-characterization-of-vertically-partitioned-federated-knowledge-graphs",
+      "section": "quick",
+      "title_en": "Cost Characterization of Vertically Partitioned Federated Knowledge Graphs",
+      "authors": "Md Saikat Islam Khan Bappy, Oshani Seneviratne",
+      "date": "2026-09-12",
+      "pdf": "https://arxiv.org/pdf/2609.13664v1",
+      "score": "6.0",
+      "evidence": "比较图划分策略并刻画分布式知识图谱中的通信成本",
+      "tldr": "知识图谱常按垂直分区分散在多个自治组织中，多跳查询需跨库组合事实，分区策略直接影响通信、索引、负载与延迟。本文将垂直分区形式化为设计空间，比较语义域分组、频率均衡、共现图割和随机四种策略，并用五个指标评估。实验基于TransE与冻结BERT的联邦问答架构，在MetaQA和PathQuestion上发现五项成本中三项由图和库数决定，设计问题可归结为跨库路径长度与负载均衡的权衡。研究为受跨库推理或库负载约束的部署提供实用指导。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Knowledge graphs are increasingly distributed across autonomous organizations that share an entity space but own disjoint subsets of relations, forming a vertical partition. Answering a multi-hop query may require combining facts from several silos, making the partitioning strategy a key data management decision that affects communication, indexing, load balance, and query latency. However, the costs associated with different partitioning strategies remain insufficiently studied. We formalize vertical partitioning as a design space and compare four strategies: semantic domain grouping, frequency-balanced partitioning, co-occurrence graph-cut partitioning, and random partitioning. We evaluate them using five metrics: communication cost, candidate index size, cross-silo path length, load balance, and end-to-end query latency. Three of the five prove to be determined by the graph and the silo count rather than by the partition, which reduces the design problem to two conflicting axes, cross-silo path length and load balance. Experiments on MetaQA and PathQuestion use a fixed federated knowledge graph question-answering architecture based on TransE embeddings and a frozen BERT encoder across three silo configurations. By keeping the learning model unchanged, we isolate the effect of partitioning and show that the trade-off between locality and balance holds only where each silo can hold several relations, weakening as the number of silos increases. The study provides practical guidance for deployments constrained by cross-silo reasoning or by silo load.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
