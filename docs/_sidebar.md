@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-09-17 <!--dpr-date:20260916-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/16/2609.14246v1-joint-optimization-for-federated-learning-and-transmission-over-unreliable-wireless-networks-with-heterogeneous-data" data-sidebar-item="{&quot;title&quot;: &quot;Joint Optimization for Federated Learning and Transmission over Unreliable Wireless Networks with Heterogeneous Data&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.14246v1-joint-optimization-for-federated-learning-and-transmission-over-unreliable-wireless-networks-with-heterogeneous-data&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;面向不可靠无线网络的通信高效联邦训练与随机游走聚合&quot;}">Joint Optimization for Federated Learning and Transmission over Unreliable Wireless Networks with Heterogeneous Data</a>
   * 2026-09-16 <!--dpr-date:20260915-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/15/2609.14339v1-communication-efficient-llm-adaptation-over-decentralized-gpu-meshes" data-sidebar-item="{&quot;title&quot;: &quot;Communication-Efficient LLM Adaptation over Decentralized GPU Meshes&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.14339v1-communication-efficient-llm-adaptation-over-decentralized-gpu-meshes&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;压缩数据并行与异步回路的通信高效去中心化训练&quot;}">Communication-Efficient LLM Adaptation over Decentralized GPU Meshes</a>

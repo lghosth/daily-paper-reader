@@ -1,0 +1,58 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-16T22:03:56.256010+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.14246v1",
+      "source": "arxiv",
+      "title": "Joint Optimization for Federated Learning and Transmission over Unreliable Wireless Networks with Heterogeneous Data",
+      "abstract": "In wireless federated learning (FL), data heterogeneity and multiple local updates induce client drift, degrading model convergence. It is further affected by unreliable wireless links, as transmission errors may invalidate model updates. To address these challenges, we propose a federated random walk averaging (FedRW) framework, which is a variant of federated averaging (FedAvg) that mitigates data heterogeneity by updating models along random walk (RW) paths and aggregating them at the server. Model parameters are transmitted in packets with retransmission support to improve training quality by mitigating wireless errors along RW paths. Meanwhile, wireless transmission delays hinder the exploration of FedRW. To this end, we formulate a joint optimization problem that integrates learning, RW path selection, and transmission parameter tuning, aiming to minimize the training loss under delay constraints. By deriving an upper bound on the expected convergence of FedRW over unreliable wireless networks, we reduce the problem to a general form agnostic to task type and model architecture. A distributed solution is then proposed, in which the server or clients optimize packet size and maximum number of retransmissions locally, and efficiently select reliable and expandable next-hop nodes via a resilience-aware beam search with dynamic pruning. Simulation results show that FedRW achieves 2.26%-9% higher accuracy than state-of-the-art baselines under high data heterogeneity. Furthermore, the jointly optimized FedRW yields at least 2.78% higher accuracy and faster convergence compared to baselines.",
+      "authors": [
+        "Changheng Wang",
+        "Xianchao Zhang",
+        "Zhiqing Wei",
+        "Lingzhu Zhao",
+        "Zhongming Yang",
+        "Zhiyong Feng"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-09-13T02:49:28+00:00",
+      "link": "https://arxiv.org/pdf/2609.14246v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "communication-efficient federated training with packet retransmission and random walk aggregation",
+      "llm_evidence_cn": "面向不可靠无线网络的通信高效联邦训练与随机游走聚合",
+      "llm_evidence": "面向不可靠无线网络的通信高效联邦训练与随机游走聚合",
+      "canonical_evidence": "面向不可靠无线网络的通信高效联邦训练与随机游走聚合",
+      "llm_tldr_en": "FedRW mitigates client drift and wireless transmission errors in federated learning by aggregating models along random-walk paths with packet retransmission, improving communication-efficient distributed training under heterogeneous data.",
+      "llm_tldr_cn": "针对无线联邦学习中数据异构与不可靠链路导致的客户端漂移和更新失效问题，论文提出联邦随机游走平均（FedRW）框架，沿随机游走路径更新模型并在服务器聚合，同时以带重传的分组传输缓解无线错误。该方法在异构数据与不稳定链路上提升了收敛质量与通信效率，为通信高效的分布式训练提供了新思路。",
+      "llm_tldr": "针对无线联邦学习中数据异构与不可靠链路导致的客户端漂移和更新失效问题，论文提出联邦随机游走平均（FedRW）框架，沿随机游走路径更新模型并在服务器聚合，同时以带重传的分组传输缓解无线错误。该方法在异构数据与不稳定链路上提升了收敛质量与通信效率，为通信高效的分布式训练提供了新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

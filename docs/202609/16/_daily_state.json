@@ -1,0 +1,25 @@
+{
+  "date": "20260916",
+  "date_label": "2026-09-17",
+  "generated_at": "2026-09-17 06:04:11 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.14246v1",
+      "route": "202609/16/2609.14246v1-joint-optimization-for-federated-learning-and-transmission-over-unreliable-wireless-networks-with-heterogeneous-data",
+      "title": "Joint Optimization for Federated Learning and Transmission over Unreliable Wireless Networks with Heterogeneous Data",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向不可靠无线网络的通信高效联邦训练与随机游走聚合",
+      "first_seen_at": "2026-09-17 06:04:11 北京时间",
+      "updated_at": "2026-09-17 06:04:11 北京时间"
+    }
+  ]
+}

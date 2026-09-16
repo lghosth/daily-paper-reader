@@ -1,0 +1,24 @@
+{
+  "label": "2026-09-17",
+  "date": "2026-09-16",
+  "generated_at": "2026-09-16T22:04:13",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202609/16/2609.14246v1-joint-optimization-for-federated-learning-and-transmission-over-unreliable-wireless-networks-with-heterogeneous-data",
+      "section": "quick",
+      "title_en": "Joint Optimization for Federated Learning and Transmission over Unreliable Wireless Networks with Heterogeneous Data",
+      "authors": "Changheng Wang, Xianchao Zhang, Zhiqing Wei, Lingzhu Zhao, Zhongming Yang, Zhiyong Feng",
+      "date": "2026-09-13",
+      "pdf": "https://arxiv.org/pdf/2609.14246v1",
+      "score": "6.0",
+      "evidence": "面向不可靠无线网络的通信高效联邦训练与随机游走聚合",
+      "tldr": "针对无线联邦学习中数据异构与不可靠链路引发的客户端漂移和更新失效问题，提出FedRW框架，通过随机游走路径更新并在服务器聚合模型，同时引入分组重传。进一步联合优化学习、路径选择与传输参数，在时延约束下最小化训练损失，并推导收敛上界与分布式求解方法。仿真显示高异构下精度较SOTA提升2.26%-9%，联合优化后至少提升2.78%且收敛更快。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "In wireless federated learning (FL), data heterogeneity and multiple local updates induce client drift, degrading model convergence. It is further affected by unreliable wireless links, as transmission errors may invalidate model updates. To address these challenges, we propose a federated random walk averaging (FedRW) framework, which is a variant of federated averaging (FedAvg) that mitigates data heterogeneity by updating models along random walk (RW) paths and aggregating them at the server. Model parameters are transmitted in packets with retransmission support to improve training quality by mitigating wireless errors along RW paths. Meanwhile, wireless transmission delays hinder the exploration of FedRW. To this end, we formulate a joint optimization problem that integrates learning, RW path selection, and transmission parameter tuning, aiming to minimize the training loss under delay constraints. By deriving an upper bound on the expected convergence of FedRW over unreliable wireless networks, we reduce the problem to a general form agnostic to task type and model architecture. A distributed solution is then proposed, in which the server or clients optimize packet size and maximum number of retransmissions locally, and efficiently select reliable and expandable next-hop nodes via a resilience-aware beam search with dynamic pruning. Simulation results show that FedRW achieves 2.26%-9% higher accuracy than state-of-the-art baselines under high data heterogeneity. Furthermore, the jointly optimized FedRW yields at least 2.78% higher accuracy and faster convergence compared to baselines.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
