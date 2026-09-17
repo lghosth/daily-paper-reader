@@ -1,0 +1,73 @@
+{
+  "date": "20260917",
+  "date_label": "2026-09-18",
+  "generated_at": "2026-09-18 05:40:42 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.13580v1",
+      "route": "202609/17/2609.13580v1-flokd-adaptive-knowledge-distillation-for-federated-low-rank-llm-over-wireless-networks",
+      "title": "FLoKD: Adaptive Knowledge Distillation for Federated Low-Rank LLM over Wireless Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "降低无线联邦低秩大模型训练的通信开销",
+      "first_seen_at": "2026-09-18 05:40:42 北京时间",
+      "updated_at": "2026-09-18 05:40:42 北京时间"
+    },
+    {
+      "paper_id": "2609.16977v1",
+      "route": "202609/17/2609.16977v1-structural-negative-transfer-in-federated-graph-neural-networks-diagnosis-causal-investigation-and-the-limits-of-divergence-aware-mitigation",
+      "title": "Structural Negative Transfer in Federated Graph Neural Networks: Diagnosis, Causal Investigation, and the Limits of Divergence-Aware Mitigation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "跨结构异构客户端图的联邦GNN协同训练",
+      "first_seen_at": "2026-09-18 05:40:42 北京时间",
+      "updated_at": "2026-09-18 05:40:42 北京时间"
+    },
+    {
+      "paper_id": "2609.18101v1",
+      "route": "202609/17/2609.18101v1-optimal-network-dependence-in-distributed-stochastic-optimization-via-tree-routing",
+      "title": "Optimal Network Dependence in Distributed Stochastic Optimization via Tree Routing",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "分布式优化中的通信瓶颈与网络拓扑",
+      "first_seen_at": "2026-09-18 05:40:42 北京时间",
+      "updated_at": "2026-09-18 05:40:42 北京时间"
+    },
+    {
+      "paper_id": "2609.18388v1",
+      "route": "202609/17/2609.18388v1-geomesh-workload-balanced-and-sign-compressed-geo-distributed-llm-training",
+      "title": "GeoMesh: Workload-Balanced and Sign-Compressed Geo-Distributed LLM Training",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "结合工作负载均衡与符号压缩的通信高效地理分布式训练",
+      "first_seen_at": "2026-09-18 05:40:42 北京时间",
+      "updated_at": "2026-09-18 05:40:42 北京时间"
+    }
+  ]
+}

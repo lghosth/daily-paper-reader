@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-17</span>
+      <span class="dpr-home-dashboard-kicker">2026-09-18</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 1 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 4 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>1</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>4</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-09-17 06:04:11 北京时间<br>状态：成功<br>下次更新：约 2026-09-18 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-09-18 05:40:42 北京时间<br>状态：成功<br>下次更新：约 2026-09-19 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日速读1篇，聚焦不可靠无线网络下异构数据的联邦学习与传输联合优化。该方向值得关注的是如何在数据异构与信道不可靠并存时平衡学习与通信效率。普通读者可先了解联邦学习在无线场景的基本权衡，再决定是否深入此类联合优化方案。</p>
+<p>9月18日日报：4篇速读、0篇精读，焦点落在联邦学习与分布式优化。</p>
+<p>最值得看的是7.0分的FLoKD——无线网络下联邦低秩LLM的自适应知识蒸馏；其次可关注联邦图神经网络中的结构负迁移诊断与因果调查。</p>
+<p>普通读者建议先读FLoKD抓方法主线，再按兴趣看负迁移与树路由优化。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -91,12 +93,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">1 篇</strong>
+    <strong class="dpr-home-dashboard-count">4 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Joint Optimization for Federated Learning and Transmission over Unreliable Wireless Networks with Heterogeneous Data">Joint Optimization for Federated Learning and Transmission over Unreliable Wireless Networks with Heterogeneous Data</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="FLoKD: Adaptive Knowledge Distillation for Federated Low-Rank LLM over Wireless Networks">FLoKD: Adaptive Knowledge Distillation for Federated Low-Rank LLM over Wireless Networks</span></li><li><span class="dpr-home-dashboard-paper-title" title="Structural Negative Transfer in Federated Graph Neural Networks: Diagnosis, Causal Investigation, and the Limits of Divergence-Aware Mitigation">Structural Negative Transfer in Federated Graph Neural Networks: Diagnosis, Causal Investigation, and the Limits of Divergence-Aware Mitigation</span></li><li><span class="dpr-home-dashboard-paper-title" title="Optimal Network Dependence in Distributed Stochastic Optimization via Tree Routing">Optimal Network Dependence in Distributed Stochastic Optimization via Tree Routing</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>1</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>4</strong></span></div>
 </section>
 </div>
 

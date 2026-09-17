@@ -1,0 +1,5158 @@
+Title: Optimal Network Dependence in Distributed Stochastic Optimization via Tree Routing
+
+URL Source: https://arxiv.org/pdf/2609.18101v1
+
+Published Time: Thu, 17 Sep 2026 00:34:38 GMT
+
+Number of Pages: 44
+
+Markdown Content:
+# OPTIMAL NETWORK DEPENDENCE IN DISTRIBUTED 
+
+# STOCHASTIC OPTIMIZATION VIA TREE ROUTING 
+
+A P REPRINT 
+
+Runze You 
+
+School of Data Science The Chinese University of Hong Kong, Shenzhen 
+
+runzeyou@link.cuhk.edu.cn 
+
+Shi Pu 
+
+School of Data Science The Chinese University of Hong Kong, Shenzhen 
+
+pushi@cuhk.edu.cn 
+
+## ABSTRACT 
+
+Communication is a central bottleneck in distributed optimization, but its effect is often summarized by the spectral gap of a chosen mixing matrix. Since this gap depends on link weights as well as topology, it can obscure the intrinsic effect of the network. We clarify this distinction by relating graph diameter to the inverse spectral gap. We establish a universal one-sided bound that is tight up to constant factors, while constructions across several graph families show that no topology-only converse or universal two-sided scaling law exists. This motivates a class-based view of network optimality: diameter-dependent guarantees can be assessed uniformly over graph classes, whereas spectral-gap optimality requires both the graph–matrix pair class and the admissible algorithm class to be specified. Based on the resulting diameter-based minimax benchmark, we introduce Tree-Routed Gradient Tracking (Tree-RGT), a distributed method for stochastic nonconvex optimization. The method pipelines model dissemination and gradient aggregation over a rooted shortest-path spanning tree. Each iteration uses one round of one-hop communication and one stochastic-gradient evaluation per agent, without inner consensus or multi-gossip. Under smoothness and unbiased bounded-variance oracles, Tree-RGT achieves uniformly optimal network dependence over connected graphs of prescribed size and diameter. It recovers centralized stochastic scaling after O(nD 2 
+
+> G
+
+) transient iterations, where n is the number of agents and DG is the graph diameter. This network-dependent transient-iteration bound improves upon or matches those reported for representative distributed methods. Thus, topology-aware routing attains diameter-optimal guarantees without relying on a prescribed mixing matrix. 
+
+## 1 Introduction 
+
+Consider n agents connected by a fixed, connected, undirected communication graph G = ( N , E). Agent i has access only to a local stochastic objective fi : Rp → R and can communicate directly only with its one-hop neighbors. The agents seek to solve 
+
+min  
+
+> x∈Rp
+
+f (x) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+fi(x), (1) where fi(x) := Eξi∼D i [Fi(x; ξi)] and Di is the local data distribution at agent i. Problem (1) encompasses heteroge-neous stochastic optimization and distributed empirical risk minimization, since the local distributions need not be identical. Problems of this form arise in distributed estimation and large-scale learning, where distributed training can alleviate the communication and robustness bottlenecks of a central coordinator [22, 15, 47]. The stochastic first-order oracle used by each agent is specified formally in Assumption 1.2. Given the graph G, distributed methods such as decentralized stochastic gradient descent (DSGD) [15, 29, 48], decentralized stochastic gradient tracking (DSGT) [27, 12, 1], and Push–Pull [30, 46, 18] update local states by exchanging messages with neighboring agents. The agents assign weights to the states they retain, transmit, or receive. When these coefficients are collected across the network, they form one or more mixing matrices whose off-diagonal supports are constrained by G. Much of the literature takes these matrices as part of the problem specification. For arXiv:2609.18101v1 [math.OC] 16 Sep 2026 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+methods over undirected graphs that repeatedly apply a symmetric doubly stochastic matrix W, network-dependent terms are commonly expressed through the inverse spectral gap (1 − λW)−1, where λW is the second-largest eigenvalue modulus. This quantity also appears in transient-iteration bounds that identify when a decentralized stochastic method begins to match the iteration and agent scaling of centralized mini-batch SGD [28, 29, 12, 1, 48]. Considerable effort has therefore been devoted to improving the dependence on the inverse spectral gap. In deterministic smooth strongly convex optimization, Optimal Gradient Tracking uses loopless Chebyshev acceleration within a single-loop recursion [34]. Distributed Stochastic Momentum Tracking combines this mechanism with momentum tracking for stochastic nonconvex optimization and uses one neighbor exchange per iteration, without an inner communication loop or the accumulation of a large stochastic-gradient batch between successive updates [9]. A different strategy uses several consensus rounds for each effective optimization update, through accelerated multi-gossip [31, 49] or factorized finite-time averaging [19]. Such schemes can reduce disagreement per update, but they separate the communication-round count from the number of completed updates. The spectral gap is not the only network descriptor used in decentralized optimization. For directed communication, analyses of Push-DIGing-type methods combine a generalized spectral gap with the equilibrium skewness of a column-stochastic matrix [17]; analogous effective metrics have recently been developed for row-stochastic matrices [16]. Routing-based methods expose graph distances more directly: STPP propagates information over two directed spanning trees and expresses its network dependence through their maximum and average root distances [45]. For time-varying directed networks, one-step contraction parameters have been derived, under strong connectivity of every instantaneous graph, explicitly in terms of graph diameter, maximal edge-utility (a shortest-path congestion measure), and the mixing weights [20]. These examples show that the appropriate network quantity depends on both the communication primitive and the network model. Several works further ask whether an algorithm has an optimal dependence on such quantities. The answer is necessarily relative to a comparison class. Spectral lower bounds and accelerated algorithms have been developed for matrix-constrained classes with prescribed spectral connectivity [31, 49, 17], whereas a tight stochastic nonconvex minimax complexity has been established over graph classes with prescribed size and diameter [19]. The latter is a statement about physical graphs and one-hop information propagation; the former statements additionally restrict the weighted communication operator available to an algorithm. Calling either dependence “network optimal” without identifying the network class and admissible algorithm class can therefore conflate distinct minimax problems. This distinction leads to the central question of this paper: 
+
+Can a distributed stochastic method use one round of one-hop communication per iteration and still achieve uniformly optimal network dependence over a prescribed graph class? 
+
+We answer this question in three steps. First, we separate graph invariants from matrix-dependent quantities by establishing a universal one-sided diameter–inverse-gap relation and demonstrating the range of possible scalings. Second, we revisit what uniform network optimality means over graph classes and over graph–matrix pair classes. Third, we develop Tree-Routed Gradient Tracking (Tree-RGT), which pipelines model dissemination and gradient aggregation on a rooted shortest-path spanning tree. Tree-RGT uses one communication round and one stochastic-gradient evaluation per agent at each iteration, requires no inner consensus or multi-gossip phase, and achieves uniformly optimal network dependence over connected undirected graph classes of prescribed size and diameter. With problem-dependent quantities fixed, it reaches centralized stochastic scaling after O(nD 2 
+
+> G
+
+) transient iterations. 
+
+1.1 Related Work 
+
+The most relevant literature falls into three lines: network descriptors used in convergence analysis, methods that couple one communication round to each update, and complexity-optimal methods based on multi-round or phase-separated communication. 
+
+Network descriptors and graph–matrix relations. Classical consensus and decentralized optimization analyses quantify communication through products of stochastic matrices [24, 22]. On a fixed undirected graph, the choice of admissible weights directly controls the mixing time, and optimizing these weights is itself a well-studied problem [41, 2]. Directed networks require additional descriptors because the stationary distribution need not be uniform. Push-sum and Push–Pull methods use column-stochastic or coupled row- and column-stochastic matrices [40, 30, 42]. A recent stochastic Push–Pull analysis uses infinite sums of matrix-norm terms to encompass several existing algorithms, although the meaning of these quantities remains unclear [46]. Other recent complexity analyses identify equilibrium skewness, together with generalized spectral gaps, as an effective measure of the resulting imbalance [17, 16]. For time-varying networks, a common model instead assumes connectivity of the union graph over every fixed-length 2Optimal Network Dependence via Tree Routing A PREPRINT 
+
+window [21, 23]. A more explicit contraction analysis relates time-varying Push–Pull matrices to graph diameter and maximal edge-utility [20]. These quantities address distinct directed or time-varying network models; analyses of static undirected networks more commonly begin with a prescribed symmetric mixing matrix. 
+
+One-communication-per-update and routing-based methods. DSGD [15], gradient-tracking methods such as DIGing [23] and DSGT [27], and correction-based methods such as EXTRA [32], D2 [36], and EDAS [8] interleave local computation with one neighbor exchange per update. Their network-dependent transient-iteration bounds have been progressively sharpened [28, 29, 12, 1, 48]. OGT [34] and DSMT [9] further improve spectral-gap dependence through loopless Chebyshev acceleration without an inner gossip loop. Routing offers another single-round mechanism. RelaySum propagates delayed information on a spanning tree [38], whereas BTPP [44] and STPP [45] route models and gradient trackers through designed trees. Finite-time methods instead rely on structured communication-matrix sequences. DSGD-CECA is built around the prescribed CECA sequence and a fully controllable communication topology [4]. Finite-time-consensus gradient tracking gives explicit sequences only for selected topology families; no general construction within an arbitrary prescribed graph is known, and its convergence guarantee depends explicitly on the sequence length, which is likewise unavailable without such a construction [26]. 
+
+Multi-round communication and complexity-optimal methods. Under prescribed symmetric-matrix models, acceler-ated gossip yields optimal spectral-gap, communication, and gradient complexities for deterministic smooth strongly convex problems [31, 13]. In stochastic smooth nonconvex optimization, MG-DSGD [49] and DeTAG [19] both use multi-step Chebyshev-accelerated gossip based on a prescribed matrix between effective updates. Both combine it with gradient accumulation, while DeTAG additionally maintains a gradient tracker. Their corresponding bounds match the prescribed-matrix lower bounds up to logarithmic factors. Directed extensions include MG-Push-DIGing, based on multi-step gossip with a prescribed column-stochastic matrix [17], and MG-PULL-DIAG-GT, its row-stochastic counterpart [16]. For stochastic convex optimization, DDA-SGD combines minibatching with accelerated gossip [11], whereas MG-ADSGD couples minibatching with multi-round accelerated gossip [35]. DeFacto [19] instead attains the tight diameter-minimax scaling by factorizing exact averaging into graph-dependent communication matrices, while treating this factorization as a black-box preprocessing step and separating computation from communication. 
+
+1.2 Main Contributions 
+
+We make three main contributions: • Graph invariants versus matrix-dependent spectral quantities. For graph–matrix pairs (G, W), we distinguish the graph invariants n and DG from the matrix-dependent spectral gap 1 − λW and, when λW < 1,its inverse τW := (1 − λW)−1. To the best of our knowledge, we establish the first universal one-sided bound 
+
+τW ≥ (DG − 1) / log n, which lower-bounds the inverse spectral gap using only graph invariants and is tight up to constant factors on constant-degree expander families. Exact analyses of representative graph–matrix pairs from the ring, undirected exponential, and balanced double-star families exhibit fundamentally different asymptotic relations between DG and τW; the two double-star weightings further quantify the effect of topology-specific reweighting. Moreover, for every fixed p > 0 and every D0 ≥ 1, we construct a graph– matrix pair (G∗, W∗) satisfying DG∗ ≥ D0 and τW∗ = Dp 
+
+> G∗
+
+, thereby ruling out a universal two-sided scaling law determined by topology alone. • Uniform network optimality over the appropriate network class. We clarify that network optimality is relative to the class over which uniformity is required. Over the graph class Gn, ˆD of connected undirected graphs with n nodes and diameter ˆD, we define a method to have uniformly optimal network dependence if it admits a round-complexity upper bound that holds uniformly over the class and matches the diameter-based minimax powers of n and ˆD. Claims of uniformly optimal inverse-gap dependence instead pose a different problem that is not fully specified until both a graph–matrix pair class and the admissible algorithms’ access to its designated matrix are fixed. Weighted-path specializations show that the inverse-gap exponent appearing in the resulting lower bound can change with the pair class, while our graph–matrix relations show why choosing a nonempty and informative parameter regime for (n, ˆD, ˆτ ) requires care. We formulate one possible fixed-mixing minimax model and leave its general characterization open. • Tree-RGT with uniformly optimal network dependence. We develop Tree-Routed Gradient Tracking (Tree-RGT), based on a one-time distributed construction of a rooted shortest-path spanning tree and a root-to-agent-to-root pipeline. Each iteration uses one round of one-hop tree communication, one stochastic-gradient evaluation per agent, and one local update; only the root performs a descent update, and no inner consensus 3Optimal Network Dependence via Tree Routing A PREPRINT 
+
+or multi-gossip phase is required. To the best of our knowledge, Tree-RGT is the first distributed stochastic method to achieve uniformly optimal network dependence while using one communication round per update. Specifically, for smooth nonconvex objectives and unbiased bounded-variance stochastic oracles, this guarantee holds over Gn, ˆD , with problem-dependent quantities fixed. Tree-RGT reaches the centralized stochastic scaling after O(nD 2 
+
+> G
+
+) transient iterations, improving upon or matching the network-dependent transient-iteration bounds reported for the representative methods in Tables 1 and 2. 
+
+Method Transient iterations (a) 
+
+Ring graph (b) 
+
+(Wr)Exponential graph (Wex )Double-star graph (Wds )DSGD [15] n3τ 4 
+
+> W
+
+n11 n3 log 4 n n11 
+
+DSGT [1] max 
+
+n
+
+n3τ 2 
+
+> W
+
+, nτ 8/3
+
+> W
+
+o
+
+n7 n3 log 2 n n7
+
+DSMT [9] n5/3τW n11 /3 n5/3 log n n11 /3
+
+RelaySum [38] n3D4 
+
+> G
+
+n7 n3 log 4 n n3
+
+STPP (c) [45] nD 6 
+
+> G
+
+n7 n log 6 n n
+
+Tree-RGT (this paper) nD 2 
+
+> G
+
+n3 n log 2 n n 
+
+> (a)
+
+Each displayed expression is the network-dependent term in an asymptotic upper bound on the number of transient iterations. The common O(·) notation is omitted; problem- and initialization-dependent quantities, treated as constants with respect to the network parameters, and method-specific assumptions are also suppressed. Here τW = (1 − λW )−1. 
+
+> (b)
+
+This and the next two columns specialize the transient-iteration bounds to the indicated physical graph families. Matrix-based methods use the displayed matrices. DSMT uses (I + W)/2 when a displayed matrix is not positive semidefinite, which preserves the reported asymptotic orders. RelaySum, STPP, and Tree-RGT use only the corresponding physical graphs.  
+
+> (c)
+
+The STPP bound in [45] depends on maximum and average root distances in its two routing trees. Choosing the two trees as opposite orientations of a rooted shortest-path tree bounds these quantities by DG and yields the conservative network-dependent term nD 6 
+
+> G
+
+reported here. 
+
+Table 1: Comparison of the convergence speed of Tree-RGT and representative distributed stochastic methods using one communication round per update, measured through the network-dependent terms in their reported transient-iteration upper bounds for smooth nonconvex objectives. 
+
+Method Transient iterations (a) 
+
+Ring graph (Wr)Exponential graph (Wex )Double-star graph (Wds ) UOND (b) One comm. round per update (c) 
+
+DeFacto [19] nD 2 
+
+> G
+
+n3 n log 2 n n ✓ ×
+
+DeTAG [19] nτ W log n n3 log n n log 2 n n3 log n × ×
+
+MG-DSGD [49] nτ W log n n3 log n n log 2 n n3 log n × ×
+
+MG-Push-DIGing [17] nτ 2 
+
+> W
+
+n5 n log 2 n n5 × ×
+
+MG-PULL-DIAG-GT [16] nτ 2 
+
+> W
+
+n5 n log 2 n n5 × ×
+
+Tree-RGT (this paper) nD 2 
+
+> G
+
+n3 n log 2 n n ✓ ✓ 
+
+> (a)
+
+Transient iterations count all synchronous rounds, including both computation/update rounds and communication-only rounds. Each displayed expression estimates the network-dependent number of such rounds required before the reported rate matches the scaling of centralized mini-batch SGD with one sample per agent per update ( B = 1 ). The asymptotic notation and parameter-suppression conventions follow Table 1.  
+
+> (b)
+
+UOND abbreviates uniformly optimal network dependence . A checkmark means that, with problem-dependent quantities fixed, the cited round-complexity bound holds uniformly over the corresponding graph class or graph–matrix pair class and matches the associated minimax powers of its network parameters. A cross means only that the cited guarantee does not establish UOND on such a class. The Tree-RGT checkmark refers to Gn, ˆD . 
+
+> (c)
+
+A checkmark means that each stochastic-update iteration uses one synchronous neighbor-exchange round and inserts no inner consensus or multi-gossip phase between successive updates. Multiple state variables may be transmitted concurrently within that round. 
+
+Table 2: Comparison of the convergence speed of Tree-RGT and representative distributed stochastic methods that insert multi-round or phase-separated communication between effective updates, measured through their network-dependent transient-iteration estimates for smooth nonconvex objectives. The graph-family specializations follow Table 1. 4Optimal Network Dependence via Tree Routing A PREPRINT 
+
+1.3 Notation and Assumptions 
+
+We collect here the notations and assumptions used throughout the paper. 
+
+Basic notation. For an integer m ≥ 1, let [m] := {1, . . . , m }. Throughout the paper, all vectors are column vectors. For vectors a and b, ⟨a, b ⟩ = a⊤b denotes their Euclidean inner product and ∥a∥ denotes the Euclidean norm. For a vector x, [x]q denotes its q-th entry. For a matrix A, ∥A∥2 and ∥A∥F denote the spectral and Frobenius norms, respectively; [A]ij and [A]i: denote its (i, j )-th entry and its i-th row. We use Im, 1m, and 0 for the identity matrix, all-ones vector, and zero matrix or vector of the indicated dimensions, and omit the subscript when the dimension is clear. For two positive sequences {a(n)}n≥1 and {b(n)}n≥1, we write a(n) = O(b(n)) if there exist constants C > 0 and 
+
+n0 ≥ 1 such that a(n) ≤ Cb (n) for all n ≥ n0. Similarly, a(n) = Ω( b(n)) if there exist constants c > 0 and n0 ≥ 1
+
+such that a(n) ≥ cb (n) for all n ≥ n0. Finally, a(n) = Θ( b(n)) if both a(n) = O(b(n)) and a(n) = Ω( b(n)) hold. 
+
+Graph and communication notation. As a standing convention, unless explicitly stated otherwise, every physical communication graph G = ( N , E) considered in our problem formulation and theoretical results is static, connected, and undirected, with N = [ n]. The directed-graph notation below is used only to encode matrix support and to discuss explicitly identified extensions. A directed graph G = ( N , E) consists of the node set N = [ n] and an arc set E ⊆ { (j, i ) : i, j ∈ N , i ̸ = j}. The arc 
+
+(j, i ) ∈ E means that node j can send information directly to node i. An undirected physical communication graph is represented by a symmetric arc set: for every pair of distinct nodes i, j ∈ N ,
+
+(j, i ) ∈ E ⇐⇒ (i, j ) ∈ E .
+
+Each pair of opposite arcs is identified with one undirected physical link when discussing paths, distances, or other undirected graph properties. For a nonnegative matrix A ∈ Rn×n, define its directed off-diagonal support graph GA = ( N , EA) by 
+
+EA := (j, i ) : i, j ∈ N , i ̸ = j, [A]ij > 0 .
+
+The matrix A is compatible with G if EA ⊆ E , or equivalently if [A]ij = 0 whenever i̸ = j and (j, i ) /∈ E . Diagonal entries represent local state retention and require no physical communication. If A is symmetric, its symmetric arc support is identified with the corresponding simple undirected support graph. When G is a connected undirected physical communication graph, a matrix W ∈ Rn×n is called a mixing matrix on G
+
+if it is nonnegative, symmetric, and doubly stochastic, and its off-diagonal support agrees exactly with G:
+
+[W]ij > 0 ⇐⇒ (j, i ) ∈ E , i̸ = j. 
+
+Equivalently, EW = E, or G = GW after identifying each pair of opposite arcs with one undirected link. We call 
+
+(G, W) a graph–matrix pair . Thus, every mixing matrix on G is compatible with G, but it additionally assigns positive weight to every physical link. 
+
+Algorithmic notation. For local variables x(t) 
+
+> i
+
+, y (t) 
+
+> i
+
+∈ Rp, we use X(t), Y(t) ∈ Rn×p as their respective row-wise stacked variables, with X(t) 
+
+> i:
+
+= ( x(t) 
+
+> i
+
+)⊤ and Y(t) 
+
+> i:
+
+= ( y(t) 
+
+> i
+
+)⊤. The stochastic-gradient stack G(t) is defined by 
+
+h
+
+G(t)i
+
+> i:
+
+:= gi(x(t) 
+
+> i
+
+, ξ (t) 
+
+> i
+
+)⊤.
+
+Here, gi(x, ξ i) denotes the stochastic first-order oracle available to agent i, whose properties are specified in Assump-tion 1.2. For any U ∈ Rn×p whose i-th row is u⊤ 
+
+> i
+
+, define the row-wise gradient mapping ∇F(U) by 
+
+[∇F(U)] i: := ∇fi(ui)⊤.
+
+Standing assumptions. The local objectives may be nonconvex and satisfy the following regularity condition. 
+
+Assumption 1.1 (Smooth objectives) . Each fi : Rp → R is continuously differentiable and has an L-Lipschitz gradient: for all x, y ∈ Rp,
+
+∥∇ fi(x) − ∇ fi(y)∥ ≤ L ∥x − y∥ .
+
+Moreover, the global objective is bounded below: f ⋆ := inf x∈Rp f (x) > −∞ .
+
+In particular, the average objective f = n−1 Pni=1 fi is also L-smooth. Each agent accesses its local objective through a stochastic first-order oracle gi(x, ξ i). We use fresh samples at different agents and oracle calls. 5Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Assumption 1.2 (Stochastic first-order oracles) . For every i ∈ N and t ≥ 0, the sample ξ(t) 
+
+> i
+
+∼ D i, and the family 
+
+{ξ(t) 
+
+> i
+
+: i ∈ N , t ≥ 0} is mutually independent. For every i ∈ N and x ∈ Rp,
+
+Eξi∼D i [gi(x, ξ i)] = ∇fi(x), Eξi∼D i
+
+h
+
+∥gi(x, ξ i) − ∇ fi(x)∥2i
+
+≤ σ2
+
+for some σ2 > 0.
+
+Unless particular sources of randomness are specified, every expectation in this paper is taken with respect to all sources of randomness. 
+
+1.4 Organization of the Paper 
+
+The remainder of the paper is organized as follows. Section 2 distinguishes graph invariants from matrix-dependent spectral quantities and motivates diameter as an intrinsic measure of network dependence. Section 3 formalizes minimax optimality through convergence guarantees that hold uniformly over graph classes and recalls the diameter-dependent complexity bounds. Section 4 constructs the spanning-tree routing mechanism, introduces Tree-RGT, and states its main convergence guarantee. Section 5 develops the analysis underlying this guarantee. Section 6 presents numerical experiments, and Section 7 concludes the paper. Supporting proofs are collected in the appendices. 
+
+## 2 Graph Diameter as an Intrinsic Measure of Network Dependence 
+
+Convergence rates of decentralized algorithms based on repeated mixing are often characterized by the spectral gap of a chosen mixing matrix. This quantity is not a graph invariant: the graph determines which communication links are available, whereas the mixing matrix assigns weights to those links. Consequently, different mixing matrices on the same graph can have substantially different spectral gaps. To formalize this distinction, consider a graph–matrix pair (G, W) as defined in Section 1.3. The graph component 
+
+G = ( N , E) has n = |N | nodes and diameter 
+
+DG := max  
+
+> i,j ∈N
+
+dist G (i, j ),
+
+where dist G (i, j ) is the length of a shortest path between i and j. The matrix component W specifies the mixing weights on the links of G. Define 
+
+λW := ∥W − J∥2 , τW := 11 − λW
+
+when λW < 1,
+
+where J = 11 ⊤/n . Since W is symmetric and doubly stochastic, λW is its second-largest eigenvalue modulus. Accordingly, 1 − λW is the absolute spectral gap and τW is its inverse. For brevity, we refer to them below as the spectral gap and the inverse spectral gap, respectively. The pair therefore carries two different kinds of network descriptors: n and DG depend only on the graph component and are graph invariants, whereas λW and τW depend on the selected matrix component. We first show that τW can change by an arbitrary factor while G remains fixed. We then derive a one-sided constraint in terms of n and DG and illustrate the possible relationships between diameter and inverse spectral gap through several graph–matrix pairs. 
+
+2.1 The Inverse Spectral Gap Is Not a Graph Invariant 
+
+We begin with the strongest possible fixed-topology separation: even after the entire support graph has been fixed, the inverse spectral gap can still be changed by an arbitrary n-dependent factor. 
+
+Theorem 2.1 (Arbitrary inverse-gap separation on a fixed graph) . Let G = ( N , E) be a connected undirected graph with n ≥ 2 nodes, and let W be a positive semidefinite mixing matrix on G with λW < 1. For any δ ∈ (0 , 1] , define 
+
+W(δ) := (1 − δ)I + δW.
+
+Then W(δ) is a positive semidefinite mixing matrix on G. Moreover, 
+
+1 − λW(δ) = δ (1 − λW) , τW(δ) = τW
+
+δ .
+
+Proof. See Appendix A.1. 6Optimal Network Dependence via Tree Routing A PREPRINT    
+
+> (a) (b) (c) (d)
+
+Figure 1: Representative support graphs used in Section 2: (a) constant-degree expander graphs, represented here by the 3-regular Petersen graph with d = 3 (Lemma 2.1); (b) the ring graph (Lemma 2.2); (c) the undirected exponential graph (Lemma 2.3); and (d) the balanced double-star graph (Lemma 2.4). The transformation in Theorem 2.1 changes only the amount of weight assigned to communication relative to the diagonal self-loop. It preserves not only connectivity but every off-diagonal zero and nonzero entry. Taking δ = n−p
+
+for any constant p > 0 in Theorem 2.1 gives a matrix with the same support graph as W but with 
+
+τW(n−p) = npτW.
+
+Thus, fixing the network topology does not determine the inverse spectral gap. A convergence guarantee expressed through τW therefore describes the behavior of the selected weighted mixing protocol, rather than a property of the support graph alone. Nevertheless, the topology still imposes constraints shared by every mixing matrix on G. We next show that graph diameter provides such a constraint. 
+
+2.2 A Graph-Invariant Constraint: Diameter 
+
+Theorem 2.1 naturally raises a second question: if the inverse spectral gap is not itself a graph invariant, what aspects of it are forced by the topology? The most basic obstruction is finite-speed information propagation. There exist two nodes at distance DG , and no sequence of fewer than DG one-hop communications can carry information from one to the other. This graph-invariant obstruction imposes the following universal, although one-sided, restriction on every mixing matrix on G.
+
+Theorem 2.2 (Diameter lower bound for the inverse spectral gap) . Let G = ( N , E) be a connected undirected graph with n ≥ 2 nodes, and let W be a mixing matrix on G with λW < 1. Then 
+
+τW = 11 − λW
+
+≥ DG − 1log n .
+
+Proof. See Appendix A.2. The four graph families used in the remainder of this section are illustrated in Figure 1. Each displayed undirected link represents the two opposite ordered pairs in the symmetric off-diagonal support of a mixing matrix; diagonal self-loops are omitted. We first use constant-degree expander graphs, as reviewed in [7], to show that the diameter lower bound in Theorem 2.2 is tight up to constant factors. For the spectral statements below, we write μ1(M) ≥ μ2(M) ≥ · · · ≥ μn(M) for the eigenvalues of a real symmetric matrix M ∈ Rn×n in nonincreasing algebraic order. Thus, for a mixing matrix W,
+
+μ1(W) = 1 and λW = max {| μ2(W)|, |μn(W)|} ; when W is positive semidefinite, this reduces to λW = μ2(W).
+
+Lemma 2.1 (Constant-degree expander graphs) . Let Gcde denote an n-node member of a family of connected d-regular expander graphs in the sense of Definition 2.2 in [7], where d ≥ 3 is fixed. Let Acde be the adjacency matrix of 
+
+Gcde and define the symmetric doubly stochastic weight matrix Wcde := Acde /d . Then there exists a constant c > 0,independent of n, such that 
+
+μ2(Wcde ) ≤ 1 − c. 
+
+Moreover, the diameter of its support graph satisfies 
+
+DGcde = Θ(log n).
+
+Proof. See Appendix A.3. 7Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Remark 2.1 (Tightness on constant-degree expander graphs) . For the expander family in Lemma 2.1, consider the canonical lazy random-walk matrix 
+
+cWcde := 12 (I + Wcde ) .
+
+This matrix is symmetric, positive semidefinite, and doubly stochastic, and its support graph is Gcde ; hence DGcde =Θ(log n). Its nontrivial eigenvalues are (1 + μi(Wcde )) /2, i = 2 , . . . , n , so 
+
+1 − λcWcde = 1 − μ2(Wcde )2 ≥ c
+
+2 , τcWcde ≤ 2
+
+c = O(1) .
+
+Since τcWcde ≥ 1, we have τcWcde = Θ(1) . On the other hand, Lemma 2.1 gives 
+
+DGcde − 1log n = Θ(1) .
+
+Hence the lower bound in Theorem 2.2 is tight up to constant factors on constant-degree expander families. 
+
+The bound in Theorem 2.2 depends only on the graph invariants n and DG and holds regardless of how the admissible edge weights are selected. Its direction is important: a large diameter forces the inverse gap to be large, up to the log n
+
+factor, but a small diameter does not force the inverse gap to be small. Indeed, Theorem 2.1 keeps n and DG fixed while making τW arbitrarily large. Diameter is therefore an intrinsic propagation barrier, whereas the inverse spectral gap may contain an additional and potentially much larger penalty caused by the chosen weights. 
+
+2.3 Diameter and the Inverse Spectral Gap: Insights from Three Graph Families 
+
+We now use the ring, undirected exponential graph, and balanced double-star graph families to make the distinction between diameter and inverse spectral gap concrete. For each family, the diameter is determined solely by the support graph and can be computed without selecting communication weights, whereas τW requires the spectral analysis of a particular weight matrix and can change substantially under reweighting. The three examples exhibit distinct asymptotic relations between DG and τW. Thus, although diameter does not determine the inverse spectral gap, its invariance under reweighting makes it a more appropriate measure for isolating the effect of graph topology on decentralized optimization. 
+
+Lemma 2.2 (Ring graph) . For an n-node ring graph Gr with n ≥ 3, let Wr be the lazy ring matrix defined by 
+
+[Wr]j,j = 12 , [Wr]j,j −1 = [ Wr]j,j +1 = 14 ,
+
+with indices taken modulo n. Then Wr is nonnegative, symmetric, doubly stochastic, and positive semidefinite, 
+
+GWr = Gr, the graph diameter is DGr = ⌊n/ 2⌋, and 
+
+λWr = cos 2  πn
+
+
+
+, τWr = 1sin 2 (π/n ) = Θ( n2) = Θ  D2
+
+> Gr
+
+ .
+
+Proof. See Appendix A.4. 
+
+Lemma 2.3 (Undirected exponential graph) . Let n = 2 m with m ≥ 2, let e0, . . . , en−1 denote the standard basis vectors, and define the cyclic-shift permutation matrix P by 
+
+Pe j = e(j+1) mod n, j = 0 , . . . , n − 1.
+
+Since P is a permutation matrix, P−1 = P⊤; hence Pq ej = e(j+q) mod n for every q ∈ Z. Motivated by the static exponential graph studied in [43], define its undirected symmetric mixing matrix by 
+
+Wex := 12m
+
+> m−1
+
+X
+
+> r=0
+
+
+
+P2r
+
++ P−2r 
+
+.
+
+Then Wex is symmetric and doubly stochastic. Let Gex := GWex denote its support graph, which has edges connecting nodes at cyclic distances 20, 21, . . . , 2m−1, and 
+
+DGex = ⌈ m
+
+2 ⌉ = Θ(log n).
+
+Moreover, 
+
+1 − 2
+
+m ≤ λWex ≤ 1 − 2 − √2
+
+m .
+
+Consequently, 
+
+τWex = Θ( m) = Θ(log n) = Θ( DGex ).
+
+8Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Proof. See Appendix A.5. 
+
+Lemma 2.4 (Two weightings of a balanced double-star graph) . Let n = 2 m + 2 with m ≥ 1. Consider the balanced double-star graph Gds with two center nodes c1, c 2, two disjoint leaf sets L1 and L2 of size m, edges between c1 and every node in L1, edges between c2 and every node in L2, and one edge between c1 and c2. Set 
+
+a := 1
+
+m + 2 , b := m + 1 
+
+m + 2 , α := 12m , β := 1 − 12m .
+
+After ordering the nodes as (L1, c 1, c 2, L2), define the two weight matrices 
+
+Wds := 
+
+
+
+bIm a1m 0 0
+
+a1⊤ 
+
+> m
+
+a a 00 a a a1⊤
+
+> m
+
+0 0 a1m bIm
+
+ , fWds := 
+
+
+
+βIm α1m 0 0
+
+α1⊤  
+
+> m1414
+
+00 1414 α1⊤
+
+> m
+
+0 0 α1m βIm
+
+ .
+
+Both Wds and fWds are mixing matrices on Gds , whose diameter is DGds = 3 . Their spectral quantities satisfy 
+
+λWds = m + 1 + √m2 + 6 m + 1 2( m + 2) , τWds = (m + 2)  m + 3 + √m2 + 6 m + 1 
+
+4 = Θ( n2),λfWds = 1 − 12m +
+
+q
+
+1 + 14m2
+
+2 , τfWds = 2 m + 1 + p4m2 + 1 = Θ( n).
+
+Proof. See Appendix A.6. 
+
+Remark 2.2 (Topology-specific weight tuning) . The matrix Wds is generated by the Metropolis rule, a standard weight choice in decentralized optimization; see [22]. Nevertheless, Lemma 2.4 shows that this generic rule need not be spectrally well tuned to a given topology: replacing Wds with fWds reduces the inverse-gap factor from Θ( n2) to 
+
+Θ( n). Thus topology-specific weight tuning can improve the network-dependent term of algorithms whose convergence rates depend on τW, without changing the communication graph. 
+
+Remark 2.3 (No universal scaling relation between diameter and the inverse spectral gap) . The following graph–matrix pairs exhibit fundamentally different asymptotic relations between diameter and inverse spectral gap:                     
+
+> Graph–matrix pair (G,W)Diameter DGInverse spectral gap τW
+> Ring (Gr,Wr)Θ( n)Θ( n2)
+> Undirected exponential (Gex ,Wex )Θ(log n)Θ(log n)
+> Balanced double-star (Gds ,Wds )3Θ( n2)
+
+Thus no universal scaling relation between DG and τW holds across these representative pairs: the inverse gap is quadratic in the diameter on the ring, linear in the diameter on the undirected exponential graph, and grows quadratically with n even though the double-star diameter remains equal to 3.
+
+The preceding examples exhibit several incompatible scalings between diameter and inverse spectral gap. The following theorem strengthens this observation: even among graph–matrix pairs with arbitrarily large diameter, every prescribed positive power-law relation between the two quantities can be realized exactly. 
+
+Theorem 2.3 (Arbitrary power-law relations between diameter and the inverse spectral gap) . For any fixed p > 0 and any D0 ≥ 1, there exists a graph–matrix pair (G∗, W∗) such that 
+
+DG∗ ≥ D0, τW∗ = Dp 
+
+> G∗
+
+.
+
+Proof. See Appendix A.7. Taken together, the results in this section separate the effect of network topology from that of a selected weighted mixing protocol. Theorem 2.1 shows that the inverse spectral gap is not a graph invariant and can change by an arbitrary factor on a fixed support graph. Theorem 2.2 identifies diameter as a graph-invariant, one-sided constraint imposed by finite-speed information propagation. The constant-degree expander family shows that this constraint is tight, while the ring, exponential, and double-star pairs show that no universal scaling relation between DG and τW holds. Theorem 2.3 strengthens these examples by showing that every positive power-law relation between the two quantities can be realized exactly by graph–matrix pairs with arbitrarily large diameter. 9Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Consequently, a convergence rate expressed through τW characterizes the repeated use of the selected matrix W, rather than the intrinsic influence of network topology. When the goal is to isolate this topological influence, diameter is a more appropriate graph-level measure: it is invariant under reweighting and equals the worst-case minimum number of one-hop rounds needed for information to traverse the network. This distinction motivates the diameter-based tree communication mechanism developed in this paper. 
+
+## 3 Network Dependence and Uniform Optimality 
+
+This section specifies the sense in which a decentralized method can be optimal with respect to the communication network. The distinction is primarily one of quantifiers. A lower complexity bound over a class of graphs may be certified by a single hard graph in that class, whereas an algorithmic upper bound is uniform only if it holds for every graph in the class. Matching these two statements identifies the smallest network dependence that any admissible method can guarantee in the worst case. This formulation leaves open which network characteristics should be used to specify the graph class. We first formulate this notion for graph classes described by the number of nodes and the graph diameter. We then discuss what changes when a spectral constraint is imposed on a mixing matrix. As shown in Section 2, diameter is a graph invariant, while the spectral gap also depends on the selected weighted communication protocol. Consequently, diameter-based and spectral-gap-based optimality refer, in general, to different classes of objects and different algorithmic restrictions. 
+
+3.1 Diameter-Based Optimality over Graph Classes 
+
+Let G be a class of connected undirected communication graphs, each with node set N and |N | = n. The local objectives and stochastic first-order oracles satisfy Assumptions 1.1 and 1.2, respectively. All agents start from a common point x(0) , and 
+
+∆f := f (x(0) ) − inf  
+
+> x
+
+f (x) ≤ ∆.
+
+The framework in [19] initializes all agents at the origin; the formulation above is equivalent after translating the common initial point to zero. Let In(∆ , L, σ 2) denote the class of pairs ({fi}ni=1 , O ) satisfying Assumptions 1.1 and 1.2 together with ∆f ≤ ∆.We adopt the broad synchronous first-order algorithm class AB introduced in [19]; its zero-respecting condition follows [3]. In every round, each agent makes at most B queries to its local stochastic oracle and communicates only with its one-hop neighbors. A method is zero-respecting if an oracle query can be nonzero only in coordinates previously present in the agent’s own or a neighboring state, while its next local state may additionally activate coordinates revealed by its current local oracle responses. Thus, an agent cannot create an unseen coordinate before it is revealed locally or received through communication. As discussed in [19], this class covers standard first-order methods including SGD [6], momentum SGD [25], Adam [10], RMSProp [37], AdaGrad [39], and AdaDelta [50]. The final output may be any linear combination of the local model states. In particular, AB is not restricted to gossip algorithms that repeatedly apply a prescribed mixing matrix; subject to the same one-hop communication constraint, it permits algorithm-specific weighting and auxiliary-state recursions, thereby covering, for example, DSMT [9], DeTAG [19], and our Tree-RGT (see Algorithm 2). For a method A ∈ AB , an instance ({fi}, O ) ∈ In(∆ , L, σ 2), and a graph G ∈ G, let ˆx(t) 
+
+> A
+
+be the output after t
+
+synchronous one-hop rounds. Its ε-round complexity is 
+
+Tε(A, f, O, G) := min 
+
+n
+
+t ∈ N : E ∇f (ˆ x(t) 
+
+> A,f,O, G
+
+) ≤ ε
+
+o
+
+. (2) Here, one unit of communication complexity corresponds to one synchronous neighbor-to-neighbor round, irrespective of how many edges are active or how the communication load is distributed across the nodes. Thus, the model captures communication latency, but not aggregate bandwidth consumption or per-node congestion. The optimal worst-case round complexity over G is 
+
+Tε(G, B ) := inf 
+
+> A∈AB
+
+sup 
+
+> G∈ G,
+> ({fi},O )∈In(∆ ,L,σ 2)
+
+Tε(A, f, O, G). (3) The joint supremum requires one algorithmic guarantee to hold over every graph and every admissible optimization instance in the prescribed classes. This is the full minimax criterion. We also use the term uniform over the graph class 
+
+in a more focused sense: for each fixed admissible optimization instance, the same bound, with the same numerical 10 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+constants and the same dependence on the class parameters, holds for every graph in the class. Instance-dependent quantities must then be displayed explicitly and cannot be hidden in graph-dependent constants. We now specialize the graph class to 
+
+Gn, ˆD := 
+
+n
+
+G = ( N , E) : G is connected and undirected , |N | = n, D G = ˆD
+
+o
+
+. (4) Both n and DG are graph invariants, so membership in Gn, ˆD is independent of any communication weights subsequently chosen on the graph. The following benchmark combines the results of [19, Theorems 1 and 2]. 
+
+Theorem 3.1 (Diameter-based minimax benchmark) . Fix ∆, L, σ > 0, integers n ≥ 2 and ˆD ∈ { 1, . . . , n − 1}, and an oracle budget B ≥ 1. Then, up to universal numerical constants, 
+
+Tε(Gn, ˆD , B ) = Θ ∆Lσ 2
+
+nBε 4 + ∆L ˆDε2
+
+!
+
+. (5) For the lower bound, [19, Theorem 1] constructs, for every admissible n, ˆD and target accuracy, a graph Ghard ∈ Gn, ˆD
+
+and a hard optimization-oracle instance such that every A ∈ AB requires 
+
+Ω ∆Lσ 2
+
+nBε 4 + ∆L ˆDε2
+
+!
+
+rounds. The first term follows from the total budget of at most nB oracle queries per round. The second term is obtained by distributing a zero-chain construction across groups separated by a path-like bottleneck of length proportional to ˆD.Information cannot reveal the next relevant coordinates before traversing this bottleneck. The graph quantifier is essential: the lower bound identifies one worst-case graph in Gn, ˆD and does not imply that every graph of diameter ˆD is equally hard. The matching uniform upper bound in (5) is attained by DeFacto [19, Theorem 2]. For a graph of diameter ˆD, DeFacto precomputes an integer R ∈ { ˆD, . . . , 2 ˆD} and a graph-dependent sequence of support-compatible communication matrices whose product is the exact averaging matrix [19, Lemma 1 and Algorithm 1]. Each 2R-round block comprises R computation-only rounds followed by R communication-only rounds and produces one model update; thus, T rounds yield only ⌊T / (2 R)⌋ completed updates. Accordingly, DeFacto relies on both phase separation and a graph-specific factorization of the exact averaging matrix. Section 4 develops Tree-RGT, which will be shown to attain the same diameter-based network order without either requirement. Our focus is the dependence on the network parameters. We say that a method A ∈ AB has uniformly optimal network dependence over Gn, ˆD if it admits an upper bound on its ε-round complexity that is uniform over this graph class and matches the minimax powers of n and ˆD in (5). With ∆, L, and σ2 fixed, the two benchmark terms scale as 
+
+n−1B−1ε−4 and ˆDε −2, respectively. This terminology concerns only network-parameter dependence and does not assert optimality of every problem- or instance-dependent coefficient in the underlying convergence bound. 
+
+3.2 Optimality under Mixing-Matrix Constraints 
+
+The notion of uniformly optimal network dependence above is topology based: both the graph class Gn, ˆD and the admissible algorithm class AB are specified without a mixing matrix. A claim that the dependence on a spectral gap is optimal poses a different and, without additional modeling choices, not yet fully specified problem. When network dependence is expressed through quantities derived from a mixing matrix, the relevant network class consists of graph–matrix pairs rather than graphs alone. More specifically, combining the diameter lower bound in [19, Theorem 1] with the weighted-path construction underlying [19, Corollary 1] yields the following coupled specialization. 
+
+Theorem 3.2 (Weighted-path inverse-gap lower bound) . Fix ∆, L, σ > 0, an integer n ≥ 2, and an oracle budget 
+
+B ≥ 1. There exists a parameter τ > 0 satisfying τ = Θ  (n − 1) 2. For this choice, define 
+
+bPn := {(G, W) : G ∈ Gn,n −1, W is a mixing matrix on G, τ W ≤ τ } . (6) 
+
+Then 
+
+inf 
+
+> A∈AB
+
+sup 
+
+> (G,W)∈bPn,
+> ({fi},O )∈In(∆ ,L,σ 2)
+
+Tε(A, f, O, G) = Ω 
+
+ ∆Lσ 2
+
+nBε 4 + ∆L√τε2
+
+
+
+. (7) 11 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Proof. See Appendix B.1. The proof of Theorem 3.2 identifies a pair ( bGhard , Whard ) ∈ bPn and an optimization–oracle instance for which every 
+
+A ∈ AB requires 
+
+Ω ∆Lσ 2
+
+nBε 4 + ∆L
+
+p1 − λWhard ε2
+
+!
+
+rounds. In the minimax sense, this bound applies to methods required to work uniformly over bPn, although it is witnessed by a single worst-case pair. Unlike Theorem 3.1, it covers only the coupled weighted-path regime ˆD = n − 1
+
+and τWhard = τ = Θ( ˆD2), where (1 − λWhard )−1/2 = Θ( ˆD). Thus, the inverse-gap term reparameterizes the path-diameter barrier rather than imposing an independently prescribed constraint. The next corollary shows how its exponent changes with the graph–matrix pair class. 
+
+Corollary 3.1 (Reweighted-path inverse-gap lower bound) . Fix ∆, L, σ > 0, an integer n ≥ 2, and an oracle budget 
+
+B ≥ 1. With τ chosen as in Theorem 3.2, let ¯τ := Θ  (n − 1) 3 and define 
+
+Pn := {(G, W) : G ∈ Gn,n −1, W is a mixing matrix on G, τ W ≤ ¯τ } . (8) 
+
+Then 
+
+inf 
+
+> A∈AB
+
+sup 
+
+> (G,W)∈Pn,
+> ({fi},O )∈In(∆ ,L,σ 2)
+
+Tε(A, f, O, G) = Ω 
+
+ ∆Lσ 2
+
+nBε 4 + ∆L¯τ 1/3
+
+ε2
+
+
+
+. (9) 
+
+Proof. See Appendix B.2. Corollary 3.1 shows that there exists a pair ( bGhard , Wharder ) ∈ Pn and an optimization–oracle instance for which every 
+
+A ∈ AB requires 
+
+Ω
+
+ ∆Lσ 2
+
+nBε 4 + ∆L
+
+(1 − λWharder )1/3ε2
+
+
+
+rounds. Here D bGhard = n − 1 and τWharder = ¯ τ = Θ  (n − 1) 3. Together with Theorem 3.2, this shows that the inverse-gap dependence of the minimax complexity is pair-class dependent: the exponent is 1/2 over bPn but 1/3 over 
+
+Pn. Thus, any claim of uniformly optimal inverse-gap dependence must first specify the graph–matrix pair class over which uniformity is required. This does not yet complete the minimax model: one must additionally specify how admissible algorithms are allowed to use the designated matrix. 
+
+The graph–matrix pair class. A general class is easy to formulate. For example, one may define 
+
+Pn, ˆD, ˆτ := 
+
+n
+
+(G, W) : G ∈ Gn, ˆD , W is a mixing matrix on G, τ W ≤ ˆτ
+
+o
+
+. (10) The earlier path classes are the coupled specializations bPn = Pn,n −1,τ and Pn = Pn,n −1,¯τ , but choosing informative constraints for general (n, ˆD, ˆτ ) is more delicate. Theorem 2.1 makes the upper-scale issue explicit: for a positive-semidefinite mixing matrix W, the lazy reweighting W(δ) = (1 − δ)I + δW preserves the support graph but satisfies 
+
+τW(δ) = τW/δ . Thus, topology imposes no finite upper scale on τW. If ˆτ is allowed to grow too freely, the class admits increasingly slow weightings of the same graph, and a worst-case dependence on ˆτ may reflect this artificial slowing rather than greater topological difficulty. At the other extreme, Theorem 2.2 gives τW ≥ (DG − 1) / log n, so (10) is empty whenever ˆτ < ( ˆD − 1) / log n. This necessary condition alone does not establish nonemptiness, and the examples in Section 2.3 show that admissible diameter–inverse-gap relations can vary substantially across graph families and weight choices. Selecting a nonempty and informative parameter regime therefore requires additional modeling choices. 
+
+The algorithm class. The broad class AB does not make the designated W part of its communication primitive: a method may instead use any support-compatible weights or routing rule. Moreover, Tε(A, f, O, G) has no matrix argument. Hence, once the admissible support graphs are fixed, the numerical spectral gap of the designated matrix can disappear from the minimax problem. One possible fixed-mixing convention is to let Amix  
+
+> B, W
+
+⊆ AB contain methods whose cross-agent aggregations are restricted to applications of y 7 → Wy , while retaining unrestricted local computation, memory, auxiliary states, and at most B local oracle queries per round. Since W varies across 12 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+graph–matrix pairs, a uniform guarantee should not select an unrelated algorithm separately for each matrix. We therefore introduce the single-template class 
+
+Amix  
+
+> B
+
+:= 
+
+
+
+A : A is one uniformly specified algorithmic template, and 
+
+A[W] ∈ Amix  
+
+> B, W
+
+for every admissible graph–matrix pair (G, W)
+
+
+
+,
+
+where A is chosen before the pair and A[W] is its instance under the designated matrix. This interface includes fixed-matrix auxiliary-state methods such as DeTAG [19] and DSMT [9]. It does not include DeFacto [19], whose exact-consensus phase uses a graph-dependent sequence of support-compatible matrices; including such methods requires a richer protocol-valued model, whereas allowing arbitrary support-compatible matrices would again make W
+
+bypassable. With both modeling choices fixed, the corresponding minimax complexity is 
+
+Tmix  
+
+> ε
+
+(Pn, ˆD, ˆτ , B ) := inf 
+
+> A∈ Amix
+> B
+
+sup   
+
+> (G,W)∈Pn, ˆD, ˆτ,
+> ({fi},O )∈In(∆ ,L,σ 2)
+
+Tε(A[W], f, O, G). (11) The diameter benchmark in Theorem 3.1 and the two coupled path specializations above do not provide a characterization of (11) for P = Pn, ˆD, ˆτ with general, independently prescribed (n, ˆD, ˆτ ). The present paper does not pursue this distinct spectral minimax problem. Section 4.4 instead establishes that Tree-RGT has uniformly optimal network dependence 
+
+over Gn, ˆD .
+
+## 4 Tree-Routed Gradient Tracking with Finite-Step Communication 
+
+Motivated by the diameter-based benchmark in Section 3.1, we develop Tree-Routed Gradient Tracking (Tree-RGT), a root-coordinated distributed method over a decentralized communication network. Its communication mechanism is governed by finite graph propagation rather than by the asymptotic contraction of a prescribed mixing matrix. Given the physical communication graph, we select a rooted shortest-path spanning tree. Its outward orientation disseminates decision-variable iterates from the root to the leaves, while its inward orientation aggregates gradient-tracking information toward the root. If D denotes the rooted tree depth, then D ≤ DG , and the corresponding propagation matrices reach their rank-one forms after D one-hop steps. Tree-RGT pipelines these two routing directions. In every synchronous iteration, each agent performs one round of one-hop tree communication, draws one stochastic-gradient sample, and completes one local update; dissemination and aggregation advance concurrently by one tree level. Thus, no multi-gossip or inner consensus loop is inserted between successive optimization updates. We first construct the rooted shortest-path tree, then present the local Tree-RGT updates and their matrix representa-tion, establish the exact finite-step routing property, and finally show that Tree-RGT has uniformly optimal network dependence over Gn, ˆD .
+
+4.1 Rooted Shortest-Path Communication Trees 
+
+Let G = ( N , E) be a connected undirected communication graph, and suppose that a root node has been prescribed. Without loss of generality, we relabel the nodes so that the root has index 1. This relabeling changes neither the physical graph nor any graph distance. Algorithm 1 constructs the local routing sets by a level-synchronous breadth-first search. When a non-root node i is first discovered, it selects the smallest-index sender from the preceding level as its parent p(i). Since all candidate parents lie at the same level, this tie-breaking rule affects only the selected parent, not the assigned depth or the shortest-path property. For notational uniformity, set p(1) := 1 and define 
+
+P( i) := {p(i)}, Ch( i) := {j ∈ N : p(j) = i}.
+
+Figure 2 illustrates how the local routing sets select an active routing tree without modifying the physical topology. The fixed horizon ℓ = 0 , . . . , n − 2 suffices to discover every node because a connected n-node graph has no simple path longer than n − 1.For analysis, collect the locally stored parent–child relations into the bidirected arc set 
+
+ET := [
+
+> i∈N \{ 1}
+
+(p(i), i ), (i, p (i)) , T := ( N , ET ).
+
+13 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Algorithm 1 Distributed construction of local routing sets for a rooted shortest-path spanning tree 
+
+Local input: Each node i knows the network size n ≥ 2, its own index, its physical neighbors in G, and the prescribed root index 1.
+
+Initialization: Node 1 sets p(1) = 1 , h1 = 0 , and P(1) = Ch(1) = {1} and marks itself as discovered; every node 
+
+i̸ = 1 sets hi = ∞ and P( i) = Ch( i) = ∅ and marks itself as undiscovered. 
+
+for ℓ = 0 , 1, . . . , n − 2 do 
+
+Every node i with hi = ℓ sends a discovery message to all of its physical neighbors. Every undiscovered node j that receives at least one message selects the sender with the smallest node index as 
+
+p(j), sets P( j) = {p(j)} and hj = ℓ + 1 , and marks itself as discovered. Every newly discovered node j sends an acknowledgment to p(j); upon receipt, node p(j) adds j to Ch( p(j)) .
+
+end for Distributed output: Each node i stores its own local routing sets P( i) and Ch( i). 
+
+> (a) (b)
+
+Figure 2: Illustration of Algorithm 1. (a) A connected realization of the Erd˝ os–Rényi random graph model [5], with 
+
+n = 18 and edge probability 0.22 . (b) The rooted shortest-path spanning tree T selected by Algorithm 1. The thick-outlined node is the prescribed root, relabeled as node 1. Emphasized edges are the active parent–child routing links, while faded edges remain physical links of G but are not used during the Tree-RGT optimization iterations. Node labels are used for deterministic parent tie-breaking and omitted in the drawing. Every non-root node has one parent in the preceding discovery level, and following parent links reaches the root. Thus, the underlying undirected graph of T is a spanning tree of G, represented above by both orientations of each tree link. All distances associated with T refer to this underlying undirected tree. The notation is analytical: each node stores only its local sets P( i) and Ch( i).
+
+Communication over the selected tree. After preprocessing, node i communicates only with the physical neighbors in 
+
+(P( i) ∪ Ch( i)) \ { i}; messages from its other physical neighbors may equivalently be ignored. The self-entry at the root is implemented by local state retention and requires no physical communication. Thus, selecting T restricts the active links without modifying the physical topology. Algorithm 1 assigns each node i a discovery level hi. Since every non-root node at level hi selects a parent at level 
+
+hi − 1, following parent links gives hi = dist T (1 , i ). Thus, hi is the number of one-hop communication steps from the root to node i and represents its node-specific propagation delay. Define the maximum and average depths by 
+
+D := max  
+
+> i∈N
+
+hi, Davg := 1
+
+n
+
+X
+
+> i∈N
+
+hi. (12) We call D the tree depth of T , also known as its height. Unlike the pairwise tree diameter max i,j ∈N dist T (i, j ), D
+
+measures the largest distance from the root, while Davg is the average distance from the root. 
+
+Theorem 4.1 (Optimal rooted depth profile) . Let G = ( N , E) be a connected undirected communication graph with 
+
+n ≥ 2 nodes and prescribed root node 1. Let T be the rooted tree induced by the routing sets produced by Algorithm 1 on G. Then 
+
+hi = dist G (1 , i ) for every i ∈ N . (13) 14 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Consequently, among all spanning trees T ′ of G rooted at node 1, T simultaneously minimizes the tree depth and the average distance to the root: 
+
+D = min   
+
+> T′
+
+max  
+
+> i∈N
+
+dist T ′ (1 , i ) = max  
+
+> i∈N
+
+dist G (1 , i ) ≤ DG ≤ 2D, (14) 
+
+Davg = min  
+
+> T′
+
+1
+
+n
+
+X
+
+> i∈N
+
+dist T ′ (1 , i ) = 1
+
+n
+
+X
+
+> i∈N
+
+dist G (1 , i ). (15) 
+
+In particular, D and DG differ by at most a factor of two and therefore have the same asymptotic order over any family of graphs. Proof. See Appendix C.1. For the remainder of the paper, T , hi, D, and Davg refer to the tree and depth quantities generated from G by Algorithm 1. The optimality above is with respect to a prescribed root. If the root were also a design variable, minimizing D and minimizing Davg could select different root nodes. 
+
+4.2 Tree-RGT: Pipelined Gradient Tracking over the Tree 
+
+Algorithm 1 constructs the bidirected graph T associated with a rooted shortest-path spanning tree of G. We separate the two orientations of every tree link and define 
+
+ER := (p(i), i ) : i ∈ N \ { 1} , TR := ( N , ER),
+
+EC := (i, p (i)) : i ∈ N \ { 1} , TC := ( N , EC).
+
+The two arc sets partition ET . The out-arborescence TR disseminates root iterates to the agents, while the reverse in-arborescence TC routes gradient-tracking information back to the root. Together, they form a root-to-agent-to-root pipeline: a root iterate reaches agent i, where a stochastic gradient is evaluated, and the resulting contribution then returns to the root. After the initial warm-up, the root aggregate contains one depth-delayed contribution from every local objective. The corresponding propagation matrices R and C are constructed in Section 4.3. Rather than waiting for a complete broadcast and aggregation between optimization updates, Tree-RGT advances both streams concurrently by one tree edge per synchronous iteration. Each iteration uses one communication round and one fresh stochastic-gradient sample per agent. Only the root performs a descent update; every non-root agent copies its parent’s preceding iterate. Algorithm 2 formalizes this single-loop construction. Figure 3 illustrates both the simultaneous tree communication in one iteration and the resulting depth-dependent round-trip delay. Because every non-root agent copies its parent’s preceding iterate and all agents start from x(0) , induction on hi gives 
+
+x(t) 
+
+> i
+
+=
+
+(
+
+x(0) , 0 ≤ t < h i,x(t−hi)1 , t ≥ hi. (16) Thus, after an hi-step downward warm-up, agent i holds the root iterate delayed by exactly hi steps. This is a deterministic routing delay rather than an incomplete-mixing error. For the upward recursion, write g(s) 
+
+> i
+
+:= gi(x(s) 
+
+> i
+
+, ξ (s) 
+
+> i
+
+). Because 1 ∈ Ch(1) , the root retains its preceding aggregate, and the gradient increments telescope as they propagate upward. Unrolling the recursion gives 
+
+y(t)1 = X  
+
+> i∈N :hi≤t
+
+g(t−hi) 
+
+> i
+
+= X  
+
+> i∈N :hi≤t
+
+gi
+
+ x(t−hi) 
+
+> i
+
+, ξ (t−hi)
+
+> i
+
+. (17) For t < D , this sum covers only agents with hi ≤ t; for t ≥ D, it contains exactly one delayed gradient from every agent. Hence y(t)1 is a layer-delayed aggregate, not a history sum or the simultaneous current-gradient sum P 
+
+> i∈N
+
+g(t) 
+
+> i
+
+,and the root uses it in its descent update. Combining (17) and (16), agent i’s contribution is evaluated at x(t−2hi)1 once t ≥ 2hi. During D ≤ t < 2D, all agents are already represented, although those with 2hi > t still use x(0) . After the uniform round-trip warm-up t ≥ 2D,
+
+y(t)1 = X
+
+> i∈N
+
+gi
+
+ x(t−2hi)1 , ξ (t−hi)
+
+> i
+
+.
+
+15 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Algorithm 2 Tree-Routed Gradient Tracking ( Tree-RGT )
+
+Input: Connected physical communication graph G = ( N , E), root node 1, common initial point x(0) ∈ Rp, stepsize 
+
+γ > 0, and iteration budget T .
+
+Preprocessing: Before training, the agents jointly execute Algorithm 1 over G; each agent i obtains and stores its local routing sets P( i) and Ch( i).
+
+Initialization: Each agent i sets x(0)  
+
+> i
+
+= x(0) , independently draws ξ(0)  
+
+> i
+
+, and initializes y(0)  
+
+> i
+
+= gi(x(0)  
+
+> i
+
+, ξ (0)  
+
+> i
+
+).
+
+for t = 0 , 1, . . . , T − 1 do for each agent i ∈ N in parallel do 
+
+In one communication round, agent i simultaneously obtains x(t) 
+
+> j
+
+from every j ∈ P( i) and y(t) 
+
+> j
+
+from every 
+
+j ∈ Ch( i); all self-entries are handled locally. Independently draw a random sample ξ(t+1)  
+
+> i
+
+.Update 
+
+x(t+1)  
+
+> i
+
+=
+
+
+
+x(t) 
+
+> i
+
+− γy (t) 
+
+> i
+
+, i = 1 ,X
+
+> j∈P( i)
+
+x(t) 
+
+> j
+
+, i̸ = 1 ,y(t+1)  
+
+> i
+
+= X
+
+> j∈Ch( i)
+
+y(t) 
+
+> j
+
++ gi(x(t+1)  
+
+> i
+
+, ξ (t+1)  
+
+> i
+
+) − gi(x(t) 
+
+> i
+
+, ξ (t) 
+
+> i
+
+).
+
+end for end for Output: Root iterate x(T )1 .ix(t+1)        
+
+> 1=x(t)
+> 1−γy(t)
+> 1
+> x(t+1)
+> i=x(t)
+> p(i),
+> y(t+1)
+> i=
+
+∑         
+
+> j∈Ch (i)
+> y(t)
+> j+g(t+1)
+> i−g(t)
+> i.
+> propagate xfrom the root to the leaves collect yfrom the leaves toward the root
+
+(a) v0 = 1 v1 · · · vhi = i           
+
+> iteration
+> ss+hi
+> s+2hi
+> x(s)
+> 1
+> g(s+hi)
+> i
+> x(s+hi)
+> i=x(s)
+> 1
+> evaluate g(s+hi)
+> i
+> hirounds
+> hirounds 2hirounds
+
+(b) 
+
+Figure 3: Pipelined information flow in Tree-RGT. (a) At iteration t, decision-variable information propagates away from the root while gradient-tracking information propagates toward it; messages sent from the time-t states enter the time-(t + 1) updates. (b) Along the unique path v0 = 1 , . . . , v hi = i, the highlighted trajectory traces x(s)1 to agent i
+
+and the resulting gradient contribution back to the root, a 2hi-round trip. Lighter trajectories show adjacent stages of the pipeline. 
+
+Comparison with STPP. STPP [45] is formulated over a strongly connected directed graph and routes model and gradient-tracking information over two spanning trees that need not be reversals of one another. Tree-RGT instead uses the two orientations of a single rooted tree: the outward orientation broadcasts the root iterates, while the inward orientation returns gradient-tracking information. Although we construct this tree from a connected undirected graph, the same mechanism applies to a directed physical graph whenever it contains a bidirected spanning tree T , meaning that both directions of every edge in T are available. Such a tree always exists in a connected undirected graph but need not exist in an arbitrary strongly connected directed graph. Tree-RGT further implements a root-centered pipeline: only the root performs a descent update, while every non-root agent forwards a delayed root iterate and returns 16 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+gradient-tracking information. This shared-tree structure yields the exact one-way and round-trip delay identities above, substantially simplifies the convergence analysis, and leads to the sharper network dependence summarized in Table 1. It also underlies the empirical improvements reported in Section 6. 
+
+4.3 Matrix Form and Finite-Step Routing Properties 
+
+We next write Algorithm 2 in matrix form and record the finite-step routing properties of its propagation matrices. Let 
+
+e1 ∈ Rn be the first standard basis vector and set π := e1. Using the local routing sets constructed by Algorithm 1, define the binary propagation matrices R, C ∈ Rn×n elementwise, for all i, j ∈ N , by 
+
+[R]ij := 
+
+1, if j ∈ P( i),
+
+0, otherwise, [C]ij := 
+
+1, if j ∈ Ch( i),
+
+0, otherwise. (18) These matrices encode deterministic tree routing rather than weighted mixing. Since j ∈ Ch( i) if and only if i ∈ P( j),these definitions give C = R⊤. Every row of R and every column of C contains exactly one unit entry. Consequently, 
+
+R1 = 1, 1⊤C = 1⊤, π⊤R = π⊤, Cπ = π.
+
+The diagonal entries [R]11 = [ C]11 = 1 represent local state retention at the root. They require no physical self-communication. For any stacked matrix, left multiplication by R replaces each non-root row by its parent’s row, whereas left multiplica-tion by C sums the rows received from the corresponding child set. With the stacked variables defined in Section 1.3, set S := ππ ⊤, the root-selection matrix. Algorithm 2 then has the matrix form 
+
+X(t+1) = RX (t) − γSY (t),
+
+Y(t+1) = CY (t) + G(t+1) − G(t), (19) The common initialization in Algorithm 2 gives 
+
+X(0) = 1(x(0) )⊤, Y(0) = G(0) .
+
+Thus, R and C encode the two simultaneous one-hop information flows, while S restricts the descent step to the root. To quantify how many nodes have been reached after k propagation steps, let 
+
+nk := {i ∈ N : hi ≤ k} , k ≥ 0 an integer .
+
+Then nk = n for all k ≥ D, and the tail-sum identity gives 
+
+Davg = 1
+
+n
+
+X
+
+> i∈N
+
+hi = 1
+
+n
+
+> D−1
+
+X
+
+> k=0
+
+(n − nk) .
+
+Lemma 4.1 (Finite-step propagation bound) . For every integer k ≥ 0,
+
+Rk − 1π⊤ 22 = Ck − π1⊤ 22 ≤ 2 ( n − nk) .
+
+Proof. See Appendix C.2. For an entrywise interpretation, let p0(i) := i and pk+1 (i) := p pk(i). For all i, j ∈ N and integers k ≥ 0,
+
+Rk 
+
+> ij
+
+= 1{pk (i)= j}, Ck 
+
+> ij
+
+= 1{pk (j)= i}. (20) Thus, the first column of Rk marks the agents with hi ≤ k, while column j̸ = 1 marks the agents whose k-th ancestor is j. Since Ck = ( Rk)⊤, each column of Ck follows one agent’s information for k steps toward the root, where it remains after arrival. 
+
+Corollary 4.2 (Exact finite-step routing) . At the tree depth D,
+
+RD = 1π⊤, CD = π1⊤.
+
+The same identities hold for every integer k ≥ D, and D is the smallest nonnegative integer exponent for which they hold. Proof. See Appendix C.3. For any stacked matrix U, the identity RD U = 1π⊤U replicates the root row at every agent, whereas CD U = π1⊤U
+
+places the sum of all rows at the root. Hence, both routing directions complete exactly after D one-hop propagation steps. 17 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+4.4 Convergence and Uniformly Optimal Network Dependence of Tree-RGT 
+
+Section 3.1 establishes the diameter-based minimax benchmark. We first derive a graph-specific bound in terms of the rooted depth profile and then use Theorem 4.1 to obtain a bound that is uniform over Gn, ˆD. The supporting estimates are developed in Section 5. 
+
+Theorem 4.2 (Convergence of Tree-RGT) . Let G = ( N , E) be a connected undirected communication graph with 
+
+n ≥ 2, and let T , D, and Davg be generated by Algorithm 1. Suppose Assumptions 1.1 and 1.2 hold, and define 
+
+∆f := f (x(0) ) − f ⋆ > 0, H0 := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+∇fi(x(0) ) 2
+
+.
+
+For any integer iteration budget T ≥ 1, run Algorithm 2 with 
+
+γ = min 
+
+( p∆f
+
+√nT Lσ 2 , 140 nDL 
+
+)
+
+.
+
+Then its root trajectory satisfies 
+
+1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
+≤ 60 p∆f Lσ 2
+
+√nT + 400 D∆f LT + 50 Davg H0
+
+T .
+
+Proof. See Appendix C.4. 
+
+Remark 4.1 (Transient iterations) . With ∆f , L, σ2, and H0 fixed, and using Davg ≤ D ≤ DG , the term O(1 /√nT )
+
+dominates once T exceeds a problem-dependent constant multiple of nD 2 
+
+> G
+
+. Thus, on every connected undirected graph 
+
+G, Tree-RGT achieves linear speedup after O  nD 2
+
+> G
+
+ transient iterations. 
+
+The role of the average depth. The tree depth D controls the worst-case routing delay, whereas the tail-sum identity in Section 4.3 identifies Davg with the normalized cumulative number of agents not yet reached by the root. Lemma 4.1 converts this profile into a propagation bound, and Lemma 5.8 shows how it enters the delayed-information disagreement. Thus, although Davg appears in Theorem 4.2 through the initialization term, it is determined by the routing geometry. 
+
+Corollary 4.3 (Accuracy complexity with B-sample mini-batches) . Under the assumptions of Theorem 4.2, fix an integer B ≥ 1. At each stochastic-gradient evaluation in Algorithm 2, every agent i independently draws a mini-batch 
+
+ξi = ( ξi, 1, . . . , ξ i,B ) from its local oracle and replaces gi(x, ξ i) with the estimator 
+
+gi,B (x, ξi) := 1
+
+B
+
+> B
+
+X
+
+> b=1
+
+gi(x, ξ i,b )
+
+For any integer T ≥ 1, choose 
+
+γB = min 
+
+( p B∆f
+
+√nT Lσ 2 , 140 nDL 
+
+)
+
+.
+
+Then the root trajectory satisfies 
+
+1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
+≤ 60 p∆f Lσ 2
+
+√nBT + 400 D∆f LT + 50 Davg H0
+
+T .
+
+Consequently, for any ε > 0, it suffices to take 
+
+T =
+
+ 14400∆ f Lσ 2
+
+nBε 4 + 800 D∆f L + 100 Davg H0
+
+ε2
+
+
+
+(21) 
+
+to guarantee 
+
+1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
+≤ ε2.
+
+Proof. See Appendix C.5. 18 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Remark 4.2 (Uniformly optimal network dependence) . Fix an admissible optimization–oracle instance. Let 
+
+TTree -RGT 
+
+> ε
+
+
+
+Gn, ˆD , B 
+
+
+
+denote the worst-case ε-round complexity of B-sample Tree-RGT over Gn, ˆD, where the al-gorithm outputs bx = x(bt)1 and bt is uniformly distributed over {0, . . . , T − 1}. The fixed problem instance and all associated problem-dependent quantities are suppressed from the notation. Corollary 4.3, Jensen’s inequality, and 
+
+Davg ≤ D ≤ DG = ˆD give 
+
+TTree -RGT 
+
+> ε
+
+
+
+Gn, ˆD , B 
+
+
+
+= O 1
+
+nBε 4 + ˆDε2
+
+!
+
+. (22) 
+
+This bound is uniform over Gn, ˆD and matches the powers of n and ˆD in (5) . Hence Tree-RGT has uniformly optimal network dependence over Gn, ˆD in the sense of Section 3.1. 
+
+One-time tree-construction cost. Algorithm 1 is executed only once and takes at most n synchronous control rounds, using one-bit discovery and acknowledgment messages. Thus a run of T Tree-RGT iterations takes at most T + n
+
+wall-clock rounds when this setup is included. The complexities above count optimization rounds; for a fixed network in the high-accuracy regime Tε → ∞ , the additive setup cost is lower order and is further amortized whenever the routing tree is reused. 
+
+## 5 Convergence Analysis 
+
+This section develops the technical estimates used in the proof of Theorem 4.2. We first combine the Tree-RGT recursion with the finite-step routing identities from Section 4.3 to obtain an exact finite-memory representation of the root trajectory and the network disagreement. We then control the stochastic-gradient error, the root increments, and the disagreement through a sequence of coupled estimates. Finally, these estimates are inserted into a descent inequality to establish the stated convergence rate. Elementary deterministic and probabilistic tools used within the detailed proofs are collected in Appendix D. 
+
+5.1 Finite-Memory Representation 
+
+For notational convenience, throughout this section we use the shorthand ∇F(t) := ∇F(X(t)) and write the stacked stochastic-gradient error as Θ(t) := G(t) − ∇ F(t).To expose the finite-memory structure of (19), we introduce two decompositions specific to the convergence analysis. The first separates the root-aligned component of an iterate from the discrepancy between the agents and the root. Define 
+
+ΠR := I − 1π⊤, ΠC := I − π1⊤. (23) Accordingly, set 
+
+¯X(t) := 1π⊤X(t), ∆ ¯X(t) := ¯X(t+1) − ¯X(t),
+
+ˆX(t) := ΠRX(t), ∇ ¯F(t) := ∇F(t) − ∇ F( ¯X(t)).
+
+Here, ¯X(t) replicates the root iterate across all rows, ˆX(t) measures the resulting root-relative disagreement, and ∇ ¯F(t)
+
+is the gradient mismatch generated by that disagreement. The second decomposition resolves the push dynamics according to the tree layer whose information reaches the root. For each k ∈ { 0, . . . , D }, define the k-th tree layer by 
+
+I1,k := i ∈ N : hi = k ,
+
+and let e1,k ∈ Rn denote its indicator vector. In particular, I1,0 = {1} and e1,0 = π. To identify the information contributed by each layer, define the layer-increment matrices 
+
+A0 := I, Ak := Ck − Ck−1, k ≥ 1. (24) The next identity makes this interpretation precise: after left multiplication by π⊤, Ak selects exactly the nodes at depth k.
+
+Lemma 5.1 (Layer-increment identity) . For every 0 ≤ k ≤ D,
+
+π⊤Ak = e⊤
+
+> 1,k
+
+.
+
+Moreover, Ak = 0 for all k > D .
+
+19 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Proof. See Appendix D.2. Equation (19) can be written in the block form 
+
+ X(t+1) 
+
+Y(t+1) 
+
+
+
+=
+
+ R −γS0 C
+
+  X(t)
+
+Y(t)
+
+
+
++
+
+ 0G(t+1) − G(t)
+
+
+
+. (25) For t ≥ 1, unrolling (25) from time 0 to time t gives 
+
+ X(t)
+
+Y(t)
+
+
+
+=
+
+ R −γS0 C
+
+t  X(0) 
+
+Y(0) 
+
+
+
++
+
+> t−1
+
+X
+
+> m=0
+
+ R −γS0 C
+
+t−m−1  0G(m+1) − G(m)
+
+
+
+.
+
+For every integer r > 0,  R −γS0 C
+
+r
+
+=
+
+ Rr −γ Prj=1 Rj−1SC r−j
+
+0 Cr
+
+
+
+.
+
+Using the initialization Y(0) = G(0) , we obtain 
+
+X(t) = RtX(0) − γ
+
+> t
+
+X
+
+> j=1
+
+Rj−1SC t−j G(0) 
+
+− γ
+
+> t−2
+
+X
+
+> m=0
+> t−m−1
+
+X
+
+> j=1
+
+Rj−1SC t−m−1−j h
+
+G(m+1) − G(m)i
+
+, (26) 
+
+Y(t) =
+
+> t−1
+
+X
+
+> m=0
+
+Ct−m−1 h
+
+G(m+1) − G(m)i
+
++ CtG(0) . (27) Collecting the coefficient of each G(m) in (26) and (27) yields the following layer-increment representation, in which each stochastic-gradient matrix appears only once: 
+
+X(t) = RtX(0) − γ
+
+> t−1
+
+X
+
+> m=0
+> t−m
+
+X
+
+> j=1
+
+Rj−1SA t−m−j G(m), (28) 
+
+Y(t) =
+
+> min {t,D }
+
+X
+
+> m=0
+
+AmG(t−m). (29) Consequently, the root trajectory satisfies a particularly simple recursion. Since π⊤R = π⊤ and π⊤S = π⊤,
+
+∆ ¯X(t) = −γ1π⊤Y(t) = −γ1
+
+> min {t,D }
+
+X
+
+> m=0
+
+π⊤AmG(t−m). (30) If the initial points are identical, then ΠRRtX(0) = 0. Unrolling the X-recursion directly also gives 
+
+ˆX(t) = −γ
+
+> t−1
+
+X
+
+> m=0
+> t−m
+
+X
+
+> j=1
+
+ΠRRj−1SA t−m−j G(m). (31) Equation (31) couples an upward layer increment with the residual disagreement left after subsequent downward propagation. More precisely, Aq−j selects the information that arrives at the root after q − j push steps, while ΠRRj−1
+
+measures the disagreement remaining after j − 1 pull steps. The following bound controls this combined routing kernel at a fixed total propagation depth q.
+
+Lemma 5.2 (Pull–push interaction bound) . For every integer q ≥ 1,
+
+> min {q,D }
+
+X
+
+> j=max {1,q −D}
+
+ΠRRj−1SA q−j
+
+> 2
+> F
+
+≤ n2,
+
+where an empty sum is understood as zero. 
+
+20 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Proof. See Appendix D.3. The two factors in this kernel have finite support: Ak = 0 for k > D , while Corollary 4.2 gives ΠRRj = 0 for j ≥ D.Consequently, information can affect the disagreement recursion through at most 2D consecutive propagation steps, in contrast to the infinite geometric memory generated by asymptotic gossip mixing. 
+
+5.2 Stochastic Error and Descent Estimates 
+
+With the finite-memory representation in place, we now control the stochastic and deterministic components that enter the root and disagreement recursions. For this purpose, define the pre-sampling filtration by 
+
+F0 := {∅ , Ω}, Ft := σ ξ(k) 
+
+> i
+
+: i ∈ [n], 0 ≤ k ≤ t − 1, t ≥ 1.
+
+The iterate X(t) is Ft-measurable because it is formed before the time-t samples {ξ(t) 
+
+> i
+
+}i∈[n] are drawn. Assumption 1.2 therefore implies that, conditionally on Ft, the rows of Θ(t) are independent and satisfy 
+
+E
+
+h
+
+Θ(t) | F t
+
+i
+
+= 0, E
+
+ h
+
+Θ(t)i
+
+> i:
+> 2
+
+| F t
+
+
+
+≤ σ2, i ∈ N . (32) We begin with three consequences of these properties, which will be used to estimate stochastic-gradient noise layer by layer. 
+
+Lemma 5.3. Suppose Assumption 1.2 holds. Then, for any index set S ⊆ [n] with indicator vector eS ,
+
+E
+
+
+
+e⊤S Θ(t) 22
+
+
+
+≤ |S| σ2.
+
+Proof. By (32), conditionally on Ft the rows of Θ(t) are independent and centered, and each has conditional second moment at most σ2. Therefore, the cross terms vanish and 
+
+E
+
+
+
+e⊤S Θ(t) 22
+
+| F t
+
+
+
+= X
+
+> i∈S
+
+E
+
+ h
+
+Θ(t)i
+
+> i:
+> 22
+
+| F t
+
+
+
+≤ |S| σ2.
+
+Taking total expectation proves the result. 
+
+Corollary 5.4. Suppose Assumption 1.2 holds. Then, for every 0 ≤ k ≤ D − 1,
+
+E
+
+  Ck − π1⊤ Θ(t) 2
+
+> F
+
+
+
+≤ 2 ( n − nk) σ2.
+
+Proof. Let Bk := Ck − π1⊤. Conditional independence and centering in (32) imply 
+
+E
+
+
+
+BkΘ(t) 2
+
+> F
+
+| F t
+
+
+
+≤ σ2 ∥Bk∥2 
+
+> F
+
+.
+
+Equation (34), established in the proof of Lemma 4.1, and the identity Ck − π1⊤ = ( Rk − 1π⊤)⊤ give ∥Bk∥2 
+
+> F
+
+=2( n − nk). Taking total expectation proves the claim. 
+
+Corollary 5.5. Suppose Assumption 1.2 holds. Then 
+
+> D
+
+X
+
+> k=1
+
+E (π − 1)⊤ AkΘ(t) 2
+
+> F
+
+≤ (n − 1) σ2.
+
+Proof. Since 1⊤Ak = 0 for k ≥ 1 and π⊤Ak = e⊤ 
+
+> 1,k
+
+by Lemma 5.1, 
+
+(π − 1)⊤ Ak = e⊤
+
+> 1,k
+
+.
+
+Applying Lemma 5.3 to the pairwise disjoint layers I1,k and summing over k = 1 , . . . , D gives PDk=1 |I 1,k |σ2 =(n − 1) σ2.21 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+The preceding results control stochastic-gradient noise across the tree layers. We next bound the deterministic gradient mismatch caused by evaluating local gradients away from the root iterate. Since the layer increments partition the agents according to their rooted depths, the resulting delayed terms can be charged directly to the cumulative root-relative disagreement. 
+
+Lemma 5.6. Suppose Assumption 1.1 holds. Then, for every integer T ≥ 1, 
+
+> T−1
+
+X
+
+> t=0
+
+E
+
+> min {t,D }
+
+X
+
+> m=0
+
+π⊤Am∇ ¯F(t−m)
+
+> 2
+
+≤ nL 2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
+.
+
+Proof. The proof is given in Appendix D.4. Since ¯X(t) = 1(x(t)1 )⊤, its increment satisfies 
+
+∆ ¯X(t) 2
+
+> F
+
+= n x(t+1) 1 − x(t)1
+
+> 2
+
+.
+
+Thus, summing this quantity over t = 0 , . . . , T − 1 measures the accumulated squared update energy of the root trajectory. The next lemma controls this energy by separating the effects of stochastic-gradient noise, root-relative disagreement, the finite-memory initialization effect, and the global gradient along the root trajectory. 
+
+Lemma 5.7. Suppose Assumptions 1.1 and 1.2 hold. If γ ≤ 1/(6 npDD avg L), then, for every integer T ≥ 1, 
+
+> T−1
+
+X
+
+> t=0
+
+E ∆ ¯X(t) 2
+
+> F
+
+≤ 4γ2n2σ2T + 20 γ2n2L2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
++ 40 γ2n2Davg ∇F(0) 2
+
+> F
+
++ 20 γ2n3 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
+.
+
+Proof. The proof is given in Appendix D.5. To complement the preceding root-increment estimate, we next quantify how far the local iterates deviate from the root trajectory. By the definition of ˆX(t),
+
+ˆX(t) 2
+
+> F
+
+=
+
+> n
+
+X
+
+> i=1
+
+x(t) 
+
+> i
+
+− x(t)1
+
+> 2
+
+.
+
+Hence, summing this quantity over t = 0 , . . . , T − 1 measures the cumulative node-wise disagreement relative to the root, which is the root-relative analogue of the standard consensus error. The following lemma bounds this disagreement in terms of stochastic-gradient noise, the global gradient along the root trajectory, and the initialization effect. 
+
+Lemma 5.8. Suppose Assumptions 1.1 and 1.2 hold. If γ ≤ 1/(20 nDL ), then, for every integer T ≥ 1, 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
+≤ 32 γ2n2Dσ 2T + 40 γ2n3DD avg  
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
++ 120 γ2n2D2Davg ∇F(0) 2
+
+> F
+
+.
+
+Proof. The proof is given in Appendix D.6. 
+
+Remark 5.1 (A tree-based analogue of consensus-error bounds) . Lemma 5.8 serves the same analytical role as a conventional consensus-error guarantee. The quantity ˆX(t) 2
+
+> F
+
+measures the aggregate node-to-root disagreement and also controls the discrepancy between any pair of nodes, since 
+
+x(t) 
+
+> i
+
+− x(t)
+
+> j
+> 2
+
+≤ 2 x(t) 
+
+> i
+
+− x(t)1
+
+> 2
+
++ 2 x(t) 
+
+> j
+
+− x(t)1
+
+> 2
+
+.
+
+For methods based on a mixing matrix, such disagreement is typically controlled through an asymptotic contraction governed by the spectral gap. In contrast, (16) shows that, after its initial warm-up, node i uses the delayed root parameter x(t) 
+
+> i
+
+= x(t−hi)1 . The disagreement is therefore induced by finite tree-propagation delays and is controlled in Lemma 5.8 by the tree depth D and the average depth Davg , without invoking a spectral gap. A shallower depth profile shortens these delays and yields a tighter guarantee that the local parameters remain close to the root trajectory. 
+
+22 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+The tree structure also induces a deterministic delay: stochastic-gradient noise generated at layer m cannot affect the root iterate before it has traversed the m push steps needed to reach the root. 
+
+Lemma 5.9. Suppose Assumption 1.2 holds. For every m ∈ { 0, 1, . . . , D } and every t ≥ m,
+
+E
+
+*
+
+∇f (x(t)1 ), X
+
+> j∈I 1,m
+
+
+
+gj (x(t−m) 
+
+> j
+
+, ξ (t−m) 
+
+> j
+
+) − ∇ fj (x(t−m) 
+
+> j
+
+)
+
++
+
+= 0 .
+
+Proof. For any given t and m satisfying m ∈ { 0, 1, · · · , D } and t ≥ m, define the layer-excluded σ-algebra 
+
+Ft,m := σ ξ(r) 
+
+> ℓ
+
+: ℓ ∈ N , 0 ≤ r ≤ t, ℓ / ∈ I 1,m or r̸ = t − m.
+
+Since Ft−m ⊆ F t,m , every x(s) 
+
+> j
+
+with j ∈ I 1,m is Ft,m -measurable. Furthermore, the root iterate x(t)1 is Ft,m -measurable. To see this, proceed by induction over the root updates before time t. The initial iterate is deterministic. If the root iterates through time r < t are Ft,m -measurable, then (16) makes every evaluation point in (17) for y(r)1
+
+Ft,m -measurable. None of the samples appearing in that tracker is excluded from Ft,m : for j ∈ I 1,m , the equality 
+
+r − hj = t − m would require r = t. Hence, y(r)1 and x(r+1) 1 = x(r)1 − γy (r)1 are Ft,m -measurable. This proves the claim and also shows that the excluded layer samples first enter y(t)1 , so they can first affect x(t+1) 1 .Denote θ(s) 
+
+> j
+
+:= gj (x(s) 
+
+> j
+
+, ξ (s) 
+
+> j
+
+) − ∇ fj (x(s) 
+
+> j
+
+). Then, by the mutual independence in Assumption 1.2, the excluded samples 
+
+{ξ(s) 
+
+> j
+
+: j ∈ I 1,m } are independent of Ft,m . Therefore, for every j ∈ I 1,m , the pointwise unbiasedness in Assumption 1.2 and xt−mj ∈ F t−m ⊆ F t,m give 
+
+E θt−mj | F t,m 
+
+ = E θt−mj | F t−m
+
+ = 0.
+
+Since ∇f (x(t)1 ) is Ft,m -measurable, the tower property now yields 
+
+E
+
+*
+
+∇f (x(t)1 ), X
+
+> j∈I 1,m
+
+θ(t−m)
+
+> j
+
++
+
+= E
+
+*
+
+∇f (x(t)1 ), X
+
+> j∈I 1,m
+
+E
+
+h
+
+θ(t−m) 
+
+> j
+
+| F t,m 
+
+i+
+
+= 0 .
+
+With the cumulative root increments and node-wise disagreement controlled by Lemmas 5.7 and 5.8, respectively, and the relevant noise cross term eliminated by Lemma 5.9, we can now close the descent argument. The following lemma is the main descent lemma of the analysis: it combines the smoothness-based decrease of the global objective along the root trajectory with the preceding error estimates to bound the averaged squared gradient norm. It is the final ingredient needed to prove Theorem 4.2. 
+
+Lemma 5.10. Suppose Assumptions 1.1 and 1.2 hold. If γ ≤ 1/(40 nDL ), then, for every integer T ≥ 1,
+
+1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
+≤ 10∆ f
+
+γnT + 50 γLσ 2 + 50 Davg 
+
+nT ∇F(0) 2 
+
+> F
+
+,
+
+where ∆f := f (x(0) ) − inf x f (x).Proof. The proof is given in Appendix D.7. 
+
+## 6 Numerical Experiments 
+
+We evaluate Tree-RGT on a heterogeneous binary-classification problem and compare its dependence on the communi-cation network with that of representative mixing-based and routing-based methods. We consider three graph–matrix pairs from Section 2.3: the lazy-ring pair (Gr, Wr), the undirected exponential pair (Gex , Wex ), and the balanced double-star pair (Gds , Wds ). These pairs provide contrasting graph-distance and matrix-mixing regimes. 23 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Problem and data. Following the nonconvex logistic-regression experiment in [9], we classify airplanes (label +1 )and trucks (label −1) from CIFAR-10 [14]. The resulting 10 ,000 training samples are partitioned among n agents. If 
+
+Si is the local data set of agent i, with feature–label pairs (ui,j , v i,j ) ∈ Rp × {− 1, +1 }, we solve 
+
+min  
+
+> x∈Rp
+
+f (x) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+fi(x), fi(x) := 1
+
+|S i|
+
+X
+
+> j∈S i
+
+log  1 + exp( −vi,j u⊤ 
+
+> i,j
+
+x) + ω
+
+2
+
+> p
+
+X
+
+> q=1
+
+[x]2
+
+> q
+
+1 + [ x]2
+
+> q
+
+, (33) where ω = 0 .05 . Each image is rescaled to [0 , 1] , flattened, augmented with a constant bias coordinate, and normalized to unit Euclidean norm, giving p = 3073 . To induce heterogeneity, we sort the samples by label and divide them into n
+
+contiguous shards whose sizes differ by at most one. 
+
+Experimental protocol. We compare Tree-RGT with decentralized SGD (DSGD), decentralized stochastic gradient tracking (DSGT) [27], DSMT [9], STPP [45], RelaySUM [38], and ideal synchronous centralized SGD (CSGD). CSGD averages one stochastic gradient per agent and serves only as an optimization benchmark. For n ∈ { 128 , 256 }, every decentralized method is run for 9000 communication rounds, and CSGD for 9000 corresponding synchronous updates; all methods use mini-batch size one. Every method uses the same unit-norm Gaussian initialization and the same local sampling schedules, deterministically generated from the seed. Algorithm 1 constructs a rooted breadth-first spanning tree T shared by RelaySUM, STPP, and Tree-RGT, with agent 1
+
+as its root. Let DT denote its depth. For the lazy ring, exponential graph, and double-star, DT equals n − 1, log 2 n,and 3, respectively. All the algorithms initialize with the same stepsize, γ = 0 .05 , except STPP and Tree-RGT, which use γ/n , and RelaySUM, which uses γ√DT . These modifications reflect the respective update mechanisms. Specifically, STPP and Tree-RGT employ a tracking estimator whose accumulated update is effectively scaled by n relative to the averaged stochastic gradients as the iterations progress. In RelaySUM, information propagates along the spanning tree with a topology-dependent delay, causing the effective update magnitude to depend on the tree diameter. A one-time, diameter-based stepsize adjustment compensates for this effect and improves comparability across trees. The stepsize is reduced by 60% every 4000 rounds. Following [9], DSMT constructs the effective mixing matrix fW = ( I + W)/2
+
+from the selected weight matrix W and sets its hyperparameters as ηw = 1 /(1 + p1 − ρ2
+
+> w
+
+), eρw = √ηw, and 
+
+β = 1 − (1 − eρw)/n 1/3, where ρw is the second-largest eigenvalue modulus of fW.At each recorded round, we evaluate the squared norm of the full empirical gradient at the root iterate for Tree-RGT and STPP, the network-average iterate for the other decentralized methods, and the common iterate for CSGD. Figure 4 reports the mean of this quantity over ten seeds; shaded bands indicate the corresponding pointwise minimum–maximum envelope. Figure 4 reveals the predicted dependence on graph distance. For a fixed node count, the transient of the tree-based methods generally becomes shorter as DG decreases from the lazy ring to the exponential graph and then to the double-star; this ordering is clearest for n = 256 . On the lazy ring, whose diameter is Θ( n), DSGD and DSGT retain substantially larger residuals, while RelaySUM exhibits a long transient. In contrast, Tree-RGT is among the fastest and comparatively most stable methods across all three graphs: it reaches and tracks the CSGD regime quickly and remains comparable to STPP. This behavior is qualitatively consistent with the O(nD 2 
+
+> G
+
+) transient prediction. The double-star isolates the effect of the selected mixing matrix. Although DG = 3 , the associated Metropolis matrix has τW = Θ( n2). Consequently, DSGD and DSGT retain large residuals, and DSMT exhibits a pronounced oscillatory transient, especially for n = 256 . In contrast, STPP, Tree-RGT, and RelaySUM remain close to CSGD. These results indicate that topology-aware tree and routing methods exploit short support-graph distances without inheriting the poor spectral conditioning caused by repeated mixing with this particular matrix. 
+
+Stress test under an aggressive stepsize schedule. We further distinguish Tree-RGT from STPP on synthetic heterogeneous instances of the nonconvex logistic-regression problem in (33) [33, 44]. To control the data heterogeneity across the nodes, we first let each node i be associated with a local logistic regression model with parameter ˜xi generated by ˜xi = ˜ x + vi, where ˜x ∼ N (0 , Ip) is a common random vector, and vi ∼N (0 , σ 2
+
+> h
+
+Ip) are random vectors generated independently. Therefore, {vi} decide the dissimilarities between ˜xi, and larger σh generally amplifies the difference. After fixing {˜xi}, local data samples are generated that follow distinct distributions. For node i, the feature vectors are generated as ui,j ∼ N (0 , Ip), and zi,j ∼ U (0 , 1) . Then, the labels 
+
+vi,j ∈ {− 1, 1} are set to satisfy zi,j ≤ 1 + exp( −vi,j u⊤ 
+
+> i,j
+
+˜xi). In the simulations, the parameters are set as follows: 
+
+n ∈ { 128 , 256 }, p = 400 , |S i| = 400 , ω = 0 .01 , and σh = 0 .4. The two algorithms initialize with the same stepsize 
+
+γ = 0 .4. And the stepsize is reduced by 80% every 1000 rounds to facilitate convergence. 24 Optimal Network Dependence via Tree Routing A PREPRINT                
+
+> (a) Lazy ring, n= 128 .(b) Lazy ring, n= 256 .
+> (c) Exponential graph, n= 128 .(d) Exponential graph, n= 256 .
+> (e) Double-star, n= 128 .(f) Double-star, n= 256 .
+
+Figure 4: Squared norm of the full empirical gradient versus communication rounds for the lazy ring (top), undirected exponential graph (middle), and balanced double-star (bottom), with n = 128 (left) and n = 256 (right). Curves are means over ten seeds, and shaded bands show the pointwise minimum–maximum envelope. 25 Optimal Network Dependence via Tree Routing A PREPRINT      
+
+> (a) n= 128 .(b) n= 256 .
+
+Figure 5: Stress-test comparison of STPP and Tree-RGT on the lazy ring under the aggressive stepsize schedule. Curves are means over five stochastic sampling seeds, and shaded bands show the pointwise minimum–maximum envelope. Figure 5 exposes a difference that is less visible under the conservative schedule used in Figure 4. For n = 128 ,Tree-RGT attains a lower stationarity measure after the initial transient. The separation is more pronounced for n = 256 :STPP plateaus, whereas Tree-RGT continues to improve after the stepsize reductions and reaches a substantially lower value. The late-stage separation also persists across the minimum–maximum envelopes, indicating that it is not driven by an individual seed. The stress test therefore indicates that Tree-RGT is more robust than STPP to an aggressive stepsize schedule on large-diameter networks. 
+
+## 7 Conclusion 
+
+We separated graph-invariant quantities from properties of a chosen mixing matrix and showed that graph diameter gives a tight one-sided control of the inverse spectral gap, but does not determine it. This makes the network class and the admissible algorithm class part of any precise optimality statement. Using the diameter-based minimax benchmark, we developed Tree-Routed Gradient Tracking (Tree-RGT), a root-coordinated distributed method that pipelines model dissemination and gradient aggregation on a shortest-path tree. It uses one round of one-hop communication per update, requires no inner consensus or multi-gossip. For smooth stochastic nonconvex optimization, it achieves uniformly optimal network dependence over Gn, ˆD and reaches centralized stochastic scaling after O(nD 2 
+
+> G
+
+) transient iterations. A general fixed-mixing minimax theory remains open. It requires informative, nonempty graph–matrix pair constraints and an algorithm class that specifies how the designated matrix may be used. Extending topology-aware routing to broader network models and studying the trade-offs among tree depth, setup cost, and communication load are natural directions for future work. 
+
+## A Proofs for Section 2 
+
+A.1 Proof of Theorem 2.1 
+
+Since I and W are both nonnegative, symmetric, positive semidefinite, and doubly stochastic, their convex combination 
+
+W(δ) has the same four properties. Let the eigenvalues of W be 
+
+1 = μ1 > μ 2 ≥ · · · ≥ μn ≥ 0, and λW = μ2.
+
+The eigenvalues of W(δ) are 1 and 
+
+1 − δ + δμ i, i = 2 , . . . , n. 
+
+They are nonnegative, so 
+
+λW(δ) = 1 − δ + δμ 2 = 1 − δ (1 − λW) .
+
+This proves the two gap identities. For every i̸ = j,
+
+h
+
+W(δ)i
+
+> ij
+
+= δ [W]ij ,
+
+which means that W(δ) is a mixing matrix on the same graph G.26 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+A.2 Proof of Theorem 2.2 
+
+If DG = 1 , the claim is immediate. Suppose DG ≥ 2. Since W is doubly stochastic, WJ = JW = J, and hence 
+
+Wk − J = ( W − J)k , Wk − J 2 ≤ λk
+
+> W
+
+.
+
+Choose two nodes i and j at distance DG in G. Since G is the support graph of W, no walk of length DG − 1 connects 
+
+j to i, so WDG −1 
+
+> ij
+
+= 0 .
+
+Since every matrix entry is bounded in magnitude by the spectral norm, 
+
+λDG −1 
+
+> W
+
+≥ WDG −1 − J 2 ≥ WDG −1 − J 
+
+> ij
+
+= 1
+
+n .
+
+Thus λW > 0, and taking logarithms gives 
+
+(DG − 1) ( − log λW) ≤ log n. 
+
+Finally, 1 − λW ≤ − log λW for λW ∈ (0 , 1) , which yields 
+
+1 − λW ≤ log nDG − 1 .
+
+Taking reciprocals proves the result. 
+
+A.3 Proof of Lemma 2.1 
+
+By [7, Definition 2.2 and Theorem 2.4], the spectral gap d − μ2(Acde ) is bounded away from zero by an independent constant, which gives the stated bound for μ2(Wcde ). Applying the ball-growth argument given in [7, immediately following Lemma 2.5] to the uniform edge expansion gives DGcde = O(log n). The matching Ω(log d−1 n) lower bound for fixed d is stated in [7, immediately before Corollary 5.4]. Since d ≥ 3 is fixed, log d−1 n = log n/ log( d − 1) = Θ(log n), so the upper and lower bounds together give DGcde = Θ(log n).
+
+A.4 Proof of Lemma 2.2 
+
+The matrix Wr is symmetric and row-stochastic by construction, hence it is doubly stochastic. Let ω := e2πi/n and define vk ∈ Cn by 
+
+[vk]j = ωkj , k = 0 , . . . , n − 1.
+
+Then 
+
+[Wrvk]j = 12 ωkj + 14 ωk(j−1) + 14 ωk(j+1) 
+
+=
+
+ 12 + ω−k + ωk
+
+4
+
+
+
+ωkj = 1 + cos (2 πk/n )2 [vk]j = cos 2
+
+ πk n
+
+
+
+[vk]j .
+
+Thus, the eigenvalues of Wr are cos 2(πk/n ), k = 0 , . . . , n − 1 and hence Wr is positive semidefinite. The eigenvalue associated with k = 0 is 1, and on the orthogonal complement of 1 the largest eigenvalue in absolute value is cos 2(π/n ).Since Wr is symmetric, 
+
+λWr = ∥Wr − J∥2 = cos 2  πn
+
+
+
+.
+
+Therefore 
+
+τWr = 11 − cos 2 (π/n ) = 1sin 2 (π/n ) = Θ( n2),
+
+where the last equality follows from sin( π/n ) = Θ(1 /n ) derived by Taylor expansion. 
+
+A.5 Proof of Lemma 2.3 
+
+For every integer q, the matrix Pq is a permutation matrix and (Pq )⊤ = P−q . Hence each summand in the definition of Wex is nonnegative and symmetric, with every row and column sum equal to 2. It follows that Wex is nonnegative, symmetric, and doubly stochastic. We label the nodes by Z2m := {0, 1, . . . , 2m − 1}, where arithmetic is understood modulo 2m. The support graph then contains an edge between nodes i and j whenever 
+
+j − i ≡ ± 2r (mod 2 m)
+
+27 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+for some r = 0 , . . . , m − 1.We first compute the diameter. For h ≥ 1 and d ∈ Z2h , define 
+
+ℓh(d) := min 
+
+(
+
+t ∈ Z≥0 : d ≡
+
+> t
+
+X
+
+> q=1
+
+σq 2rq (mod 2 h), σ q ∈ {− 1, 1}, r q ∈ { 0, . . . , h − 1}
+
+)
+
+.
+
+Each term in the sum corresponds to one edge traversal. Hence ℓm(d) is the distance from node 0 to node d, and translation invariance gives 
+
+DGex = max 
+
+> d∈Z2m
+
+ℓm(d).
+
+For h ≥ 2, pairing all terms of exponent zero in a minimum representation gives the recurrence 
+
+ℓh(d) = 
+
+(ℓh−1(d/ 2) , d even ,
+
+1 + min  
+
+> σ∈{− 1,1}
+
+ℓh−1 (( d − σ)/2) , d odd ,
+
+where the arguments on the right are taken modulo 2h−1. Indeed, when d is even, all exponent-zero terms can be canceled in opposite-sign pairs or combined in equal-sign pairs; when d is odd, exactly one term σ ∈ {− 1, 1} remains. Dividing the other terms by 2 proves one direction of the recurrence, and multiplying by 2 and restoring σ proves the converse. Let Lh := max d ℓh(d). For h ≥ 3 and odd d, choose σ so that d − σ is divisible by 4. The recurrence then gives 
+
+Lh ≤ max {Lh−1, 1 + Lh−2}.
+
+Since L1 = L2 = 1 , induction yields Lh ≤ ⌈ h/ 2⌉. For the reverse inequality, let ah ∈ Z2h be defined, for h ≥ 1, by 
+
+ah ≡
+
+> ⌈h/ 2⌉− 1
+
+X
+
+> j=0
+
+22j (mod 2 h).
+
+For h ≥ 3, the identities (ah − 1) /2 ≡ 2ah−2 and (ah + 1) /2 ≡ − ah−1 modulo 2h−1, together with ℓh(−d) = ℓh(d),give 
+
+ℓh(ah) = 1 + min {ℓh−2(ah−2), ℓ h−1(ah−1)} = ⌈ h
+
+2 ⌉
+
+by induction from h = 1 , 2. Therefore 
+
+DGex = Lm = ⌈ m
+
+2 ⌉ = Θ(log n).
+
+It remains to estimate λWex . Let ω := e2πi/n and define the Fourier vectors by [vk]j := n−1/2ω−kj . Since 
+
+Pq vk = ωkq vk, they diagonalize Wex , with 
+
+θk = 12m
+
+> m−1
+
+X
+
+> r=0
+
+
+
+ωk2r
+
++ ω−k2r 
+
+= 1
+
+m
+
+> m−1
+
+X
+
+> r=0
+
+cos 
+
+ 2πk 2r
+
+n
+
+
+
+.
+
+Because the vk form an orthonormal basis and θ0 = 1 , we have λWex = max 1≤k<n |θk|.Set ηk := m−1 Pm−1 
+
+> r=0
+
+ωk2r
+
+, so that |θk| ≤ | ηk|. Write k = 2 su, where u is odd and 0 ≤ s ≤ m − 1. If s ≥ 1, consider the two summands in ηk corresponding to r = m − s − 1 and r = m − s. They satisfy 
+
+ωk2m−s−1
+
+= eπiu = −1, ωk2m−s
+
+= e2πiu = 1 ,
+
+and hence cancel. If s = 0 , the terms indexed by r = m − 1, m − 2 are −1 and ±i, whose sum has modulus √2. The triangle inequality therefore gives 
+
+|ηk| ≤ 
+
+(m − 2) /m, s ≥ 1(m − 2 + √2) /m, s = 0 ≤ 1 − 2 − √2
+
+m .
+
+For k = 2 m−1, the term with r = 0 equals −1 and all the others equal 1, so θk = 1 − 2/m . Consequently, 
+
+1 − 2
+
+m ≤ λWex ≤ 1 − 2 − √2
+
+m , m
+
+2 ≤ τWex ≤ m
+
+2 − √2 .
+
+Therefore 
+
+τWex = Θ( m) = Θ(log n) = Θ( DGex ).
+
+28 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+A.6 Proof of Lemma 2.4 
+
+The matrix Wds is symmetric by construction. Each leaf has self-weight b = ( m + 1) /(m + 2) and one incident edge of weight a = 1 /(m + 2) . Each center has self-weight a and is incident to m leaves and the other center, with all these m + 1 graph edges having weight a. Hence every row sums to one, and symmetry implies that Wds is doubly stochastic. The largest distance is attained between a leaf in L1 and a leaf in L2, so DGds = 3 .It remains to compute λWds . We first identify the eigenvectors associated with leaf differences. Define 
+
+supp( z) := {i ∈ N : [ z]i̸ = 0 } ,
+
+U1 := 
+
+(
+
+z ∈ Rn : supp( z) ⊆ L 1, X
+
+> ℓ∈L 1
+
+zℓ = 0 
+
+)
+
+,
+
+U2 := 
+
+(
+
+z ∈ Rn : supp( z) ⊆ L 2, X
+
+> ℓ∈L 2
+
+zℓ = 0 
+
+)
+
+.
+
+Both subspaces have dimension m − 1. For any z ∈ U 1, each leaf ℓ ∈ L 1 satisfies 
+
+[Wds z]ℓ = bz ℓ + az c1 = bz ℓ,
+
+and the center coordinate satisfies 
+
+[Wds z]c1 = a X
+
+> ℓ∈L 1
+
+zℓ + az c2 = 0 .
+
+All remaining coordinates are also zero. Hence, Wds z = bz for every z ∈ U 1. The same argument applies to U2.Therefore, Wds has the eigenvalue b with multiplicity at least 2( m − 1) , carried by the disjoint subspaces U1 and U2.We next compute all eigenvalues different from b. Let (λ, z) be an eigenpair with λ̸ = b. For any two leaves ℓ, ℓ ′ ∈ L 1,the leaf equations are 
+
+λ [z]ℓ = b [z]ℓ + a [z]c1 , λ [z]ℓ′ = b [z]ℓ′ + a [z]c1 .
+
+Subtracting them gives 
+
+(λ − b) ([ z]ℓ − [z]ℓ′ ) = 0 .
+
+Since λ̸ = b, all entries on L1 are equal. The same argument shows that all entries on L2 are equal. Hence every eigenvector associated with an eigenvalue λ̸ = b can be described by four scalars x1, y 1, y 2, x 2, corresponding respectively to the common value on L1, the value at c1, the value at c2, and the common value on L2. The eigenvalue equations reduce to 
+
+λx 1 = bx 1 + ay 1,λy 1 = amx 1 + ay 1 + ay 2,λy 2 = ay 1 + ay 2 + amx 2,λx 2 = bx 2 + ay 2.
+
+We now solve this four-variable system by a change of variables. Define the sum variables and difference variables 
+
+sx := x1 + x2, sy := y1 + y2, dx := x1 − x2, dy := y1 − y2.
+
+This change of variables is invertible, since 
+
+x1 = sx + dx
+
+2 , x2 = sx − dx
+
+2 , y1 = sy + dy
+
+2 , y2 = sy − dy
+
+2 .
+
+Thus no eigenvector is lost by working with the variables (sx, s y , d x, d y ).Adding the first and fourth equations, and adding the second and third equations, gives 
+
+λs x = bs x + as y , λs y = ams x + 2 as y .
+
+Therefore, the sum variables satisfy the 2 × 2 eigenvalue system 
+
+λ
+
+sx
+
+sy
+
+
+
+=
+
+ b aam 2a
+
+  sx
+
+sy
+
+
+
+.
+
+The corresponding characteristic polynomial is 
+
+λ2 − (b + 2 a)λ + (2 ab − a2m) = 0 .
+
+29 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Using a = 1 /(m + 2) and b = ( m + 1) /(m + 2) , the two roots are 1 and a.Similarly, subtracting the fourth equation from the first, and subtracting the third equation from the second, gives 
+
+λd x = bd x + ad y , λd y = amd x.
+
+Therefore, the difference variables satisfy 
+
+λ
+
+dx
+
+dy
+
+
+
+=
+
+ b aam 0
+
+  dx
+
+dy
+
+
+
+.
+
+The corresponding characteristic polynomial is 
+
+λ2 − bλ − a2m = 0 ,
+
+and therefore its two eigenvalues are 
+
+λ+ = m + 1 + √m2 + 6 m + 1 2( m + 2) , and λ− = m + 1 − √m2 + 6 m + 1 2( m + 2) .
+
+The spectrum of Wds therefore consists of the eigenvalue b, with multiplicity 2( m − 1) , together with the four eigenvalues 1, a, λ+, and λ−. Since 1 > λ + > b > a and λ+ ≥ | λ−|, the largest eigenvalue in modulus on the orthogonal complement of 1 is 
+
+λWds = λ+ = m + 1 + √m2 + 6 m + 1 2( m + 2) .
+
+Finally, 
+
+τWds = 11 − λWds 
+
+= (m + 2)  m + 3 + √m2 + 6 m + 1 
+
+4 = Θ( m2) = Θ( n2).
+
+We now analyze the second weighting fWds . Each leaf row sums to β + α = 1 , while each center row sums to 
+
+mα + 14 + 14 = 1 .
+
+Thus fWds is symmetric and doubly stochastic, and all of its graph edges have positive weight. The two leaf-difference subspaces U1 and U2 considered above now carry the eigenvalue β, with total multiplicity 2( m − 1) .On the remaining four-dimensional subspace, the same sum–difference decomposition gives 
+
+λ
+
+sx
+
+sy
+
+
+
+=
+
+ β αmα 12
+
+  sx
+
+sy
+
+
+
+, λ
+
+dx
+
+dy
+
+
+
+=
+
+ β αmα 0
+
+  dx
+
+dy
+
+
+
+.
+
+The sum matrix has eigenvalues 
+
+1, m − 12m ,
+
+while the difference matrix has eigenvalues 
+
+ρ± = 1 − 12m ±
+
+q
+
+1 + 14m2
+
+2 .
+
+Since ρ+ > β , ρ+ > −ρ−, and ρ+ > (m − 1) /(2 m), the largest eigenvalue magnitude on the orthogonal complement of 1 is 
+
+λfWds = ρ+ = 1 − 12m +
+
+q
+
+1 + 14m2
+
+2 .
+
+Rationalizing its gap yields 
+
+τfWds = 11 − ρ+
+
+= 2 m + 1 + p4m2 + 1 = Θ( m) = Θ( n).
+
+30 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+A.7 Proof of Theorem 2.3 
+
+Fix p > 0 and D0 ≥ 1. Let {G cde ,k }k≥1 be an infinite constant-degree expander family as in Lemma 2.1, where the common degree d ≥ 3 is fixed. Let nk be the number of nodes in Gcde ,k , indexed so that nk → ∞ , and let Acde ,k be its adjacency matrix. Define 
+
+Wcde ,k := Acde ,k 
+
+d , cWcde ,k := 12 (I + Wcde ,k ) , Dk := DGcde ,k .
+
+All eigenvalues of Wcde ,k lie in [−1, 1] , so cWcde ,k is positive semidefinite. It is also a mixing matrix on Gcde ,k . Lemma 2.1 gives a constant c > 0, independent of k, such that 
+
+1 ≤ τcWcde ,k = 21 − μ2(Wcde ,k ) ≤ 2
+
+c , Dk = Θ(log nk) → ∞ .
+
+Choose k sufficiently large that Dk ≥ D0 and Dpk ≥ 2/c . For this fixed k, define 
+
+G∗ := Gcde ,k , δ := τcWcde ,k 
+
+Dpk
+
+, W∗ := (1 − δ)I + δ cWcde ,k .
+
+The preceding bounds imply δ ∈ (0 , 1] . Hence Theorem 2.1 shows that W∗ is a mixing matrix on G∗ and 
+
+τW∗ = τcWcde ,k 
+
+δ = Dpk = Dp 
+
+> G∗
+
+.
+
+By construction, DG∗ = Dk ≥ D0, which completes the proof. 
+
+## B Proofs for Section 3 
+
+B.1 Proof of Theorem 3.2 
+
+Let G(n)path := Path n. The construction underlying [19, Corollary 1] pairs this graph with the reflecting random-walk matrix whose nonzero entries are 
+
+h
+
+W(n)rw 
+
+i
+
+> i,i +1
+
+=
+
+h
+
+W(n)rw 
+
+i
+
+> i+1 ,i
+
+= 12 (1 ≤ i < n ),
+
+h
+
+W(n)rw 
+
+i
+
+> 11
+
+=
+
+h
+
+W(n)rw 
+
+i
+
+> nn
+
+= 12 .
+
+It is a mixing matrix on G(n)path . For the inverse-gap budget in Theorem 3.2, take τ := τW(n)rw 
+
+. The standard cosine diagonalization gives 
+
+DG(n)path 
+
+= n − 1, λW(n)rw 
+
+= cos 
+
+ πn
+
+
+
+, τ = 11 − cos( π/n ) = Θ  (n − 1) 2 .
+
+Every connected n-node graph of diameter n − 1 is a relabeling of Path n: a diametral path contains all n nodes and cannot have a chord. Relabeling W(n)rw in the same way shows that the graph components represented in bPn form exactly Gn,n −1.Neither AB nor Tε(A, f, O, G) depends on the matrix paired with G. Therefore 
+
+inf 
+
+> A∈AB
+
+sup 
+
+> (G,W)∈bPn,
+> ({fi},O )∈In(∆ ,L,σ 2)
+
+Tε(A, f, O, G) = Tε(Gn,n −1, B ).
+
+More explicitly, apply [19, Theorem 1] with ˆD = n − 1, and let bGhard and the hard optimization–oracle instance be those supplied by its construction. Relabeling W(n)rw in the same way as the path gives a matrix Whard such that 
+
+( bGhard , Whard ) ∈ bPn and the same pair and instance are hard for every A ∈ AB . Finally, n − 1 = Θ( √τ ) proves (7). 
+
+B.2 Proof of Corollary 3.1 
+
+Use the hard graph, matrix, and optimization–oracle instance constructed above, and define 
+
+Wharder := 
+
+
+
+1 − 1
+
+n
+
+
+
+I + 1
+
+n Whard .
+
+31 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+As a convex combination of I and Whard , this matrix is nonnegative, symmetric, and doubly stochastic. It also preserves every positive off-diagonal entry of Whard , and hence is a mixing matrix on the same graph. Because Whard 
+
+is permutation-similar to W(n)rw , its eigenvalues are νk = cos( kπ/n ) for k = 0 , . . . , n − 1. The eigenvalues of Wharder 
+
+are therefore 
+
+ν′ 
+
+> k
+
+= 1 − 1 − cos( kπ/n )
+
+n , k = 0 , . . . , n − 1.
+
+They are all positive for n ≥ 2, so the second-largest eigenvalue modulus is ν′
+
+> 1
+
+. Consequently, 
+
+1 − λWharder = 1 − cos( π/n )
+
+n , τWharder = nτ = ¯ τ = Θ  (n − 1) 3 .
+
+Thus ( bGhard , Wharder ) ∈ Pn. Since neither AB nor Tε(A, f, O, G) uses the designated matrix, replacing Whard by 
+
+Wharder leaves the hard graph and optimization–oracle instance unchanged. Finally, n − 1 = Θ(¯ τ 1/3) converts the diameter term in [19, Theorem 1] into the second term of (9). 
+
+## C Proofs for Section 4 
+
+C.1 Proof of Theorem 4.1 
+
+The breadth-first search discovers the root at level zero. Suppose that all nodes at graph distance at most ℓ from the root have been discovered with their correct depths. Every node at graph distance ℓ + 1 has a neighbor at graph distance 
+
+ℓ, and hence receives a discovery message at level ℓ. Conversely, any node first reached at that level has a path of length ℓ + 1 from the root and cannot have a shorter path, since it was not discovered earlier. Therefore, every newly discovered node i satisfies hi = dist G (1 , i ). Induction proves (13). For any other spanning tree T ′ of G rooted at node 1, its unique root-to-i path is also a path in G. Hence 
+
+dist T ′ (1 , i ) ≥ dist G (1 , i ) = hi for every i ∈ N .
+
+Taking the maximum over i proves the minimization identity in (14), and averaging over i proves (15). Since DG
+
+maximizes the distance over all pairs of nodes, whereas D maximizes only over pairs involving the root, we have 
+
+D ≤ DG . Conversely, for any i, j ∈ N , the triangle inequality and (13) give 
+
+dist G (i, j ) ≤ dist G (i, 1) + dist G (1 , j ) = hi + hj ≤ 2D. 
+
+Maximizing over i, j yields DG ≤ 2D and completes (14). 
+
+C.2 Proof of Lemma 4.1 
+
+We first prove the closed forms in (20). The identity for R0 = I is immediate. If it holds at k, then the unique parent entry in row i of R gives 
+
+Rk+1  
+
+> ij
+
+= X
+
+> ℓ∈N
+
+[R]iℓ 
+
+Rk 
+
+> ℓj
+
+= Rk 
+
+> p(i),j
+
+= 1{pk+1 (i)= j}.
+
+Induction proves the first identity, and the second follows from Ck = ( Rk)⊤.Since p(1) = 1 , a node reaches the root after repeated application of the parent map precisely when k ≥ hi; that is, 
+
+pk(i) = 1 if and only if hi ≤ k. Let ej denote the j-th standard basis vector. Equation (20) then gives that the i-th row of Rk − 1π⊤ satisfies: 
+
+Rk − 1π⊤ 
+
+> i, :
+
+=
+
+(
+
+0⊤, hi ≤ k, 
+
+e⊤  
+
+> pk(i)
+
+− π⊤, hi > k. 
+
+Each nonzero row has squared Euclidean norm 2, and there are exactly n − nk such rows. Hence 
+
+Rk − 1π⊤ 2 
+
+> F
+
+= 2 ( n − nk) . (34) Finally, Ck − π1⊤ = ( Rk − 1π⊤)⊤, so the corresponding spectral and Frobenius norms are equal. The inequality 
+
+∥·∥ 2 ≤ ∥·∥ F completes the proof. 
+
+C.3 Proof of Corollary 4.2 
+
+Since D = max i∈N hi, we have nk = n if and only if k ≥ D. The result follows directly from Lemma 4.1. 32 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+C.4 Proof of Theorem 4.2 
+
+The chosen stepsize satisfies the condition of Lemma 5.10. Moreover, 
+
+50 γLσ 2 ≤ 50 Lσ 2
+
+p∆f
+
+√nT Lσ 2 = 50 p∆f Lσ 2
+
+√nT .
+
+On the other hand, 
+
+1
+
+γ = max 
+
+(
+
+40 nDL, 
+
+s
+
+nT Lσ 2
+
+∆f
+
+)
+
+≤ 40 nDL +
+
+s
+
+nT Lσ 2
+
+∆f
+
+,
+
+and hence 
+
+10∆ f
+
+γnT ≤ 400 D∆f LT + 10 p∆f Lσ 2
+
+√nT .
+
+Substituting these estimates into Lemma 5.10 and collecting terms proves the result. 
+
+C.5 Proof of Corollary 4.3 
+
+Independence of the samples within each mini-batch and Assumption 1.2 give 
+
+E [gi,B (x, ξi)] = ∇fi(x), E ∥gi,B (x, ξi) − ∇ fi(x)∥2 ≤ σ2
+
+B .
+
+Theorem 4.2 therefore applies with σ2/B in place of σ2, which proves the trajectory bound. The iteration choice (21) implies 
+
+60 p∆f Lσ 2
+
+√nBT ≤ ε2
+
+2
+
+and 
+
+400 D∆f LT + 50 Davg H0
+
+T ≤ ε2
+
+2 .
+
+Adding these two inequalities proves the accuracy guarantee. 
+
+## D Proofs for Section 5 
+
+D.1 Auxiliary Inequalities 
+
+We first collect three elementary tools used in the convergence proofs. The first two control Frobenius norms of finite matrix sums and matrix products, while the third aggregates a nonnegative finite-memory convolution over the full time horizon. 
+
+Lemma D.1 (Finite-sum Frobenius bound) . Let A1, . . . , Am be matrices of the same size. Then 
+
+> m
+
+X
+
+> i=1
+
+Ai
+
+> 2
+> F
+
+≤ m
+
+> m
+
+X
+
+> i=1
+
+∥Ai∥2 
+
+> F
+
+.
+
+Proof. The triangle inequality followed by the Cauchy–Schwarz inequality gives 
+
+> m
+
+X
+
+> i=1
+
+Ai
+
+> 2
+> F
+
+≤
+
+> m
+
+X
+
+> i=1
+
+∥Ai∥F
+
+!2
+
+≤ m
+
+> m
+
+X
+
+> i=1
+
+∥Ai∥2 
+
+> F
+
+.
+
+Lemma D.2 (Matrix-product Frobenius bound) . Let A and B be matrices of compatible dimensions. Then 
+
+∥AB ∥F ≤ ∥ A∥2 ∥B∥F .
+
+33 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Proof. By the definition of the spectral norm, ∥A∥22 I − A⊤A is positive semidefinite. Therefore, its congruence transformation 
+
+∥A∥22 B⊤B − B⊤A⊤AB = B⊤ 
+
+∥A∥22 I − A⊤A
+
+
+
+B
+
+is also positive semidefinite and thus has a nonnegative trace. It follows that 
+
+∥AB ∥2 
+
+> F
+
+= tr  B⊤A⊤AB  ≤ ∥ A∥22 tr  B⊤B = ∥A∥22 ∥B∥2 
+
+> F
+
+.
+
+Taking square roots proves the claim. 
+
+Lemma D.3 (Finite-memory convolution bound) . Let T ≥ 1 and D ≥ 1 be integers, and let {at}T −1 
+
+> t=0
+
+and {bi}D−1 
+
+> i=0
+
+be nonnegative sequences. Then T −1X
+
+> t=0
+> t−1
+
+X
+
+> m=max {0,t −D}
+
+bt−m−1am ≤
+
+> D−1
+
+X
+
+> i=0
+
+biT −1X
+
+> t=0
+
+at,
+
+where a sum over an empty index set is understood to be zero. Proof. When T = 1 , the inner sum on the left-hand side is empty, so the claim is immediate. Suppose T ≥ 2. Set 
+
+i = t − m − 1 and s = m, or equivalently t = s + i + 1 . Reordering the summation gives  
+
+> T−1
+
+X
+
+> t=0
+> t−1
+
+X
+
+> m=max {0,t −D}
+
+bt−m−1am = 
+
+> min {D−1,T −2}
+
+X
+
+> i=0
+
+biT −i−2X
+
+> s=0
+
+as
+
+≤
+
+> D−1
+
+X
+
+> i=0
+
+biT −1X
+
+> s=0
+
+as,
+
+where the last inequality follows from the nonnegativity of both sequences. 
+
+D.2 Proof of Lemma 5.1 
+
+For 1 ≤ k ≤ D, (20) implies 
+
+π⊤Ck =
+
+> k
+
+X
+
+> ℓ=0
+
+e⊤
+
+> 1,ℓ
+
+.
+
+Consequently, 
+
+π⊤Ak = π⊤  Ck − Ck−1 = e⊤
+
+> 1,k
+
+.
+
+If k > D , Corollary 4.2 gives Ck = Ck−1 = π1⊤, and therefore Ak = 0.
+
+D.3 Proof of Lemma 5.2 
+
+Let 
+
+Jq := {j ∈ Z : max {1, q − D} ≤ j ≤ min {q, D }} .
+
+It is enough to control the entries column by column. Fix a node v and let ev be the corresponding standard basis vector. Let hv be the rooted depth of v. Since S = ππ ⊤, the insertion of S keeps only the component of Akev that has reached the root: 
+
+SA kev = π π⊤Akev
+
+ . (35) By Lemma 5.1, and also for k = 0 by A0 = I, this scalar is nonzero only when k = hv :
+
+π⊤Akev =
+
+1, k = hv ,
+
+0, k̸ = hv . (36) Let Kq := {q − j : j ∈ J q }. The v-th column of the interaction matrix is 
+
+sv := X
+
+> j∈J q
+
+ΠRRj−1SA q−j ev = X
+
+> k∈K q
+
+ Rq−k−1 − 1π⊤ π π⊤Akev
+
+ .
+
+Thus the sum has at most one nonzero term. If hv /∈ K q , then sv = 0. If hv ∈ K q , then 
+
+sv =  Rq−hv −1 − 1π⊤ π = Rq−hv −1π − 1.
+
+34 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+The condition hv ∈ K q implies q − hv ∈ J q and hence q − hv − 1 ≥ 0. By (20), Rq−hv −1π is the indicator vector of the nodes at rooted distance at most q − hv − 1. Hence every entry of sv belongs to {− 1, 0}, and in particular 
+
+∥sv ∥∞ ≤ 1.Since each entry of P 
+
+> j∈J q
+
+ΠRRj−1SA q−j has absolute value at most 1, we have 
+
+X
+
+> j∈J q
+
+ΠRRj−1SA q−j
+
+> 2
+> F
+
+≤ n2, (37) which completes the proof. 
+
+D.4 Proof of Lemma 5.6 
+
+Let 
+
+Ut := 
+
+> min {t,D }
+
+X
+
+> m=0
+
+π⊤Am∇ ¯F(t−m)
+
+> 2
+
+.
+
+By Lemma 5.1, π⊤Am = e⊤ 
+
+> 1,m
+
+for every 0 ≤ m ≤ D. Moreover, the i-th row of ∇ ¯F(s) is ∇fi(x(s) 
+
+> i
+
+) − ∇ fi(x(s)1 ).Hence, the sum defining Ut collects exactly the agents whose information has reached the root by time t:
+
+Ut = X  
+
+> i∈N :hi≤t
+
+
+
+∇fi(x(t−hi) 
+
+> i
+
+) − ∇ fi(x(t−hi)1 )
+
+ 2
+
+.
+
+There are at most n summands. Lemma D.1 and Assumption 1.1 therefore give the pointwise bound 
+
+Ut ≤ nL 2 X  
+
+> i∈N :hi≤t
+
+x(t−hi) 
+
+> i
+
+− x(t−hi)1
+
+> 2
+
+.
+
+Taking expectations, summing over t, and setting s = t − hi for each agent yield  
+
+> T−1
+
+X
+
+> t=0
+
+EUt ≤ nL 2 X    
+
+> i∈N :hi≤T−1
+> T−1−hi
+
+X
+
+> s=0
+
+E x(s) 
+
+> i
+
+− x(s)1
+
+> 2
+
+≤ nL 2 
+
+> T−1
+
+X
+
+> s=0
+> n
+
+X
+
+> i=1
+
+E x(s) 
+
+> i
+
+− x(s)1
+
+> 2
+
+= nL 2 
+
+> T−1
+
+X
+
+> s=0
+
+E ˆX(s) 2 
+
+> F
+
+.
+
+Here, the last identity follows from Pni=1 x(s) 
+
+> i
+
+− x(s)1
+
+> 2
+
+= ΠRX(s) 2 
+
+> F
+
+. This proves the claimed estimate. 
+
+D.5 Proof of Lemma 5.7 
+
+Equation (30) expresses each root-trajectory increment as a finite-memory sum of layer-delayed stochastic gradients: 
+
+∆ ¯X(t) = −γ1
+
+> min {t,D }
+
+X
+
+> m=0
+
+π⊤AmG(t−m). (38) To separate the sources of this movement, decompose G(s) = Θ(s) + ∇ ¯F(s) + ∇F( ¯X(s)). For the last component, discrete summation by parts, together with the definition of Am and the finite-step identity ΠCCD = 0, gives 
+
+> min {t,D }
+
+X
+
+> m=0
+
+π⊤Am∇F( ¯X(t−m))= π⊤
+
+> min {t,D }− 1
+
+X
+
+> m=0
+
+ΠCCm 
+
+∇F( ¯X(t−m)) − ∇ F( ¯X(t−m−1) )
+
+
+
++ π⊤ΠCCt∇F(0) − π⊤ΠC∇F( ¯X(t)) + π⊤∇F( ¯X(t)).
+
+35 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Substituting this identity into (38) yields 
+
+∆ ¯X(t) = H(t)1 + H(t)2 + H(t)3 + H(t)4 + H(t)5 , (39) where a sum over an empty index set is understood to be zero and 
+
+H(t)1 := −γ1
+
+> min {t,D }
+
+X
+
+> m=0
+
+π⊤AmΘ(t−m), H(t)2 := −γ1
+
+> min {t,D }
+
+X
+
+> m=0
+
+π⊤Am∇ ¯F(t−m),
+
+H(t)3 := −γ1π⊤
+
+> min {t,D }− 1
+
+X
+
+> m=0
+
+ΠCCm 
+
+∇F( ¯X(t−m)) − ∇ F( ¯X(t−m−1) )
+
+
+
+,
+
+H(t)4 := −γ1π⊤ΠCCt∇F(0) , H(t)5 := γ1π⊤ΠC∇F( ¯X(t)) − γ1π⊤∇F( ¯X(t)).
+
+The five terms represent, respectively, the layer-delayed stochastic noise, the layer-delayed disagreement gradient, the finite-memory variation of the root trajectory, the initialization boundary term, and the full gradient at the root. We estimate them in this order. For H(t)1 , Lemma 5.1 shows that it collects the noise generated by disjoint tree layers at the corresponding delayed times. These noise variables are centered and independent across the relevant node–time pairs. Since at most n nodes are involved, Lemma 5.3 and ∥1∥2 = n yield  
+
+> T−1
+
+X
+
+> t=0
+
+E H(t)1
+
+> 2
+> F
+
+≤ γ2n2σ2T. 
+
+For H(t)2 , Lemma 5.6 gives T −1X
+
+> t=0
+
+E H(t)2
+
+> 2
+> F
+
+≤ γ2n2L2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
+.
+
+For H(t)3 , Lemma D.1, Assumption 1.1, and Lemma 4.1 give, for each t,
+
+E H(t)3
+
+> 2
+> F
+
+≤ 2γ2nDL 2min {t,D }− 1
+
+X
+
+> m=0
+
+(n − nm) E ∆ ¯X(t−m−1) 2
+
+> F
+
+.
+
+Summing over t and applying Lemma D.3, together with PD−1
+
+> m=0
+
+(n − nm) = nD avg , yields  
+
+> T−1
+
+X
+
+> t=0
+
+E H(t)3
+
+> 2
+> F
+
+≤ 2γ2n2DD avg L2 
+
+> T−1
+
+X
+
+> t=0
+
+E ∆ ¯X(t) 2
+
+> F
+
+.
+
+Similarly, for H(t)4 , Lemma 4.1 and ΠCCt = 0 for t ≥ D imply  
+
+> T−1
+
+X
+
+> t=0
+
+E H(t)4
+
+> 2
+> F
+
+≤ 2γ2n2Davg ∇F(0) 2
+
+> F
+
+.
+
+Finally, since all rows of ∇F( ¯X(t)) are evaluated at x(t)1 , the definition f = n−1 Pni=1 fi gives 
+
+E H(t)5
+
+> 2
+> F
+
+= γ2n3E ∇f (x(t)1 ) 2
+
+.
+
+Then, it follows that  
+
+> T−1
+
+X
+
+> t=0
+
+E ∆ ¯X(t) 2
+
+> F
+
+≤ 2γ2n2σ2T + 10 γ2n2L2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
++ 10 γ2n2DD avg L2 
+
+> T−1
+
+X
+
+> t=0
+
+E ∆ ¯X(t) 2
+
+> F
+
++ 20 γ2n2Davg ∇F(0) 2
+
+> F
+
++ 10 γ2n3 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
+.
+
+(40) If γ ≤ 1/(6 npDD avg L), then 10 γ2n2DD avg L2 ≤ 5/18 < 1/2. Moving the corresponding term in (40) to the left and multiplying the remaining terms by at most two gives the claimed bound. 36 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+D.6 Proof of Lemma 5.8 
+
+Using (31) and the decomposition G(s) = Θ(s) + ∇ ¯F(s) + ∇F( ¯X(s)), we have 
+
+ˆX(t) = −γ
+
+> t−1
+
+X
+
+> m=0
+> t−m
+
+X
+
+> j=1
+
+ΠRRj−1SA t−m−j
+
+
+
+Θ(m) + ∇ ¯F(m) + ∇F( ¯X(m))
+
+
+
+:= M(t)1 + M(t)2 + M(t)3 ,
+
+Here, M(t)1 , M(t)2 , and M(t)3 are the noise, disagreement-gradient, and root-gradient terms, respectively. For M(t)1 , the finite supports of Ak and ΠRRj−1 restrict the contributing indices to 1 ≤ t − m ≤ 2D. Thus, 
+
+E M(t)1
+
+> 2
+> F
+
+= γ2E
+
+> t−1
+
+X
+
+> m=max {0,t −2D}
+> min {t−m,D }
+
+X
+
+> j=max {1,t −m−D}
+
+ΠRRj−1SA t−m−j Θ(m)
+
+> 2
+> F
+
+. (41) Assumption 1.2 and Lemma 5.2 give 
+
+E M(t)1
+
+> 2
+> F
+
+≤ γ2
+
+> t−1
+
+X
+
+> m=max {0,t −2D}
+> min {t−m,D }
+
+X
+
+> j=max {1,t −m−D}
+
+ΠRRj−1SA t−m−j
+
+> 2
+> F
+
+σ2 ≤ 8γ2n2Dσ 2.
+
+For M(t)2 , Lemma D.1, Assumption 1.1, and Lemma 5.2 yield 
+
+E M(t)2
+
+> 2
+> F
+
+= γ2E
+
+> t−1
+
+X
+
+> m=max {0,t −2D}
+> min {t−m,D }
+
+X
+
+> j=max {1,t −m−D}
+
+ΠRRj−1SA t−m−j ∇ ¯F(m)
+
+> 2
+> F
+
+≤ 2γ2D
+
+> t−1
+
+X
+
+> m=max {0,t −2D}
+
+E
+
+> min {t−m,D }
+
+X
+
+> j=max {1,t −m−D}
+
+ΠRRj−1SA t−m−j
+
+> 2
+> F
+
+∇ ¯F(m) 2
+
+> F
+
+≤ 8γ2n2DL 2
+
+> t−1
+
+X
+
+> m=max {0,t −2D}
+
+E ˆX(m) 2
+
+> F
+
+.
+
+Summing over t and applying Lemma D.3 gives  
+
+> T−1
+
+X
+
+> t=0
+
+E M(t)2 
+
+> 2
+> F
+
+≤ 16 γ2n2D2L2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2 
+
+> F
+
+. (42) Reordering the sum in M(t)3 gives 
+
+M(t)3 = −γ
+
+> t−1
+
+X
+
+> m=0
+> t−m
+
+X
+
+> j=1
+
+ΠRRj−1SA t−m−j ∇F( ¯X(m))= −γ
+
+> t
+
+X
+
+> j=1
+
+ΠRRj−1π
+
+> t−j
+
+X
+
+> m=0
+
+π⊤At−m−j ∇F( ¯X(m)).
+
+With s = t − j, split the inner sum into delay-disagreement, full-gradient, and initialization-boundary terms: 
+
+> t−j
+
+X
+
+> m=0
+
+π⊤At−m−j ∇F( ¯X(m)) = 
+
+> s
+
+X
+
+> q=0
+
+π⊤Aq ∇F( ¯X(s−q))=
+
+> s
+
+X
+
+> q=0
+
+π⊤Aq
+
+h
+
+∇F( ¯X(s−q)) − ∇ F( ¯X(s))
+
+i| {z }
+
+> := M(s)3,1
+
++
+
+> D
+
+X
+
+> q=0
+
+π⊤Aq ∇F( ¯X(s))
+
+| {z }
+
+> := M(s)3,2
+
+−
+
+> D
+
+X
+
+> q=min {s,D }+1
+
+π⊤Aq ∇F( ¯X(s))
+
+| {z }
+
+> := M(s)3,3
+
+.
+
+37 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Lemma 5.1 and the delay identity (16) give 
+
+M(t−j)3,1 =
+
+> min {t−j,D }
+
+X
+
+> q=0
+
+X
+
+> i∈I 1,q
+
+h
+
+∇fi(x(t−j−q)1 ) − ∇ fi(x(t−j)1 )
+
+i
+
+=
+
+> min {t−j,D }
+
+X
+
+> q=0
+
+X
+
+> i∈I 1,q
+
+h
+
+∇fi(x(t−j) 
+
+> i
+
+) − ∇ fi(x(t−j)1 )
+
+i
+
+= X
+
+> i∈[n],h i≤t−j
+
+h
+
+∇fi(x(t−j) 
+
+> i
+
+) − ∇ fi(x(t−j)1 )
+
+i
+
+.
+
+Assumption 1.1 and Lemma D.1 then imply 
+
+M(t−j)3,1
+
+> 2
+
+≤ n X
+
+> i∈[n],h i≤t−j
+
+L2 x(t−j) 
+
+> i
+
+− x(t−j)1
+
+> 2
+
+≤ nL 2 ˆX(t−j) 2
+
+> F
+
+. (43) Since ΠRRj−1π is the negative indicator of the nodes beyond depth j − 1, ΠRRj−1π 2 = n − nj−1. Lemmas D.1 and D.3 give  
+
+> T−1
+
+X
+
+> t=0
+
+E
+
+> t
+
+X
+
+> j=1
+
+ΠRRj−1πM(t−j)3,1
+
+> 2
+> F
+
+= 
+
+> T−1
+
+X
+
+> t=0
+
+E
+
+> min {t,D }
+
+X
+
+> j=1
+
+ΠRRj−1πM(t−j)3,1
+
+> 2
+> F
+
+≤nDL 2 
+
+> T−1
+
+X
+
+> t=0 min {t,D }
+
+X
+
+> j=1
+
+(n − nj−1)E ˆX(t−j) 2
+
+> F
+
+≤ n2DD avg L2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
+.
+
+(44) The full-gradient term satisfies 
+
+M(t−j)3,2 =
+
+> D
+
+X
+
+> q=0
+
+X
+
+> i∈I 1,q
+
+∇fi(x(t−j)1 ) = X
+
+> i∈[n]
+
+∇fi(x(t−j)1 ) = n∇f (x(t−j)1 ),
+
+and hence 
+
+M(t−j)3,2
+
+> 2
+
+= n2 ∇f (x(t−j)1 ) 2
+
+. (45) Applying the same argument as for (44),  
+
+> T−1
+
+X
+
+> t=0
+
+E
+
+> t
+
+X
+
+> j=1
+
+ΠRRj−1πM(t−j)3,2
+
+> 2
+> F
+
+= 
+
+> T−1
+
+X
+
+> t=0
+
+E
+
+> min {t,D }
+
+X
+
+> j=1
+
+ΠRRj−1πM(t−j)3,2
+
+> 2
+> F
+
+≤n2D 
+
+> T−1
+
+X
+
+> t=0 min {t,D }
+
+X
+
+> j=1
+
+(n − nj−1)E ∇f (x(t−j)1 ) 2
+
+≤ n3DD avg  
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
+.
+
+(46) Finally, M(t−j)3,3 is nonzero only for t − j < D . Set 
+
+˜M(t)3,3 := 
+
+> t
+
+X
+
+> j=1
+
+ΠRRj−1πM(t−j)3,3
+
+= −
+
+> min {t,D }
+
+X
+
+> j=max {1,t −D+1 }
+
+ΠRRj−1π
+
+> D
+
+X
+
+> q=t−j+1
+
+X
+
+> i∈I 1,q
+
+∇fi(x(t−j)1 )= −
+
+> min {t,D }
+
+X
+
+> j=max {1,t −D+1 }
+
+ΠRRj−1π X
+
+> i∈[n], h i>t −j
+
+h
+
+∇fi(x(t−j)1 ) − ∇ fi(x(0) ) + ∇fi(x(0) )
+
+i
+
+.
+
+The two finite-support conditions imply ˜M(t)3,3 = 0 for t ≥ 2D. Let 
+
+Jt := {j : max {1, t − D + 1 } ≤ j ≤ min {t, D }} .
+
+38 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+Define 
+
+Φt,j := n X
+
+> i∈[n], h i>t −j
+
+E
+
+
+
+2 ∇fi(x(t−j)1 ) − ∇ fi(x(t−j) 
+
+> i
+
+) 2
+
++ 2 ∇fi(x(0) ) 2
+
+.
+
+Lemma D.1, Assumption 1.1, and (16) give  
+
+> T−1
+
+X
+
+> t=0
+
+E ˜M(t)3,3
+
+> 2
+> F
+
+≤ 
+
+> min {T−1,2D−1}
+
+X
+
+> t=0
+
+D X
+
+> j∈J t
+
+ΠRRj−1π 2 Φt,j 
+
+≤2nD  
+
+> min {T−1,2D−1}
+
+X
+
+> t=0
+
+X
+
+> j∈J t
+
+(n − nj−1) X
+
+> i∈[n]
+
+E
+
+
+
+L2 x(t−j)1 − x(t−j)
+
+> i
+> 2
+
++ ∇fi(x(0) ) 2
+
+≤2nDL 2min {T −1,2D−1}
+
+X
+
+> t=0
+
+X
+
+> j∈J t
+
+(n − nj−1) E ˆX(t−j) 2
+
+> F
+
++ 8 n2D2Davg ∇F(0) 2
+
+> F
+
+≤2n2DD avg L2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
++ 8 n2D2Davg ∇F(0) 2
+
+> F
+
+.
+
+(47) The last two inequalities use s = t − j and 
+
+> D
+
+X
+
+> j=1
+
+(n − nj−1) = nD avg .
+
+Combining (44)–(47) with ∥a + b + c∥2 ≤ 3( ∥a∥2 + ∥b∥2 + ∥c∥2) gives  
+
+> T−1
+
+X
+
+> t=0
+
+E M(t)3
+
+> 2
+> F
+
+≤ 10 γ2n2DD avg L2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
++ 10 γ2n3DD avg  
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
++ 30 γ2n2D2Davg ∇F(0) 2
+
+> F
+
+.
+
+(48) Combining (41), (42), and (48), and using Davg ≤ D, gives, for γ ≤ 1/(20 nDL ), 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
+≤ 3 
+
+> T−1
+
+X
+
+> t=0
+
+E M(t)1
+
+> 2
+> F
+
++ 3  
+
+> T−1
+
+X
+
+> t=0
+
+E M(t)2
+
+> 2
+> F
+
++ 3  
+
+> T−1
+
+X
+
+> t=0
+
+E M(t)3
+
+> 2
+> F
+
+≤25 γ2n2Dσ 2T + 80 γ2n2D2L2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
++ 30 γ2n3DD avg  
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
++ 90 γ2n2D2Davg ∇F(0) 2 
+
+> F
+
+.
+
+The stepsize condition gives 80 γ2n2D2L2 ≤ 1/5. Absorbing this term into the left-hand side and rounding the constants upward yields  
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
+≤ 32 γ2n2Dσ 2T + 40 γ2n3DD avg  
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
++ 120 γ2n2D2Davg ∇F(0) 2
+
+> F
+
+.
+
+This is the claimed disagreement bound. 
+
+D.7 Proof of Lemma 5.10 
+
+Let f ⋆ := inf x f (x) and ∆f := f (x(0) ) − f ⋆. By Assumption 1.1, the aggregate objective f := 1
+
+> n
+
+Pni=1 fi is 
+
+L-smooth. Applying the smoothness inequality along the root update gives 
+
+Ef (x(t+1) 1 ) ≤ Ef (x(t)1 ) + E
+
+D
+
+∇f (x(t)1 ), x (t+1) 1 − x(t)1
+
+E
+
++ L
+
+2 E x(t+1) 1 − x(t)1
+
+> 2
+
+. (49) 39 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+We first decompose the inner-product term in (49). The layer representation (29) gives 
+
+
+
+x(t+1) 1 − x(t)1
+
+⊤
+
+= −γπ⊤Y(t) = −γπ⊤
+
+> min {t,D }
+
+X
+
+> m=0
+
+AmG(t−m). (50) To separate the stochastic error, the disagreement-gradient error, and the delayed averaged gradients in this update, write G(s) = Θ(s) + ∇ ¯F(s) + ∇F( ¯X(s)) and define 
+
+Q(t)1 := π⊤
+
+> min {t,D }
+
+X
+
+> m=0
+
+AmΘ(t−m), Q(t)2 := π⊤
+
+> min {t,D }
+
+X
+
+> m=0
+
+Am∇ ¯F(t−m),
+
+Q(t)3 := π⊤
+
+> min {t,D }− 1
+
+X
+
+> m=0
+
+ΠCCm 
+
+∇F( ¯X(t−m)) − ∇ F( ¯X(t−m−1) )
+
+
+
++ π⊤ΠCCt∇F(0) ,
+
+Here, Q(t)1 collects the layer-delayed stochastic errors, Q(t)2 collects the corresponding disagreement-gradient errors, and Q(t)3 is the finite-memory correction associated with the delayed averaged gradients. In particular, the latter gradients satisfy the exact decomposition 
+
+π⊤
+
+> min {t,D }
+
+X
+
+> m=0
+
+Am∇F( ¯X(t−m)) = Q(t)3 + 1⊤∇F( ¯X(t)).
+
+Lemma 5.9 eliminates the stochastic component from the expected inner product: 
+
+E
+
+
+
+∇f (x(t)1 ),
+
+
+
+Q(t)1
+
+⊤
+
+= E
+
+*
+
+∇f (x(t)1 ),
+
+> min {t,D }
+
+X
+
+> m=0
+
+X
+
+> j∈I 1,m
+
+
+
+gj (x(t−m) 
+
+> j
+
+, ξ (t−m) 
+
+> j
+
+) − ∇ fj (x(t−m) 
+
+> j
+
+)
+
++
+
+= 0 .
+
+Since 1⊤∇F( ¯X(t)) = n∇f (x(t)1 )⊤, the expected inner product decomposes into the principal descent direction and two correction terms: 
+
+E
+
+D
+
+∇f (x(t)1 ), x (t+1) 1 − x(t)1
+
+E
+
+= −γn E ∇f (x(t)1 ) 2
+
+− γEP(t)1 − γEP(t)2 , (51) where 
+
+P(t)1 := 
+
+
+
+∇f (x(t)1 ),
+
+
+
+Q(t)2
+
+⊤
+
+, P(t)2 := 
+
+
+
+∇f (x(t)1 ),
+
+
+
+Q(t)3
+
+⊤
+
+.
+
+We bound the two corrections separately. For the disagreement-gradient term P(t)1 , Young’s inequality gives 
+
+−γEP(t)1 ≤ n
+
+4 γE ∇f (x(t)1 ) 2
+
++ γn E Q(t)2
+
+> 2
+
+. (52) Summing over t and applying Lemma 5.6 converts the second term into accumulated root-relative disagreement: 
+
+−γ 
+
+> T−1
+
+X
+
+> t=0
+
+EP(t)1 ≤ n
+
+4 γ 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
++ γL 2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
+. (53) We next control the finite-memory correction P(t)2 . Applying Young’s inequality and separating the two components of 
+
+Q(t)3 yields 
+
+− γEP(t)2 ≤ γn 
+
+4 E ∇f (x(t)1 ) 2
+
++ γn E Q(t)3
+
+> 2
+
+≤ γn 
+
+4 E ∇f (x(t)1 ) 2
+
++ 2γn ΠCCt 22 ∇F(0) 2
+
+> F
+
++ 2γn E π⊤
+
+> min {t,D }− 1
+
+X
+
+> m=0
+
+ΠCCm 
+
+∇F( ¯X(t−m)) − ∇ F( ¯X(t−m−1) )
+
+ 2
+
+> F
+
+.
+
+(54) 40 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+It remains to estimate the telescoping component in (54). Since π⊤ΠCCm is the negative indicator of the nodes with depth greater than m, we may reorder the sum by node and telescope over m. Equation (16) then identifies the resulting endpoint with x(t) 
+
+> i
+
+. The common negative sign disappears upon taking the norm, and hence 
+
+π⊤
+
+> min {t,D }− 1
+
+X
+
+> m=0
+
+ΠCCm 
+
+∇F( ¯X(t−m)) − ∇ F( ¯X(t−m−1) )
+
+ 22
+
+=
+
+> min {t,D }− 1
+
+X
+
+> m=0
+
+X
+
+> i∈[n],h i>m
+
+h
+
+∇fi(x(t−m)1 ) − ∇ fi(x(t−m−1) 1 )
+
+i 22
+
+= X
+
+> i∈[n]min {hi,t }− 1
+
+X
+
+> m=0
+
+h
+
+∇fi(x(t−m)1 ) − ∇ fi(x(t−m−1) 1 )
+
+i 22
+
+= X
+
+> i∈[n]
+
+h
+
+∇fi(x(t)1 ) − ∇ fi(x(t−min {hi,t })1 )
+
+i 22
+
+= X
+
+> i∈[n]
+
+h
+
+∇fi(x(t)1 ) − ∇ fi(x(t) 
+
+> i
+
+)
+
+i 22
+
+≤ nL 2 X
+
+> i∈[n]
+
+x(t)1 − x(t)
+
+> i
+> 2
+
+= nL 2 ˆX(t) 2
+
+> F
+
+.
+
+Thus, the temporal correction is also controlled by the root-relative disagreement. Summing (54) over t and using Lemma 4.1 for the initialization component gives 
+
+−γ 
+
+> T−1
+
+X
+
+> t=0
+
+EP(t)2 ≤ γn 
+
+4 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
++ 2 γL 2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
++ 4 γD avg ∇F(0) 2
+
+> F
+
+. (55) We can now assemble the descent inequality. Since ∆ ¯X(t) 2 
+
+> F
+
+= n x(t+1) 1 − x(t)1
+
+> 2
+
+, summing (49) over t, using 
+
+f (x(T )1 ) ≥ f ⋆, and applying (51)–(55) gives 
+
+− ∆f ≤ − γn  
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
+− γ 
+
+> T−1
+
+X
+
+> t=0
+
+EP(t)1 − γ 
+
+> T−1
+
+X
+
+> t=0
+
+EP(t)2 + L
+
+2n 
+
+> T−1
+
+X
+
+> t=0
+
+E ∆ ¯X(t) 2
+
+> F
+
+≤ − γn 
+
+2 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
++ 3 γL 2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
++ L
+
+2n 
+
+> T−1
+
+X
+
+> t=0
+
+E ∆ ¯X(t) 2
+
+> F
+
++ 4 γD avg ∇F(0) 2
+
+> F
+
+,
+
+(56) The remaining accumulated errors are exactly those controlled by Lemmas 5.7 and 5.8. We first substitute Lemma 5.7 into (56). The assumed bound γ ≤ 1/(40 nDL ) also implies γ ≤ 1/(6 npDD avg L) because Davg ≤ D, so 
+
+− ∆f ≤ 2γ2nLσ 2T +  3γL 2 + 10 γ2nL 3 T −1X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
++
+
+
+
+− γn 
+
+2 + 10 γ2n2L
+
+ T −1X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
++  4γD avg + 20 γ2nD avg L ∇F(0) 2
+
+> F
+
+.
+
+≤2γ2nLσ 2T + 5 γL 2 
+
+> T−1
+
+X
+
+> t=0
+
+E ˆX(t) 2
+
+> F
+
+− γn 
+
+4 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
++ 5 γD avg ∇F(0) 2
+
+> F
+
+.
+
+(57) The second inequality uses the same stepsize bound to simplify the three coefficients. We next substitute the disagreement estimate in Lemma 5.8 into (57), which gives 
+
+− ∆f ≤ 2γ2nLσ 2T + 160 γ3n2DL 2σ2T +
+
+
+
+200 γ3n3DD avg L2 − γn 
+
+4
+
+ T −1X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
++  600 γ3n2D2Davg L2 + 5 γD avg 
+
+ ∇F(0) 2
+
+> F
+
+≤ 6γ2nLσ 2T + 6 γD avg ∇F(0) 2
+
+> F
+
+− γn 
+
+8 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
+.
+
+(58) 41 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+The second inequality in (58) uses Davg ≤ D and γnDL ≤ 1/40 . It absorbs both the stochastic and initialization corrections while retaining a negative multiple of the accumulated gradient norm. Rearranging this inequality and dividing by T gives 
+
+1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+E ∇f (x(t)1 ) 2
+
+≤ 10∆ f
+
+γnT + 50 γLσ 2 + 50 Davg 
+
+T
+
+1
+
+n ∇F(0) 2
+
+> F
+
+.
+
+This is the desired descent estimate. 
+
+## References 
+
+[1] S. A. A LGHUNAIM AND K. Y UAN , A unified and refined convergence analysis for non-convex decentralized learning , IEEE Transactions on Signal Processing, 70 (2022), pp. 3264–3279. [2] S. B OYD , P. D IACONIS , AND L. X IAO , Fastest mixing markov chain on a graph , SIAM Review, 46 (2004), pp. 667–689. [3] Y. C ARMON , J. C. D UCHI , O. H INDER , AND A. S IDFORD , Lower bounds for finding stationary points II: First-order methods , Mathematical Programming, 185 (2021), pp. 315–355, https://doi.org/10.1007/ s10107-019-01431-x .[4] L. D ING , K. J IN , B. Y ING , K. Y UAN , AND W. Y IN , Dsgd-ceca: Decentralized sgd with communication-optimal exact consensus algorithm , in International Conference on Machine Learning, PMLR, 2023, pp. 8067–8089. [5] P. E RD ˝ OS AND A. R ÉNYI , On random graphs. i , Publicationes Mathematicae Debrecen, 6 (1959), pp. 290–297. [6] S. G HADIMI AND G. L AN , Stochastic first- and zeroth-order methods for nonconvex stochastic programming ,SIAM Journal on Optimization, 23 (2013), pp. 2341–2368. [7] S. H OORY , N. L INIAL , AND A. W IGDERSON , Expander graphs and their applications , Bulletin of the American Mathematical Society, 43 (2006), pp. 439–561, https://doi.org/10.1090/S0273-0979-06-01126-8 .[8] K. H UANG AND S. P U, Improving the transient times for distributed stochastic gradient methods , IEEE Transac-tions on Automatic Control, 68 (2022), pp. 4127–4142, https://doi.org/10.1109/TAC.2022.3201141 .[9] K. H UANG , S. P U, AND A. N EDI ´ C, An accelerated distributed stochastic gradient method with momentum ,Mathematical Programming, 215 (2026), pp. 193–236, https://doi.org/10.1007/s10107-025-02217-0 .[10] D. P. K INGMA AND J. B A, Adam: A method for stochastic optimization , arXiv preprint arXiv:1412.6980, (2014). [11] N. K LUGER , A. A TTIA , AND T. K OREN , Near-optimal decentralized stochastic convex optimization over networks , arXiv preprint arXiv:2606.04757, (2026), https://doi.org/10.48550/arXiv.2606.04757 .[12] A. K OLOSKOVA , T. L IN , AND S. U. S TICH , An improved analysis of gradient tracking for decentralized machine learning , Advances in Neural Information Processing Systems, 34 (2021), pp. 11422–11435. [13] D. K OVALEV , A. S ALIM , AND P. R ICHTÁRIK , Optimal and practical algorithms for smooth and strongly convex decentralized optimization , Advances in Neural Information Processing Systems, 33 (2020), pp. 18342–18352. [14] A. K RIZHEVSKY AND G. E. H INTON , Learning multiple layers of features from tiny images , tech. report, University of Toronto, 2009. [15] X. L IAN , C. Z HANG , H. Z HANG , C.-J. H SIEH , W. Z HANG , AND J. L IU , Can decentralized algorithms outperform centralized algorithms? a case study for decentralized parallel stochastic gradient descent , Advances in neural information processing systems, 30 (2017). [16] L. L IANG , X. C HEN , G. L UO , AND K. Y UAN , Achieving linear speedup and near-optimal complexity for decentralized optimization over row-stochastic networks , in Proceedings of the 42nd International Conference on Machine Learning, vol. 267 of Proceedings of Machine Learning Research, PMLR, 2025, pp. 37100–37130, 
+
+https://proceedings.mlr.press/v267/liang25c.html .[17] L. L IANG , X. H UANG , R. X IN , AND K. Y UAN , Understanding the influence of digraphs on decentralized optimization: Effective metrics, lower bound, and optimal algorithm , SIAM Journal on Optimization, 35 (2025), pp. 1570–1600, https://doi.org/10.1137/24M1657341 .[18] L. L IANG , G. L UO , AND K. Y UAN , On the linear speedup of the push-pull method for decentralized optimization over digraphs , arXiv preprint arXiv:2506.18075, (2025). [19] Y. L U AND C. D E SA, Optimal complexity in decentralized training , in International conference on machine learning, PMLR, 2021, pp. 7111–7123. 42 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+[20] A. N EDI ´ C, D. T. A. N GUYEN , AND D. T. N GUYEN , AB/Push-Pull method for distributed optimization in time-varying directed networks , Optimization Methods and Software, 40 (2025), pp. 1044–1071, https://doi. org/10.1080/10556788.2023.2261602 .[21] A. N EDI ´ C AND A. O LSHEVSKY , Distributed optimization over time-varying directed graphs , IEEE Transactions on Automatic Control, 60 (2015), pp. 601–615, https://doi.org/10.1109/TAC.2014.2364096 .[22] A. N EDI ´ C, A. O LSHEVSKY , AND M. G. R ABBAT , Network topology and communication-computation tradeoffs in decentralized optimization , Proceedings of the IEEE, 106 (2018), pp. 953–976. [23] A. N EDIC , A. O LSHEVSKY , AND W. S HI , Achieving geometric convergence for distributed optimization over time-varying graphs , SIAM Journal on Optimization, 27 (2017), pp. 2597–2633. [24] A. N EDIC AND A. O ZDAGLAR , Distributed subgradient methods for multi-agent optimization , IEEE Transactions on Automatic Control, 54 (2009), pp. 48–61. [25] Y. E. N ESTEROV , A method for unconstrained convex minimization problem with the rate of convergence o(1 /k 2),Doklady Akademii Nauk SSSR, 269 (1983), pp. 543–547. [26] E. D. H. N GUYEN , X. J IANG , B. Y ING , AND C. A. U RIBE , On graphs with finite-time consensus and their use in gradient tracking , SIAM Journal on Optimization, 35 (2025), pp. 872–898. [27] S. P U AND A. N EDI ´ C, Distributed stochastic gradient tracking methods , Mathematical Programming, 187 (2021), pp. 409–457. [28] S. P U, A. O LSHEVSKY , AND I. C. P ASCHALIDIS , Asymptotic network independence in distributed stochastic optimization for machine learning: Examining distributed and centralized stochastic gradient descent , IEEE signal processing magazine, 37 (2020), pp. 114–122. [29] S. P U, A. O LSHEVSKY , AND I. C. P ASCHALIDIS , A sharp estimate on the transient time of distributed stochastic gradient descent , IEEE Transactions on Automatic Control, 67 (2021), pp. 5900–5915. [30] S. P U, W. S HI , J. X U, AND A. N EDI ´ C, Push–pull gradient methods for distributed optimization in networks , IEEE Transactions on Automatic Control, 66 (2021), pp. 1–16, https://doi.org/10.1109/TAC.2020.2972824 .[31] K. S CAMAN , F. B ACH , S. B UBECK , Y. T. L EE , AND L. M ASSOULIÉ , Optimal algorithms for smooth and strongly convex distributed optimization in networks , in International Conference on Machine Learning, PMLR, 2017, pp. 3027–3036. [32] W. S HI , Q. L ING , G. W U, AND W. Y IN , Extra: An exact first-order algorithm for decentralized consensus optimization , SIAM Journal on Optimization, 25 (2015), pp. 944–966. [33] Z. S ONG , W. L I, K. J IN , L. S HI , M. Y AN , W. Y IN , AND K. Y UAN , Communication-efficient topologies for decentralized learning with o(1) consensus rate , Advances in Neural Information Processing Systems, 35 (2022), pp. 1073–1085. [34] Z. S ONG , L. S HI , S. P U, AND M. Y AN , Optimal gradient tracking for decentralized optimization , Mathematical Programming, 207 (2024), pp. 1–53. [35] M. S UN AND K. Y UAN , Accelerated decentralized stochastic gradient descent for strongly convex optimization ,arXiv preprint arXiv:2606.07496, (2026), https://doi.org/10.48550/arXiv.2606.07496 .[36] H. T ANG , X. L IAN , M. Y AN , C. Z HANG , AND J. L IU , d2: Decentralized training over decentralized data , in International Conference on Machine Learning, PMLR, 2018, pp. 4848–4856. [37] T. T IELEMAN AND G. H INTON , Lecture 6.5—RMSProp: Divide the gradient by a running average of its recent magnitude , COURSERA: Neural Networks for Machine Learning, 4 (2012), pp. 26–31. [38] T. V OGELS , L. H E, A. K OLOSKOVA , S. P. K ARIMIREDDY , T. L IN , S. U. S TICH , AND M. J AGGI , Relaysum for decentralized deep learning on heterogeneous data , Advances in Neural Information Processing Systems, 34 (2021), pp. 28004–28015. [39] R. W ARD , X. W U, AND L. B OTTOU , AdaGrad stepsizes: Sharp convergence over nonconvex landscapes, from any initialization , arXiv preprint arXiv:1806.01811, (2018). [40] C. X I, R. X IN , AND U. A. K HAN , Add-opt: Accelerated distributed directed optimization , IEEE Transactions on Automatic Control, 63 (2017), pp. 1329–1339. [41] L. X IAO AND S. B OYD , Fast linear iterations for distributed averaging , Systems & Control Letters, 53 (2004), pp. 65–78. [42] R. X IN , S. P U, A. N EDI ´ C, AND U. A. K HAN , A general framework for decentralized optimization with first-order methods , Proceedings of the IEEE, 108 (2020), pp. 1869–1889. 43 Optimal Network Dependence via Tree Routing A PREPRINT 
+
+[43] B. Y ING , K. Y UAN , Y. C HEN , H. H U, P. P AN , AND W. Y IN , Exponential graph is provably efficient for decentralized deep training , Advances in Neural Information Processing Systems, 34 (2021), pp. 13975–13987. [44] R. Y OU AND S. P U, B-ary tree push-pull method is provably efficient for distributed learning on heterogeneous data , Advances in Neural Information Processing Systems, 37 (2024), pp. 97523–97561. [45] R. Y OU AND S. P U, Distributed learning over arbitrary topology: Linear speed-up with polynomial transient time , arXiv preprint arXiv:2503.16123, (2025). [46] R. Y OU AND S. P U, Stochastic push–pull for decentralized nonconvex optimization , IEEE Transactions on Signal Processing, 74 (2026), pp. 1383–1398, https://doi.org/10.1109/TSP.2026.3675119 .[47] B. Y UAN , Y. H E, J. D AVIS , T. Z HANG , T. D AO , B. C HEN , P. S. L IANG , C. R E, AND C. Z HANG , Decentralized training of foundation models in heterogeneous environments , Advances in Neural Information Processing Systems, 35 (2022), pp. 25464–25477. [48] K. Y UAN , S. A. A LGHUNAIM , AND X. H UANG , Removing data heterogeneity influence enhances network topology dependence of decentralized sgd , Journal of Machine Learning Research, 24 (2023), pp. 1–53. [49] K. Y UAN , X. H UANG , Y. C HEN , X. Z HANG , Y. Z HANG , AND P. P AN , Revisiting optimal convergence rate for smooth and non-convex stochastic decentralized optimization , Advances in Neural Information Processing Systems, 35 (2022), pp. 36382–36395. [50] M. D. Z EILER , AdaDelta: An adaptive learning rate method , arXiv preprint arXiv:1212.5701, (2012). 44
