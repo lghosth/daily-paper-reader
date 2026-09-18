@@ -1,0 +1,2092 @@
+1
+P-GADMM: Parallel Group-Based ADMM for Asynchronous
+Optimization in Heterogeneous Edge Networks
+Gaiguo Wei, Qingying Zhang, Heqiang Wang, Yu Zhang, and Xiaoxiong Zhong
+Abstract—The Alternating Direction Method of Multipliers
+(ADMM) is widely used for distributed optimization, but its
+synchronous implementation can suffer from efficiency loss in
+heterogeneous edge networks, where fast clients or groups need
+to wait for slower ones before global updates can be completed.
+Existing group-based ADMM methods reduce communication
+overhead through grouping, but their grouping rules usually
+focus on data similarity or network topology and do not explicitly
+account for computation heterogeneity. To address this issue,
+this paper proposes Parallel Group-Based ADMM (P-GADMM)
+for distributed optimization in heterogeneous edge networks. P-
+GADMM forms computation-aware edge groups according to
+client computational capabilities and local data sizes, which
+reduces training-speed variation within each group. It further
+combines edge-level aggregation with bounded asynchronous
+coordination at the cloud, allowing active groups to participate
+in global updates without waiting for slower groups while
+controlling stale group information through a delay threshold.
+For strongly convex group objectives, we establish convergence
+guarantees for an idealized form of P-GADMM under bounded
+group-level staleness, showing a time-averaged convergence be-
+havior up to a staleness-induced asymptotic error neighborhood.
+Experiments show that P-GADMM reduces wall-clock training
+time compared with representative baselines while maintaining
+comparable final accuracy.
+Index Terms—Distributed optimization, alternating direction
+method of multipliers (ADMM), edge learning, heterogeneous
+edge networks, bounded-delay asynchronous optimization.
+I. INTRODUCTION
+D
+ISTRIBUTED optimization has been widely used for
+machine learning in large-scale distributed systems [1]–
+[3]. In edge networks, data are generated and stored at many
+geographically distributed clients, and model training is usu-
+ally carried out through local computation together with global
+coordination under either a parameter server architecture or a
+consensus architecture [4]–[6]. As these systems continue to
+expand, communication overhead becomes a major bottleneck.
+Frequent transmission of raw data or global model updates
+consumes bandwidth, increases latency, and raises privacy and
+regulatory concerns. For this reason, reducing communication
+cost has become an important issue in distributed learning
+This work was supported by Peng Cheng Laboratory Project under Grant
+PCL2025A13.
+Gaiguo Wei and Qingying Zhang are with the Southern University of Sci-
+ence and Technology, Shenzhen 518055, China, and also with Pengcheng Lab-
+oratory, Shenzhen 518000, China (e-mail: 12447019@mail.sustech.edu.cn;
+12547037@mail.sustech.edu.cn).
+Heqiang Wang and Xiaoxiong Zhong are with Pengcheng Laboratory, Shen-
+zhen 518000, China (e-mail: wanghq02@pcl.ac.cn; xixzhong@gmail.com).
+Yu Zhang is with the Department of Computer Science and Engineering,
+Southern University of Science and Technology, Shenzhen 518055, China
+(e-mail: zhangy7@sustech.edu.cn).
+Corresponding authors: Yu Zhang and Xiaoxiong Zhong.
+[7]–[10]. This has led to collaborative learning frameworks
+in which raw data remain local and only model information
+is exchanged.
+Hierarchical cloud-edge-client architectures provide a nat-
+ural structure for collaborative learning in edge networks.
+The client layer performs local computation, the edge layer
+coordinates groups of nearby or logically related clients, and
+the cloud layer maintains the global model. From an optimiza-
+tion viewpoint, the global objective is decomposed into local
+objectives handled by clients, while the cloud server performs
+global aggregation and maintains model consistency. A major
+difficulty in this setting is statistical heterogeneity. Local
+datasets are usually collected under different environments
+and operating conditions, so the overall data distribution is
+typically non-IID. As a result, local updates may deviate from
+the global optimum and introduce aggregation bias, which
+slows convergence and degrades the final model [11].
+The Alternating Direction Method of Multipliers (ADMM)
+serves as a fundamental framework for solving distributed op-
+timization problems with consensus constraints [2]. It decom-
+poses the global objective into local subproblems and enforces
+consistency through an augmented Lagrangian. Because of this
+structure, ADMM can balance local optimization and global
+consensus in a principled way. By explicitly coupling local
+variables through the consensus constraint, ADMM can help
+control the mismatch among local models and maintain stable
+convergence even when local data distributions differ across
+clients [12]. This makes ADMM attractive for heterogeneous
+distributed learning scenarios.
+However, applying ADMM in heterogeneous edge networks
+remains difficult. Clients may differ substantially in processing
+capability, available resources, and communication conditions
+because of hardware diversity, changing resource availability,
+and competing background workloads. In the standard dis-
+tributed implementation of ADMM, global updates are usually
+performed synchronously. The central server must wait until
+all clients, including stragglers, finish their local computation
+before the next update starts. During this process, faster clients
+remain idle while slower clients continue computing, so the
+overall training speed is limited by the slowest client. This
+causes inefficient resource usage, extra waiting time, and lower
+system throughput. As a result, standard ADMM is difficult
+to use in edge networks with strict latency requirements [13],
+[14]. More broadly, this reflects a basic challenge in distributed
+optimization: coordination overhead should be reduced with-
+out weakening convergence reliability [10], [15].
+Although grouping and asynchronous optimization have
+been studied to alleviate synchronization delay, they do not
+fully address the computation heterogeneity in edge networks.
+arXiv:2609.20006v1  [cs.DC]  17 Sep 2026
+
+
+2
+Grouping methods usually do not explicitly consider differ-
+ences in client processing speed, while asynchronous methods
+need additional control over stale information. Therefore, an
+effective method should improve training efficiency while
+preserving the stability needed for reliable convergence.
+Fig. 1. Comparison of grouping mechanisms. In traditional random grouping
+(left), fast clients may wait for slow ones, which creates a straggler bottleneck.
+In the proposed strategy (right), clients are grouped according to computa-
+tional capability and local data size, which reduces intra-group speed variation
+and synchronization delay.
+In this paper, we propose parallel group-based ADMM
+(P-GADMM) for heterogeneous edge networks. Unlike con-
+ventional grouping methods determined by topology or data
+characteristics, P-GADMM organizes clients according to
+computational capability and local data size, as illustrated in
+Fig. 1. It also combines grouping with bounded asynchronous
+coordination, so faster groups can continue updating without
+being blocked by slower ones. The main contributions of this
+work are summarized as follows:
+1) We propose P-GADMM for distributed optimization
+over a hierarchical cloud-edge-client architecture. The
+algorithm constructs computation-aware edge groups
+based on each client’s computational capability and
+local data size, and combines aggregation at the edge
+layer with bounded-delay asynchronous coordination
+at the cloud. This design can reduce synchronization
+delay caused by heterogeneous client computation while
+keeping stale group information under an explicit delay
+bound.
+2) We analyze the convergence of an idealized version of P-
+GADMM under strongly convex objectives and bounded
+staleness. The analysis shows how delayed global model
+information introduces a bounded perturbation into the
+group optimality condition. Using a Lyapunov func-
+tion, we derive a descent inequality and obtain a time-
+averaged bound with an O(1/T) decay term up to an
+O(τ 2
+max) error neighborhood.
+3) We evaluate the performance of P-GADMM in heteroge-
+neous edge networks and compare it with other baselines
+under different heterogeneity settings. The results show
+that P-GADMM improves convergence efficiency by
+reducing wall-clock training time and waiting overhead,
+while maintaining comparable final accuracy.
+The rest of this paper is organized as follows. Section II re-
+views related work. Section III presents the system architecture
+and problem formulation. Section IV describes the proposed P-
+GADMM algorithm. Section V gives the convergence analysis.
+Section VI presents the experimental results. Section VII
+concludes the paper.
+II. RELATED WORK
+A. Distributed Optimization in Edge Networks
+Edge data are usually generated and stored across a large
+number of clients. This has led to distributed optimization
+methods in which clients perform local computation and
+exchange model information with servers, rather than up-
+loading raw data. To reduce the communication between
+clients and the cloud, a common approach is to adopt hier-
+archical architectures with intermediate aggregation servers.
+For example, hierarchical frameworks [16] and heterogeneous
+edge aggregation schemes [17] reduce direct communication
+between clients and the cloud. Another line of work uses client
+selection to reduce synchronization delay [18], [19]. In these
+methods, only a subset of clients participates in each iteration,
+so the waiting time caused by slow clients can be reduced.
+Although these methods improve training efficiency, they
+still have limitations in heterogeneous edge networks. When
+slow clients are repeatedly excluded, the global model may
+become biased, especially if these clients hold distinctive local
+data distributions. Some studies further consider resource and
+data heterogeneity by adjusting local computation settings,
+such as adaptive local epoch sizes [20]. However, these
+methods mainly focus on communication and scheduling. In
+edge networks with strong heterogeneity, a more basic issue is
+how to preserve reliable global consensus while maintaining
+system efficiency. This issue motivates the use of optimization
+methods designed for consensus-constrained problems.
+B. ADMM and Grouped Distributed Optimization
+ADMM is a standard method for distributed optimization
+with consensus constraints. Because it decomposes a global
+problem into local subproblems and enforces consistency
+through dual variables, it has been used in many distributed
+learning and network optimization problems. In edge net-
+works with limited resources, existing studies have extended
+ADMM in several directions. Representative examples include
+stochastic formulations with random data sampling [21] and
+accelerated solvers for large-scale datasets [22]. ADMM has
+also been used in specific distributed learning tasks, including
+distributed linear classification [23]. In addition, some studies
+consider inexact splitting, where local subproblems are solved
+approximately rather than exactly, in order to reduce the
+computation burden on local clients [24], [25]. This usually
+improves local efficiency, but it may also increase the number
+of communication rounds before convergence.
+Another way to reduce global communication overhead is to
+organize clients into groups. Group-based ADMM (GADMM)
+
+
+3
+[26] is a representative example, where clients with similar
+local variables are grouped and coordination is performed at
+the group level. Later studies extended this idea to differ-
+ent communication structures. Ring-based GADMM [10] and
+quantized variants [27] restrict parameter exchange to neigh-
+boring clients. Layer-wise training schemes [28], grouped
+ring structures [29], and bipartite graph models [30] further
+divide the global coordination process into smaller units. These
+methods improve communication efficiency through structured
+coordination.
+However, most grouped ADMM methods still rely on strict
+synchronization. Moreover, grouping is usually determined by
+topology or data characteristics, rather than by differences in
+computing speed. As a result, computational imbalance may
+still remain within a group, and one slow client may still
+delay the entire group. Existing studies therefore do not fully
+combine the consensus structure of ADMM with grouping
+strategies that explicitly reflect system heterogeneity.
+C. Asynchronous Optimization and Straggler Mitigation
+Asynchronous updates are commonly used to reduce the
+waiting time introduced by synchronous coordination. Early
+work by Zhang et al. [31] and Chang et al. [32] showed
+that distributed optimization can still converge under bounded
+delay, even when stale global variables are used. Based on this
+idea, later studies further considered distributed momentum
+methods [33], straggler-resilient consensus algorithms [13],
+and online learning systems [34]. Other approaches mitigate
+stragglers at the system level. Gradient coding [35] mitigates
+straggler effects by replicating data partitions across clients,
+so that the server can recover the exact gradient from the
+earliest responses. Caching-based methods store asynchronous
+updates in the cloud and classify clients according to historical
+response times [36]. More recent work has also considered
+hierarchical ADMM architectures for dynamic node failures
+[37] and asynchronous grouping methods for shared-memory
+multi-core clusters [38].
+These methods still do not fully match the requirements
+of geographically distributed edge networks. Shared-memory
+methods [38] rely on high-speed internal data buses and are
+not suitable for clients connected through wide-area networks.
+Redundancy-based methods such as gradient coding [35] in-
+troduce extra computation because overlapping data partitions
+must be processed repeatedly, which is difficult to sustain on
+energy-constrained edge devices. Fully asynchronous methods
+also provide only limited control over stale updates, which
+makes stable consensus harder to maintain in practice.
+These observations suggest that an effective method for
+heterogeneous edge networks should combine the consensus
+structure of ADMM, a grouping strategy that reflects compu-
+tational heterogeneity, and asynchronous communication with
+explicit delay control. The proposed algorithm is developed
+along this direction.
+III. SYSTEM MODEL AND PROBLEM FORMULATION
+In this section, we introduce the system model and the
+optimization problem considered. We consider a heteroge-
+neous edge network with a three-layer architecture, namely,
+TABLE I
+SUMMARY OF MAIN NOTATIONS
+Notation
+Description
+M, G
+numbers of clients and groups
+Gg
+set of clients in group g
+mg
+number of clients in group g
+d
+model dimension
+Ci
+computational capability of client i
+Di
+local dataset of client i
+|Di|
+size of local dataset Di
+Ti
+estimated training latency of client i
+wk
+global model at iteration k
+wk
+g
+group model of group g at iteration k
+wk,i
+g
+local model of client i in group g at iteration k
+¯wk
+g
+empirical average of local client updates in group g
+F(w)
+global objective function
+fi(w)
+local objective function of client i
+Fg(w)
+group objective function of group g
+ξi
+random data sample of client i
+λk
+g
+dual variable of group g at iteration k
+ρ
+penalty parameter
+Lρ
+augmented Lagrangian
+k
+global iteration index
+T
+total number of iterations
+dg(k)
+index of the global model used by group g at iteration k
+τg(k)
+staleness of group g at iteration k
+τmax
+maximum allowable staleness
+ζ
+learning rate in local SGD
+A(k)
+active set of groups at iteration k
+a client layer, an edge group layer, and a cloud server layer.
+This architecture is adopted to reflect the practical structure
+of edge networks, where local computation is carried out at
+clients, intermediate coordination is handled by edge groups,
+and global aggregation is performed by the cloud server. Since
+clients may differ significantly in computational capability, the
+group layer is used to reduce the impact of slow clients on
+the overall training process.
+A. Computation-Aware Grouping Strategy
+We first introduce the grouping strategy. In conventional
+hierarchical methods, clients are often grouped randomly or
+according to topology. Such strategies do not directly consider
+differences in computational capability, so fast clients and
+stragglers may still be placed in the same group. Under syn-
+chronous group aggregation, the update speed of that group is
+then determined by its slowest client. This leads to unnecessary
+waiting time for faster clients and weakens the advantage of
+parallel execution.
+To reduce this effect, we adopt a static computation-aware
+grouping strategy. The basic idea is simple: clients with similar
+processing speeds are assigned to the same group. In this
+way, the variation of training time within each group can be
+reduced.
+Let Ci denote the computational capability of client i, such
+as CPU cycles per second. Let Di denote the local dataset of
+client i, and let |Di| denote its size. We define the estimated
+local training latency per epoch as
+Ti = |Di|
+Ci
+.
+
+
+4
+Based on {Ti}M
+i=1, the full set of M clients is partitioned into
+G disjoint groups {G1, . . . , GG}.
+The grouping procedure has three steps. First, the cloud
+server collects Ci and Di from all participating clients and
+computes the estimated training latency Ti. Second, the clients
+are sorted in ascending order of Ti, which gives an ordered
+sequence {i1, i2, . . . , iM} satisfying
+Ti1 ≤Ti2 ≤· · · ≤TiM .
+Third, this ordered sequence is divided into G contiguous
+segments of nearly equal size, and each segment forms one
+group.
+With this grouping strategy, clients in the same group have
+closer training speeds. As a result, intra-group synchronization
+delay can be reduced, and the efficiency of group updates can
+be improved.
+B. Distributed Optimization Formulation
+Based on the grouping configuration {Gg}G
+g=1, we now
+define the distributed optimization problem. The total number
+of participating clients is
+M =
+G
+X
+g=1
+|Gg|,
+where mg = |Gg| denotes the number of clients in group g.
+Let w ∈Rd denote the global model parameter, and let
+wg ∈Rd denote the group-level model parameter associated
+with group g. For each client i ∈Gg, let wk,i
+g
+∈Rd denote
+the corresponding local model parameter at iteration k.
+For client i, the local objective is defined as the expected
+loss over its local data distribution:
+fi(w) = Eξi∈Di [fi (w; ξi)] ,
+(1)
+where ξi is a random sample drawn from the local dataset Di.
+The global objective is defined as the average of all local
+objectives:
+F(w) = 1
+M
+M
+X
+i=1
+fi(w) =
+G
+X
+g=1
+mg
+M Fg(w),
+(2)
+where
+Fg(w) =
+1
+mg
+X
+i∈Gg
+fi(w)
+denotes the aggregated objective of group g.
+To apply ADMM in this hierarchical model, we introduce
+group-level copies {wg}G
+g=1 and enforce global consensus at
+the cloud server. The original optimization problem can then
+be written as
+minimize
+w,{wg}G
+g=1
+G
+X
+g=1
+mg
+M Fg(wg),
+subject to
+wg = w,
+∀g = 1, . . . , G.
+(3)
+Fig. 2. Workflow of one P-GADMM iteration in the hierarchical cloud-edge-
+client architecture. Clients are partitioned into edge groups according to the
+estimated local training latency Ti = |Di|/Ci. Active groups perform delay
+verification, local computation, and edge aggregation, whereas inactive groups
+keep variables unchanged. The cloud server then updates the global and dual
+variables using the current group variables.
+IV. PROPOSED P-GADMM ALGORITHM
+In this section, we introduce the proposed P-GADMM
+algorithm. To solve the constrained optimization problem in
+(3) without strict global synchronization, P-GADMM com-
+bines synchronized computation within each group and asyn-
+chronous coordination across groups. In the implemented
+algorithm, each active group performs local training in parallel
+within the group and then sends its aggregated update to the
+cloud server. For the convergence analysis, this practical group
+update is represented by an idealized ADMM subproblem.
+With dual variables λg ∈Rd and penalty parameter ρ > 0,
+the augmented Lagrangian is given by
+Lρ =
+G
+X
+g=1
+hmg
+M Fg(wg) + ⟨λg, wg −w⟩+ ρ
+2∥wg −w∥2i
+.
+(4)
+At iteration k + 1, P-GADMM has three main steps: group
+update, global update, and dual update.
+A. Step 1: Group Update
+At iteration k, let A(k) ⊆{1, . . . , G} denote the active
+set, which contains the groups whose updates are received by
+the cloud server and used to construct wk+1. Only groups
+in A(k) perform group update at iteration k. For g /∈A(k),
+group g does not contribute a new update to the current global
+update, and its previous group variables remain unchanged.
+The group partition {G1, . . . , GG} is fixed after computation-
+aware grouping, whereas A(k) may vary across iterations.
+
+
+5
+1) Delay Verification: For each active group g ∈A(k),
+the edge server first verifies the staleness of its cached global
+reference before local computation. Let dg(k) denote the
+iteration index of the latest global model cached at the edge
+server and used as the reference for group g at iteration k.
+The corresponding staleness is defined as
+τg(k) = k −dg(k).
+(5)
+Here, wk
+g denotes the cached reference model maintained
+at the edge server of group g. If τg(k) ≤τmax, the cached
+reference is used directly. Otherwise, the edge server updates
+the cached reference using the current global model from the
+cloud server:
+wk
+g ←wk,
+dg(k) ←k.
+(6)
+After verification, local computation in group g starts from the
+reference model wk
+g. This step ensures that every active group
+performs local computation using a global reference whose
+staleness is bounded by τmax.
+2) Client-Side Local Update: After delay verification, each
+active group g ∈A(k) performs synchronized local training.
+Specifically, client i ∈Gg starts from the current group model
+wk
+g and performs a local SGD step:
+wk+1,i
+g
+= wk
+g −ζ∇fi(wk
+g; ξi),
+(7)
+where ζ > 0 is the learning rate and ξi denotes a mini-batch
+sampled from the local dataset. If multiple local steps are used,
+(7) is applied repeatedly.
+3) Edge Aggregation: After local training, the edge server
+aggregates the client models in group g as
+¯wk+1
+g
+=
+1
+mg
+X
+i∈Gg
+wk+1,i
+g
+.
+(8)
+For active groups, the practical group update sent to the cloud
+server is
+wk+1
+g
+= ¯wk+1
+g
+,
+g ∈A(k).
+(9)
+For inactive groups, no new local computation is triggered in
+the current round, and the previous group variable is carried
+forward:
+wk+1
+g
+= wk
+g,
+g /∈A(k).
+(10)
+4) Analytical Model for Convergence Analysis: For the
+convergence analysis, we introduce an idealized group update
+that preserves the ADMM consensus structure. For each active
+group g ∈A(k), the group variable is defined as the exact
+solution of the following delayed ADMM subproblem:
+wk+1
+g
+= arg min
+wg
+"
+mg
+M Fg(wg) +
+
+λdg(k)
+g
+, wg −wdg(k)
++ ρ
+2∥wg −wdg(k)∥2
+#
+.
+(11)
+This idealized subproblem provides the analytical reference
+used in the convergence proof.
+Algorithm 1 Parallel Group-Based ADMM (P-GADMM)
+Require: Datasets D = {D1, . . . , DM}, learning rate ζ,
+penalty parameter ρ, delay bound τmax, total number of
+global iterations T, client capabilities {Ci}
+Ensure: Final global model wT
+1: Initialization: Set k ←0. Initialize w0, w0
+g, and λ0
+g ←0
+for all groups.
+2: Grouping: Partition the M clients into G disjoint groups
+{Gg} according to the estimated training latency.
+3: Set dg(0) ←0 for all groups.
+4: while k < T and global convergence is not achieved do
+5:
+Determine the active set A(k).
+6:
+▷Step 1: Group Update
+7:
+for each group g ∈A(k) in parallel do
+8:
+Compute the staleness index τg(k) ←k −dg(k).
+9:
+if τg(k) > τmax then
+10:
+Refresh the group model according to (6).
+11:
+end if
+12:
+for each client i ∈Gg in parallel do
+13:
+Update the local model according to (7).
+14:
+end for
+15:
+Aggregate the local models according to (8).
+16:
+Set wk+1
+g
+according to (9).
+17:
+end for
+18:
+for each group g /∈A(k) do
+19:
+Set wk+1
+g
+according to (10).
+20:
+end for
+21:
+▷Step 2: Global Update
+22:
+Update wk+1 according to (13).
+23:
+▷Step 3: Dual Update
+24:
+for each group g ∈{1, . . . , G} do
+25:
+Update λk+1
+g
+according to (14).
+26:
+end for
+27:
+k ←k + 1.
+28: end while
+B. Step 2: Global Update
+After all group variables {wk+1
+g
+}G
+g=1 are determined, the
+cloud server updates the global consensus variable by mini-
+mizing the augmented Lagrangian with respect to w:
+wk+1 = arg min
+w
+G
+X
+g=1
+h
+⟨λk
+g, wk+1
+g
+−w⟩+ ρ
+2∥wk+1
+g
+−w∥2i
+.
+(12)
+This quadratic problem has the closed-form solution
+wk+1 = 1
+G
+G
+X
+g=1
+
+wk+1
+g
++ 1
+ρλk
+g
+
+.
+(13)
+C. Step 3: Dual Update
+After the global update, the cloud server updates the dual
+variables to penalize the discrepancy between the group vari-
+ables and the new global consensus variable. For every group
+g = 1, . . . , G, the dual update is
+λk+1
+g
+= λk
+g + ρ
+ wk+1
+g
+−wk+1
+.
+(14)
+
+
+6
+This update is applied to both active and inactive groups. For
+inactive groups, wk+1
+g
+in (14) is given by the unchanged group
+variable defined in (10).
+Algorithm 1 summarizes the implemented version of P-
+GADMM used in the experiments. Section V analyzes the
+idealized group update in (11) as the analytical model of the
+implemented group step.
+V. CONVERGENCE ANALYSIS
+In this section, we analyze the idealized analytical model
+introduced in Section IV. The purpose of this analysis is to
+show how bounded delay affects the convergence behavior of
+P-GADMM. We first derive a perturbed first-order condition
+for the group update. We then use this relation to construct a
+Lyapunov analysis and obtain a descent bound under bounded
+delay.
+A. Preliminaries
+We start with three standard assumptions.
+Assumption 1 (µg-Strong Convexity). For each group g, the
+objective function Fg is µg-strongly convex. That is, there
+exists a constant µg > 0 such that, for all x, y ∈dom(Fg),
+(∇Fg(x) −∇Fg(y))T(x −y) ≥µg∥x −y∥2.
+Assumption 2 (Saddle Point Existence). There exists a saddle
+point
+Ω∗=
+ w∗, {w∗
+g}G
+g=1, {λ∗
+g}G
+g=1
+
+for the Lagrangian associated with the distributed optimiza-
+tion problem. This saddle point satisfies the KKT conditions,
+including primal consistency w∗
+g = w∗for all g, and dual
+optimality
+mg
+M ∇Fg(w∗
+g) + λ∗
+g = 0,
+g = 1, . . . , G.
+Assumption 3 (Uniformly Bounded Delay). The delay
+τg(k) = k −dg(k)
+is uniformly bounded by a finite constant τmax < ∞for all
+groups g and all iterations k.
+The optimality conditions at the saddle point will be used
+repeatedly in the analysis. For each group g, they are
+mg
+M ∇Fg(w∗
+g) + λ∗
+g = 0,
+w∗
+g = w∗,
+(15)
+together with the dual feasibility condition
+G
+X
+g=1
+λ∗
+g = 0.
+(16)
+B. Perturbed Optimality Condition
+We first derive the first-order condition of the stale group
+subproblem and isolate the error introduced by delay.
+Lemma 1 (Perturbed Optimality). For any active group g ∈
+A(k), the update wk+1
+g
+satisfies
+mg
+M ∇Fg(wk+1
+g
+) + λk+1
+g
++ ρ(wk+1
+g
+−wk+1) = ξk
+g,
+(17)
+where
+ξk
+g = (λk+1
+g
+−λdg(k)
+g
+) + ρ(wdg(k) −wk+1).
+(18)
+Proof: For an active group g ∈A(k), the analytical
+update is defined by
+wk+1
+g
+= arg min
+wg
+mg
+M Fg(wg) + ⟨λdg(k)
+g
+, wg −wdg(k)⟩
++ρ
+2∥wg −wdg(k)∥2
+
+.
+(19)
+The first-order optimality condition of this convex subproblem
+is
+mg
+M ∇Fg(wk+1
+g
+) + λdg(k)
+g
++ ρ(wk+1
+g
+−wdg(k)) = 0.
+(20)
+Add and subtract λk+1
+g
+and wk+1. Then
+mg
+M ∇Fg(wk+1
+g
+) + λk+1
+g
++ ρ(wk+1
+g
+−wk+1)
+= (λk+1
+g
+−λdg(k)
+g
+) + ρ(wdg(k) −wk+1),
+(21)
+which is exactly (17) with ξk
+g defined in (18).
+C. Lyapunov Difference
+We define the Lyapunov function as
+V k =
+G
+X
+g=1
+1
+ρ∥λk
+g −λ∗
+g∥2 + ρ∥wk −w∗∥2
+
+.
+(22)
+Since only the active groups update their local variables at
+iteration k, the dual variation only appears on A(k). The
+primal part is associated with the shared global model w.
+Therefore, the Lyapunov difference can be written as
+∆V k =
+X
+g∈A(k)
+1
+ρ
+
+∥λk+1
+g
+−λ∗
+g∥2 −∥λk
+g −λ∗
+g∥2
++ ρG
+ ∥wk+1 −w∗∥2 −∥wk −w∗∥2
+= ∆Vdual + ∆Vprimal.
+(23)
+We first expand the dual term. For each g ∈A(k),
+∥λk+1
+g
+−λ∗
+g∥2 =
+(λk+1
+g
+−λk
+g) + (λk
+g −λ∗
+g)
+2
+= ∥λk+1
+g
+−λk
+g∥2 + ∥λk
+g −λ∗
+g∥2
++ 2⟨λk+1
+g
+−λk
+g, λk
+g −λ∗
+g⟩.
+(24)
+Hence,
+∥λk+1
+g
+−λ∗
+g∥2 −∥λk
+g −λ∗
+g∥2
+= ∥λk+1
+g
+−λk
+g∥2 + 2⟨λk+1
+g
+−λk
+g, λk
+g −λ∗
+g⟩.
+(25)
+
+
+7
+Rewrite λk
+g in the inner product as λk+1
+g
+−(λk+1
+g
+−λk
+g).
+Then
+⟨λk+1
+g
+−λk
+g, λk
+g −λ∗
+g⟩
+= ⟨λk+1
+g
+−λk
+g, (λk+1
+g
+−λ∗
+g) −(λk+1
+g
+−λk
+g)⟩
+= ⟨λk+1
+g
+−λk
+g, λk+1
+g
+−λ∗
+g⟩−∥λk+1
+g
+−λk
+g∥2.
+(26)
+Substituting this identity yields
+∥λk+1
+g
+−λ∗
+g∥2 −∥λk
+g −λ∗
+g∥2
+= 2⟨λk+1
+g
+−λk
+g, λk+1
+g
+−λ∗
+g⟩−∥λk+1
+g
+−λk
+g∥2.
+(27)
+Using the dual update (14), we obtain
+∆V g
+dual = 2⟨wk+1
+g
+−wk+1, λk+1
+g
+−λ∗
+g⟩−ρ∥wk+1
+g
+−wk+1∥2.
+(28)
+D. Strong Convexity Coupling
+We next combine the perturbed optimality condition with
+strong convexity. From Assumption 1,
+⟨∇Fg(wk+1
+g
+) −∇Fg(w∗), wk+1
+g
+−w∗⟩≥µg∥wk+1
+g
+−w∗∥2.
+(29)
+Using Lemma 1, the identity
+∇Fg(w∗) = −M
+mg
+λ∗
+g
+from (15), and multiplying both sides by mg
+M , we have
+D
+ξk
+g −λk+1
+g
+−ρ(wk+1
+g
+−wk+1) + λ∗
+g, wk+1
+g
+−w∗E
+≥mgµg
+M
+∥wk+1
+g
+−w∗∥2.
+(30)
+Rearranging gives
+
+λk+1
+g
+−λ∗
+g, wk+1
+g
+−w∗
+≤−mgµg
+M
+∥wk+1
+g
+−w∗∥2 −ρ
+
+wk+1
+g
+−wk+1, wk+1
+g
+−w∗
++
+
+ξk
+g, wk+1
+g
+−w∗
+.
+(31)
+Substituting (31) into (28), we obtain
+2⟨wk+1
+g
+−wk+1, λk+1
+g
+−λ∗
+g⟩−ρ∥wk+1
+g
+−wk+1∥2
+= 2⟨wk+1
+g
+−w∗, λk+1
+g
+−λ∗
+g⟩
+−2⟨wk+1 −w∗, λk+1
+g
+−λ∗
+g⟩−ρ∥wk+1
+g
+−wk+1∥2
+≤−2mgµg
+M
+∥wk+1
+g
+−w∗∥2 −2ρ⟨wk+1
+g
+−wk+1, wk+1
+g
+−w∗⟩
++ 2⟨ξk
+g, wk+1
+g
+−w∗⟩−ρ∥wk+1
+g
+−wk+1∥2
+−2⟨wk+1 −w∗, λk+1
+g
+−λ∗
+g⟩.
+(32)
+Remark on the global error term. The last term in (32) is a
+coupling term between the global model error and the dual
+error. Summing over all groups removes this term:
+G
+X
+g=1
+⟨wk+1 −w∗, λk+1
+g
+−λ∗
+g⟩
+=
+*
+wk+1 −w∗,
+G
+X
+g=1
+λk+1
+g
+−
+G
+X
+g=1
+λ∗
+g
++
+= 0.
+This follows from (16) and the corresponding dual feasibility
+relation at iteration k + 1.
+E. Primal Difference and Cross Terms
+We next bound the primal part of the Lyapunov difference.
+Proposition 2 (Bound on Global Primal Difference). The
+global primal variation satisfies
+∆Vprimal ≤ρ
+G
+X
+g=1
+∥wk+1
+g
+−w∗∥2 −ρG∥wk −w∗∥2.
+(33)
+Proof: From (13),
+wk+1 = 1
+G
+G
+X
+g=1
+wk+1
+g
++ 1
+ρG
+G
+X
+g=1
+λk
+g.
+Since λ0
+g = 0 and the dual variables satisfy the corresponding
+summation relation, the second term vanishes. Therefore,
+wk+1 = 1
+G
+G
+X
+g=1
+wk+1
+g
+.
+Applying Jensen’s inequality to ∥· ∥2 gives
+∥wk+1 −w∗∥2 =
+
+1
+G
+G
+X
+g=1
+(wk+1
+g
+−w∗)
+
+2
+≤1
+G
+G
+X
+g=1
+∥wk+1
+g
+−w∗∥2.
+(34)
+Multiplying both sides by ρG gives the result.
+We now collect the ρ-dependent terms in (32). These
+are −ρ∥wk+1
+g
+−wk+1∥2, the cross term −2ρ⟨wk+1
+g
+−
+wk+1, wk+1
+g
+−w∗⟩, and the positive term from ∆Vprimal.
+We decompose
+wk+1
+g
+−w∗= (wk+1
+g
+−wk+1) + (wk+1 −w∗).
+(35)
+Substituting this into the cross term gives
+⟨wk+1
+g
+−wk+1, wk+1
+g
+−w∗⟩
+=
+
+wk+1
+g
+−wk+1, (wk+1
+g
+−wk+1) + (wk+1 −w∗)
+
+= ∥wk+1
+g
+−wk+1∥2 + ⟨wk+1
+g
+−wk+1, wk+1 −w∗⟩.
+Hence,
+−2ρ⟨wk+1
+g
+−wk+1, wk+1
+g
+−w∗⟩
+= −2ρ∥wk+1
+g
+−wk+1∥2 −2ρ⟨wk+1
+g
+−wk+1, wk+1 −w∗⟩.
+Taking expectation over the random active set A(k) removes
+the mixed deviation term. If each group is selected with the
+same probability p = |A(k)|/G, then
+EA(k)
+ X
+g∈A(k)
+⟨wk+1
+g
+−wk+1, wk+1 −w∗⟩
+
+= p
+G
+X
+g=1
+⟨wk+1
+g
+−wk+1, wk+1 −w∗⟩= 0.
+(36)
+This holds because wk+1 is the average of the G group
+variables, and therefore
+G
+X
+g=1
+(wk+1
+g
+−wk+1) = 0.
+
+
+8
+Using the proposition above, the positive primal term can
+be upper bounded by
+ρ
+G
+X
+g=1
+∥wk+1
+g
+−w∗∥2,
+and can therefore be absorbed into the negative strong con-
+vexity term.
+Next, apply Young’s inequality
+2⟨a, b⟩≤1
+η ∥a∥2 + η∥b∥2
+to the perturbation term 2⟨ξk
+g, wk+1
+g
+−w∗⟩, and choose η =
+mgµg
+M . Then
+2⟨ξk
+g, wk+1
+g
+−w∗⟩≤
+M
+mgµg
+∥ξk
+g∥2 + mgµg
+M
+∥wk+1
+g
+−w∗∥2.
+(37)
+Collecting all terms yields
+E[V k+1 −V k] ≤−E
+ X
+g∈A(k)
+mgµg
+M
+−ρ
+
+∥wk+1
+g
+−w∗∥2
+
++ E
+ X
+g∈A(k)
+M
+mgµg
+∥ξk
+g∥2
+
+.
+(38)
+Therefore, if
+ρ < mgµg
+M
+,
+the Lyapunov function has a strict expected descent up to the
+delay error term.
+F. Explicit Bound on the Delay Error
+We now bound the delay error term
+X
+g∈A(k)
+M
+mgµg
+∥ξk
+g∥2.
+From (18),
+ξk
+g = (λk+1
+g
+−λdg(k)
+g
+) + ρ(wdg(k) −wk+1).
+(39)
+1) Bounding ∥ξk
+g∥2: Using ∥a + b∥2 ≤2∥a∥2 + 2∥b∥2, we
+obtain
+∥ξk
+g∥2 ≤2∥λk+1
+g
+−λdg(k)
+g
+∥2 + 2ρ2∥wdg(k) −wk+1∥2. (40)
+We first bound the primal delay term. By telescoping,
+wk+1 −wdg(k) =
+k
+X
+j=dg(k)
+(wj+1 −wj).
+(41)
+Since the number of summands is at most τmax+1, the discrete
+Cauchy–Schwarz inequality gives
+
+k
+X
+j=dg(k)
+(wj+1 −wj)
+
+2
+≤(τg(k) + 1)
+k
+X
+j=dg(k)
+∥wj+1 −wj∥2.
+(42)
+Because the iterates remain in a bounded region, there exists
+a constant D > 0 such that ∥wj+1 −wj∥2 ≤D. Hence,
+∥wk+1 −wdg(k)∥2 ≤(τmax + 1)
+k
+X
+j=k−τmax
+D
+≤(τmax + 1)2D.
+(43)
+Therefore, there exists a constant Cw > 0 such that
+∥wk+1 −wdg(k)∥2 ≤Cwτ 2
+max.
+(44)
+The same argument applies to the dual term. Using the
+unified dual update (14), there exists a constant Dλ > 0 such
+that
+∥λj+1
+g
+−λj
+g∥2 ≤Dλ.
+Therefore,
+∥λk+1
+g
+−λdg(k)
+g
+∥2 ≤Cλτ 2
+max,
+(45)
+for some constant Cλ > 0.
+Substituting these bounds into (40) gives
+∥ξk
+g∥2 ≤2Cλτ 2
+max + 2ρ2Cwτ 2
+max
+= 2(Cλ + ρ2Cw)τ 2
+max.
+(46)
+2) Bounding the Weighted Sum: Define
+Kξ = 2(Cλ + ρ2Cw).
+Then
+X
+g∈A(k)
+M
+mgµg
+∥ξk
+g∥2 ≤
+
+X
+g∈A(k)
+M
+mgµg
+
+Kξτ 2
+max.
+(47)
+Since A(k) ⊆{1, . . . , G}, this sum is uniformly bounded over
+all active sets. Define
+Cdelay = Kξ ·
+sup
+A(k)⊆{1,...,G}
+
+X
+g∈A(k)
+M
+mgµg
+
+.
+(48)
+Then
+X
+g∈A(k)
+M
+mgµg
+∥ξk
+g∥2 ≤Cdelayτ 2
+max.
+(49)
+G. Final Convergence Theorem
+We are now ready to state the main result.
+Theorem 3 (Sublinear Convergence Rate with Bounded De-
+lay). Suppose that Assumptions 1–3 hold. If the delay is
+bounded by τmax, then the algorithm achieves an O(1/T)
+sublinear convergence rate to an error neighborhood. Specif-
+ically,
+1
+T
+T −1
+X
+k=0
+X
+g∈A(k)
+E
+
+∥wk+1
+g
+−w∗∥2
+≤O(1)
+T
++ O(τ 2
+max). (50)
+Moreover, as T →∞,
+lim
+T →∞
+1
+T
+T −1
+X
+k=0
+X
+g∈A(k)
+E
+
+∥wk+1
+g
+−w∗∥2
+≤O(τ 2
+max).
+(51)
+
+
+9
+Proof: Summing (38) from k = 0 to T −1 gives
+T −1
+X
+k=0
+E[V k+1 −V k]
+≤−
+T −1
+X
+k=0
+E
+" X
+g∈A(k)
+mgµg
+M
+−ρ
+
+∥wk+1
+g
+−w∗∥2
+#
++
+T −1
+X
+k=0
+E
+" X
+g∈A(k)
+M
+mgµg
+∥ξk
+g∥2
+#
+.
+The left-hand side telescopes to E[V T ] −V 0. Using (49), we
+obtain
+E[V T ] −V 0 ≤−
+T −1
+X
+k=0
+E
+ X
+g∈A(k)
+mgµg
+M
+−ρ
+
+∥wk+1
+g
+−w∗∥2
+
++ TCdelayτ 2
+max.
+(52)
+Rearranging yields
+T −1
+X
+k=0
+E
+ X
+g∈A(k)
+mgµg
+M
+−ρ
+
+∥wk+1
+g
+−w∗∥2
+
+≤V 0 −E[V T ] + TCdelayτ 2
+max.
+Since V k ≥0, we have
+V 0 −E[V T ] ≤V 0.
+Define
+Ccoeff = min
+g
+mgµg
+M
+−ρ
+
+> 0.
+Then
+1
+T
+T −1
+X
+k=0
+E
+ X
+g∈A(k)
+∥wk+1
+g
+−w∗∥2
+
+≤
+V 0
+TCcoeff
++ Cdelay
+Ccoeff
+τ 2
+max.
+(53)
+The first term gives the O(1/T) rate. Letting T →∞removes
+this transient term and leaves the O(τ 2
+max) error neighborhood.
+Remark on exact minimization and stochastic implementation.
+The analysis above is established for an idealized deterministic
+version of P-GADMM, where each group subproblem is
+solved exactly. This allows the effect of bounded delay to
+be written explicitly. In the implemented algorithm, the group
+update is approximated by local SGD and edge aggregation,
+and therefore includes stochastic gradient noise. Under the
+standard bounded variance assumption, this approximation
+introduces an additional residual term in the final error bound.
+This term is additive and does not change the qualitative
+dependence of the bound on τmax. Therefore, the delay effect
+is still characterized by the same term involving τmax, while
+stochastic approximation introduces an additional error floor.
+VI. EXPERIMENTS
+This section evaluates the implementation of P-GADMM in
+heterogeneous edge networks. The experiments are conducted
+using a discrete-event simulation framework implemented in
+PyTorch. In the simulator, group updates are produced by
+synchronized local SGD within each active group, followed
+by edge aggregation. Unlike evaluations that only count com-
+munication rounds, the simulator advances according to event
+completion time. Therefore, local computation delay, waiting
+overhead, and straggler blocking are included in the reported
+wall-clock time. This setting allows the comparison to reflect
+both optimization behavior and system-level delay.
+A. Experimental Setup
+(a) Experimental platform and learning tasks: The
+experiments are conducted on a Windows 11 workstation
+equipped with an Intel Core Ultra 7 265K CPU at 3.9 GHz
+and an NVIDIA GeForce RTX 5060 Ti GPU. The software
+environment is Python 3.10.20 with PyTorch 2.10.0+cu130.
+Two image classification tasks are considered, namely MNIST
+and CIFAR10. For MNIST, we use a lightweight convolutional
+neural network with two convolutional layers and two fully
+connected layers. The channel dimensions increase from 1
+to 16 and from 16 to 32, and each convolutional layer is
+followed by a ReLU activation and a 2×2 max pooling layer.
+For CIFAR10, we use a deeper convolutional network with
+four convolutional blocks. The channel dimensions increase
+as 3 →64 →128 →256 →512, followed by a classifier with
+dropout.
+(b) Heterogeneity settings and baselines: Both statistical
+heterogeneity and system heterogeneity are considered. Statis-
+tical heterogeneity is controlled by a Dirichlet distribution with
+parameter α. We set α = 100 for a nearly homogeneous setting
+and α = 0.1 for a strongly heterogeneous setting. System
+heterogeneity is controlled by a Pareto distribution with shape
+parameter a. We set a = 2.0 for a light-tailed delay profile and
+a = 1.1 for a heavy-tailed delay profile with stronger straggler
+effects. Here, the IID setting denotes a nearly homogeneous
+data partition induced by a large Dirichlet parameter. For
+convenience, the setting (α = 100, a = 2.0) is referred to as
+the IID setting, and the setting (α = 0.1, a = 1.1) is referred
+to as the non-IID setting.
+P-GADMM is compared with two representative ADMM
+baselines. Asynch-ADMM follows the asynchronous dis-
+tributed ADMM method in [32], where the master updates
+after receiving information from only a subset of workers
+under a bounded delay condition. GADMM follows the group-
+based ADMM method in [26], where a group layer is in-
+troduced between workers and the master, and the global
+variable is updated through group variables rather than directly
+through all local variables. These two baselines represent
+two common ways to improve the efficiency of distributed
+ADMM [2]. Asynch-ADMM relaxes full synchronization,
+whereas GADMM reduces the number of variables involved in
+each synchronization step. By contrast, P-GADMM combines
+computation-aware grouping with bounded asynchronous up-
+dates.
+For a controlled comparison, all methods use the same
+dataset, model architecture, data partition, client computation
+profile, batch size, local epoch number, and random seeds
+under each setting. The same discrete-event simulator is used
+
+
+10
+for all methods, so the reported wall-clock time is computed
+from the same local computation and waiting-time model.
+For grouped methods, the group size is kept identical unless
+otherwise stated. GADMM uses the same number of groups
+as P-GADMM, but does not use estimated training latency
+for grouping. Therefore, the comparison separates the effect
+of computation-aware grouping from the effect of using a
+grouped ADMM structure.
+(c) Implementation details and evaluation protocol: Un-
+less otherwise stated, the number of clients is 50, the group
+size is 10, the learning rate is 0.01, the number of local epochs
+is 1, and the batch size is 64. For P-GADMM, the staleness
+threshold is set to τmax = 1. The penalty parameter is set
+to ρ = 1.0 in the IID setting and ρ = 0.001 in the non-
+IID setting. For Asynch-ADMM, the parameters are set to
+ρ = 500, τmax = 20, and γ = 0. These algorithm-specific
+parameters are kept fixed across repeated runs under the same
+heterogeneity setting.
+Each setting is repeated three times with different random
+seeds. The same set of seeds is used for all methods. Perfor-
+mance is evaluated using five metrics: the number of rounds
+required to reach a target accuracy, the average waiting time
+per round, the straggler blocking ratio, the final test accuracy,
+and the wall-clock time to reach the target accuracy. The line
+plots show representative convergence trajectories under the
+same seed for all methods, whereas the tables report the mean
+± standard deviation over the repeated runs.
+If a method reaches the target accuracy in all repeated runs,
+the reported time is the time to target. If a method fails to reach
+the target accuracy within the maximum simulation budget, the
+reported time corresponds to the total simulation time, and
+the rounds entry is marked accordingly. When only part of
+the repeated runs reach the target accuracy, the table notes
+the number of successful runs. This convention is used to
+distinguish successful convergence to the target from runs that
+terminate at the simulation budget.
+B. Performance Comparison
+We first compare P-GADMM with the two baselines under
+both the IID and non-IID settings. To ensure a controlled
+comparison, all methods use the same data partition, latency
+model, network architecture, and optimization setting. The
+only difference lies in the coordination mechanism.
+(a)
+(b)
+Fig. 3.
+Convergence performance on MNIST. (a) IID setting. (b) non-IID
+setting.
+The performance comparison on MNIST is shown in Fig. 3
+and Table II. From the reported results, several observations
+can be made. Under the IID setting, GADMM reaches the
+target accuracy in the fewest rounds, but its average waiting
+time per round is much larger than that of the other methods,
+and its blocking ratio stays at 100.00%. As a result, its time to
+target is much longer than that of P-GADMM. By comparison,
+P-GADMM reaches the target accuracy in 113.3 ± 9.4 rounds
+and 3.9937 ± 0.1216 s, while also achieving the highest final
+accuracy, 98.00 ± 0.26%. Asynch-ADMM requires 206.7 ±
+66.0 rounds and 26.2449 ± 17.0137 s. These results indicate
+that, even when the round count of GADMM appears smaller,
+the practical efficiency of P-GADMM is still better because
+the waiting overhead is much lower.
+Under the non-IID setting, the advantage of P-GADMM
+becomes more pronounced. P-GADMM reaches the target
+accuracy of 80% in 53.3 ± 8.5 rounds and 2.5739 ± 0.5158 s.
+Asynch-ADMM reaches the same target in only 2 of 3 runs
+and requires 25.2723 ± 3.7539 s, while GADMM does not
+reach the target within 500 rounds. In addition, P-GADMM
+achieves the highest final accuracy, 94.77±0.27%. Therefore,
+on MNIST, P-GADMM provides lower wall-clock training
+time while maintaining comparable or higher final accuracy
+in these settings.
+(a)
+(b)
+Fig. 4. Convergence performance on CIFAR10. (a) IID setting. (b) non-IID
+setting.
+The performance comparison on CIFAR10 is shown in
+Fig. 4 and Table III. Under the IID setting, P-GADMM reaches
+the target accuracy of 75% in 886.7 ± 198.7 rounds and
+31.4334±8.8425 s. Asynch-ADMM requires more rounds and
+more time to target, while GADMM does not reach the target
+within 2000 rounds and ends with much lower final accuracy.
+In this case, P-GADMM not only achieves the shortest time
+to target, but also reaches the highest final accuracy among
+the three methods.
+Under the non-IID setting, both Asynch-ADMM and P-
+GADMM reach the target accuracy of 60%. However, the
+difference in time to target remains large. Asynch-ADMM
+requires 243.7668 ± 81.0247 s, whereas P-GADMM requires
+only 50.8783 ± 11.1394 s. Although the final accuracy of
+P-GADMM, 66.69 ± 3.66%, is slightly lower than that of
+Asynch-ADMM, 67.91±3.69%, the reduction in training time
+is still substantial. GADMM again fails to reach the target and
+remains far behind in both accuracy and time. These results
+suggest that, on the more challenging CIFAR10 task, the main
+strength of P-GADMM is its ability to reduce actual training
+time while maintaining competitive learning performance.
+From the results on MNIST and CIFAR10, a consistent
+trend can be observed. First, P-GADMM does not always use
+the fewest rounds, but it consistently reduces actual training
+time. Second, the repeated runs show that the method remains
+stable across different random seeds. Third, the comparison
+
+
+11
+TABLE II
+EXPERIMENTAL RESULTS ON MNIST UNDER IID AND NON-IID SETTINGS.
+IID setting (α = 100, a = 2.0, target accuracy 95%)
+Method
+Target rounds
+Avg. wait/round (s)
+Blocking (%)
+Final acc. (%)
+Time to target (s)
+Asynch-ADMM
+206.7 ± 66.0
+0.1446 ± 0.1165
+8.33 ± 2.36
+96.48 ± 0.39
+26.2449 ± 17.0137
+GADMM
+68.3 ± 6.2
+1.6681 ± 1.0538
+100.00 ± 0.00
+97.39 ± 0.51
+117.4762 ± 82.5656
+P-GADMM
+113.3 ± 9.4
+0.0350 ± 0.0017
+13.60 ± 5.56
+98.00 ± 0.26
+3.9937 ± 0.1216
+non-IID setting (α = 0.1, a = 1.1, target accuracy 80%)
+Method
+Target rounds
+Avg. wait/round (s)
+Blocking (%)
+Final acc. (%)
+Time to target (s)
+Asynch-ADMM
+90.0†
+0.3657 ± 0.1029
+8.33 ± 2.36
+83.70 ± 3.79
+25.2723 ± 3.7539
+GADMM
+> 500‡
+4.4898 ± 0.7215
+100.00 ± 0.00
+51.15 ± 6.80
+2244.9162 ± 360.7430
+P-GADMM
+53.3 ± 8.5
+0.0468 ± 0.0049
+24.27 ± 7.72
+94.77 ± 0.27
+2.5739 ± 0.5158
+Mean ± standard deviation over three runs.
+† Target reached in 2 of 3 runs.
+‡ Target not reached within 500 rounds; time is the total simulation time.
+TABLE III
+EXPERIMENTAL RESULTS ON CIFAR10 UNDER IID AND NON-IID SETTINGS.
+IID setting (α = 100, a = 2.0, target accuracy 75%)
+Method
+Target rounds
+Avg. wait/round (s)
+Blocking (%)
+Final acc. (%)
+Time to target (s)
+Asynch-ADMM
+990.0 ± 289.9
+0.0488 ± 0.0038
+8.33 ± 2.36
+79.44 ± 1.75
+49.3355 ± 18.4516
+GADMM
+> 2000†
+0.6674 ± 0.2900
+100.00 ± 0.00
+52.19 ± 1.64
+1334.8499 ± 580.0759
+P-GADMM
+886.7 ± 198.7
+0.0350 ± 0.0021
+10.92 ± 5.13
+81.27 ± 1.62
+31.4334 ± 8.8425
+non-IID setting (α = 0.1, a = 1.1, target accuracy 60%)
+Method
+Target rounds
+Avg. wait/round (s)
+Blocking (%)
+Final acc. (%)
+Time to target (s)
+Asynch-ADMM
+963.3 ± 324.6
+0.2545 ± 0.0155
+8.33 ± 2.36
+67.91 ± 3.69
+243.7668 ± 81.0247
+GADMM
+> 2000†
+3.3781 ± 1.1568
+100.00 ± 0.00
+23.14 ± 3.89
+6756.2943 ± 2313.6207
+P-GADMM
+1070.0 ± 215.2
+0.0475 ± 0.0025
+13.10 ± 3.75
+66.69 ± 3.66
+50.8783 ± 11.1394
+Mean ± standard deviation over three runs.
+† Target not reached within 2000 rounds; time is the total simulation time.
+(a)
+(b)
+(c)
+Fig. 5. Sensitivity analysis of P-GADMM on MNIST under the non-IID setting. (a) Client population. (b) Group size. (c) Staleness threshold.
+(a)
+(b)
+(c)
+Fig. 6. Sensitivity analysis of P-GADMM on CIFAR10 under the non-IID setting. (a) Client population. (b) Group size. (c) Staleness threshold.
+
+
+12
+with the two baselines clarifies the role of the proposed
+design. GADMM reduces the number of variables involved
+in synchronization, but its progress is still constrained by
+slow groups. Asynch-ADMM relaxes synchronization, but
+its advantage becomes weaker when stale updates accumu-
+late. By combining latency-aware grouping with bounded
+asynchronous updates, P-GADMM achieves a better balance
+between efficiency and model quality.
+C. Sensitivity Analysis
+We next study the effects of client population, group size,
+and staleness threshold under the non-IID setting. To ensure
+a controlled comparison, the heterogeneity level is fixed and
+only one factor is changed at a time. The corresponding results
+are shown in Fig. 5, Fig. 6, and Table IV. These results further
+illustrate how the main design parameters affect the behavior
+of P-GADMM.
+We first examine the effect of client population. Fig. 5(a)
+and Fig. 6(a) show that convergence generally improves as the
+number of clients increases. When more clients participate,
+more groups can produce updates in parallel, and the cloud
+server can receive aggregated information more frequently.
+This trend is observed on both datasets. Therefore, the pro-
+posed framework can benefit from increased parallelism when
+more client resources are available.
+We then examine the effect of group size. Fig. 5(b) and
+Fig. 6(b) show that larger group sizes lead to slower conver-
+gence. When the total number of clients is fixed, increasing
+the group size reduces the number of groups, which lowers the
+frequency of group updates received by the cloud. In addition,
+a larger group is more likely to include slow clients, which
+increases the chance of delayed group updates. This result is
+consistent with the design motivation of computation-aware
+grouping.
+TABLE IV
+SENSITIVITY ANALYSIS WITH DIFFERENT τmax UNDER THE NON-IID
+SETTING.
+Dataset
+τmax
+Final acc. (%)
+Time (s)
+MNIST
+1
+94.75 ± 0.37
+25.23 ± 0.49
+5
+92.01 ± 1.84
+23.59 ± 3.32
+10
+92.08 ± 0.85
+22.34 ± 2.16
+CIFAR10
+1
+66.55 ± 4.48
+94.92 ± 6.20
+5
+60.15 ± 1.43
+93.63 ± 9.46
+10
+57.38 ± 1.51
+96.52 ± 12.65
+We finally examine the effect of the staleness threshold.
+Table IV, together with Fig. 5(c) and Fig. 6(c), shows the
+results under repeated runs. From the table and figures, two
+observations can be made. First, on both MNIST and CI-
+FAR10, the highest final accuracy is achieved when τmax = 1.
+On MNIST, the final accuracy reaches 94.75 ± 0.37%, while
+on CIFAR10 it reaches 66.55 ± 4.48%. Second, although
+the simulation time changes only slightly across different
+thresholds, the accuracy generally decreases as τmax increases.
+These results indicate that, in our setting, a small staleness
+threshold is preferable. In particular, τmax = 1 provides the
+best accuracy without causing a clear increase in training time.
+VII. CONCLUSION
+In this paper, we proposed P-GADMM for distributed op-
+timization in heterogeneous edge networks. The method com-
+bines computation-aware grouping, edge-level aggregation,
+and bounded asynchronous coordination. By grouping clients
+according to their estimated training latency, P-GADMM
+reduces the computation-speed variation within each group.
+The bounded asynchronous update further allows active groups
+to participate in global aggregation without waiting for slower
+groups. For strongly convex objectives, we established con-
+vergence guarantees for an idealized form of P-GADMM and
+characterized the effects of bounded staleness on the conver-
+gence behavior. Experiments on MNIST and CIFAR10 showed
+that P-GADMM reduces wall-clock training time compared
+with representative baselines while maintaining comparable
+final accuracy under both IID and non-IID settings. Future
+work will extend the analysis to the stochastic implementation
+and study adaptive grouping and coordination under dynamic
+network conditions.
+REFERENCES
+[1] A. Nedic and A. Ozdaglar, “Distributed subgradient methods for multi-
+agent optimization,” IEEE Transactions on Automatic Control, vol. 54,
+no. 1, pp. 48–61, 2009.
+[2] S. Boyd, N. Parikh, E. Chu, B. Peleato, and J. Eckstein, “Distributed
+optimization and statistical learning via the alternating direction method
+of multipliers,” Foundations and Trends in Machine Learning, vol. 3,
+no. 1, pp. 1–122, 2011.
+[3] J. C. Duchi, A. Agarwal, and M. J. Wainwright, “Dual averaging for
+distributed optimization: Convergence analysis and network scaling,”
+IEEE Transactions on Automatic Control, vol. 57, no. 3, pp. 592–606,
+2012.
+[4] J. Dean, G. S. Corrado, R. Monga, K. Chen, M. Devin, and Q. V.
+Le, “Large scale distributed deep networks,” in Advances in Neural
+Information Processing Systems, vol. 25, 2012, pp. 1223–1231.
+[5] K. I. Tsianos, S. Lawlor, and M. G. Rabbat, “Consensus-based dis-
+tributed optimization: Practical issues and applications in large-scale
+machine learning,” in Proceedings of the 50th Annual Allerton Con-
+ference on Communication, Control, and Computing (Allerton), 2012,
+pp. 1543–1550.
+[6] S. Duan et al., “Distributed artificial intelligence empowered by end-
+edge-cloud computing: A survey,” IEEE Communications Surveys &
+Tutorials, vol. 25, no. 1, pp. 591–624, 2023.
+[7] Y. Zhang, J. C. Duchi, and M. J. Wainwright, “Communication-efficient
+algorithms for statistical optimization,” Journal of Machine Learning
+Research, vol. 14, no. 1, pp. 3321–3363, 2013.
+[8] H. B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. Ag¨uera
+y Arcas, “Communication-efficient learning of deep networks from
+decentralized data,” in Proceedings of the 20th International Conference
+on Artificial Intelligence and Statistics (AISTATS), vol. 54, 2017, pp.
+1273–1282.
+[9] P. Kairouz et al., “Advances and open problems in federated learning,”
+Foundations and Trends in Machine Learning, vol. 14, no. 1–2, pp. 1–
+210, 2021.
+[10] A. Elgabli, J. Park, A. S. Bedi, M. Bennis, and V. Aggarwal, “GADMM:
+Fast and communication-efficient framework for distributed machine
+learning,” Journal of Machine Learning Research, vol. 21, no. 76, pp.
+1–39, 2020.
+[11] T. Li, A. K. Sahu, M. Zaheer, M. Sanjabi, A. Talwalkar, and V. Smith,
+“Federated optimization in heterogeneous networks,” in Proceedings of
+the 2020 Conference on Machine Learning and Systems (MLSys), vol.
+2, 2020, pp. 429–450.
+[12] A. He, H. Pan, Y. Dai, X. Si, C. Yuen, and Y. Zhang, “ADMM for
+mobile edge intelligence: A survey,” IEEE Communications Surveys &
+Tutorials, vol. 27, no. 5, pp. 3020–3057, 2025.
+[13] J. He, M. Xiao, M. Skoglund, and H. V. Poor, “Straggler-resilient
+asynchronous ADMM for distributed consensus optimization,” IEEE
+Transactions on Signal Processing, vol. 73, pp. 2496–2510, 2025.
+
+
+13
+[14] L. Xu, X. Yi, Y. Shi, K. H. Johansson, T. Chai, and T. Yang, “Distributed
+nonconvex optimization with event-triggered communication,” IEEE
+Transactions on Automatic Control, vol. 69, no. 4, pp. 2745–2752, 2024.
+[15] A. Nedi´c, A. Olshevsky, and M. G. Rabbat, “Network topology and
+communication-computation tradeoffs in decentralized optimization,”
+Proceedings of the IEEE, vol. 106, no. 5, pp. 953–976, 2018.
+[16] L. Liu, J. Zhang, S. H. Song, and K. B. Letaief, “Client-edge-cloud
+hierarchical federated learning,” in Proceedings of the 2020 IEEE
+International Conference on Communications (ICC), 2020, pp. 1–6.
+[17] M. S. H. Abad, E. Ozfatura, D. Gunduz, and O. Ercetin, “Hierarchical
+federated learning across heterogeneous cellular networks,” in Proceed-
+ings of the 2020 IEEE International Conference on Acoustics, Speech
+and Signal Processing (ICASSP), 2020, pp. 8866–8870.
+[18] Y. Shi, Z. Liu, Z. Shi, and H. Yu, “Fairness-aware client selection for
+federated learning,” in Proceedings of the IEEE International Confer-
+ence on Multimedia and Expo (ICME), 2023, pp. 324–329.
+[19] Y. Tian, Z. Zhang, Z. Yang, and R. Jin, “Hierarchical federated learning
+with adaptive clustering on non-IID data,” in Proceedings of the 2022
+IEEE Global Communications Conference (GLOBECOM), 2022, pp.
+627–632.
+[20] W. Yao, T. Liu, Y. Cui, and Y. Zhu, “Heterogeneity-aware federated
+learning with adaptive local epoch size in edge computing,” in Proceed-
+ings of the 2023 19th International Conference on Mobility, Sensing and
+Networking (MSN), 2023, pp. 167–174.
+[21] H. Ouyang, N. He, L. Q. Tran, and A. Gray, “Stochastic alternating
+direction method of multipliers,” in Proceedings of the 30th International
+Conference on Machine Learning (ICML), vol. 28, 2013, pp. 80–88.
+[22] H. Wang and X. Chen, “A fast alternating direction method of multipliers
+algorithm for big data applications,” IEEE Access, vol. 8, pp. 20607–
+20615, 2020.
+[23] C. Zhang, H. Lee, and K. G. Shin, “Efficient distributed linear classi-
+fication algorithms via the alternating direction method of multipliers,”
+in Proceedings of the 15th International Conference on Artificial Intel-
+ligence and Statistics (AISTATS), vol. 22, 2012, pp. 1398–1406.
+[24] S. Zhou and G. Y. Li, “Federated learning via inexact ADMM,” IEEE
+Transactions on Pattern Analysis and Machine Intelligence, vol. 45, no.
+8, pp. 9699–9708, 2023.
+[25] S. Kant, J. M. B. da Silva, G. Fodor, B. G¨oransson, M. Bengtsson, and
+C. Fischione, “Federated learning using three-operator ADMM,” IEEE
+Journal of Selected Topics in Signal Processing, vol. 17, no. 1, pp. 205–
+221, 2023.
+[26] H. Wang, Y. Gao, Y. Shi, and R. Wang, “Group-based alternating
+direction method of multipliers for distributed linear classification,”
+IEEE Transactions on Cybernetics, vol. 47, no. 11, pp. 3568–3582, 2017.
+[27] A. Elgabli, J. Park, A. S. Bedi, M. Bennis, and V. Aggarwal, “Q-
+GADMM: Quantized group ADMM for communication efficient de-
+centralized machine learning,” in Proceedings of the 2020 IEEE In-
+ternational Conference on Acoustics, Speech and Signal Processing
+(ICASSP), 2020, pp. 8876–8880.
+[28] A. Elgabli, J. Park, S. Ahmed, and M. Bennis, “L-FGADMM: Layer-
+wise federated group ADMM for communication-efficient decentralized
+deep learning,” in Proceedings of the 2020 IEEE Wireless Communica-
+tions and Networking Conference (WCNC), 2020, pp. 1–6.
+[29] X. Huang, G. Wang, and Y. Lei, “GR-ADMM: A communication
+efficient algorithm based on ADMM,” in Proceedings of the 2021 IEEE
+International Conference on Parallel and Distributed Processing with
+Applications (ISPA), 2021, pp. 220–227.
+[30] C. Ben Issaid, A. Elgabli, J. Park, M. Bennis, and M. Debbah, “Com-
+munication efficient decentralized learning over bipartite graphs,” IEEE
+Transactions on Wireless Communications, vol. 21, no. 6, pp. 4150–
+4167, 2022.
+[31] R. Zhang and J. Kwok, “Asynchronous distributed ADMM for consensus
+optimization,” in Proceedings of the 31st International Conference on
+Machine Learning (ICML), vol. 32, 2014, pp. 1701–1709.
+[32] T.-H. Chang, M. Hong, W.-C. Liao, and X. Wang, “Asynchronous
+distributed ADMM for large-scale optimization—Part I: Algorithm and
+convergence analysis,” IEEE Transactions on Signal Processing, vol. 64,
+no. 12, pp. 3118–3130, 2016.
+[33] E. Pond, Y. Zhao, and M. Hale, “A distributed asynchronous gen-
+eralized momentum algorithm without delay bounds,” arXiv preprint
+arXiv:2508.08218, 2025.
+[34] Y. Chen, Y. Ning, M. Slawski, and H. Rangwala, “Asynchronous online
+federated learning for edge devices with non-IID data,” in Proceedings
+of the 2020 IEEE International Conference on Big Data (Big Data),
+2020, pp. 15–24.
+[35] R. Tandon, Q. Lei, A. G. Dimakis, and N. Karampatziakis, “Gradient
+coding: Avoiding stragglers in distributed learning,” in Proceedings of
+the 34th International Conference on Machine Learning (ICML), vol.
+70, 2017, pp. 3368–3376.
+[36] W. Wu, L. He, W. Lin, R. Mao, C. Maple, and S. Jarvis, “SAFA: A semi-
+asynchronous protocol for fast federated learning with low overhead,”
+IEEE Transactions on Computers, vol. 70, no. 5, pp. 655–668, 2021.
+[37] S. M. Azimi-Abarghouyi, N. Bastianello, K. H. Johansson, and V. Fodor,
+“Hierarchical federated ADMM,” IEEE Networking Letters, vol. 7, no.
+1, pp. 11–15, 2025.
+[38] J. Zhou and Y. Lei, “Asynchronous group-based ADMM algorithm under
+efficient communication structure,” in Proceedings of the 2018 IEEE
+International Conference on Parallel and Distributed Processing with
+Applications (ISPA), 2018, pp. 135–140.

@@ -1,0 +1,94 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-18T21:51:05.938075+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.20359v1",
+      "source": "arxiv",
+      "title": "Accelerating Sharded Data Parallelism at Scale with Federated Learning",
+      "abstract": "The symbiotic scaling of artificial intelligence models and high-performance computing systems continually creates algorithmic challenges in their convergence. Foundation models (FMs) are a crucial example, requiring months-long training on thousands of cutting-edge GPUs. Sharded data parallelism (DP) is the dominant strategy to accelerate such computations by splitting data and models across multiple GPUs. However, it incurs prohibitive communication overhead when deployed at scale, particularly on multi-tier interconnects with heterogeneous performance. Inspired by the efficient communication principles of federated learning (FL), this work introduces two hybrid algorithms - FL+FSDP and FL+HSDP - interleaving sharded DP with FedAvg-style aggregations. Such approaches decouple large DP deployments into smaller, loosely-coupled federation groups, requiring minimal inter-group traffic while keeping the global batch size bounded by the groups' size. Formal analysis of communication costs and experimental validation prove their scalability and flexibility. A Llama3.1 8B pre-training on 512 A100 GPUs shows that, under identical hyperparameters, FL+FSDP and FL+HSDP achieve up to 8.04 faster data processing and 4.48 lower evaluation perplexity than their counterparts, demonstrating superior computational efficiency and improved model quality. These properties stem from reduced communication overhead and the bounded growth of the global batch size relative to the federation group size.",
+      "authors": [
+        "Gianluca Mittone",
+        "Marco Aldinucci"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.PF"
+      ],
+      "published": "2026-09-17T13:21:52+00:00",
+      "link": "https://arxiv.org/pdf/2609.20359v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "reducing communication overhead in sharded data-parallel distributed training",
+      "llm_evidence_cn": "降低分片数据并行分布式训练的通信开销",
+      "llm_evidence": "降低分片数据并行分布式训练的通信开销",
+      "canonical_evidence": "降低分片数据并行分布式训练的通信开销",
+      "llm_tldr_en": "Sharded data parallelism scales foundation-model training but incurs prohibitive communication overhead; inspired by federated learning, the paper introduces FL+FSDP and FL+HSDP hybrids interleaving sharded DP with FedAvg-style aggregation.",
+      "llm_tldr_cn": "分片数据并行是大模型训练的主流扩展策略，但在多级异构互连上通信开销过高。本文借鉴联邦学习的高效通信原则，提出FL+FSDP与FL+HSDP两种混合算法，将分片数据并行与FedAvg式聚合交错执行。实验表明该方案可在大规模场景下降低通信开销并改善收敛与扩展性，为通信高效的分布式训练提供新思路。",
+      "llm_tldr": "分片数据并行是大模型训练的主流扩展策略，但在多级异构互连上通信开销过高。本文借鉴联邦学习的高效通信原则，提出FL+FSDP与FL+HSDP两种混合算法，将分片数据并行与FedAvg式聚合交错执行。实验表明该方案可在大规模场景下降低通信开销并改善收敛与扩展性，为通信高效的分布式训练提供新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.20006v1",
+      "source": "arxiv",
+      "title": "P-GADMM: Parallel Group-Based ADMM for Asynchronous Optimization in Heterogeneous Edge Networks",
+      "abstract": "The Alternating Direction Method of Multipliers (ADMM) is widely used for distributed optimization, but its synchronous implementation can suffer from efficiency loss in heterogeneous edge networks, where fast clients or groups need to wait for slower ones before global updates can be completed. Existing group-based ADMM methods reduce communication overhead through grouping, but their grouping rules usually focus on data similarity or network topology and do not explicitly account for computation heterogeneity. To address this issue, this paper proposes Parallel Group-Based ADMM (P-GADMM) for distributed optimization in heterogeneous edge networks. P-GADMM forms computation-aware edge groups according to client computational capabilities and local data sizes, which reduces training-speed variation within each group. It further combines edge-level aggregation with bounded asynchronous coordination at the cloud, allowing active groups to participate in global updates without waiting for slower groups while controlling stale group information through a delay threshold. For strongly convex group objectives, we establish convergence guarantees for an idealized form of P-GADMM under bounded group-level staleness, showing a time-averaged convergence behavior up to a staleness-induced asymptotic error neighborhood. Experiments show that P-GADMM reduces wall-clock training time compared with representative baselines while maintaining comparable final accuracy.",
+      "authors": [
+        "Gaiguo Wei",
+        "Qingying Zhang",
+        "Heqiang Wang",
+        "Yu Zhang",
+        "Xiaoxiong Zhong"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-09-17T10:09:09+00:00",
+      "link": "https://arxiv.org/pdf/2609.20006v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "computation-aware grouping reduces communication overhead in asynchronous distributed optimization",
+      "llm_evidence_cn": "计算感知分组降低异步分布式优化的通信开销",
+      "llm_evidence": "计算感知分组降低异步分布式优化的通信开销",
+      "canonical_evidence": "计算感知分组降低异步分布式优化的通信开销",
+      "llm_tldr_en": "P-GADMM forms computation-aware client groups to reduce communication overhead and mitigate straggler waiting in asynchronous distributed optimization over heterogeneous edge networks.",
+      "llm_tldr_cn": "针对ADMM同步实现在异构边缘网络中需等待慢节点、现有分组方法忽视计算异构性的问题，作者提出并行分组ADMM方法P-GADMM。该方法依据客户端计算能力构建计算感知的边缘分组，以降低通信开销并支持异步更新。工作面向分布式优化中的通信效率与异步执行，其分组与异步机制对通信高效训练与异步分布式训练系统具有方法学借鉴意义。",
+      "llm_tldr": "针对ADMM同步实现在异构边缘网络中需等待慢节点、现有分组方法忽视计算异构性的问题，作者提出并行分组ADMM方法P-GADMM。该方法依据客户端计算能力构建计算感知的边缘分组，以降低通信开销并支持异步更新。工作面向分布式优化中的通信效率与异步执行，其分组与异步机制对通信高效训练与异步分布式训练系统具有方法学借鉴意义。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

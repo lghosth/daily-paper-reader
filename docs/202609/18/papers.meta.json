@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-19",
+  "date": "2026-09-18",
+  "generated_at": "2026-09-18T21:51:30",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/18/2609.20359v1-accelerating-sharded-data-parallelism-at-scale-with-federated-learning",
+      "section": "quick",
+      "title_en": "Accelerating Sharded Data Parallelism at Scale with Federated Learning",
+      "authors": "Gianluca Mittone, Marco Aldinucci",
+      "date": "2026-09-17",
+      "pdf": "https://arxiv.org/pdf/2609.20359v1",
+      "score": "7.0",
+      "evidence": "降低分片数据并行分布式训练的通信开销",
+      "tldr": "基础模型训练依赖分片数据并行，但在大规模多级异构互连上通信开销巨大，成为扩展瓶颈。受联邦学习高效通信启发，本文提出 FL+FSDP 与 FL+HSDP，将分片 DP 与 FedAvg 式聚合交错，把大规模 DP 拆成松耦合联邦组并限制组间流量。在 512 张 A100 上预训练 Llama3.1 8B，相同超参下数据处理最高快 8.04 倍，评估困惑度降低 4.48。该工作验证了可扩展性与灵活性，为大规模训练降通信、稳批量提供新路径。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "The symbiotic scaling of artificial intelligence models and high-performance computing systems continually creates algorithmic challenges in their convergence. Foundation models (FMs) are a crucial example, requiring months-long training on thousands of cutting-edge GPUs. Sharded data parallelism (DP) is the dominant strategy to accelerate such computations by splitting data and models across multiple GPUs. However, it incurs prohibitive communication overhead when deployed at scale, particularly on multi-tier interconnects with heterogeneous performance. Inspired by the efficient communication principles of federated learning (FL), this work introduces two hybrid algorithms - FL+FSDP and FL+HSDP - interleaving sharded DP with FedAvg-style aggregations. Such approaches decouple large DP deployments into smaller, loosely-coupled federation groups, requiring minimal inter-group traffic while keeping the global batch size bounded by the groups' size. Formal analysis of communication costs and experimental validation prove their scalability and flexibility. A Llama3.1 8B pre-training on 512 A100 GPUs shows that, under identical hyperparameters, FL+FSDP and FL+HSDP achieve up to 8.04 faster data processing and 4.48 lower evaluation perplexity than their counterparts, demonstrating superior computational efficiency and improved model quality. These properties stem from reduced communication overhead and the bounded growth of the global batch size relative to the federation group size.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/18/2609.20006v1-p-gadmm-parallel-group-based-admm-for-asynchronous-optimization-in-heterogeneous-edge-networks",
+      "section": "quick",
+      "title_en": "P-GADMM: Parallel Group-Based ADMM for Asynchronous Optimization in Heterogeneous Edge Networks",
+      "authors": "Gaiguo Wei, Qingying Zhang, Heqiang Wang, Yu Zhang, Xiaoxiong Zhong",
+      "date": "2026-09-17",
+      "pdf": "https://arxiv.org/pdf/2609.20006v1",
+      "score": "6.0",
+      "evidence": "计算感知分组降低异步分布式优化的通信开销",
+      "tldr": "分布式 ADMM 在异构边缘网络中因同步等待导致效率下降，现有分组方法多基于数据相似性或拓扑，未显式考虑计算异构。本文提出 P-GADMM，按客户端算力与本地数据量构建计算感知分组，并在云端以延迟阈值进行有界异步协调。理论上在强凸目标与有界组级陈旧度下给出收敛保证，实验表明可缩短墙钟训练时间并保持精度。为异构边缘分布式优化提供高效方案。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "The Alternating Direction Method of Multipliers (ADMM) is widely used for distributed optimization, but its synchronous implementation can suffer from efficiency loss in heterogeneous edge networks, where fast clients or groups need to wait for slower ones before global updates can be completed. Existing group-based ADMM methods reduce communication overhead through grouping, but their grouping rules usually focus on data similarity or network topology and do not explicitly account for computation heterogeneity. To address this issue, this paper proposes Parallel Group-Based ADMM (P-GADMM) for distributed optimization in heterogeneous edge networks. P-GADMM forms computation-aware edge groups according to client computational capabilities and local data sizes, which reduces training-speed variation within each group. It further combines edge-level aggregation with bounded asynchronous coordination at the cloud, allowing active groups to participate in global updates without waiting for slower groups while controlling stale group information through a delay threshold. For strongly convex group objectives, we establish convergence guarantees for an idealized form of P-GADMM under bounded group-level staleness, showing a time-averaged convergence behavior up to a staleness-induced asymptotic error neighborhood. Experiments show that P-GADMM reduces wall-clock training time compared with representative baselines while maintaining comparable final accuracy.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
