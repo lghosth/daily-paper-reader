@@ -48,7 +48,7 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-19</span>
+      <span class="dpr-home-dashboard-kicker">2026-09-20</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
     <strong class="dpr-home-dashboard-count">共 2 篇</strong>
@@ -58,7 +58,7 @@
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>2</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-09-19 05:51:29 北京时间<br>状态：成功<br>下次更新：约 2026-09-20 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-09-20 05:24:13 北京时间<br>状态：成功<br>下次更新：约 2026-09-21 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日速读两篇分布式系统与优化论文，聚焦扩展性与异步协同。最值得看的是分片数据并行结合联邦学习加速大规模训练（7.0分），以及异构边缘网络中基于分组的异步ADMM优化（6.0分）。普通读者可先读第一篇了解大规模训练加速思路，再按需延伸至边缘异步优化。</p>
+<p>今日精选2篇速读：车联网联邦学习与异步优化各一篇。最值得看的是FedPGT用时变信道下的渐进梯度传输提升车载联邦学习效率，以及异构异步优化“桥接”之难的理论警示。普通读者可先读FedPGT了解应用思路，再按需关注异步优化结论。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -94,7 +94,7 @@
     <strong class="dpr-home-dashboard-count">2 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Accelerating Sharded Data Parallelism at Scale with Federated Learning">Accelerating Sharded Data Parallelism at Scale with Federated Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="P-GADMM: Parallel Group-Based ADMM for Asynchronous Optimization in Heterogeneous Edge Networks">P-GADMM: Parallel Group-Based ADMM for Asynchronous Optimization in Heterogeneous Edge Networks</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="FedPGT: Progressive Gradient Transmission for Vehicular Federated Learning over Time-Varying Channels">FedPGT: Progressive Gradient Transmission for Vehicular Federated Learning over Time-Varying Channels</span></li><li><span class="dpr-home-dashboard-paper-title" title="Bridging the Gap Between Homogeneous and Heterogeneous Asynchronous Optimization Is Surprisingly Difficult">Bridging the Gap Between Homogeneous and Heterogeneous Asynchronous Optimization Is Surprisingly Difficult</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>2</strong></span></div>
 </section>

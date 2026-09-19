@@ -1,0 +1,41 @@
+{
+  "date": "20260919",
+  "date_label": "2026-09-20",
+  "generated_at": "2026-09-20 05:24:13 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.18089v1",
+      "route": "202609/19/2609.18089v1-fedpgt-progressive-gradient-transmission-for-vehicular-federated-learning-over-time-varying-channels",
+      "title": "FedPGT: Progressive Gradient Transmission for Vehicular Federated Learning over Time-Varying Channels",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通过自适应梯度传输降低分布式联邦训练通信开销",
+      "first_seen_at": "2026-09-20 05:24:13 北京时间",
+      "updated_at": "2026-09-20 05:24:13 北京时间"
+    },
+    {
+      "paper_id": "2609.17483v1",
+      "route": "202609/19/2609.17483v1-bridging-the-gap-between-homogeneous-and-heterogeneous-asynchronous-optimization-is-surprisingly-difficult",
+      "title": "Bridging the Gap Between Homogeneous and Heterogeneous Asynchronous Optimization Is Surprisingly Difficult",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "多worker异步并行优化的收敛理论",
+      "first_seen_at": "2026-09-20 05:24:13 北京时间",
+      "updated_at": "2026-09-20 05:24:13 北京时间"
+    }
+  ]
+}
