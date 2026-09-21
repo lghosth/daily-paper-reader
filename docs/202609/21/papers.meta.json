@@ -1,0 +1,24 @@
+{
+  "label": "2026-09-22",
+  "date": "2026-09-21",
+  "generated_at": "2026-09-21T22:32:51",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202609/21/2609.14184v1-zaps-zero-cost-active-proxy-search-for-neural-architecture-search",
+      "section": "quick",
+      "title_en": "ZAPS: Zero-Cost Active Proxy Search for Neural Architecture Search",
+      "authors": "Hassan Touayouch, Rabie Najem, Mohammed Benjelloun",
+      "date": "2026-09-12",
+      "pdf": "https://arxiv.org/pdf/2609.14184v1",
+      "score": "6.0",
+      "evidence": "基于零成本代理与拓扑的神经架构搜索",
+      "tldr": "零成本代理能在初始化时秒级估计架构质量，但单一代理噪声大，且代理间强相关，简单集成只会叠加共同误差而非相互抵消。ZAPS 提出四阶段主动搜索流程：用 ProxyFit 贪心去冗余选出紧凑代理子集，混合 K-means 播种，每轮自助投票重选代理，并以 XGBoost 联合代理排序与拓扑编码、经 UCB 排序候选。在 NAS-Bench-201 上预算 200 次评估时，CIFAR-10 命中真实 top-100 的 52.3%、CIFAR-100 达 65.8%，优于 Random Search、REA、BANANAS、TPE 等基线，且方差不到最强基线一半。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Neural Architecture Search (NAS) automates network design, but evaluating a single candidate requires training it to convergence, making exhaustive search intractable. Zero-cost proxies estimate architecture quality at initialization in seconds, yet a single proxy is noisy, and combining several does not straightforwardly help: proxies are strongly correlated, so naive aggregation compounds their shared errors instead of averaging them out. Existing methods exploit either proxy signals or architectural topology - never both within a single active-learning framework. We introduce ZAPS (Zero-cost Active Proxy Search), a four-stage pipeline that closes this gap. ZAPS (i) selects a compact, non-redundant proxy subset offline via ProxyFit, a greedy anti-redundancy criterion; (ii) seeds the search with a hybrid K-means strategy that balances exploitation and exploration; (iii) re-selects proxies at every iteration by a bootstrapped vote as the labeled set grows; and (iv) ranks candidates with an XGBoost ensemble trained jointly on proxy ranks and one-hot topological encodings, queried through an Upper Confidence Bound (UCB) acquisition function. On NAS-Bench-201 under a budget of B=200 evaluations, ZAPS recovers 52.3% of the true top-100 architectures on CIFAR-10 and 65.8% on CIFAR-100, ahead of every baseline we consider - Random Search, Local Search, REA, BANANAS and TPE - and, on CIFAR-10, with less than half the run-to-run standard deviation of the strongest of them. The advantage is largest where evaluations are scarce: on NAS-Bench-201 it narrows as the budget grows, whereas on the harder NAS-Bench-101, which no method comes close to saturating, it widens instead. All methods are scored by a single criterion: how much of the true top-100 lies among the architectures they actually evaluated.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
