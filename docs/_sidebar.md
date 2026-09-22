@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-09-23 <!--dpr-date:20260922-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/22/2609.23898v1-communication-efficient-distributed-training-via-ring-based-coded-approximate-all-reduce" data-sidebar-item="{&quot;title&quot;: &quot;Communication-Efficient Distributed Training via Ring-Based Coded Approximate All-Reduce&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.23898v1-communication-efficient-distributed-training-via-ring-based-coded-approximate-all-reduce&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;基于编码近似All-Reduce的通信高效分布式训练&quot;}">Communication-Efficient Distributed Training via Ring-Based Coded Approximate All-Reduce</a>
   * 2026-09-22 <!--dpr-date:20260921-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/21/2609.14184v1-zaps-zero-cost-active-proxy-search-for-neural-architecture-search" data-sidebar-item="{&quot;title&quot;: &quot;ZAPS: Zero-Cost Active Proxy Search for Neural Architecture Search&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.14184v1-zaps-zero-cost-active-proxy-search-for-neural-architecture-search&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;基于零成本代理与拓扑的神经架构搜索&quot;}">ZAPS: Zero-Cost Active Proxy Search for Neural Architecture Search</a>

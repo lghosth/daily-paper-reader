@@ -1,0 +1,25 @@
+{
+  "date": "20260922",
+  "date_label": "2026-09-23",
+  "generated_at": "2026-09-23 06:23:32 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.23898v1",
+      "route": "202609/22/2609.23898v1-communication-efficient-distributed-training-via-ring-based-coded-approximate-all-reduce",
+      "title": "Communication-Efficient Distributed Training via Ring-Based Coded Approximate All-Reduce",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "基于编码近似All-Reduce的通信高效分布式训练",
+      "first_seen_at": "2026-09-23 06:23:32 北京时间",
+      "updated_at": "2026-09-23 06:23:32 北京时间"
+    }
+  ]
+}

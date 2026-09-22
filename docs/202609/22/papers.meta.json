@@ -1,0 +1,24 @@
+{
+  "label": "2026-09-23",
+  "date": "2026-09-22",
+  "generated_at": "2026-09-22T22:23:33",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202609/22/2609.23898v1-communication-efficient-distributed-training-via-ring-based-coded-approximate-all-reduce",
+      "section": "deep",
+      "title_en": "Communication-Efficient Distributed Training via Ring-Based Coded Approximate All-Reduce",
+      "authors": "Sifat Munim, Aditya Ramamoorthy",
+      "date": "2026-09-20",
+      "pdf": "https://arxiv.org/pdf/2609.23898v1",
+      "score": "8.0",
+      "evidence": "基于编码近似All-Reduce的通信高效分布式训练",
+      "tldr": "针对大规模分布式训练中Ring All-Reduce精确聚合梯度时通信开销过高的问题，本文提出通信高效的近似All-Reduce协议CERAR。该方法将每个本地梯度切分为c个分量，借助线性编码与解码操作，在含N个工作节点的环上执行c+N-2轮通信，从而把归一化通信率降至1+(N-2)/c，归一化存储率为1+N/c。基于Vandermonde的显式构造可使近似误差任意趋近于零，但代价是编码矩阵高度病态；为此作者提出乘性扰动构造，使误差为O(ε)，相关条件数为O(ε^{-r⋆})。进一步地，他们建立条件数约束优化框架，以权衡误差、通信与存储。多GPU实验显示，在低带宽互连下，即使参数长度中等也能获得明显收益。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Ring All-Reduce is widely used within large-scale distributed training for exact computation of the aggregate gradient. For a system with $N$ workers, its normalized per-worker communication is $2(N-1)/N$. In this work we present a communication-efficient Ring All-Reduce (CERAR) protocol for ``approximate'' gradient aggregation. CERAR partitions each local gradient into $c$ components and crucially relies on linear encoding and decoding operations. It performs $L=c+N-2$ communication rounds over an $N$-worker ring, yielding normalized communication rate $1+(N-2)/c$ and normalized storage $1+N/c$. We present an explicit Vandermonde-based construction, whose approximation error can be made arbitrarily close to zero with communication and storage rates approaching one with increasing $c$. However, this limit is achieved through ill-conditioned encoding matrices. Accordingly, we give a multiplicative perturbation construction whose error is $O(ε)$, while the relevant condition numbers are $O(ε^{-r_\\star})$, where $r_\\star=\\lceil c/N\\rceil-1$. This naturally motivates a condition-number-constrained optimization formulation for trading off the competing objectives and obtaining numerically stable practical designs. We present experiments on multi-GPU clusters with low-bandwidth and high-bandwidth interconnects. Our results demonstrate clear benefits in the low-bandwidth setting, even for moderate parameter length. We expect corresponding improvements even in the high-bandwidth setting for experiments with much higher parameter lengths.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
