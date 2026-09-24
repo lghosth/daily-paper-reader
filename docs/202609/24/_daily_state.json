@@ -1,0 +1,41 @@
+{
+  "date": "20260924",
+  "date_label": "2026-09-25",
+  "generated_at": "2026-09-25 06:20:36 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.21583v1",
+      "route": "202609/24/2609.21583v1-predictive-suppression-layers-for-communication-efficient-spiking-neural-networks",
+      "title": "Predictive Suppression Layers for Communication-Efficient Spiking Neural Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过预测抑制实现通信高效的神经网络训练",
+      "first_seen_at": "2026-09-25 06:20:36 北京时间",
+      "updated_at": "2026-09-25 06:20:36 北京时间"
+    },
+    {
+      "paper_id": "2609.23773v1",
+      "route": "202609/24/2609.23773v1-sage-optimal-stopping-peer-selection-for-decentralised-federated-learning",
+      "title": "SAGE: Optimal-Stopping Peer Selection for Decentralised Federated Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "去中心化联邦学习对等交换与通信预算",
+      "first_seen_at": "2026-09-25 06:20:36 北京时间",
+      "updated_at": "2026-09-25 06:20:36 北京时间"
+    }
+  ]
+}

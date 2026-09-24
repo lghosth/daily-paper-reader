@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-25",
+  "date": "2026-09-24",
+  "generated_at": "2026-09-24T22:20:37",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/24/2609.21583v1-predictive-suppression-layers-for-communication-efficient-spiking-neural-networks",
+      "section": "quick",
+      "title_en": "Predictive Suppression Layers for Communication-Efficient Spiking Neural Networks",
+      "authors": "Aidin Attar, Michele Rossi",
+      "date": "2026-09-18",
+      "pdf": "https://arxiv.org/pdf/2609.21583v1",
+      "score": "6.0",
+      "evidence": "通过预测抑制实现通信高效的神经网络训练",
+      "tldr": "前馈脉冲神经网络通常无差别传播每个脉冲，导致层间通信高度冗余，在神经形态多核硬件和以通信为主的物联网场景中开销巨大。为此，作者为SNN引入极简预测编码框架，提出共享预测器块的两类层：误差单元传输带符号脉冲残差，预测抑制层则依据残差幅度动态门控，仅转发不可预测的“意外”活动。在N-MNIST和SHD上，通信活动减少约三倍，同时任务准确率反而提升。这表明预测编码层不仅能降低通信开销，还能产生表征能力更强的输出特征。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Feedforward Spiking Neural Networks (SNNs) typically propagate every generated spike indiscriminately, disregarding whether the information is redundant from an information-theoretic perspective. This lack of selectivity induces high redundancy in inter-layer communication, creating an expensive overhead, e.g., in scenarios involving many-core neuromorphic hardware or communication-dominated Internet-of-Things (IoT) where features are transmitted wirelessly. To address this challenge, we trade localized processing for leaner network channels by introducing a minimal predictive coding framework for SNNs. We propose two layer variants sharing a predictor block: error units, which transmit signed spiking residuals, and predictive suppression, which uses residual magnitude to dynamically gate and forward only unpredictable, \"surprising\" activity. Evaluated on the N-MNIST and Spiking Heidelberg Digits (SHD) datasets using diagnostic metrics that decouple local processing from cross-layer communication, our new predictive coding layers achieve significant communication savings. Numerical results reveal a three-fold reduction in communicated activity, while increasing the task accuracy for both datasets. The latter finding is notable, and suggests that predictive coding layers not only minimize communication overhead, but also produce output feature vectors with a higher representation power.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/24/2609.23773v1-sage-optimal-stopping-peer-selection-for-decentralised-federated-learning",
+      "section": "quick",
+      "title_en": "SAGE: Optimal-Stopping Peer Selection for Decentralised Federated Learning",
+      "authors": "Ke Xiao, Qiyuan Wang, Christos Anagnostopoulos",
+      "date": "2026-09-20",
+      "pdf": "https://arxiv.org/pdf/2609.23773v1",
+      "score": "6.0",
+      "evidence": "去中心化联邦学习对等交换与通信预算",
+      "tldr": "去中心化联邦学习把聚合下放到点对点模型交换，协作选择成为不确定性下的局部决策。SAGE 将同伴选择建模为最优停止问题，接收方基于自有锚证据给候选邻居打分，仅在优势被认证时选择，否则继续探测或回退随机 gossip。理论证明停止规则存在有限阶段最优解，锚调度在同伴风险差距与置信度上序最优。实验显示 SAGE-OS 比固定预算少用75.5%证据匹配 gossip，通信开销仅为两个已发表选择器的一半。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Decentralised federated learning replaces server aggregation with peer-to-peer model exchange, making collaborator selection a local decision under uncertainty. Fixed probe budgets waste effort on easy choices yet fall short when peers are hard to distinguish. We propose SAGE (Sequential Anchor-Gated Exchange), an optimal-stopping peer selector under a one-model-bearing-exchange budget. A receiver scores candidate neighbours on receiver-owned anchor evidence and selects once an advantage is certified. It continues probing only while further evidence repays its cost, and otherwise falls back to random gossip. We show that the stopping problem admits an optimal rule attained at a finite stage, and that the anchor schedule is order-optimal in the peer-risk gap and the confidence level. We further show that the selector never returns a peer worse than random gossip with high probability, and prove that no such guarantee holds for selectors that commit without a certificate. A separability threshold follows, below which no probing budget improves on gossip. Experiments span two image benchmarks, two graph families and three heterogeneity levels. Selectors that always act on their evidence lose to gossip in every configuration tested. SAGE-OS matches gossip on 75.5% less evidence than a fixed budget, at half the communication overhead of two published selectors. The operative decision is not which peer to rank first, but whether the evidence justifies ranking at all.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
