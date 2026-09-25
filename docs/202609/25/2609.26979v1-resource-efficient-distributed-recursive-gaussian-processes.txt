@@ -1,0 +1,1633 @@
+Title: Resource-Efficient Distributed Recursive Gaussian Processes
+
+URL Source: https://arxiv.org/pdf/2609.26979v1
+
+Published Time: Thu, 24 Sep 2026 00:15:35 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+<Society logo(s) and publica-tion title will appear here. >
+
+> Received XX Month, XXXX; revised XX Month, XXXX; accepted XX Month, XXXX; Date of publication XX Month, XXXX; date of current version XX Month, XXXX.
+> Digital Object Identifier 10.1109/XXXX.2022.1234567
+
+# Resource-Efficient Distributed Recursive Gaussian Processes 
+
+Josephine King 1, Student Member, IEEE Ali Emre Balcı 1, Student Member, IEEE Raj Thilak Rajan 1, Senior Member, IEEE  
+
+> 1Signal Processing Systems, Faculty of EEMCS, Delft University of Technology, Mekelweg 4, 2628CD, Delft, The Netherlands Corresponding author: Ali Emre Balcı (a.e.balci@tudelft.nl) This work is partially funded by the Sensor AI Lab through the AI Labs Program of the Delft University of Technology, and EU-HORIZON-KDT-JU-2023-2-RIA under grant agreement No 101139996, the ShapeFuture project.
+
+ABSTRACT Gaussian processes (GPs) provide a flexible framework for learning unknown functions from noisy measurements while quantifying predictive uncertainty, making them well suited for estimation in multi-agent systems. However, when measurements are collected by multiple agents, maintaining a unified GP model without centralized processing requires efficient distributed algorithms that can operate using local measurements and communication with neighboring agents. In this work, we develop two distributed recursive GP (RGP) algorithms for multi-output GP regression: ADMM-RGP and PDMM-RGP. We analyze the stability and convergence of both algorithms and develop parameter selection strategies to accelerate convergence, thus reducing the communication burden. The proposed methods are validated on a real-world multi-output wind dataset, and their convergence behavior is examined across communication graphs with varying connectivity. Numerical experiments demonstrate that ADMM-RGP and PDMM-RGP can significantly reduce communication relative to the state of the art, while maintaining comparable estimation accuracy and network-wide consensus. 
+
+INDEX TERMS Gaussian processes, multi-agent systems, distributed inference, kernel methods, sensor fusion 
+
+I. Introduction 
+
+# MULTI agent systems have gained significant attention in recent years across a variety of applications, in-cluding search-and-rescue [1], agricultural monitoring [2], smart grids [3], and logistics [4]. A key advantage of these systems is their ability to simultaneously collect data from multiple locations [5]. Exploiting these measurements requires agents to combine locally acquired information to estimate an underlying quantity of interest, such as an envi-ronmental field or an unknown system function. In many ap-plications, measurements arrive sequentially and are spatially distributed across the network, motivating learning methods that can update their estimates online while operating with local computation and sparse communication [6], [7]. Gaussian processes (GPs) are a Bayesian supervised ma-chine learning method for reconstructing unknown functions from noisy measurements [8]. As a nonparametric method, GPs do not assume a fixed functional form, making them flexible and advantageous in applications where dynamics are unknown or unpredictable [9]. GPs are particularly attractive when measurements are limited or noisy due to their ability to quantify predictive uncertainty and incor-porate prior knowledge [10]. These properties make GPs well suited for multi-agent systems, which often rely on sensing, estimation, and uncertainty quantification [8]. GPs have proven useful in a wide variety of multi-agent tasks, including wireless traffic prediction [11], safe multi-agent path planning [7], [12], and cooperative mapping [6]. Applying GPs online in multi-agent systems nevertheless presents computational and communication challenges. Cen-tralized approaches require agents to transmit their measure-ments to a common processing unit, creating a single point of failure, while standard GP regression scales cubically with the number of observations [5]. Communication con-straints present an additional challenge, which is particularly important in unmanned aerial vehicles (UAVs), multi-robot  
+
+> This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/ VOLUME , 1arXiv:2609.26979v1 [cs.LG] 22 Sep 2026 King et. al.: Resource-Efficient Distributed Recursive Gaussian Processes
+
+systems (MRSs), and wireless sensor networks (WSNs), where communication can constitute a significant fraction of the available energy budget [13]–[15]. Prior works on distributed GPs have largely focused on kernel hyperparameter training e.g., [16], [17] propose proximal-ADMM approaches for distributed hyperparameter training, while [5] introduce dataset augmentation to promote hyperparameter consensus. Although these methods enable distributed GP training, they do not address the cubic com-putational complexity of GPs or support online regression in distributed settings. The recursive GP (RGP) algorithm [18] was proposed to resolve the complexity problem by enabling GP regression from streaming data using a sparse, inducing point-based approximation and Kalman filter-like updates. For multi-agent networks, Consensus-RGP [8] ex-tended RGP to model and predict multi-output functions using distributed consensus algorithms over a network. In a similar setting, D-RF-GP [19] adopts random Fourier features and uses ensembles of models to adapt to changing kernel length scales. The more recent ROAD-GP [20] further extends D-RF-GP to time-varying functions and improved its robustness to outliers. Despite this progress, the communication and con-sensus efficiency of distributed online GP methods re-main comparatively unexplored. Motivated by this gap, we develop two communication-efficient distributed recur-sive GP algorithms for multi-output regression that we call ADMM-RGP and PDMM-RGP. ADMM-RGP adapts a communication-efficient alternating direction method of multipliers (ADMM) scheme originally developed for dis-tributed Kalman filtering [21], while PDMM-RGP applies the primal-dual method of multipliers (PDMM) algorithm [22] to the distributed RGP problem. Compared with the state-of-the-art Consensus-RGP [8], we show that ADMM-RGP significantly reduces communication while maintaining comparable accuracy and network-wide consensus, whereas PDMM-RGP further reduces communication and is particu-larly effective in sparse communication networks. The main contributions of this work are as follows: 
+
+• We develop ADMM-RGP and PDMM-RGP for dis-tributed, recursive, multi-output GP regression. 
+
+• We analyze the stability of both algorithms and pro-vide parameter selection strategies for fast convergence. With the proposed parameter selection, ADMM-RGP is shown to converge faster than the state-of-the-art. 
+
+• We evaluate the proposed methods on a real-world, multi-output wind dataset [23] to demonstrate their effectiveness in learning an unknown function. 
+
+• We compare the communication and computational complexity of the proposed methods with the state of the art across graphs of varying connectivity. In this study, our key focus lies in the distributed fusion layer rather than in the local GP approximation. Consequently, ADMM-RGP and PDMM-RGP are not tied to a specific basis construction or kernel family. Building on the inducing point formulation of Consensus-RGP [8], we isolate the communication efficiency aspect of distributed inference, and thus enable a controlled comparison with the state-of-the-art methods. The proposed framework can be readily extended to alternative GP representations such as random Fourier features. Moreover, the inducing point formulation adopted here is kernel agnostic, and thus can accommodate a broader class of covariance functions. 
+
+Notation: IN ∈ RN ×N denotes the identity matrix, and 
+
+1N ∈ RN denotes a vector of ones. The ith entry of a vector 
+
+x is denoted by [x]i, and the (i, j )th entry of a matrix X is denoted by [X]ij . Probability density functions are denoted by p(·), and the multivariate normal distribution with mean 
+
+μ and covariance Σ is denoted by N (μ, Σ). The Kronecker product is denoted by ⊗. The set of eigenvalues of a matrix 
+
+X is denoted by λ(X), while λi denotes its ith smallest eigenvalue, such that λ1 ≤ · · · ≤ λN . Finally, ∥ · ∥ denotes the Euclidean norm for vectors and the spectral norm for matrices, while ∥ · ∥ F denotes the Frobenius norm. 
+
+> II. Preliminaries
+> A. Multi-Output Gaussian Processes
+
+Consider a function f : RD → RD′
+
+that may be observed with some noise 
+
+yj = f (xj ) + vj , vj ∼ N (0, Rv ), (1) where yj is the noisy measurement at input location xj
+
+and Rv is the measurement noise covariance matrix. With a collection of measurements we form a dataset D ≜ {X, y},where X ≜ [x1 · · · xJ ] ∈ RD×J is the matrix of measurement locations and y ≜ [y⊤ 
+
+> 1
+
+· · · y⊤ 
+
+> J
+
+]⊤ ∈ RD′J
+
+is the corresponding vector of measurements. In particular, for D′ = 1 , the unknown function may be modeled using a single-output Gaussian process denoted as GP (m(x), κ (x, x′)) which is characterized by a mean function, m(x), and a kernel function, κ(x, x′) : RD ×
+
+RD → R, where the kernel captures the smoothness and range of values that the function is expected to exhibit. The kernel function can be used to construct a kernel matrix 
+
+[K(X, X′)] ij ≜ κ(xi, x′ 
+
+> j
+
+) for two sets of input locations (X, X′). The predicted distribution f (X∗) ∼ N (μ∗, Σ∗) at a set of input locations X∗ is then 
+
+μ∗ = K(X∗, X)K−1 
+
+> y
+
+y, (2a) 
+
+Σ∗ = K(X∗, X∗) − K(X∗, X)K−1 
+
+> y
+
+K(X, X∗), (2b) where Ky ≜ K(X, X) + IJ ⊗ Rv . For multi-output functions in general, the linear model of coregionalization (LMC) may be used to capture correlations between dif-ferent output dimensions [24]. In the LMC approach, each output dimension is represented as a linear combination of Q ≤ D′ latent single-output functions, {uq : RD →
+
+R}Qq=1 . Each latent function has a zero-mean GP prior, 
+
+uq (x) ∼ GP (0 , κ q (x, x′)) , and a vector of weights bq ≜ 
+
+> 2VOLUME ,
+
+<Society logo(s) and publication title will appear here. >
+
+[b1q · · · bD′q ]⊤, where biq is associated with output dimen-sion i. The covariance of the outputs at two input locations is given by the matrix-valued kernel function, K(x, x′) ≜
+
+cov (f (x), f (x′)) = PQq=1 κq (x, x′)Bq , where Bq ≜ bq b⊤
+
+> q
+
+is the coregionalization matrix for latent function q. The LMC block kernel matrix for two sets of input locations (X, X′) is thus defined as [K(X, X′)] ij ≜ K(xi, x′ 
+
+> j
+
+).
+
+B. Recursive Gaussian Processes 
+
+The recursive Gaussian process (RGP) algorithm provides an online estimate of latent function values z ≜ f (Xp) at a fixed set of basis locations Xp ∈ RD×P [18]. At each time step t,a batch of Bt < J noisy measurements {Xt, yt} is collected according to the measurement model in (1) and, using this batch and the latent prior z | y1: t−1 ∼ N (μt−1, Σt−1), RGP obtains the posterior z | y1: t ∼ N (μt, Σt), where y1: t ≜
+
+{yi}ti=1 . Given the prior distribution over the basis function values, the predictive distribution at the new measurement locations ft ≜ f (Xt) ∼ N (μft , Σft ) is a Gaussian with 
+
+μft = Htμt−1, (3a) 
+
+Σft = K(Xt, Xt) − HtK(Xp, Xt) + HtΣt−1H⊤ 
+
+> t
+
+, (3b) 
+
+Ht ≜ K(Xt, Xp)K−1 
+
+> Xp
+
+, (3c) 
+
+KXp ≜ K(Xp, Xp) + ϵI, (3d) where ϵ > 0 is a small constant to ensure stability of the inversion. The posterior mean and covariance can be calculated using a Kalman-like correction update as 
+
+μt = μt−1 + Gt(yt − Htμt−1), (4a) 
+
+Σt = ( I − GtHt)Σt−1, (4b) 
+
+Gt ≜ Σt−1H⊤ 
+
+> t
+
+(Rt + HtΣt−1H⊤ 
+
+> t
+
+)−1, (4c) 
+
+Rt ≜ K(Xt, Xt) − HtK(Xp, Xt) + IBt ⊗ Rv . (4d) 
+
+C. Distributed Recursive Gaussian Processes 
+
+The distributed RGP problem considers a multi-agent net-work of N ≥ 2 agents, whose communication topology is represented by a connected graph G = (V, E), with vertices V = {1, · · · , N } representing the agents and edges 
+
+E ⊆ V × V representing communication links. The set 
+
+Nn ≜ {m ∈ V : ( n, m ) ∈ E} represents the neighbors of node n. At each time step t, each agent n collects its own batch of Bn,t independent noisy measurements {Xn,t , yn,t }
+
+according to (1). A set of P basis locations, Xp, are fixed and known to each agent. The objective is for each agent to obtain the RGP estimate that would result from jointly processing all measurements collected across the network. Following the RGP formula-tion, the Gaussian distribution can be equivalently repre-sented using the global information vector ξg,t and global information matrix Ωg,t , given by 
+
+ξg,t = Σ−1 
+
+> t
+
+μt, Ωg,t = Σ−1 
+
+> t
+
+. (5) Assuming the measurements at different agents are indepen-dent, the information-form global RGP updates are 
+
+ξg,t = ξg,t −1 +
+
+> N
+
+X
+
+> n=1
+
+H⊤
+
+> n,t
+
+R−1
+
+> n,t
+
+yn,t , (6) 
+
+Ωg,t = Ωg,t −1 +
+
+> N
+
+X
+
+> n=1
+
+H⊤
+
+> n,t
+
+R−1
+
+> n,t
+
+Hn,t , (7) where Hn,t and Rn,t are defined by (3c) and (4d) with the measurement batch collected by agent n. Although separable, (6)-(7) require measurement contributions from all agents, which is not feasible in a distributed system with no central processing station. Each agent n therefore maintains a local information vector ξn,t and an information matrix 
+
+Ωn,t and exchanges information with neighboring agents to approximate the global solution. 
+
+D. State of the Art: Consensus-RGP 
+
+The Consensus-RGP algorithm extends the RGP framework to model multi-output functions in distributed, multi-agent systems [8]. At each time step t, each agent n applies updates (4a) and (4b) in the information form with their local set of measurements 
+
+ξn,t = ξn,t −1 + H⊤
+
+> n,t
+
+R−1
+
+> n,t
+
+yn,t , (8a) 
+
+Ωn,t = Ωn,t −1 + H⊤
+
+> n,t
+
+R−1
+
+> n,t
+
+Hn,t , (8b) where Hn,t ≜ K(Xn,t , Xp)K−1 
+
+> Xp
+
+and Rn,t ≜
+
+K(Xn,t , Xn,t ) − Hn,t K(Xp, Xn,t ) + IBn,t ⊗ Rv . After the local updates, the agents perform K rounds of distributed average consensus. In the kth round, agent n updates its information parameters as 
+
+ξ[k] 
+
+> n,t
+
+=
+
+> N
+
+X
+
+> m=1
+
+wnm ξ[k−1]  
+
+> m,t
+
+, Ω[k] 
+
+> n,t
+
+=
+
+> N
+
+X
+
+> m=1
+
+wnm Ω[k−1]  
+
+> m,t
+
+, (9) where wnm are the row-stochastic consensus weights. After 
+
+K rounds of average consensus, the global information form parameters ξg,t and Ωg,t can be approximated as 
+
+ξg,t = N ξ[K] 
+
+> n,t
+
+, (10a) 
+
+Ωg,t = Ω[K] 
+
+> n, 0
+
++ N (Ω[K] 
+
+> n,t
+
+− Ωn, 0). (10b) 
+
+III. Proposed Approaches 
+
+A. ADMM-RGP 
+
+Inspired by a communication-efficient distributed ADMM variant of the Distributed Kalman Filter (DKF) [21], we pro-pose a novel distributed ADMM-RGP algorithm that presents the updates directly in information form, simplifying the convergence analysis. Let L ⪰ 0 be the Laplacian matrix of the communication graph. To derive distributed information vector updates using the ADMM-based approach of [21], we formulate the separable average consensus optimization problem minimize 
+
+> ξt
+
+12
+
+> N
+
+X
+
+> n=1
+
+∥χn,t − ξn,t ∥2, (P1) subject to Lξ ξt = 0, 
+
+> VOLUME , 3King et. al.: Resource-Efficient Distributed Recursive Gaussian Processes
+
+where ξt ≜ [ξ⊤ 
+
+> 1,t
+
+· · · ξ⊤
+
+> N,t
+
+]⊤, χn,t ≜ N H⊤
+
+> n,t
+
+R−1
+
+> n,t
+
+yn,t +
+
+ξn,t −1, Lξ ≜ (L ⊗ IDξ ), and Dξ ≜ P D ′. The equal-ity constraint ensures consensus among all agents, as the nullspace of L is the consensus subspace, spanned by 1N .This problem has solution 
+
+ξ∗ 
+
+> t
+
+= 1N ⊗
+
+ NX
+
+> n=1
+
+H⊤
+
+> n,t
+
+R−1
+
+> n,t
+
+yn,t + 1
+
+N
+
+> N
+
+X
+
+> n=1
+
+ξn,t −1
+
+
+
+. (12) If the agents reach consensus on the information vector at each time step, then ξn,t = ξg,t for all n ∈ V , as desired. To solve P1, we define the dual variable at node n, time t as 
+
+λn,t ∈ RDξ and let λt ≜ [λ⊤ 
+
+> 1,t
+
+· · · λ⊤
+
+> N,t
+
+]⊤. The augmented Lagrangian with penalty parameter τ is then 
+
+Lτ (ξt, λt) = 12 ∥χt − ξt∥22 + λ⊤ 
+
+> t
+
+Bξ ξt + τ
+
+2 || Bξ ξt|| 22, (13) where Bξ is the symmetric matrix square root of Lξ and 
+
+χt ≜ [χ⊤ 
+
+> 1,t
+
+· · · χ⊤
+
+> N,t
+
+]⊤. Differentiating (13) with respect to 
+
+ξt and λt gives the following gradients. 
+
+∇ξt Lτ = ξt − χt + Bξ λt + τ Lξ ξt, (14a) 
+
+∇λt Lτ = Bξ ξt. (14b) Defining α > 0 as the step size of the dual variable ascent, the primal and dual variable updates at loop iteration k are 
+
+˜λ[k] 
+
+> t
+
+= ˜λ[k−1]  
+
+> t
+
++ αLξ ξ[k−1]  
+
+> t
+
+, (15a) 
+
+ξ[k] 
+
+> t
+
+= χt − ˜λ[k] 
+
+> t
+
+− τ Lξ ξ[k−1]  
+
+> t
+
+, (15b) where ˜λt ≜ Bξ λt is an auxiliary dual variable. Let lnm ≜
+
+[L]nm , then the local update at node n is therefore 
+
+˜λ[k] 
+
+> n,t
+
+= ˜λ[k−1]  
+
+> n,t
+
++ α
+
+> N
+
+X
+
+> m=1
+
+lnm ξ[k−1]  
+
+> m,t
+
+, (16a) 
+
+ξ[k] 
+
+> n,t
+
+= χn,t − ˜λ[k] 
+
+> n,t
+
+− τ
+
+> N
+
+X
+
+> m=1
+
+lnm ξ[k−1]  
+
+> m,t
+
+. (16b) Now, to derive the distributed ADMM-based informa-tion matrix updates, we define the half-vectorization of the information matrix, ω ≜ vech (Ω), which has dimension 
+
+Dω ≜ 12 Dξ (Dξ + 1) . The distributed optimization problem is then minimize 
+
+> ωt
+
+12
+
+> N
+
+X
+
+> n=1
+
+∥ϕn,t − ωn,t ∥2, (P2) subject to Lω ωt = 0,
+
+where ωt ≜ [ω⊤ 
+
+> 1,t
+
+· · · ω⊤
+
+> N,t
+
+]⊤, ϕn,t ≜
+
+vech (N H⊤
+
+> n,t
+
+R−1
+
+> n,t
+
+Hn,t ) + ωn,t −1, and Lω ≜ L ⊗ IDω .Following a similar procedure as for the information vector, the information matrix updates are 
+
+˜ν[k] 
+
+> t
+
+= ˜ ν[k−1]  
+
+> t
+
++ αLω ω[k−1]  
+
+> t
+
+, (18a) 
+
+ω[k] 
+
+> t
+
+= ϕt − ˜ν[k] 
+
+> t
+
+− τ Lω ω[k−1]  
+
+> t
+
+, (18b) 
+
+Algorithm 1 ADMM-RGP  
+
+> 1:
+
+Inputs: L, K, α, τ 
+
+> 2:
+
+ωn, 0 ← vech (( K(Xp, Xp) + ϵI)−1) ∀n ∈ V  
+
+> 3:
+
+ξn, 0 ← 0 ∀n ∈ V  
+
+> 4:
+
+for t = 1 to T do  
+
+> 5:
+
+for n ∈ V do  
+
+> 6:
+
+Get new batch of measurements {Xn,t , yn,t } 
+
+> 7:
+
+Calculate χn,t and ϕn,t  
+
+> 8:
+
+ξ[0]  
+
+> n,t
+
+← χn,t , ω[0]  
+
+> n,t
+
+← ϕn,t  
+
+> 9:
+
+˜λ[0]  
+
+> n,t
+
+← 0, ˜ν[0]  
+
+> n,t
+
+← 0 
+
+> 10:
+
+end for  
+
+> 11:
+
+for k = 1 to K do  
+
+> 12:
+
+for n ∈ V do  
+
+> 13:
+
+Share ξ[k−1]  
+
+> n,t
+
+, ω[k−1]  
+
+> n,t
+
+with all m ∈ N n 
+
+> 14:
+
+Receive ξ[k−1]  
+
+> m,t
+
+, ω[k−1]  
+
+> m,t
+
+from all m ∈ N n 
+
+> 15:
+
+Update ˜λ[k] 
+
+> n,t
+
+and ξ[k] 
+
+> n,t
+
+following (16a)–(16b)  
+
+> 16:
+
+Update ˜ν[k] 
+
+> n,t
+
+and ω[k] 
+
+> n,t
+
+following (19a)–(19b)  
+
+> 17:
+
+end for  
+
+> 18:
+
+end for  
+
+> 19:
+
+ξn,t ← ξ[K] 
+
+> n,t
+
+, ωn,t ← ω[K] 
+
+> n,t
+
+for ∀n ∈ V  
+
+> 20:
+
+Calculate μn,t and Σn,t ∀n ∈ V using (20)  
+
+> 21:
+
+end for  
+
+> 22:
+
+Outputs: μn,T and Σn,T ∀n ∈ V 
+
+where ˜νt ∈ RN D ω is the global auxiliary dual variable. The fully distributed updates at node n are 
+
+˜ν[k] 
+
+> n,t
+
+= ˜ ν[k−1]  
+
+> n,t
+
++ α
+
+> N
+
+X
+
+> m=1
+
+lnm ω[k−1]  
+
+> m,t
+
+, (19a) 
+
+ω[k] 
+
+> n,t
+
+= ϕn,t − ˜ν[k] 
+
+> n,t
+
+− τ
+
+> N
+
+X
+
+> m=1
+
+lnm ω[k−1]  
+
+> m,t
+
+, (19b) where ˜νn,t ∈ RDω is the auxiliary dual variable at node 
+
+n. After K iterations of ADMM, the estimates of the mean 
+
+μn,t and covariance Σn,t can be obtained at each agent n
+
+by computing 
+
+μn,t = Σn,t ξ[K] 
+
+> n,t
+
+, Σn,t = Ω−1
+
+> n,t
+
+, (20) where Ωn,t = vech −1(ω[K] 
+
+> n,t
+
+). The ADMM-RGP algorithm is summarized in Algorithm 1. 
+
+B. PDMM-RGP 
+
+The optimization problems in the ADMM-RGP derivation are node-separable with strongly convex, differentiable ob-jectives and convex constraints, making them well suited for the primal–dual method of multipliers (PDMM) framework [25]. PDMM has been empirically shown to converge faster than ADMM in certain settings, including average consensus problems [22]. To reformulate P1 for the application of PDMM, we define two directed edges (n → m) and (m → n) for each (n, m ) ∈ 
+
+> 4VOLUME ,
+
+<Society logo(s) and publication title will appear here. >
+
+E. Furthermore let An→m ≜ an→mIDξ , where 
+
+an→m ≜
+
+(
+
+−[L]nm if n < m, 
+
+[L]nm if n > m, (21) which leads to the following reformulated problem minimize 
+
+> ξt
+
+12
+
+> N
+
+X
+
+> n=1
+
+∥χn,t − ξn,t ∥2, (P3) subject to An→mξn,t + Am→nξm,t = 0 ∀(n, m ) ∈ E .
+
+Now, we construct a lifted constraint matrix, by as-signing each directed edge (n → m) to a unique index 
+
+in→m ∈ { 1, . . . , 2M }, where M = |E| denotes the number of undirected edges in the communication graph. Let the lifted constraint matrix be denoted by C ∈ R2M ×N then 
+
+[C]rn =
+
+(
+
+an→m if r = in→m,
+
+0 otherwise . (23) Additionally, consider a 2M × 2M permutation matrix P
+
+that exchanges the components at indices in→m and im→n
+
+for each undirected edge (n, m ) ∈ E . Lastly, let the auxiliary dual variables be denoted by υn|m,t ∈ RDξ at each directed edge (n → m) of the communication graph, which are aggregated into υt ∈ R2M D ξ following the same edge order used to build C and P.The PDMM updates [26] to solve P3 are then given by 
+
+ξ[k] 
+
+> t
+
+= arg min  
+
+> ξ
+
+(∥χt − ξ∥2 + ( Pξ υ[k−1]  
+
+> t
+
+)⊤Cξ ξ + c
+
+2 ∥Cξ ξ∥2),
+
+υ[k] 
+
+> t
+
+= Pξ υ[k−1]  
+
+> t
+
++ 2 cCξ ξ[k] 
+
+> t
+
+,
+
+where c > 0 is a constant parameter, Cξ ≜ C ⊗ IDξ , and 
+
+Pξ ≜ P ⊗ IDξ . To obtain the ξt update, take the gradient with respect to the primal variable and set it to zero. Because 
+
+C⊤C is a diagonal matrix with entries that sum the squared weights corresponding to each node and c > 0, (I+cC⊤ 
+
+> ξ
+
+Cξ )
+
+is invertible, leading us to the global PDMM iterates for the information vector 
+
+ξ[k] 
+
+> t
+
+= ( I + cC⊤ 
+
+> ξ
+
+Cξ )−1(χt − C⊤ 
+
+> ξ
+
+Pξ υ[k−1]  
+
+> t
+
+), (25a) 
+
+υ[k] 
+
+> t
+
+= Pξ υ[k−1]  
+
+> t
+
++ 2 cCξ ξ[k] 
+
+> t
+
+. (25b) Subsequently, the distributed iterates at each agent n are 
+
+ξ[k] 
+
+> n,t
+
+= χn,t − P 
+
+> m∈N n
+
+an→mυ[k−1] 
+
+> m|n,t
+
+1 + c P 
+
+> m∈N n
+
+a2
+
+> n→m
+
+, (26a) 
+
+υ[k] 
+
+> n|m,t
+
+= υ[k−1]  
+
+> m|n,t
+
++ 2 ca n→mξ[k]
+
+> n,t
+
+. (26b) Note that the agent n requires the value of υm|n,t from agent m. Rather than transmitting these values individually over each edge using unicast communication, agent m can broadcast its primal variable ξm,t to all of its neighbors, allowing each neighbor to locally reconstruct the value of 
+
+υm|n,t . This broadcast strategy reduces the communication overhead.Along similar lines, P2 can be solved with PDMM by defining auxiliary dual variables ψn|m,t ∈ RDω for each 
+
+Algorithm 2 PDMM-RGP  
+
+> 1:
+
+Inputs: L, K, c 
+
+> 2:
+
+ωn, 0 ← vech (( K(Xp, Xp) + ϵI)−1), ∀n ∈ V  
+
+> 3:
+
+ξn, 0 ← 0 ∀n ∈ V  
+
+> 4:
+
+for t = 1 to T do  
+
+> 5:
+
+for n ∈ V do  
+
+> 6:
+
+Get new batch of measurements (Xn,t , yn,t ) 
+
+> 7:
+
+Calculate χn,t and ϕn,t  
+
+> 8:
+
+ξ[0]  
+
+> n,t
+
+← χn,t , ω[0]  
+
+> n,t
+
+← ϕn,t  
+
+> 9:
+
+υ[0]  
+
+> n|m,t
+
+← 0, ψ[0]  
+
+> n|m,t
+
+← 0 for m ∈ N n (at n) 
+
+> 10:
+
+υ[0]  
+
+> m|n,t
+
+← 0, ψ[0]  
+
+> m|n,t
+
+← 0 for m ∈ N n (at n) 
+
+> 11:
+
+end for  
+
+> 12:
+
+for k = 1 to K do  
+
+> 13:
+
+for n ∈ V do  
+
+> 14:
+
+Update ξ[k] 
+
+> n,t
+
+and υ[k] 
+
+> n|m,t
+
+using (26a)-(26b)  
+
+> 15:
+
+Update ω[k] 
+
+> n,t
+
+and ψ[k] 
+
+> n|m,t
+
+using (27a)-(27b)  
+
+> 16:
+
+Share ξ[k]
+
+> n,t
+
+, ω[k] 
+
+> n,t
+
+with all m ∈ N n 
+
+> 17:
+
+Receive ξ[k]
+
+> m,t
+
+, ω[k] 
+
+> m,t
+
+from all m ∈ N n 
+
+> 18:
+
+υ[k] 
+
+> m|n,t
+
+← υ[k−1]  
+
+> n|m,t
+
++ 2 ca m→nξ[k] 
+
+> m,t
+
+(at n) 
+
+> 19:
+
+ψ[k] 
+
+> m|n,t
+
+← ψ[k−1]  
+
+> n|m,t
+
++ 2 ca m→nω[k] 
+
+> m,t
+
+(at n) 
+
+> 20:
+
+end for  
+
+> 21:
+
+end for  
+
+> 22:
+
+ξn,t ← ξ[K] 
+
+> n,t
+
+, ωn,t ← ω[K] 
+
+> n,t
+
+∀n ∈ V  
+
+> 23:
+
+Calculate μn,t and Σn,t ∀n ∈ V using (20)  
+
+> 24:
+
+end for  
+
+> 25:
+
+Outputs: μn,T and Σn,T ∀n ∈ V 
+
+directed edge (n → m) in the communication graph. The local updates at node n are 
+
+ω[k] 
+
+> n,t
+
+= ϕn,t − P 
+
+> m∈N n
+
+an→mψ[k−1] 
+
+> m|n,t
+
+1 + c P 
+
+> m∈N n
+
+a2
+
+> n→m
+
+, (27a) 
+
+ψ[k] 
+
+> n|m,t
+
+= ψ[k−1]  
+
+> m|n,t
+
++ 2 ca n→mω[k]
+
+> n,t
+
+. (27b) The PDMM-RGP algorithm using a broadcast communica-tion protocol is summarized in Algorithm 2. 
+
+IV. Analysis 
+
+In this section, we establish the convergence properties of the proposed ADMM-RGP and PDMM-RGP algorithms. 
+
+A. ADMM-RGP Convergence 
+
+We begin with the analysis in [21]. Recall the ADMM-RGP iterates from (15b) and (18b), which can be written as a discrete-time, second-order system of the form 
+
+ξ[k] 
+
+> t
+
+= ( I − (α + τ )Lξ )ξ[k−1]  
+
+> t
+
++ τ Lξ ξ[k−2]  
+
+> t
+
+, (28a) 
+
+ω[k] 
+
+> t
+
+= ( I − (α + τ )Lω )ω[k−1]  
+
+> t
+
++ τ Lω ω[k−2]  
+
+> t
+
+. (28b) We further define error terms 
+
+e[k] 
+
+> t,ξ
+
+≜ ξ∗ 
+
+> t
+
+− ξ[k] 
+
+> t
+
+, e[k] 
+
+> t,ω
+
+≜ ω∗ 
+
+> t
+
+− ω[k] 
+
+> t
+
+, (29) 
+
+e[k] 
+
+> t
+
+≜
+
+h
+
+e[k]⊤ 
+
+> t,ξ
+
+e[k]⊤
+
+> t,ω
+
+i⊤
+
+. (30)  
+
+> VOLUME , 5King et. al.: Resource-Efficient Distributed Recursive Gaussian Processes
+
+Since the error e[k] 
+
+> t
+
+vanishes in the consensus subspace associated with λ1(L) = 0, we remove this component and diagonalize the remaining dynamics to obtain the trans-formed error ˜e[k] 
+
+> t
+
+∈ R(N −1)( Dξ +Dω ), with dynamics 
+
+"
+
+˜e[k]
+
+> t
+
+˜e[k−1] 
+
+> t
+
+#
+
+=
+
+(I − (α + τ ) ¯Λ) τ ¯ΛI 0
+
+| {z }
+
+> M
+
+"
+
+˜e[k−1] 
+
+> t
+
+˜e[k−2] 
+
+> t
+
+#
+
+, (31) where ¯Λ ≜ diag (λ2(L), . . . , λ N (L)) ⊗ IDξ +Dω [21]. Then, the eigenvalues of M are given by the eigenvalues of Mi
+
+for i = 2 , · · · , N , where 
+
+Mi ≜
+
+1 − (α + τ )λi(L) τ λ i(L)1 0
+
+
+
+, (32) 
+
+λ(Mi) = 12
+
+
+
+˜αi ± p˜α2 
+
+> i
+
++ 4 τ λ i(L)
+
+
+
+, (33) where ˜αi ≜ 1 − (α + τ )λi(L) [21]. Since the transformed error dynamics constitute a discrete-time linear system, con-vergence of the iterates is guaranteed if M is Schur stable i.e., if all eigenvalues of M lie strictly inside the unit circle. In this case, M is shown to be Schur stable provided that 
+
+α + 2 τ < 2( λN(L)) −1 and α, τ > 0 [21]. Note that the values of α and τ may be selected to minimize the spectral radius, ρ(M), for fast convergence. Assuming positive α, τ > 0, the eigenvalues of M are real, and the spectral radius can be expressed as 
+
+ρ(M) = max  
+
+> i,j
+
+|λj (Mi)| = max 
+
+> i
+
+12 (|˜αi| +
+
+q
+
+˜α2 
+
+> i
+
++ 4 τ λ i(L)) .
+
+The 4τ λ i(L) term increases the maximum eigenvalue, mean-ing that τ should be chosen as close to 0 as possible to minimize the spectral radius. However, when τ = 0 , the ADMM iterates are identical to first-order average consen-sus. Therefore, we observe that for τ > 0, ADMM-RGP is guaranteed to be slower than Consensus-RGP. However, for τ < 0, faster convergence could be achieved while preserving complexity. The augmented Lagrangian in (13) may be written as 
+
+Lτ (ξ, λ) = 12 ξ⊤(I + τ Lξ )ξ − (χ⊤ + λ⊤Bξ )ξ + 12 χ⊤χ,
+
+which is convex in the primal variable if (I + τ Lξ ) ⪰ 0.For τ < 0, the smallest eigenvalue of (I + τ Lξ ) is 1 + 
+
+τ λ N (L). Thus, the convexity of the augmented Lagrangian is preserved for τ > −(λN (L)) −1, leading to Theorem 1. 
+
+Theorem 1. Consider the error dynamics matrix M defined in (31) and its eigenvalues given by (33) . If α and τ satisfy 
+
+α > 0, −1
+
+λN (L) < τ < 0, α + 2 τ < 2
+
+λN (L) , (34) 
+
+then M is Schur stable and ADMM-RGP converges. Proof: 
+
+See Appendix A. The parameters α and τ may be selected using a grid search over the range of values given in Theorem 1 to find the values that jointly minimize ρ(M). To reduce communication costs, K may be small enough that transient behavior dominates the error dynamics, in which case the parameters may be selected to minimize ∥MK ∥F .
+
+B. PDMM-RGP Convergence 
+
+We begin with the observation that the objective functions of P1 and P2 are closed, strongly convex, proper, and differ-entiable, so the PDMM iterations are guaranteed to converge for any c > 0 [25]. While c does not affect asymptotic stability, note that it does influence convergence speed, a property of particular interest in communication-constrained systems where the number of k-iterations per time step may be limited. To analyze the convergence of PDMM-RGP, we define an auxiliary dual variable, ζ[k] 
+
+> t
+
+≜ Pξ υ[k] 
+
+> t
+
+, which has dynamics 
+
+ζ[k] 
+
+> t
+
+= Aζ ζ[k−1]  
+
+> t
+
++ 2 cPξ Cξ ¯Ccχt, (35a) 
+
+¯Cc ≜ (I + cC⊤ 
+
+> ξ
+
+Cξ )−1, (35b) 
+
+Aζ ≜ Pξ − 2cPξ Cξ ¯CcC⊤ 
+
+> ξ
+
+. (35c) Furthermore, we define subspaces Ψ ≜ ran (Cξ ) + 
+
+ran (Pξ Cξ ) ⊆ R2M D ξ and Ψ⊥ ≜ ker (C⊤) ∩ ker (( PC )⊤) ⊆
+
+R2M D ξ . Let ζ[k]Ψ,t and ζ[k]Ψ⊥,t denote the Ψ and Ψ⊥ com-ponents of ζ[k] 
+
+> t
+
+, respectively. According to Lemma 5.1 in [27], Ψ and Ψ⊥ are invariant over Pξ . In other words, 
+
+x ∈ Ψ =⇒ Pξ x ∈ Ψ, y ∈ Ψ⊥ =⇒ Pξ y ∈ Ψ⊥.Furthermore, Ψ and Ψ⊥ are invariant under Aζ .
+
+Aζ ζ[k]Ψ,t = ( Pξ − 2cPξ Cξ ¯CcC⊤ 
+
+> ξ
+
+)ζ[k]Ψ,t ∈ Ψ, (36a) 
+
+Aζ ζ[k]Ψ⊥,t = ( Pξ − 2cPξ Cξ ¯CcC⊤ 
+
+> ξ
+
+)ζ[k]Ψ⊥,t (36b) 
+
+= Pξ ζ[k]Ψ⊥,t ∈ Ψ⊥. (36c) Thus, the ζ[k] 
+
+> t
+
+iterations decompose into, 
+
+ζ[k]Ψ,t = AΨζ[k−1] Ψ,t + ΠΨ(2 cPξ Cξ ¯Ccχt), (37a) 
+
+ζ[k]Ψ⊥,t = AΨ⊥ ζ[k−1] Ψ⊥,t + ΠΨ⊥ (2 cPξ Cξ ¯Ccχt), (37b) where AΨ ≜ ΠΨAζ ΠΨ and AΨ⊥ ≜ ΠΨ⊥ Aζ ΠΨ⊥ are the restrictions of Aζ to the subspaces and ΠΨ and ΠΨ⊥ are the orthogonal projections onto Ψ and Ψ⊥.If ζ[0]  
+
+> t
+
+is initialized randomly, it has been shown that only the component ζ[k]Ψ,t converges to a fixed point ζ∗ 
+
+> Ψ,t
+
+as k →∞ [27]. Thus, define the error of the ζ[k] 
+
+> t
+
+iterations as e[k] 
+
+> ζ,t
+
+≜
+
+ζ∗ 
+
+> Ψ,t
+
+− ζ[k]Ψ,t = AΨ(ζ∗ 
+
+> Ψ,t
+
+− ζ[k−1] Ψ,t ) = Ak
+
+> Ψ
+
+e[0] 
+
+> ζ,t
+
+,. Thus the ζ-iterations is governed by the spectral radius of AΨ. The non-convergence of the Ψ⊥ component does not affect the convergence of ξ[k] 
+
+> t
+
+, as it is annihilated by C⊤ 
+
+> ξ
+
+. Therefore, 
+
+ξ[k] 
+
+> t
+
+will converge to a fixed point, ξ∗ 
+
+> t
+
+. Now, observe the error of the ξ[k] 
+
+> t
+
+iterate is given by 
+
+e[k] 
+
+> ξ,t
+
+≜ ξ∗ 
+
+> t
+
+− ξ[k] 
+
+> t
+
+= − ¯CcC⊤ 
+
+> ξ
+
+ζ∗ 
+
+> Ψ,t
+
++ ¯CcC⊤ 
+
+> ξ
+
+ζ[k−1] Ψ,t (38a) 
+
+= − ¯CcC⊤ 
+
+> ξ
+
+Ak−1Ψ e[0] 
+
+> ζ,t
+
+. (38b) Observe that the ξ[k] 
+
+> t
+
+error is thus governed by the ζ[k] 
+
+> t
+
+error, which converges asymptotically to 0 for any c > 0. To  
+
+> 6VOLUME ,
+
+<Society logo(s) and publication title will appear here. >
+
+> FIGURE 1. Communication graphs used in simulations.
+
+maximize the convergence rate, c may be chosen to minimize 
+
+ρ(AΨ); since this minimization is non-convex in c, standard convex optimization methods cannot be used, and c must instead be selected via a search over candidates. While the spectral radius governs asymptotic convergence, transient behavior may still dominate for small K, in which case c
+
+may instead be selected to minimize ∥C⊤ 
+
+> ξ
+
+AK−1Ψ ∥F .
+
+V. Experiments 
+
+The dataset used in the experiments consists of 10-meter wind u- and v-components indexed by GPS location, ob-tained from the “ERA5 post-processed daily statistics on single levels from 1940 to present” dataset provided by the Copernicus Climate Data Store [23]. Simulations use N =10 agents, whose fixed positions in the 2D wind field are shown in Figure 1 with two different communication graphs. At each time step, each agent n draws sample locations from 
+
+N (pn, σ 2 
+
+> s
+
+I), where pn is the agent’s position and σs = 0 .25 .Given a measurement location x, the measurement is drawn from N (f (x), Rv ), where Rv = diag (0 .01 , 0.01) . Each agent collects 20 measurements per time step for T = 50 
+
+time steps, giving 10 , 000 training data points. The set of 400 basis locations Xp form a 20-by-20 grid over the input space, and Q = 2 latent functions are used, with the first function’s kernel hyperparameters pre-trained on the u wind speeds and the second trained on the v wind speeds. 2,500 prediction locations X∗, which form a 50-by-50 grid over the input space, are used to evaluate the trained model. Two Laplacian weightings are considered: the unweighted graph Laplacian and the symmetric “optimal” weights obtained by solving the spectral-norm minimization problem in [28]. The parameters α, τ , and c are tuned to optimize convergence speed for each algorithm. 
+
+A. Performance Metrics 
+
+Given the posterior covariances Σn,t = Ω−1 
+
+> n,t
+
+and means 
+
+μn,t = Σn,t ξn,t of agent n at time t at the ba-sis locations, the predictive distribution at a set of test locations X∗ ∈ RD×P∗ is N (μ∗n,t , Σ∗n,t ), where 
+
+μ∗n,t = K(X∗, Xp)K−1 
+
+> Xp
+
+μn,t , and Σ∗n,t = K(X∗, X∗) + 
+
+K(X∗, Xp)( K−1 
+
+> Xp
+
+Σn,t − I)K−1 
+
+> Xp
+
+K(Xp, X∗). Now, letting 
+
+f∗ ∈ RP∗D′
+
+denote the true function values at the test locations, we use the root mean square error (RMSE) defined as RMSE (f∗, μ∗n,t ) ≜
+
+s
+
+(μ∗n,t − f∗)⊤(μ∗n,t − f∗)
+
+P∗D′ , (39) to evaluate the accuracy of the predictions. To evaluate the level of consensus among agents, we use mean variance of predictions (MVOP) defined as MVOP (μ∗1,t , . . . μ∗N,t ) ≜ 1
+
+P∗D′
+
+> P∗D′
+
+X
+
+> i=1
+
+σ2
+
+> i,t
+
+, (40) where σ2 
+
+> i,t
+
+≜ 1 
+
+> N−1
+
+PNn=1 ([ μ∗n,t ]i − ¯μi,t )2 is the unbiased sample variance of the ith prediction across N agents at time t and ¯μi,t = 1
+
+> N
+
+PNn=1 [μ∗n,t ]i is the sample mean. 
+
+B. Results and Discussion 
+
+Consensus-RGP, ADMM-RGP, PDMM-RGP, and central-ized RGP were all simulated across 100 Monte Carlo (MC) simulations with different random seeds. All four algorithms achieved an average RMSE of 0.0862 with a 95% confidence interval of [0 .0860 , 0.0864] . Figure 2 shows the reconstructed fields from one simulation alongside that of a centralized, non-recursive GP. The high number of basis locations and large grid used here were chosen deliberately to focus on communication efficiency effects, which is the goal of this work. Hence, a systematic sweep over basis location count is therefore outside the scope of this study. The behavior of these methods under a reduced basis location regime — where distributed and centralized solutions are known to diverge — has been characterized in [8]. Figure 3 shows the average log 10 (MVOP ) versus K, the number of communication rounds per time step, over 100 MC runs. For communication graph 1 (top), ADMM-RGP achieves lower MVOP values than the other algorithms for any given K. In particular, ADMM-RGP with K = 7        
+
+> FIGURE 2. Original and reconstructed wind fields.
+> VOLUME , 7King et. al.: Resource-Efficient Distributed Recursive Gaussian Processes
+> [8]
+> FIGURE 3. Plots of consensus metric MVOP vs. number of communication rounds Kusing communication graph 1 (top) and 2 (bottom) and T= 20 time steps.
+> [8]
+> FIGURE 4. Plot of consensus metric MVOP vs. algebraic connectivity of the communication graph with T= 20 .
+
+achieves a consensus level comparable to Consensus-RGP with K = 10 , reducing communication by 30% without sacrificing performance. Although PDMM-RGP performs less favorably on graph 1, it outperforms the other algorithms on graph 2, achieving MVOP values up to three orders of magnitude lower than Consensus-RGP. On graph 2, both PDMM-RGP and ADMM-RGP achieve performance with 
+
+K = 5 comparable to Consensus-RGP with K = 10 ,corresponding to a 50% reduction in communication. Figure 4 plots the average log 10 (MVOP ) over 100 MC runs versus the algebraic connectivity of 20 different communication graphs. PDMM-RGP outperforms the other algorithms in sparse graphs, while ADMM-RGP consistently outperforms Consensus-RGP and performs particularly well in densely connected graphs. Figure 5 shows box plots of computation time per communication round over 250 rounds as a function of the agent’s number of neighbors. All three algorithms exhibit linear scaling, although PDMM-RGP has a steeper increase. While Consensus-RGP has the lowest per-round computational complexity, ADMM-RGP and PDMM-RGP reduce communication and can reduce total computation by requiring fewer rounds. 
+
+> FIGURE 5. Box plots of computation time from 250 communication rounds using communication graph 1. Markers denote the median times.
+
+VI. Conclusion 
+
+This paper presented two distributed, recursive, multi-output GP algorithms with reduced communication and compu-tational complexity. We analyzed their convergence and provided practical guidance for parameter selection to ensure fast convergence. Experiments show the proposed algorithms require fewer resources than the state of the art while achiev-ing comparable reconstruction performance, with PDMM-RGP more effective on sparse graphs and ADMM-RGP on denser graphs. Future work will consider asynchronous communication, time-varying functions and communication graphs, and extensions to other GP representations such as random-feature and multiple-model formulations. The pro-posed fusion framework may also be applied to distributed trajectory and dynamical state estimation, as well as active sensing and cooperative control problems. 
+
+Appendix A Proof of Theorem 1 
+
+Using the property det (A) = Q 
+
+> i
+
+λi(A) [29], we have 
+
+det( Mi) = −τ λ i(L) = λ1(Mi)λ2(Mi). Because λi(L) is positive, 0 < −τ λ i(L) < 1. If the eigenvalues of Mi are real, the characteristic equation, 
+
+pi(λ) = λ2 − (1 − (α + τ )λi(L)) λ − τ λ i(L) = 0 ,
+
+has two real roots, which satisfy |λ1λ2| = | − τ λ i(L)| < 1.Therefore, both roots have magnitude < 1 provided that neither one crosses the ±1 boundary. Evaluating the charac-teristic equation at 1 and −1, we find 
+
+pi(1) = αλ i(L) > 0, pi(−1) = 2 − (α + 2 τ )λi(L) > 0,
+
+under the assumed bounds on τ . Therefore, both eigenvalues lie strictly within (−1, 1) . In the case that the eigenvalues are complex conjugate pairs of the form a ± bj , we have 
+
+det( Mi) = (a + bj )( a − bj ) = a2 + b2 with squared magnitude |λ1(Mi)|2 = |λ2(Mi)|2 = a2 + b2. Therefore, if the eigenvalues of Mi are complex, they have squared magnitudes equal to det( Mi) = −τ λ i(L), which we have established is in the range (0 , 1) . Thus, we have shown that the eigenvalues of Mi lie strictly inside of the unit circle and thus M is Schur stable.  
+
+> 8VOLUME ,
+
+<Society logo(s) and publication title will appear here. >
+
+REFERENCES 
+
+[1] R. N. Darmanin and M. K. Bugeja, “A review on multi-robot systems categorised by application domain,” in 2017 25th Mediterranean Conference on Control and Automation (MED) , Jul. 2017, pp. 701– 706, iSSN: 2473-3504. [2] M. Davoodi, S. Faryadi, and J. M. Velni, “A Graph Theoretic-Based Approach for Deploying Heterogeneous Multi-agent Systems with Application in Precision Agriculture,” Journal of Intelligent & Robotic Systems , vol. 101, no. 1, p. 10, Dec. 2020. [3] O. P. Mahela, M. Khosravy, N. Gupta, B. Khan, H. H. Alhelou, R. Mahla, N. Patel, and P. Siano, “Comprehensive overview of multi-agent systems for controlling smart grids,” CSEE Journal of Power and Energy Systems , vol. 8, no. 1, pp. 115–131, Jan. 2022. [4] A. Dorri, S. S. Kanhere, and R. Jurdak, “Multi-Agent Systems: A Survey,” IEEE Access , vol. 6, pp. 28 573–28 593, 2018. [5] G. P. Kontoudis and D. J. Stilwell, “Scalable, Federated Gaussian Pro-cess Training for Decentralized Multi-Agent Systems,” IEEE Access ,vol. 12, pp. 77 800–77 815, 2024. [6] T. Ding, R. Zheng, S. Zhang, and M. Liu, “Resource-Efficient Coop-erative Online Scalar Field Mapping via Distributed Sparse Gaussian Process Regression,” IEEE Robotics and Automation Letters , vol. 9, no. 3, pp. 2295–2302, Mar. 2024. [7] K. Jakkala and S. Akella, “Multi-Robot Informative Path Planning from Regression with Sparse Gaussian Processes,” in 2024 IEEE International Conference on Robotics and Automation (ICRA) , May 2024, pp. 12 382–12 388. [8] Y. P. K. Rao, T. Keviczky, and R. T. Rajan, “Consensus-based recursive multi-output gaussian process,” in 2026 60th Asilomar Conference on Signals, Systems, and Computers . Pacific Grove, CA, USA: IEEE, 2026, accepted for publication. [9] A. E. Balcı and R. T. Rajan, “Multiple Model Recursive Gaussian Process for Robust Target Tracking,” IEEE Open Journal of Signal Processing , pp. 1–9, 2025. [10] A. Lederer, Z. Yang, J. Jiao, and S. Hirche, “Cooperative Control of Uncertain Multiagent Systems via Distributed Gaussian Processes,” 
+
+IEEE Transactions on Automatic Control , vol. 68, no. 5, pp. 3091– 3098, May 2023. [11] Y. Xu, F. Yin, W. Xu, J. Lin, and S. Cui, “Wireless Traffic Prediction With Scalable Gaussian Process: Framework, Algorithms, and Verifi-cation,” IEEE Journal on Selected Areas in Communications , vol. 37, no. 6, pp. 1291–1306, Jun. 2019. [12] Z. Zhu, E. Biyik, and D. Sadigh, “Multi-Agent Safe Planning with Gaussian Processes,” in 2020 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . Las Vegas, NV, USA: IEEE, Oct. 2020, pp. 6260–6267. [13] L. Gupta, R. Jain, and G. Vaszkun, “Survey of Important Issues in UAV Communication Networks,” IEEE Communications Surveys & Tutorials , vol. 18, pp. 1–1, Nov. 2015. [14] J. Gielis, A. Shankar, and A. Prorok, “A Critical Review of Commu-nications in Multi-robot Systems,” Current Robotics Reports , vol. 3, no. 4, pp. 213–225, 2022. [15] M. A. Razzaque and S. Dobson, “Energy-Efficient Sensing in Wire-less Sensor Networks Using Compressed Sensing,” Sensors (Basel, Switzerland) , vol. 14, no. 2, pp. 2822–2859, Feb. 2014. [16] A. Xie, F. Yin, Y. Xu, B. Ai, T. Chen, and S. Cui, “Distributed Gaussian Processes Hyperparameter Optimization for Big Data Using Proximal ADMM,” IEEE Signal Processing Letters , vol. 26, no. 8, pp. 1197–1201, Aug. 2019. [17] P. Zhai and R. T. Rajan, “Distributed Gaussian Process Hyperpa-rameter Optimization for Multi-Agent Systems,” in ICASSP 2023 -2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , Jun. 2023, pp. 1–5. [18] M. F. Huber, “Recursive Gaussian process: On-line regression and learning,” Pattern Recognition Letters , vol. 45, pp. 85–91, Aug. 2014. [19] F. Llorente, D. Waxman, and P. M. Djuri´ c, “Decentralized Online En-sembles of Gaussian Processes for Multi-Agent Systems,” in ICASSP 2025 - 2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , Apr. 2025, pp. 1–5, iSSN: 2379-190X. [20] F. Llorente, D. Waxman, S. Jantre, N. M. Urban, and S. E. Minkoff, “Robust, Online, and Adaptive Decentralized Gaussian Processes,” in 
+
+ICASSP 2026 - 2026 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , May 2026, pp. 22 487– 22 491, iSSN: 2379-190X. [21] M. Iqbal, K. Kumar, and S. S¨ arkk¨ a, “Communication-Efficient Dis-tributed Kalman Filtering Using ADMM,” IEEE Transactions on Automatic Control , vol. 71, no. 3, pp. 1916–1923, Mar. 2026. [22] G. Zhang and R. Heusdens, “Distributed Optimization Using the Primal-Dual Method of Multipliers,” IEEE Transactions on Signal and Information Processing over Networks , vol. 4, no. 1, pp. 173–187, Mar. 2018. [23] Copernicus Climate Change Service, “ERA5 post-processed daily statistics on single levels from 1940 to present,” Oct. 2024. [24] M. A. ´ Alvarez, L. Rosasco, and N. D. Lawrence, “Kernels for Vector-Valued Functions: A Review,” Foundations and Trends in Machine Learning , vol. 4, no. 3, pp. 195–266, Mar. 2012. [25] T. W. Sherson, R. Heusdens, and W. B. Kleijn, “Derivation and Analysis of the Primal-Dual Method of Multipliers Based on Mono-tone Operator Theory,” IEEE Transactions on Signal and Information Processing over Networks , vol. 5, no. 2, pp. 334–347, Jun. 2019. [26] R. Heusdens and G. Zhang, “Distributed Optimisation Via The Gener-alised Primal-Dual Method of Multipliers Under Unreliable and Quan-tised Communication,” in ICASSP 2026 - 2026 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) .Barcelona, Spain: IEEE, May 2026, pp. 281–285. [27] Q. Li, R. Heusdens, and M. G. Christensen, “Communication efficient privacy-preserving distributed optimization using adaptive differential quantization,” Signal Processing , vol. 194, p. 108456, May 2022. [28] L. Xiao and S. Boyd, “Fast linear iterations for distributed averaging,” 
+
+Systems & Control Letters , vol. 53, no. 1, pp. 65–78, Feb. 2004. [29] K. B. Petersen and M. S. Pedersen, “The Matrix Cookbook,” Nov. 2012.

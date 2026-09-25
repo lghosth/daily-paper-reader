@@ -1,0 +1,3756 @@
+Title: ZO-COSMO: Index-Free One-Hop Mixing for Decentralized Zeroth-Order Optimization
+
+URL Source: https://arxiv.org/pdf/2609.27199v1
+
+Published Time: Thu, 24 Sep 2026 00:29:25 GMT
+
+Number of Pages: 56
+
+Markdown Content:
+Preprint 
+
+# ZO-COSMO: I NDEX -F REE ONE -H OP MIXING FOR DECENTRALIZED ZEROTH -O RDER OPTIMIZATION 
+
+Shengjun Zhang 1,* Tingyi Liu 2,* Heng Zhang 3, † Dong Xie 4, †
+
+> 1
+
+School of Artificial Intelligence, Hubei University, Wuhan, China 
+
+> 2
+
+School of Economics and Management, Wuhan University, Wuhan, China 
+
+> 3
+
+School of Electrical Engineering, Shanghai Jiao Tong University, Shanghai, China 
+
+> 4
+
+Baidu, Beijing, China 
+
+sj.zhang@hubu.edu.cn tingyiL@whu.edu.cn zhangheng_sjtu@sjtu.edu.cn xiedong04@baidu.com 
+
+> *
+
+Equal contribution. †Corresponding authors. 
+
+## ABSTRACT 
+
+Sparse communication in decentralized zeroth-order learning requires compati-ble peer-state coordinates. We characterize this one-hop condition and develop 
+
+ZO-COSMO , coupling two-query estimation with average-preserving masked consensus using q values per active link. Global supports serve all-neighbor mix-ing; matching updates require agreement only within each pair. We derive a sharp contraction-per-scalar bound within the matching class and convergence guarantees for the core and sparse-momentum updates. At fixed matching, exact moment identities characterize how shared directions preserve gradient-heterogeneity can-cellation and redistribute estimation error and disagreement. Mechanism experi-ments cover unequal curvatures, noise, and sparse momentum. Further tests span 
+
+64 synthetic agents and eight logical Qwen LoRA workers. At matched payload budgets, Qwen2-7B QNLI gains 3.65 accuracy points over explicit-index Rand-k;edge-local updates gain 3.42 and 2.53 points over all-neighbor mixing on eight-worker complete and ring graphs. A matched-first-step ablation gives a 3.92 -point momentum benefit. Seed-aware and same-matching controls distinguish encoding, scheduling, and query correlation. 
+
+## 1 INTRODUCTION 
+
+In decentralized black-box learning, agents can query local function values but cannot centralize data or gradients. Let x ∈ Rd denote the shared decision vector. We study 
+
+min 
+
+> x∈Rd
+
+F (x), F (x) = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+Fi(x) (1) over a graph, where each Fi is a smooth nonconvex black box. Zeroth-order methods replace gradients with finite differences (Ghadimi & Lan, 2013; Nesterov & Spokoiny, 2017; Shamir, 2017), but high dimension makes both estimation and communication expensive. Sparse communication helps only if the support is also cheap. A coordinate-list encoding sends 
+
+qB val + q⌈log 2 d⌉ bits. At billion-parameter scale, each index is about as wide as a single-precision value, nearly doubling the value-only payload. We ask: 
+
+Can a decentralized zeroth-order method communicate sparse updates without communicating sparse indices? 
+
+Public seeds already reconstruct ZO updates at a server (Li et al., 2025; Cai et al., 2026; Ran et al., 2026) or through graph-wide dissemination (Kim & Lee, 2026). One-hop mixing also requires the corresponding peer-state values. A message carrying values on {2, 3} leaves the value at coordinate 1
+
+1arXiv:2609.27199v1 [cs.LG] 23 Sep 2026 Preprint unavailable for an average on {1, 2}, even when its support is public (Figure 1). Theorem 1 gives the necessary and sufficient support condition for mixing arbitrary current peer states without stored peer histories. ZO-COSMO meets this condition by coordinating supports with the mixing graph. A global support permits masked Metropolis mixing; a matching permits separate supports on disjoint edges and one 
+
+q-value message per active node. Uniform perfect matchings on a complete graph attain the best contraction per scalar within this operator class (Theorem 3). The query and mixing steps share a mask, so their dependence also enters the optimization analysis. We show how a shared direction preserves cancellation between local gradients and how independent directions redistribute estimation error and disagreement. 1.1 CONTRIBUTIONS 
+
+• Exact index-free mixing. We characterize the supports needed to mix arbitrary peer states from one-hop coordinate messages, with a sharp missing-coordinate error bound. This leads to global and matching-based protocols with q values per active link. • Mixing and optimization mechanisms. We derive the optimal contraction per scalar in the matching class and separate average-estimation error from disagreement injection. Pair invariance yields a heterogeneity-sensitive core bound, and exact conditional moments account for oracle noise and stored momentum; separate results establish bit-budget and sparse-momentum convergence. • Mechanism and model-scale evidence. Fixed-matching experiments test correlation under unequal curvatures, noise, and momentum. Qwen LoRA shows fixed-budget gains over explicit-index and all-neighbor baselines and a matched-step momentum benefit. Seed-aware and same-matching controls separate these effects; synthetic tests include adaptive Top-k
+
+compression and 64 agents. 
+
+## 2 RELATED WORK 
+
+Zeroth-order and decentralized optimization. ZO methods make optimization possible when gradients are unavailable, using one- or two-point function queries (Conn et al., 2009; Flaxman et al., 2005; Ghadimi & Lan, 2013; Nesterov & Spokoiny, 2017; Shamir, 2017; Larson et al., 2019). In high dimension, much of the work has focused on better directions through sparsity, subspaces, momentum, and variance reduction (Wang et al., 2018; Golovin et al., 2019; Liu et al., 2018b;a; Cai et al., 2020; Kozak et al., 2020; Chen et al., 2019). Decentralized methods must also keep locally updated states in agreement over a graph (Yuan & Ho, 2015; Yuan et al., 2015; Sahu et al., 2018; Hajinezhad et al., 2019; Tang & Li, 2019; Zhang & Bailey, 2022; Veprikov et al., 2024). We retain two-point estimation and study which sparse messages allow that mixing step to be executed exactly. 
+
+Compressed decentralized learning. Randomized gossip relates pairwise averaging to graph spectra (Boyd et al., 2006); compressed learning uses quantization, sparsification, sign compression, and error compensation (Alistarh et al., 2017; Lin et al., 2018; Stich et al., 2018; Lan et al., 2020; Tang et al., 2018; Koloskova et al., 2019; 2020; Bernstein et al., 2018; Basu et al., 2019). Coordinate lists add a representation cost (Lin et al., 2018; Shi et al., 2020). PermK analyzes how correlated compressors change aggregate estimation error (Szlendak et al., 2022). Our query direction also selects the peer-state coordinates that are mixed. We therefore study both aggregate error and the disagreement injected by that same update. Complementary supports may reduce aggregate variance without supplying the coordinates required for exact current-state mixing. DeComFL and MEERKAT reconstruct seed–scalar updates at a server, while FeedSign aggregates seed–sign votes (Li et al., 2025; Ran et al., 2026; Cai et al., 2026). SeedFlood disseminates updates across the graph and batches their application in a shared subspace (Kim & Lee, 2026). These methods exploit compact update representations. ZO-COSMO sends q current-state values to complete one neighbor-mixing stage; Appendix C.1 compares the payload and dissemination requirements. Recent decentralized ZO methods combine estimators with general compressors (Hua et al., 2026; Wang et al., 2025; Chen et al., 2025). We include Com-DSZO with adaptive Top-k and a periodic-refresh comparator motivated by MARINA (Gorbunov et al., 2021). 2Preprint 
+
+Forward-only model adaptation. Language-model adaptation can replace backpropagation with loss queries (Malladi et al., 2023; Zhang et al., 2024; Liu et al., 2025; Yu et al., 2025). Sparse and low-dimensional directions reduce the parameters touched by each query, but peers must still agree on how received values update their local states. Our Qwen experiments examine this communication step with separate worker states and data shards. 
+
+## 3 ALGORITHM 
+
+Algorithm 1 reconstructs a public support, takes two sparse queries, and mixes selected coordinates. Messages contain q ordered values; unsent coordinates retain their local values. The implementation derives Rt = H(Smaster ∥ t) from synchronized seeds and round counters. Decoding is pathwise exact; stochastic rates use fresh public coins (Appendix A.4). Let Xt and Yt stack the node states and pre-mixing updates as rows. The network step has the compact form 
+
+Xt+1 = Yt(I − Pt) + W Y tPt. (2) Theorem 1 determines which coordinates messages must cover. ZO-COSMO uses this support for both queries and mixing, coupling local progress to the communicated coordinates. A global support is sufficient but not necessary. In Algorithm 2, a public matching assigns each edge its own support. Endpoints query and average on this support, using one q-value message per active node; disjoint edges may use different coordinates. Theorem 2 gives the contraction. 
+
+Public, incompatible supports ZO-COSMO: aligned supports 
+
+jℓ
+
+(y(1)  
+
+> j
+
+, y (2)  
+
+> j
+
+)(y(2)  
+
+> ℓ
+
+, y (3)  
+
+> ℓ
+
+)
+
+iK = {1, 2}
+
+y(1)  
+
+> ℓ
+
+missing: exact average unavailable 
+
+jℓ
+
+(y(1)  
+
+> j
+
+, y (2)  
+
+> j
+
+)(y(1)  
+
+> ℓ
+
+, y (2)  
+
+> ℓ
+
+)
+
+iK = {1, 2}
+
+All target values present; no index field Figure 1: Both protocols know the supports. Only the right messages suffice for exact mixing on K = {1, 2}.
+
+Algorithm 1 ZO-COSMO Core Update 
+
+1: Input: W, η, μ, q and public random tape {Rt}t<T ; initialize xi, 0.2: for t = 0 , . . . , T − 1 do 
+
+3: From Rt, reconstruct St and signs ϵt; set Pt = diag( 1St ) and ut = Ptϵt.4: for all agents i in parallel do 
+
+5: ˆgi,t = dqfi(xi,t +μu t;ξi,t )−fi(xi,t −μu t;ξi,t )2μ ut.6: yi,t = xi,t − ηˆgi,t .7: Broadcast ordered values {y(j) 
+
+> i,t
+
+: j ∈ S t}, with no coordinate indices. 8: end for 
+
+9: for all agents i in parallel do 
+
+10: xi,t +1 = ( I − Pt)yi,t + Pt
+
+PNℓ=1 wiℓ yℓ,t .11: end for 
+
+12: end for 
+
+13: Output: xi,T or the network average ¯xT .
+
+The sparse-momentum variant changes only the local direction in Algorithm 1. It replaces ˆgi,t by 
+
+Ptmi,t +1 , where 
+
+mi,t +1 = ( I − Pt)mi,t + Pt
+
+ βm i,t + (1 − β)ˆ gi,t 
+
+. (3) The public support, masked mixing rule, and transmitted message are unchanged. Theorem 4 gives the sharper core rate; Appendix Theorem 5 proves convergence with sparse momentum for global and perfect-matching updates. Experiments report β explicitly. 3Preprint 
+
+## 4 THEORETICAL ANALYSIS 
+
+The analysis proceeds from decodability to mixing efficiency and then optimization. Exactness refers to coordinate recovery and the ideal arithmetic update; Bval accounts for a fixed-width scalar representation, without a separate quantization-error guarantee. 4.1 NOTATION 
+
+Let Fi(x) = Eξi [fi(x; ξi)] , F = N −1 P 
+
+> i
+
+Fi, and ¯xt = N −1 P 
+
+> i
+
+xi,t . Before round t, an inde-pendent public coin Rt draws a uniform q-subset St and independent Rademacher signs. Define 
+
+Pt = diag( 1St ) and ut = Ptϵt. Then ∥ut∥2 = q and 
+
+E[utu⊤ 
+
+> t
+
+] = ( q/d )Id. (4) The local two-query estimator is 
+
+ˆgi,t = dqfi(xi,t + μu t; ξi,t ) − fi(xi,t − μu t; ξi,t )2μ ut. (5) For an ordered support S = {s1 < · · · < s q }, define 
+
+Res S z = ( zs1 , . . . , z sq ), Lift S (v) = 
+
+> q
+
+X
+
+> k=1
+
+vkesk . (6) Then Res S Lift S = Iq , Lift S Res S = PS , and ∥Lift S (v)∥ = ∥v∥. In the protocol, a sender transmits 
+
+v = Res St z and the receiver reconstructs Lift St (v) from the public support. 4.2 ASSUMPTIONS 
+
+Assumption 1. Each Fi is L-smooth, and F (x) ≥ F ∗ > −∞ for all x.
+
+Assumption 2. The mixing matrix W is nonnegative, symmetric, and doubly stochastic, with 
+
+ρ = ∥W − N −111 ⊤∥2 < 1.
+
+Assumption 3. For each node i, Eξi [∇fi(x; ξi)] = ∇Fi(x), Eξi ∥∇ fi(x; ξi) − ∇ Fi(x)∥2 ≤ σ2, and along the iterates Eξi ∥∇ fi(x; ξi)∥2 ≤ G2 + σ2. At every round, the oracle samples are fresh and conditionally independent across nodes given the iterates and public direction. 
+
+Assumption 4. For every node i, point x, oracle sample ξ, and sparse direction u used by the algorithm, |fi(x + μu ; ξ) − fi(x − μu ; ξ) − 2μ∇fi(x; ξ)⊤u| ≤ (L3/3) μ3∥u∥3.
+
+For later use, define the finite-difference bias scale and the per-node estimator moment bound as 
+
+Bμ = L3
+
+6 μ2dq, M 2node = 2 d(G2 + σ2) + 2 B2
+
+> μ
+
+. (7) 4.3 COMMUNICATION ACCOUNTING 
+
+Definition 1. A one-hop q-sparse current-state message from j to i contains ordered values 
+
+Res Sji (yj ). The decoder knows its own state, W , and the public transcript, but receives no other part of yj and does not replay earlier updates. In a private-support protocol the sender encodes Sji ;in a public-coin protocol both endpoints reconstruct it before communication. 
+
+Theorem 1. Fix receiver i, target support K ⊂ [d], and message supports Sji independently of the peer states, with PK = diag( 1K ). From one ordered message Res Sji (yj ) per remote neighbor, a decoder can recover 
+
+PKNX
+
+> j=1
+
+wij yj (8) 
+
+for every collection of peer states if and only if K ⊆ Sji for every j̸ = i with wij > 0. If 
+
+|K| = |Sji | = q, this requires Sji = K. Moreover, if k ∈ K \ Sji and ∥yj ∥∞ ≤ R, every decoder has worst-case coordinate error at least wij R.Proof. See Appendix A.5. 4Preprint A zero-error support field costs at least H(St | Rt) bits in expectation (Appendix Proposition 2). Public supports have zero conditional entropy; a private uniform q-subset costs log 2
+
+ dq
+
+ bits. Reusing a data-dependent support over K rounds amortizes its description to H(S | R)/K , but fixes those coordinates throughout the block. Consequently, with Bval value bits, each directed ZO-COSMO link transmits qB val bits. An arbitrary worst-case support, or a uniform private support in expectation, needs qB val + log 2
+
+ dq
+
+ bits, while coordinate-list sparse encoding sends 
+
+q(Bval + ⌈log 2 d⌉). (9) The binomial bounds in Appendix A.2 quantify the private-support cost. Reusing a full-model Qwen mask for ten rounds reduces coordinate-list overhead from 2.03 × to 1.10 ×, with the same coordinates used throughout the block. Public node-specific seeds also regenerate independent random supports without recurring metadata; we include this encoding control in the experiments. 4.4 EDGE -L OCAL MIXING 
+
+Theorem 1 applies locally: supports must agree across an active mixing edge, but disjoint edges need not share a support. Let Mt be a public matching, Le = ( ei − ej )( ei − ej )⊤ for e = {i, j }, and let each Pe,t be an independent uniform rank-q coordinate projector. The support-labeled mixing step is 
+
+Xt+1 = Yt − 12
+
+X
+
+> e∈Mt
+
+LeYtPe,t . (10) 
+
+Theorem 2. Let Π = I − N −111 ⊤ and ¯L = E[P 
+
+> e∈Mt
+
+Le]. For any fixed input Yt independent of the current matching and supports, (10) preserves the network average and satisfies 
+
+EP ∥ΠXt+1 ∥2 
+
+> F
+
+= ∥ΠYt∥2 
+
+> F
+
+− q
+
+2d
+
+X
+
+> {i,j }∈ Mt
+
+∥yi,t − yj,t ∥2, (11) 
+
+EM,P ∥ΠXt+1 ∥2 
+
+> F
+
+≤
+
+
+
+1 − qλ 2( ¯L)2d
+
+
+
+∥ΠYt∥2 
+
+> F
+
+. (12) 
+
+The identities require uniform marginal supports, not independence across disjoint edges. Each active endpoint sends qB val bits and no indices. Proof. See Appendix A.7. The optimization update Yt shares the current query mask with mixing. Appendix A.20 retains this dependence by applying contraction to the past state and controlling the current update separately. To compare matching schedules independently of a particular state, let 
+
+¯Lk = E
+
+" X
+
+> e∈Mt
+
+1{k ∈ Se,t }Le
+
+#
+
+, Cdir = 2 E
+
+" X
+
+> e∈Mt
+
+|Se,t |
+
+#
+
+, (13) where Cdir is the expected number of directed scalar values sent in one round. 
+
+Theorem 3. For any matching-based exact one-hop operator of the form (10) , allowing arbitrary state-independent public coordinate supports, the largest γ such that 
+
+E∥ΠXt+1 ∥2 
+
+> F
+
+≤ (1 − γ)∥ΠYt∥2 
+
+> F
+
+(14) 
+
+for every fixed input Yt independent of the sampled operator is 
+
+γ⋆ = 12 min  
+
+> k∈[d]
+
+λ2( ¯Lk) ≤ Cdir 
+
+2d(N − 1) . (15) 
+
+With Bval -bit scalars, Bnet ≥ 2Bval d(N − 1) γ⋆. For even N , uniform rank-q supports on uniformly random perfect matchings of KN attain equality with Cdir = N q , using either a common support or independent edge supports. Proof. See Appendix A.8. 5Preprint Equality requires the same isotropic expected mixing on every coordinate (Appendix A.8). Uniform perfect matchings on complete graphs satisfy this condition with either common or independent edge supports. Both attain the pure-mixing bound; Section 4.6 analyzes their different query statistics. Appendix Proposition 3 gives the estimator bias Bμ and moment bound M 2node used below; a coordinate is refreshed after d/q rounds in expectation. 4.5 CONVERGENCE BOUND 
+
+Let 
+
+Et = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+E∥xi,t − ¯xt∥2 (16) be the parameter consensus error. We use the conservative stability condition 
+
+0 < η ≤ min {L−1, c (Ld )−1}, (17) for a universal constant c > 0, and the canonical smoothing scale 
+
+μ = Θ(( dq )−1/2T −1/4), (18) which balances the displayed finite-difference bias terms in the proof. 
+
+Theorem 4. Let ∆0 = F (¯ x0) − F ∗ and suppose Assumptions 1–4 hold. Run Algorithm 1 from a common initialization with μ = Θ(( dq )−1/2T −1/4) and η = cη T −1/2. For any fixed cη > 0 and every horizon T large enough that (17) holds, 
+
+1
+
+T
+
+X
+
+> t<T
+
+E∥∇ F (¯ xt)∥2 ≤ O 
+
+ ∆0
+
+√T + dσ 2
+
+N √T + 1
+
+T + d2(G2 + σ2)
+
+q(1 − ρ2)2T
+
+
+
+. (19) 
+
+Proof. The descent proof is in Appendix A.16; the budget algebra is in Appendix C.7. 
+
+Remark 1. The leading terms in (19) describe stochastic ZO descent; the last accounts for sparse mixing. Under a directed-link budget B, T = ⌊B /(qB val )⌋ converts the network term to O(d2(G2 +
+
+σ2)Bval /((1 − ρ2)2B)) : its explicit 1/q factor cancels, while the spectral penalty remains. Smaller 
+
+q buys more rounds and queries. Appendix C.7 gives the full bound, and Appendix A.15 proves the unavoidable q/d one-step mixing slowdown. 
+
+For the momentum update, set aβ = β/ (1 − β) and ¯mt = N −1 P 
+
+> i
+
+mi,t . Average preservation gives the exact auxiliary recursion 
+
+zt = ¯ xt − ηa β ¯mt, zt+1 = zt − η¯gt. (20) Appendix Theorem 5 bounds the distance from zt to ¯xt and handles the shared query–mixing mask, proving convergence for both global and perfect-matching momentum updates. 4.6 DIRECTION CORRELATION AND HETEROGENEITY 
+
+Support agreement makes a message decodable; direction agreement also changes the update statistics. Hold the matching fixed, with N = 2 m. Let ae = ( ∇Fi(xi) + ∇Fj (xj )) /2 on pair e = {i, j },
+
+¯a = m−1 P 
+
+> e
+
+ae, and H2 
+
+> M
+
+= m−1 P 
+
+> e
+
+∥ae − ¯a∥2. The linearized two-query update is ve = Deae,where De = ( d/q )ueu⊤ 
+
+> e
+
+and ¯v = m−1 P 
+
+> e
+
+ve.Both endpoints share ue. Across pairs, G shares the support and signs, S shares only the support, and I draws both independently. All three use the same matching and send q values per node. 
+
+Proposition 1. Condition on the states and matching. With Vs = E∥¯v − ¯a∥2 and Us =
+
+m−1 P 
+
+> e
+
+E∥ve − ¯v∥2,
+
+VG = ( d − 1) ∥¯a∥2, VI = d − 1
+
+m (∥¯a∥2 + H2 
+
+> M
+
+), (21) 
+
+Vs + Us = ( d − 1) ∥¯a∥2 + dH 2 
+
+> M
+
+, s ∈ { G, S, I}. (22) 6Preprint 
+
+Proof. See Appendix B.2, including the formula for S. Under G, averaging commutes with the random map: ¯v = D¯a. Local gradient components that cancel in ¯a therefore cancel before estimation. Independent maps trade this cancellation for averaging direction noise across pairs. For d > 1, I has smaller Vs precisely when H2 
+
+> M
+
+< (m − 1) ∥¯a∥2; G benefits on the other side of this threshold. Equation (22) tracks the accompanying disagreement injection. Correlation therefore changes the update itself, even when the schedule and payload are fixed. With unequal quadratic Hessians, state disagreement controls the residual (Appendix Proposition 6). Let A denote masked pair averaging and V the applied update matrix. The two rows of V on each pair agree, giving AV = V even though queries and mixing share a mask. Appendix Proposition 7 extends the moments to oracle noise, stored momentum, and finite differences. Theorems 6 and 5 give, respectively, a sharper deterministic core rate for iid matchings and convergence with stochastic sparse momentum. 
+
+## 5 EXPERIMENTS 
+
+We charge value and index fields per directed link. Topology comparisons fix per-node bits because the active edge sets differ; total network traffic is also recorded. Dense and refresh methods pay for every full-state exchange. Seed setup is separate from recurring payloads. The controls isolate encoding, mixing, and local optimization. Explicit-index and seed-aware encodings measure the value of removing recurring metadata. Dense ZO-DSGD provides a dense-update reference; Com-DSZO tests adaptive compression. ZO-MARINA-type uses periodic dense refreshes rather than MARINA’s gradient-difference estimator (Appendix D). 5.1 SYNTHETIC EXPERIMENTS 
+
+On 20-dimensional Rosenbrock with N = 10 , the indexed control uses identical ZO-COSMO updates but redundantly sends each support. Com-DSZO (Hua et al., 2026) combines dense two-point updates with Top-k innovation compression and error-compensated consensus. All methods use two function evaluations per node and round. 10 1 10 3 10 5      
+
+> Bits per node
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> Objective value
+> (a) Indexed support costs
+> ZO-COSMO Indexed control Com-DSZO
+> 816 32 64
+> Number of agents, N
+> 10 −1
+> 6 × 10 −2
+> Final / initial objective
+> (b) 1 Mbit/node
+> Global support Edge-local Seed-scalar flood
+> 816 32 64
+> Number of agents, N
+> 250 500 750 1000 1250 1500 1750 2000
+> Completed ZO rounds
+> (c) Rounds within budget
+
+Figure 2: Communication-limited Rosenbrock. Bands and bars show one standard deviation over five seeds. Table 1: Rosenbrock at 0.1M bits per node with q = 1 (five seeds). Lower is better. 
+
+Method Ring Erd˝ os-Rényi Grid ZO-COSMO (Ours) 0.083 ± 0.006 0.119 ± 0.011 0.093 ± 0.006 
+
+Same updates + indices 0.088 ± 0.006 0.136 ± 0.015 0.103 ± 0.006 
+
+Com-DSZO (Top-k) 0.097 ± 0.007 0.171 ± 0.018 0.115 ± 0.007 
+
+At the marked 0.1M-bit budget, removing repeated indices buys 15 –17% more rounds. ZO-COSMO has the lowest objective in all 15 paired seed–topology comparisons. At 0.3M bits the methods have nearly converged, so the gap shrinks below 0.004 on the Erd˝ os-Rényi graph. The identical-update control attributes this gain to the extra optimization rounds purchased by value-only messages. 7Preprint Panels (b)–(c) compare one-hop global support, edge-local support, and an optimistic seed–scalar flood on rings. At 1 Mbit per node, edge-local ZO-COSMO completes 1950 logged rounds, versus 
+
+970 global-support rounds, and has the lowest objective for every N ∈ { 8, 16 , 32 , 64 }. Flooding is competitive at N = 8 , but its all-node dissemination cost leaves only 160 rounds at N = 64 , where its relative objective is 0.159 ± 0.002 versus 0.055 ± 0.0004 for edge-local mixing. The separate topology stress test reaches 64 agents on complete, grid, and ring graphs (Appendix Figure 14). 5.2 MECHANISM EXPERIMENT 
+
+We compare G, S, and I with N = 8 , d = 32 , q = 4 , and paired matchings. Local quadratics have unequal positive diagonal Hessians and centered linear terms with N −1 P 
+
+> i
+
+∥bi∥2 = 4 . Noisy queries add fresh independent ϵ⊤ 
+
+> i
+
+x, with E∥ϵi∥2 = 0 .25 , reusing each sample within its query pair. Figure 3 uses iid ring matchings and η = 0 .004 . With oracle noise, G reaches (1 .06 ± 0.30) × 10 −3
+
+versus (9 .60 ±1.69) ×10 −3 for I; with sparse momentum β = 0 .9 at the same step, the corresponding values are (1 .00 ± 0.13) × 10 −3 and (10 .60 ± 2.70) × 10 −3. Noise leaves a nonzero floor. Matching the first update by increasing the momentum step to 0.04 reverses the comparison: G ends at 
+
+1.30 ±1.42 , versus 0.131 ±0.021 for I. Appendix B.10 includes this control, zero-linear-heterogeneity cases, and all 1536 runs across two steps and topologies.   
+
+> Figure 3: Different local curvatures on an eight-node ring. Eight-seed mean ±std at equal queries and nominal payload; (c) uses the same step as (b).
+
+5.3 ZEROTH -O RDER FINE -T UNING FOR LARGE LANGUAGE MODELS 
+
+We study Qwen2-7B (Yang et al., 2024) on QNLI with 2.52 M LoRA coordinates (Hu et al., 2022). Workers maintain separate float32 adapter and momentum states on disjoint data shards; complete and ring overlays use N ∈ { 2, 4, 8} logical workers. QNLI was selected before training by a fixed task-screening rule (Appendix D). We evaluate all 5463 validation examples. Value-only communication extends the affordable training horizon. Each explicit coordinate costs 22 
+
+bits in addition to its 32 -bit value; at B = 26 .214 Mbit per directed link, ZO-COSMO completes 
+
+100 rounds versus 59 for explicit-index Rand-k. Over ten paired seeds, QNLI accuracy increases from 61 .75 ± 3.41% to 65 .40 ± 3.57% : a 3.65 -point gain (95% bootstrap CI [0 .49 , 6.86] ). Mean query loss decreases by 0.182 (CI [0 .093 , 0.273] ). Figure 4 compares the resulting models at the same communication budget. Node-specific public seeds also permit value-only encoding of independent Rand-k. This post-hoc lossless re-encoding retains its 100 -round accuracy of 66 .48 ± 7.36% at the same budget. ZO-COSMO’s paired accuracy difference is −1.08 points (CI [−5.85 , 3.67] ), with mean query loss lower by 0.091 (CI [0 .006 , 0.175] ). The control separates the benefit of removing indices from that of coordinating queries and peer-state mixing. Sparse momentum provides a separate optimization gain. With support, communication, and first-update scale (1 −β)η matched, it raises accuracy from 61 .48 ±3.31% to 65 .40 ±3.57% (paired +3 .92 
+
+points, CI [1 .67 , 6.08] ). Matching the initial scale isolates the contribution of stored momentum; Appendix Table 15 reports both step-size controls. 8Preprint The representation saving grows with model dimension. In the single-worker full-model study, sparse updates over 6.53 B trainable coordinates reach 95 .03 ± 0.13% SST-2 accuracy. Encoding these same updates takes 262 .1K bits per step with public support, compared with 532 .5K bits using explicit indices, a 2.03 × reduction. 55.0 57.5 60.0 62.5 65.0 67.5 70.0 72.5 75.0 
+
+> Full-validation accuracy (%)
+> Explicit-index Rand-k (59) Seed-aware Rand-k (100) ZO-COSMO (100)
+> Initial accuracy
+
+Figure 4: QNLI at 26 .214 Mbit per link (ten-seed mean ± std). Seed-aware Rand-k is a lossless re-encoding of existing runs. 
+
+Edge-local mixing extends the budget advantage to larger networks. At 26 .214 Mbit per node, matching permits 100 rounds, versus 14 all-neighbor rounds on the eight-worker complete graph and 
+
+50 on the ring. Five-seed accuracy rises from 61 .44 ± 0.24% to 64 .85 ± 3.03% on the complete graph and from 61 .09 ± 0.63% to 63 .62 ± 0.85% on the ring: gains of 3.42 points (CI [1 .06 , 5.63] ) and 
+
+2.53 points (CI [1 .87 , 3.07] ). With query correlation fixed on the four-worker ring, matching lowers same-budget label NLL by 0.057 (CI [0 .017 , 0.105] ). Figure 19 includes all four topology–size settings and equal-round controls. Long-horizon training remains effective with a common tenfold step reduction after round 100 . At 
+
+1540 rounds on the four-worker ring, the three couplings reach 74 .07 –77 .82% accuracy over five seeds. With matching and support draws fixed, independent edge signs improve accuracy by 3.75 
+
+points (CI [0 .24 , 6.79] ) and lower label NLL by 0.027 (CI [0 .009 , 0.049] ). The gain comes from query correlation at unchanged scheduling and support selection (Appendix D.3). 
+
+## 6 CONCLUSION 
+
+ZO-COSMO performs decentralized two-query updates with q values per active link and no recurring coordinate indices. The analysis identifies the support compatibility needed for one-hop mixing, quantifies contraction per communicated scalar, and explains how direction correlation trades esti-mation error against disagreement. Synthetic and Qwen experiments show fixed-budget gains from compact messages and matching schedules, together with separate benefits from sparse momentum and edge-sign independence. 
+
+## REFERENCES 
+
+Dan Alistarh, Demjan Grubic, Jerry Li, Ryota Tomioka, and Milan Vojnovic. QSGD: Communication-efficient SGD via gradient quantization and encoding. In Advances in Neural Information Process-ing Systems , volume 30, 2017. Debraj Basu, Deepesh Data, Can Karakus, and Suhas Diggavi. Qsparse-local-SGD: Distributed SGD with quantization, sparsification and local computations. In Advances in Neural Information Processing Systems , pp. 14668–14679, 2019. Jeremy Bernstein, Yu-Xiang Wang, Kamyar Azizzadenesheli, and Animashree Anandkumar. signSGD: Compressed optimisation for non-convex problems. In International Conference on Machine Learning , pp. 560–569, 2018. Stephen Boyd, Arpita Ghosh, Balaji Prabhakar, and Devavrat Shah. Randomized gossip algorithms. 
+
+IEEE Transactions on Information Theory , 52(6):2508–2530, 2006. doi: 10.1109/TIT.2006. 874516. 9Preprint HanQin Cai, Daniel Mckenzie, Wotao Yin, and Zhenliang Zhang. Zeroth-order regularized op-timization (ZORO): Approximately sparse gradients and adaptive sampling. arXiv preprint arXiv:2003.13001 , 2020. Zhijie Cai, Haolong Chen, Guangxu Zhu, Qingjiang Shi, and Kaibin Huang. Feedsign: Robust full-parameter federated fine-tuning of large models with extremely low communication overhead of one bit. IEEE Transactions on Mobile Computing , 25(9):14225–14238, 2026. doi: 10.1109/ TMC.2026.3677600. Linjing Chen, Antai Xie, Xinlei Yi, Xiaoqiang Ren, and Xiaofan Wang. Compressed momentum-based single-point zero-order algorithm for stochastic distributed nonconvex optimization. arXiv preprint arXiv:2512.06366 , 2025. URL https://arxiv.org/abs/2512.06366 .Xiangyi Chen, Sijia Liu, Kaidi Xu, Xingguo Li, Xue Lin, Mingyi Hong, and David Cox. ZO-AdaMM: Zeroth-order adaptive momentum method for black-box optimization. In Advances in Neural Information Processing Systems , pp. 7204–7215, 2019. Andrew R Conn, Katya Scheinberg, and Luis N Vicente. Introduction to Derivative-Free Optimization .MPS-SIAM Series on Optimization. SIAM Philadelphia, 2009. Abraham D Flaxman, Adam Tauman Kalai, and H Brendan McMahan. Online convex optimization in the bandit setting: gradient descent without a gradient. In the Sixteenth Annual ACM-SIAM Symposium on Discrete Algorithms , pp. 385–394, 2005. Saeed Ghadimi and Guanghui Lan. Stochastic first-and zeroth-order methods for nonconvex stochastic programming. SIAM Journal on Optimization , 23(4):2341–2368, 2013. Daniel Golovin, John Karro, Greg Kochanski, Chansoo Lee, Xingyou Song, et al. Gradientless descent: High-dimensional zeroth-order optimization. arXiv preprint arXiv:1911.06317 , 2019. Eduard Gorbunov, Konstantin P. Burlachenko, Zhize Li, and Peter Richtárik. MARINA: Faster non-convex distributed learning with compression. In Proceedings of the 38th International Conference on Machine Learning , volume 139 of Proceedings of Machine Learning Research , pp. 3788–3798. PMLR, 2021. Davood Hajinezhad, Mingyi Hong, and Alfredo Garcia. ZONE: Zeroth-order nonconvex multiagent optimization over networks. IEEE Transactions on Automatic Control , 64(10):3995–4010, 2019. Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. LoRA: Low-rank adaptation of large language models. In International Conference on Learning Representations , 2022. URL https://openreview.net/forum? id=nZeVKeeFYf9 .Youqing Hua, Shuai Liu, Yiguang Hong, and Wei Ren. Distributed stochastic zeroth-order optimiza-tion with compressed communication. IEEE Transactions on Automatic Control , 71(2):1294–1301, 2026. doi: 10.1109/TAC.2025.3610109. Jihun Kim and Namhoon Lee. Seedflood: A step toward scalable decentralized training of LLMs. 
+
+arXiv preprint arXiv:2602.18181 , 2026. URL https://arxiv.org/abs/2602.18181 .Anastasia Koloskova, Sebastian Stich, and Martin Jaggi. Decentralized stochastic optimization and gossip algorithms with compressed communication. In International Conference on Machine Learning , pp. 3478–3487, 2019. Anastasia Koloskova, Tao Lin, Sebastian U Stich, and Martin Jaggi. Decentralized deep learning with arbitrary communication compression. In International Conference on Learning Representations (ICLR) , 2020. David Kozak, Stephen Becker, Alireza Doostan, and Luis Tenorio. A stochastic subspace approach to gradient-free optimization in high dimensions. arXiv preprint arXiv:2003.02684 , 2020. Guanghui Lan, Soomin Lee, and Yi Zhou. Communication-efficient algorithms for decentralized and stochastic optimization. Mathematical Programming , 180(1–2):237–284, 2020. doi: 10.1007/ s10107-018-1355-4. 10 Preprint Jeffrey Larson, Matt Menickelly, and Stefan M Wild. Derivative-free optimization methods. Acta Numerica , 28:287–404, 2019. Zhe Li, Bicheng Ying, Zidong Liu, Chaosheng Dong, and Haibo Yang. Achieving dimension-free communication in federated learning via zeroth-order optimization. In International Confer-ence on Learning Representations , 2025. URL https://openreview.net/forum?id= omrLHFzC37 .Yujun Lin, Song Han, Huizi Mao, Yu Wang, and William J. Dally. Deep gradient compression: Reducing the communication bandwidth for distributed training. In International Conference on Learning Representations , 2018. Liu Liu, Minhao Cheng, Cho-Jui Hsieh, and Dacheng Tao. Stochastic zeroth-order optimization via variance reduction method. arXiv preprint arXiv:1805.11811 , 2018a. Sijia Liu, Bhavya Kailkhura, Pin-Yu Chen, Paishun Ting, Shiyu Chang, and Lisa Amini. Zeroth-order stochastic variance reduction for nonconvex optimization. In Advances in Neural Information Processing Systems , pp. 3727–3737, 2018b. Yong Liu, Zirui Zhu, Chaoyu Gong, Minhao Cheng, Cho-Jui Hsieh, and Yang You. Sparse MeZO: Less parameters for better performance in zeroth-order LLM fine-tuning. In Advances in Neural Information Processing Systems , volume 38, 2025. Sadhika Malladi, Tianyu Gao, Eshaan Nichani, Alex Damian, Jason D Lee, Danqi Chen, and Sanjeev Arora. Fine-tuning language models with just forward passes. In Advances in Neural Information Processing Systems , volume 36, pp. 53038–53075, 2023. Yurii Nesterov and Vladimir Spokoiny. Random gradient-free minimization of convex functions. 
+
+Foundations of Computational Mathematics , 17(2):527–566, 2017. Yide Ran, Wentao Guo, Jingwei Sun, Yanzhou Pan, Xiaodong Yu, Hao Wang, Jianwen Xie, Yiran Chen, Denghui Zhang, and Zhaozhuo Xu. Mitigating non-IID drift in zeroth-order federated LLM fine-tuning with transferable sparsity. In International Conference on Learning Representations ,2026. URL https://openreview.net/forum?id=2DuMBKVbX2 .Anit Kumar Sahu, Dusan Jakovetic, Dragana Bajovic, and Soummya Kar. Distributed zeroth order optimization over random networks: A Kiefer-Wolfowitz stochastic approximation approach. In 
+
+IEEE Conference on Decision and Control , pp. 4951–4958, 2018. Ohad Shamir. An optimal algorithm for bandit and zero-order convex optimization with two-point feedback. Journal of Machine Learning Research , 18(52):1–11, 2017. Shaohuai Shi, Qiang Wang, Xiaowen Chu, Bo Li, Yang Qin, Ruihao Liu, and Xinxiao Zhao. Communication-efficient distributed deep learning with merged gradient sparsification on gpus. In IEEE INFOCOM 2020 - IEEE International Conference on Computer Communications , pp. 406–415. IEEE, 2020. Sebastian U. Stich, Jean-Baptiste Cordonnier, and Martin Jaggi. Sparsified SGD with memory. In 
+
+Advances in Neural Information Processing Systems , volume 31, 2018. Rafał Szlendak, Alexander Tyurin, and Peter Richtárik. Permutation compressors for provably faster distributed nonconvex optimization. In International Conference on Learning Representations ,2022. URL https://openreview.net/forum?id=GugZ5DzzAu .Hanlin Tang, Shaoduo Gan, Ce Zhang, Tong Zhang, and Ji Liu. Communication compression for decentralized training. In Advances in Neural Information Processing Systems , pp. 7652–7662, 2018. Yujie Tang and Na Li. Distributed zero-order algorithms for nonconvex multi-agent optimization. In 
+
+Annual Allerton Conference on Communication, Control, and Computing , pp. 781–786, 2019. A. S. Veprikov, E. D. Petrov, G. V. Evseev, and A. N. Beznosikov. Zero order algorithm for decentralized optimization problems. Doklady Mathematics , 110(Suppl 1):S261–S277, 2024. doi: 10.1134/S1064562424602336. 11 Preprint Haonan Wang, Xinlei Yi, and Yiguang Hong. Compressed zeroth-order algorithm for stochastic distributed nonconvex optimization. In 2025 IEEE 64th Conference on Decision and Control (CDC) , pp. 4364–4369, 2025. doi: 10.1109/CDC57313.2025.11312521. Yining Wang, Simon Du, Sivaraman Balakrishnan, and Aarti Singh. Stochastic zeroth-order opti-mization in high dimensions. In International Conference on Artificial Intelligence and Statistics ,pp. 1356–1365, 2018. An Yang et al. Qwen2 technical report. arXiv preprint arXiv:2407.10671 , 2024. Ziming Yu, Pan Zhou, Sike Wang, Jia Li, Mi Tian, and Hua Huang. Zeroth-order fine-tuning of LLMs in random subspaces. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pp. 4475–4485, 2025. Deming Yuan and Daniel WC Ho. Randomized gradient-free method for multiagent optimization over time-varying networks. IEEE Transactions on Neural Networks and Learning Systems , 26(6): 1342–1347, 2015. doi: 10.1109/TNNLS.2014.2339035. Deming Yuan, Shengyuan Xu, and Junwei Lu. Gradient-free method for distributed multi-agent optimization via push-sum algorithms. International Journal of Robust and Nonlinear Control , 25 (10):1569–1580, 2015. doi: 10.1002/rnc.3164. Shengjun Zhang and Colleen P Bailey. Accelerated zeroth-order algorithm for stochastic distributed non-convex optimization. In 2022 American Control Conference (ACC) , pp. 4274–4279, 2022. doi: 10.23919/ACC53348.2022.9867306. Yihua Zhang, Pingzhi Li, Junyuan Hong, Jiaxiang Li, Yimeng Zhang, Wenqing Zheng, Pin-Yu Chen, Jason D. Lee, Wotao Yin, Mingyi Hong, Zhangyang Wang, Sijia Liu, and Tianlong Chen. Revisiting zeroth-order optimization for memory-efficient LLM fine-tuning: A benchmark. In Proceedings of the 41st International Conference on Machine Learning , volume 235 of Proceedings of Machine Learning Research , pp. 59173–59190. PMLR, 2024. 
+
+## A PROOFS 
+
+We give the details behind Section 4. Constants denoted by C are numerical constants independent of T, d, q, N, η, and μ.A.1 PROOF STRUCTURE 
+
+We first establish the support-coding and decoding results. The optimization proof then controls the finite-difference estimate along ut and disagreement after mixing on the same support, retaining their dependence in the conditional expectations. Smoothness at the network average gives 
+
+F (¯ xt+1 ) ≤ F (¯ xt) − η⟨∇ F (¯ xt), h t⟩ + Lη 2
+
+2 ∥ht∥2, (23) For Algorithm 1, ht = ¯ gt, and the direction decomposes as 
+
+ht = ∇F (¯ xt) + (¯ gt − Et ¯gt)
+
+| {z }
+
+> oracle and direction noise
+
++ (Et ¯gt − ∇ F (¯ xt)) 
+
+| {z }
+
+> finite-difference and disagreement bias
+
+. (24) The estimator lemmas control the two error terms in (24). The masked disagreement recursion gives the price of mixing a coordinate only when it belongs to the public support. Substitution into (23), followed by telescoping, proves Theorem 4. The filtration is fixed as follows. Let Ft contain the iterates, algorithm state, graph, past public coins 
+
+R0, . . . , R t−1, and oracle samples through round t − 1. The fresh public coin Rt, and hence the support and signs at round t, is independent of Ft. Conditional on Ft and Rt, the oracle variables 
+
+ξi,t are independent across nodes. Worker averaging reduces independent oracle noise, while shared direction randomness remains in the conditional moments. Appendix A.4 specifies the seeded implementation and the role of the ideal public-coin assumption. 12 Preprint We write ES [·] for expectation over the support, Eu[·] for expectation over support and signs, and 
+
+Eξ [·] for expectation over oracle samples. An omitted subscript includes all randomness. Here Pt
+
+projects onto St, ut is the sparse Rademacher direction, and ρ is the spectral radius of W − 1 
+
+> N
+
+11 ⊤.Public information determines the support at both endpoints; its random selection still contributes to the estimator variance. A.2 CONDITIONAL SUPPORT COST 
+
+Proposition 2. Any zero-error uniquely decodable support field needs at least H(St | Rt) bits in expectation; with Bval value bits, the total is at least 
+
+qB val + H(St | Rt). (25) 
+
+If one data-dependent support S is announced and reused for a block of K rounds, its amortized per-round cost is at least 
+
+qB val + H(S | R)
+
+K . (26) 
+
+Zero expected support length requires the support to be determined by public information. An unreconstructable uniform q-subset costs log 2
+
+ dq
+
+ bits, of order q log( d/q ) for q ≤ d/ 2. Public supports remove this field; reused adaptive masks amortize it as in (26) .
+
+The elementary binomial estimates used in the main text are 
+
+q log 2(d/q ) ≤ log 2
+
+dq
+
+
+
+≤ q log 2(ed/q ). (27) Fix a communication round and condition on the public information Rt = r. A zero-error decoder must recover the realized support St from the transmitted support codeword and r. Thus, for each 
+
+r, the code must be uniquely decodable for the conditional source St | Rt = r. The source-coding converse gives 
+
+E[ℓt | Rt = r] ≥ H(St | Rt = r), (28) where ℓt is the number of transmitted support bits in that round. Taking expectation over Rt yields 
+
+Eℓt ≥ ERt H(St | Rt) = H(St | Rt). (29) The value payload contributes qB val additional bits, giving (25). Because codeword lengths are nonnegative, zero expected support length forces H(St | Rt) = 0 . For a discrete support this is equivalent to St being a function of Rt almost surely. If St = Φ( Rt, t ), this condition holds. If instead St is uniform over  [d]
+
+> q
+
+ and independent of Rt, then H(St | Rt) = H(St) = log 2
+
+ dq
+
+;Stirling’s bounds give Θ( q log( d/q )) when 1 ≤ q ≤ d/ 2.For a block-reused support, condition on the public information available when the block begins. Zero-error recovery of the private support still requires expected length at least H(S | R). The block then carries KqB val value bits and at least H(S | R) support bits. Dividing by K proves (26). This is a lower bound on describing a chosen mask; any communication used to agree on a data-dependent mask across decentralized nodes is additional. A.3 PRIVATE -S UPPORT CODE LENGTH 
+
+Let 
+
+Ud,q := {S ⊂ [d] : |S| = q}, |U d,q | =
+
+dq
+
+
+
+. (30) For a fixed-length zero-error code of length L, distinct supports require distinct codewords, so  dq
+
+ ≤ 2L. For a prefix-free code whose maximum length is L, Kraft’s inequality gives 
+
+1 ≥ X
+
+> S∈U d,q
+
+2−ℓ(S) ≥
+
+dq
+
+
+
+2−L. (31) Either model therefore requires 
+
+⌈log 2 |U d,q |⌉ =
+
+
+
+log 2
+
+dq
+
+ 
+
+(32) 13 Preprint bits in the worst case. For the expected-length statement, assume S is uniform over Ud,q . Any uniquely decodable zero-error code has expected length at least the entropy of the source, so 
+
+E[ℓ(S)] ≥ H(S) = log 2 |U d,q | = log 2
+
+dq
+
+
+
+. (33) The standard source-coding converse gives the claim. The displayed Θ( q log( d/q )) order follows from the standard binomial estimates 
+
+ dq
+
+q
+
+≤
+
+dq
+
+
+
+≤
+
+ ed q
+
+q
+
+. (34) Taking base-two logarithms gives (27) for q ≤ d/ 2. Coordinate lists cost q⌈log 2 d⌉ bits; optimal private-support codes may be shorter. Publicly reconstructible supports require zero support bits. These are the three encodings compared in the communication analysis. In the public-coin model used by ZO-COSMO, the support is generated as 
+
+St = Φ( Rt, t ), (35) where Rt is known to both sender and receiver and Φ is a deterministic rule. Therefore St is measurable with respect to Rt, and 
+
+H(St | Rt) = 0 . (36) Thus no support field is needed. This coding observation applies to any publicly reconstructible support, including independent Rand-k supports generated from node-specific seeds. A.4 PUBLIC -S UPPORT LIFTING 
+
+The implementation reconstructs each round from the master seed s0 and public identifiers. In the experiment code, BLAKE2b folds these identifiers into a NumPy generator seed: 
+
+rt = Hash( s0, t ), (St, ε t) = SampleSparseDirection( rt, d, q ), (37) where St ⊂ [d] has cardinality q and εt ∈ {± 1}St . The sparse direction is ut,j = εt,j 1{j ∈ St}.Node identifiers or canonically ordered edge endpoints select local streams when required. With the same generator, ordering convention, and public identifiers, endpoints reconstruct the same support and signs directly. The communicated message is the ordered value vector 
+
+mi,t =  vi,t, 1, . . . , v i,t,q 
+
+, (38) where vi,t,k is attached to the k-th coordinate in the deterministic ordering of St. No coordinate identifier appears in (38). If St = {st, 1 < · · · < s t,q }, then decoding is exactly the public-support lift 
+
+Decode( mi,t ; s0, t ) = Lift St (mi,t ) = 
+
+> q
+
+X
+
+> k=1
+
+vi,t,k est,k , (39) with all other coordinates equal to zero. Decoding and average preservation hold pathwise for every support-compatible sequence, including seeded sequences. The contraction and convergence rates assume fresh uniform draws in the ideal public-coin model. The finite-seed implementation reproduces the message identities exactly; extending the stochastic rates to its pseudorandom generator would require a separate randomness approximation or cryptographic argument. Endpoints share only the generator specification, seed, round counter, d, and q; data, losses, gradients, and momentum remain local. With a κ-bit master seed, initialization contributes κ + O(log d +log q + log T ) bits per neighbor when charged explicitly, rather than a recurring support field. 
+
+Lemma 1. Assume two neighboring agents use the same tuple (s0, t, d, q ) and the same deterministic sampling rule in (37) . Then the decoder (39) reconstructs the sender’s sparse vector from ordered values alone. Consequently, exact sparse-message decoding requires no per-round coordinate metadata. 
+
+14 Preprint 
+
+Proof. Once the sampling rule is fixed, St and εt are deterministic functions of (s0, t, d, q ). Both endpoints therefore obtain the same ordered support. The map Lift St places the k-th received value on the k-th public coordinate, so the decoded vector is the one formed by the sender. A.5 CONSEQUENCES OF ONE -H OP SUPPORT COMPATIBILITY 
+
+Proof of Theorem 1. If K ⊆ Sji for every positive-weight remote neighbor, receiver i lifts each ordered message, reads its coordinates in K, and adds the known self term. This proves sufficiency. For necessity, suppose wij > 0 and k ∈ K \ Sji . Hold every state fixed except y(k) 
+
+> j
+
+, setting that entry to R in one instance and −R in another. The receiver’s state, public transcript, supports, and messages are identical, while the correct k-th outputs differ by 2wij R. Any common output has error at least half this separation on one instance. Taking arbitrary R > 0 rules out zero-error recovery; under the stated bound it gives the minimax error wij R. If both supports have cardinality q, containment implies equality. Theorem 1 concerns exact current-state mixing. PermK instead coordinates compressors to control the error of an aggregate estimate (Szlendak et al., 2022); the inputs at different workers need not be identical. Complementary supports can serve that purpose without exposing every peer on a common target coordinate. Likewise, a seed–scalar pair reconstructs an update, but not an arbitrary state to which past updates have been applied. For randomized decoders, the same two indistinguishable states give an expected absolute-error lower bound: |a − wij R| + |a + wij R| ≥ 2wij R for every output a, and taking expectations preserves the inequality. Setting the unknown contribution to zero attains this coordinatewise bound when all other contributions are known. The condition is local to an active communication group. If all neighbors of i participate in one Metropolis step, they need a common target support at i. If communication is scheduled as a matching, only the two endpoints of each active edge must agree. This observation leads to the edge-local method below. A.6 EDGE -L OCAL ZO-COSMO Algorithm 2 uses public perfect matchings. For a maximal matching, unmatched nodes retain their states. A positive contraction in Theorem 2 requires a connected expected union graph, equivalently 
+
+λ2( ¯L) > 0.
+
+Algorithm 2 Edge-Local ZO-COSMO 
+
+1: Input: graph G, η, μ, q , and public tape; initialize xi, 0.2: for t = 0 , . . . , T − 1 do 
+
+3: Reconstruct a public matching Mt.4: for all e = {i, j } ∈ Mt in parallel do 
+
+5: From (Rt, e ), reconstruct support Se,t , signs ϵe,t , and ue,t = Pe,t ϵe,t .6: for all r ∈ { i, j } in parallel do 
+
+7: ˆgr,t = dqfr (xr,t +μu e,t ;ξr,t )−fr (xr,t −μu e,t ;ξr,t )2μ ue,t ; yr,t = xr,t − ηˆgr,t .8: Send Res Se,t (yr,t ) to the other endpoint. 9: end for 
+
+10: xi,t +1 = ( I − Pe,t )yi,t + 12 Pe,t (yi,t + yj,t ); update xj,t +1 symmetrically. 11: end for 
+
+12: end for 
+
+Every edge support is keyed by the unordered edge id, so its endpoints reconstruct the same ordered coordinates. Different matched edges may reconstruct different supports because they have disjoint receivers. The code alternates the two perfect matchings of an even ring; on a complete graph it publicly permutes the nodes and pairs adjacent entries. The momentum variant replaces ˆgr,t in the local step by Pe,t mr,t +1 using (3) with Pt = Pe,t .A.7 PROOF OF THEOREM 2For e = {i, j }, write Qe(Z) = 12 LeZP e,t . Since L2 
+
+> e
+
+= 2 Le and P 2 
+
+> e,t
+
+= Pe,t , Qe is an orthogonal projector under the Frobenius inner product. Distinct edges in a matching have disjoint endpoints, 15 Preprint hence LeLe′ = 0 and the projectors Qe, Q e′ are orthogonal even when their coordinate supports overlap. Thus Q = P 
+
+> e∈Mt
+
+Qe is itself an orthogonal projector and (10) is Xt+1 = ( I − Q)Yt.Because 1⊤Le = 0 , the network average is unchanged. Moreover, QY t lies in the disagreement subspace and QΠYt = QY t. Pythagoras therefore gives 
+
+∥ΠXt+1 ∥2 
+
+> F
+
+= ∥(I − Q)Π Yt∥2 
+
+> F
+
+(40) 
+
+= ∥ΠYt∥2 
+
+> F
+
+− ∥ QY t∥2 
+
+> F
+
+(41) 
+
+= ∥ΠYt∥2 
+
+> F
+
+− 12
+
+X
+
+> {i,j }∈ Mt
+
+∥Pe,t (yi,t − yj,t )∥2. (42) For a uniform q-coordinate projector and a fixed vector v independent of it, E∥Pe,t v∥2 = ( q/d )∥v∥2.Holding Yt fixed while taking the support expectation in (42) proves (11). No cross-edge indepen-dence is used. Averaging also over the matching yields 
+
+EM,P ∥ΠXt+1 ∥2 
+
+> F
+
+= ∥ΠYt∥2 
+
+> F
+
+− q
+
+2d tr( Y ⊤ 
+
+> t
+
+¯LY t). (43) Since ¯L1 = 0 and ¯L ⪰ 0, the variational definition of λ2 gives tr( Y ⊤ 
+
+> t
+
+¯LY t) ≥ λ2( ¯L)∥ΠYt∥2 
+
+> F
+
+,proving (12). For a uniformly random perfect matching of the complete graph, ¯L = LKN /(N − 1) and λ2( ¯L) = 
+
+N/ (N − 1) . Drawing either perfect-matching phase of an even ring uniformly gives ¯L = Lring /2
+
+and 
+
+λ2( ¯L) = 1 − cos(2 π/N ). (44) These constants concern independently sampled matching phases and a fixed input. Deterministic alternation, as used by the ring implementation, instead satisfies the two-round bound (154). The factor q/d is the cost of activating only a random coordinate subspace. A.8 PROOF OF THEOREM 3Let zk = Π Ytek be the centered network state on coordinate k. Expanding (42), then averaging over the matching and its supports, gives 
+
+E∥ΠXt+1 ∥2 
+
+> F
+
+= ∥ΠYt∥2 
+
+> F
+
+− 12
+
+> d
+
+X
+
+> k=1
+
+z⊤ 
+
+> k
+
+¯Lkzk. (45) Each ¯Lk is a graph Laplacian. Hence 
+
+> d
+
+X
+
+> k=1
+
+z⊤ 
+
+> k
+
+¯Lkzk ≥
+
+
+
+min  
+
+> k∈[d]
+
+λ2( ¯Lk)
+
+ dX
+
+> k=1
+
+∥zk∥2. (46) The coefficient is sharp: choose one nonzero column of Yt to be a unit eigenvector associated with 
+
+λ2( ¯Lk) for a minimizing coordinate k. This proves the equality in (15). It remains to bound this coefficient by the scalar payload. Since tr( Le) = 2 ,
+
+> d
+
+X
+
+> k=1
+
+tr( ¯Lk) = 2 E
+
+" X
+
+> e∈Mt
+
+|Se,t |
+
+#
+
+= Cdir . (47) For any N -node Laplacian L, λ2(L) ≤ tr( L)/(N − 1) . Therefore 
+
+2γ⋆ = min  
+
+> k
+
+λ2( ¯Lk) ≤ 1
+
+d
+
+> d
+
+X
+
+> k=1
+
+λ2( ¯Lk) ≤ Cdir 
+
+d(N − 1) , (48) which proves the converse and, after multiplying by Bval , the bit lower bound. For a uniformly random perfect matching of KN , every edge is selected with probability 1/(N − 1) ,so 
+
+E
+
+" X
+
+> e∈Mt
+
+Le
+
+#
+
+= LKN
+
+N − 1 = NN − 1 Π. (49) 16 Preprint A uniform rank-q support contains coordinate k with probability q/d , and a perfect matching sends 
+
+Cdir = N q directed values. Thus ¯Lk = qN Π/[d(N − 1)] for every k, and 
+
+γ⋆ = qN 
+
+2d(N − 1) = N q 
+
+2d(N − 1) = Cdir 
+
+2d(N − 1) , (50) To characterize equality, put c = Cdir /[d(N − 1)] . Equality in (48) requires all coordinate gaps to be equal, and all N − 1 eigenvalues on the disagreement subspace of each ¯Lk to equal its smallest one. Since ¯Lk1 = 0 , these conditions are equivalent to 
+
+¯Lk = cΠ for every k ∈ [d]. (51) Conversely, (51) gives γ⋆ = c/ 2, attaining the bound. Unequal coordinate coverage or an anisotropic expected Laplacian makes at least one inequality strict. Uniform perfect matchings with uniform marginal supports satisfy this pure-mixing equality criterion for either common or independent edge supports. A.9 BALANCED PUBLIC SCHEDULE 
+
+Let K = ⌈d/q ⌉. At epoch e, all agents use the shared seed to generate a public permutation πe and take 
+
+SeK +r = {πe(rq + 1) , . . . , π e(min {(r + 1) q, d })}, r = 0 , . . . , K − 1. (52) The permutation πe is a bijection from [d] to [d]. The blocks in (52) form a partition of the ordered list 
+
+πe(1) , π e(2) , . . . , π e(d). (53) Hence every coordinate appears in at least one block of epoch e. If q divides d, every block has size exactly q, the blocks are disjoint, and every coordinate appears exactly once. Since every coordinate appears at least once in every epoch, a coordinate activated in round eK + r
+
+must be activated again by the end of the next epoch. The largest possible gap happens when the coordinate appears in the first round of epoch e and in the last round of epoch e + 1 , giving a gap of at most 
+
+(K − 1) + K = 2 K − 1. (54) The average refresh time is at most the epoch length K because each epoch contains at least one activation of the coordinate. The padding rule, when used, only adds extra activations and cannot increase the maximum gap or the average refresh time. A.10 MASKED MATRIX FORM OF ZO-COSMO Let Xt, Gt ∈ RN ×d stack the row vectors xi,t and ˆgi,t . Since every estimator is supported on St,
+
+GtPt = Gt. The local update is 
+
+Yt = Xt − ηGt, (55) and the partial consensus step is 
+
+Xt+1 = Yt(I − Pt) + W YtPt. (56) Multiplying (56) by N −11⊤ from the left and using 1⊤W = 1⊤ gives the exact averaged update 
+
+¯xt+1 = ¯ xt − η¯gt, ¯gt := 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+ˆgi,t . (57) Thus the exact descent direction of the network average is 
+
+ht := ¯ gt. (58) A.11 SPARSE DIRECTION IDENTITIES 
+
+Lemma 2. Let S be sampled uniformly from all q-subsets of [d], let ϵj be independent Rademacher signs on S, and define uj = ϵj 1{j ∈ S} . Then 
+
+E[uu ⊤] = qd Id, ∥u∥2 = q almost surely . (59) 17 Preprint 
+
+Consequently, for every deterministic vector v ∈ Rd,
+
+E dq uu ⊤v
+
+> 2
+
+= d∥v∥2. (60) 
+
+Proof. For j̸ = k, E[uj uk] = 0 because the signs are independent and mean-zero conditional on the support. For j = k,
+
+E[u2 
+
+> j
+
+] = P(j ∈ S ) = 
+
+ d−1
+
+> q−1
+
+ dq
+
+ = qd . (61) This proves E[uu ⊤] = ( q/d )Id. Since exactly q entries of u are nonzero and each nonzero entry has magnitude one, ∥u∥2 = q. Therefore, 
+
+E dq uu ⊤v
+
+> 2
+
+=
+
+ dq
+
+2
+
+E(u⊤v)2∥u∥2
+
+=
+
+ dq
+
+2
+
+q v ⊤E[uu ⊤]v = d∥v∥2.
+
+(62) 
+
+Lemma 3. Under the same sampling rule as Lemma 2, for any deterministic v ∈ Rd,
+
+E(u⊤v)4 ≤ 3 qd ∥v∥4, (63) 
+
+Moreover, 
+
+E dq uu ⊤v
+
+> 4
+
+≤ 3 d3
+
+q ∥v∥4. (64) 
+
+Proof. Condition on the support S. The random variable u⊤v = P 
+
+> j∈S
+
+εj vj is a Rademacher sum, so by the fourth-moment identity for independent signs, 
+
+Eε
+
+(u⊤v)4 | S  = 3 
+
+X
+
+> j∈S
+
+v2
+
+> j
+
+
+
+> 2
+
+− 2 X
+
+> j∈S
+
+v4 
+
+> j
+
+≤ 3
+
+X
+
+> j∈S
+
+v2
+
+> j
+
+
+
+> 2
+
+. (65) For a uniform q-subset, the inclusion probabilities are P(j ∈ S ) = q/d and P(j, k ∈ S ) = 
+
+q(q − 1) /(d(d − 1)) for j̸ = k. Therefore 
+
+ES
+
+X
+
+> j∈S
+
+v2
+
+> j
+
+
+
+> 2
+
+ = qd
+
+> d
+
+X
+
+> j=1
+
+v4 
+
+> j
+
++ 2q(q − 1) 
+
+d(d − 1) 
+
+X
+
+> 1≤j<k ≤d
+
+v2 
+
+> j
+
+v2
+
+> k
+
+≤ qd
+
+
+
+> d
+
+X
+
+> j=1
+
+v4 
+
+> j
+
++ 2 X
+
+> 1≤j<k ≤d
+
+v2 
+
+> j
+
+v2
+
+> k
+
+
+
+= qd ∥v∥4.
+
+(66) Combining (65) and (66) gives 
+
+E(u⊤v)4 ≤ 3 qd ∥v∥4. (67) This proves (63). Since ∥u∥2 = q almost surely, 
+
+dq uu ⊤v
+
+> 4
+
+=
+
+ dq
+
+4
+
+(u⊤v)4∥u∥4 =
+
+ dq
+
+4
+
+q2(u⊤v)4. (68) Combining (68) with (63) gives 
+
+E dq uu ⊤v
+
+> 4
+
+≤
+
+ dq
+
+4
+
+q2 · 3 qd ∥v∥4 = 3 d3
+
+q ∥v∥4, (69) which is (64). 18 Preprint 
+
+Proposition 3. Under Assumptions 3 and 4, 
+
+E[ˆ gi,t | xi,t ] = ∇Fi(xi,t ) + bμ(xi,t ), ∥bμ(xi,t )∥ ≤ Bμ, (70) 
+
+E∥ˆgi,t ∥2 ≤ M 2node . (71) A.12 PROOF OF PROPOSITION 3Fix a node i, an iterate x, and write u = ut. By Assumption 4, 
+
+fi(x + μu ; ξ) − fi(x − μu ; ξ)2μ = ∇fi(x; ξ)⊤u + rμ(x, u, ξ ), (72) where 
+
+|rμ(x, u, ξ )| ≤ L3
+
+6 μ2∥u∥3. (73) Substituting (72) into (5) yields 
+
+ˆgi,t = dq uu ⊤∇fi(x; ξ)
+
+| {z }
+
+> a(x,u,ξ )
+
++ dq rμ(x, u, ξ )u
+
+| {z }
+
+> eμ(x,u,ξ )
+
+. (74) By Lemma 2 and Eξ [∇fi(x; ξ)] = ∇Fi(x),
+
+E[a(x, u, ξ ) | x] = dq E[uu ⊤]∇Fi(x) = ∇Fi(x). (75) For the remainder, ∥u∥2 = q, so (73) gives 
+
+∥eμ(x, u, ξ )∥ ≤ dq · L3
+
+6 μ2∥u∥3 · ∥ u∥ = L3
+
+6 μ2dq = Bμ. (76) Combining (75) and (76) proves (70). For the second moment, first condition on ξ and apply Lemma 2: 
+
+Eu∥a(x, u, ξ )∥2 =
+
+ dq
+
+2
+
+Eu
+
+(∇fi(x; ξ)⊤u)2∥u∥2
+
+=
+
+ dq
+
+2
+
+q ∇fi(x; ξ)⊤E[uu ⊤]∇fi(x; ξ)= d∥∇ fi(x; ξ)∥2.
+
+(77) Taking expectation over ξ and using Assumption 3, 
+
+E∥a(x, u, ξ )∥2 ≤ d(G2 + σ2). (78) Finally, ∥ˆgi,t ∥2 ≤ 2∥a∥2 + 2 ∥eμ∥2, so 
+
+E∥ˆgi,t ∥2 ≤ 2d(G2 + σ2) + 2 B2 
+
+> μ
+
+= M 2node . (79) This proves (71). A.13 AVERAGED ESTIMATOR BOUNDS 
+
+Lemma 4. Define 
+
+¯gt := 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+ˆgi,t , ¯∇t := 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+∇Fi(xi,t ). (80) 
+
+Let Ft denote the sigma-field generated by all iterates and all randomness before the support, direction, and oracle samples at time t are drawn. Under Assumptions 1–4, 
+
+E∥¯gt∥2 ≤ Cd E∥∇ F (¯ xt)∥2 + CdL 2Et + C dσ 2
+
+N + CB 2
+
+> μ
+
+, (81) 
+
+More precisely, before replacing the local average gradient by the gradient at the network average, 
+
+E∥¯gt∥2 | F t
+
+ ≤ Cd ∥ ¯∇t∥2 + C dσ 2
+
+N + CB 2
+
+> μ
+
+. (82) 19 Preprint 
+
+Moreover, 
+
+E⟨∇ F (¯ xt), ¯gt⟩ ≥ 34 E∥∇ F (¯ xt)∥2 − CL 2Et − CB 2
+
+> μ
+
+. (83) 
+
+The only variance term reduced by N is the independent oracle noise. The sparse direction ut is public across agents, so its random-direction variance is shared rather than averaged away. Proof. By Jensen’s inequality and L-smoothness, 
+
+E∥ ¯∇t − ∇ F (¯ xt)∥2 = E 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+ ∇Fi(xi,t ) − ∇ Fi(¯ xt) 2
+
+≤ 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+E∥∇ Fi(xi,t ) − ∇ Fi(¯ xt)∥2
+
+≤ L2Et.
+
+(84) The price of decentralization is visible here: local gradients are evaluated at xi,t rather than at the network average ¯xt.Next write the stochastic gradient noise as 
+
+ζi,t := ∇fi(xi,t ; ξi,t ) − ∇ Fi(xi,t ), E[ζi,t | F t] = 0 , E∥ζi,t ∥2 ≤ σ2. (85) The samples ξi,t are independent across agents, hence 
+
+E
+
+ 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+ζi,t 
+
+> 2
+
+Ft
+
+ = 1
+
+N 2
+
+> N
+
+X
+
+> i=1
+
+E∥ζi,t ∥2 ≤ σ2
+
+N . (86) Equation (86) reduces independent oracle variance by N . The common direction ut remains in the averaged estimator. Using (74), the average estimator can be written as 
+
+¯gt = dq utu⊤
+
+> t
+
+1
+
+N
+
+> N
+
+X
+
+> i=1
+
+∇fi(xi,t ; ξi,t )
+
+!
+
++ 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+eμ,i,t . (87) By Lemma 2 and the conditional variance identity (86), 
+
+E∥¯gt∥2 | F t
+
+ ≤ Cd ∥ ¯∇t∥2 + C dσ 2
+
+N + CB 2
+
+> μ
+
+, (88) which is (82). Taking expectation and using (84) gives 
+
+E∥¯gt∥2 ≤ Cd E∥ ¯∇t∥2 + C dσ 2
+
+N + CB 2
+
+> μ
+
+≤ Cd E∥∇ F (¯ xt)∥2 + CdL 2Et + C dσ 2
+
+N + CB 2
+
+> μ
+
+.
+
+(89) This proves (81). We also need an alignment bound. Conditional on Ft, Proposition 3 gives 
+
+E[¯ gt | F t] = ¯∇t + ¯bμ,t , ∥¯bμ,t ∥ ≤ Bμ. (90) Using Young’s inequality twice, 
+
+E⟨∇ F (¯ xt), ¯gt⟩ = E∥∇ F (¯ xt)∥2 + E⟨∇ F (¯ xt), ¯∇t − ∇ F (¯ xt)⟩
+
++ E⟨∇ F (¯ xt), ¯bμ,t ⟩≥ 34 E∥∇ F (¯ xt)∥2 − CL 2Et − CB 2
+
+> μ
+
+.
+
+(91) This proves (83). 20 Preprint A.14 BASE DIRECTION FOR THE CONVERGENCE PROOF 
+
+By (57), the direction used by Algorithm 1 is exactly 
+
+ht = ¯ gt. (92) The second-moment and alignment bounds for the actual descent direction are therefore 
+
+E∥ht∥2 ≤ Cd E∥∇ F (¯ xt)∥2 + CdL 2Et + C dσ 2
+
+N + CB 2
+
+> μ
+
+, (93) 
+
+E⟨∇ F (¯ xt), h t⟩ ≥ 34 E∥∇ F (¯ xt)∥2 − CL 2Et − CB 2
+
+> μ
+
+. (94) Both displays follow immediately from Lemma 4 and (92). A.15 MASKED DISAGREEMENT ENERGY 
+
+Lemma 5. For Algorithm 1, the disagreement sequence satisfies the one-step recursion (102) and the averaged bound (104) .Proof. Let J = IN − N −111 ⊤. Then Et = N −1E∥JXt∥2 
+
+> F
+
+. Consider coordinate j. If j / ∈ S t, then 
+
+y(j) = x(j) and the coordinate is not mixed. If j ∈ S t, then y(j) = x(j) − ηg (j), and the update is mixed by W . Hence 
+
+∥JW y (j)∥2 ≤ ρ2∥Jy (j)∥2, (95) where x(j), g (j), y (j) are the j-th columns of Xt, Gt, Yt. On active coordinates, the relaxed triangle inequality gives 
+
+∥Jy (j)∥2 ≤ (1 + α)∥Jx (j)∥2 + (1 + α−1)η2∥Jg (j)∥2. (96) Condition on Ft and average over the fresh public coin and oracle samples. Since g(j) = 0 off the active support and P(j ∈ S t) = q/d ,
+
+E∥Jx (j)
+
+> t+1
+
+∥2 | F t
+
+ ≤
+
+
+
+1 − qd
+
+
+
+∥Jx (j)∥2 + qd ρ2(1 + α)∥Jx (j)∥2
+
++ ρ2(1 + α−1)η2E∥Jg (j)∥2 | F t
+
+.
+
+(97) If ρ = 0 , the active-coordinate mixing term vanishes and the same bound follows by taking the limit below. Assume ρ > 0 and choose α = (1 − ρ2)/(2 ρ2). Then ρ2(1 + α) = (1 + ρ2)/2, and therefore 
+
+
+
+1 − qd
+
+
+
++ qd ρ2(1 + α) = 1 − qd
+
+1 − ρ2
+
+2 . (98) With the same choice of α,
+
+ρ2(1 + α−1) = ρ2 + 2ρ4
+
+1 − ρ2 ≤ C
+
+1 − ρ2 . (99) Summing (97) over coordinates and taking the remaining expectation yields 
+
+Et+1 ≤
+
+
+
+1 − qd
+
+1 − ρ2
+
+2
+
+
+
+Et + Cη 2
+
+1 − ρ2 E
+
+ 1
+
+N ∥JGt∥2
+
+> F
+
+
+
+. (100) By ∥J∥2 ≤ 1 and Proposition 3, 
+
+E
+
+ 1
+
+N ∥JGt∥2
+
+> F
+
+
+
+≤ 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+E∥ˆgi,t ∥2 ≤ M 2node . (101) Therefore, 
+
+Et+1 ≤ κEt + Cη 2
+
+1 − ρ2 M 2node , κ := 1 − qd
+
+1 − ρ2
+
+2 . (102) Unrolling (102) gives 
+
+1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+Et ≤ E0
+
+T (1 − κ) + Cη 2M 2node 
+
+(1 − ρ2)(1 − κ) . (103) 21 Preprint Since 1 − κ = ( q/d )(1 − ρ2)/2,
+
+1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+Et ≤ C dq
+
+E0
+
+T (1 − ρ2) + Cη 2 dqM 2node 
+
+(1 − ρ2)2 . (104) The second term in (104) is the sparse-consensus term used in the main theorem. The first term vanishes when all agents are initialized equally and is otherwise a transient. 
+
+Sparse-consensus factor. Equation (104) is where the random subspace design enters the network analysis. Full-coordinate mixing contracts disagreement energy at rate 1 − ρ2. ZO-COSMO mixes coordinate j only on the event j ∈ St, which has probability q/d . The effective energy contraction probability is therefore of order (q/d )(1 − ρ2), and unrolling the recursion produces the multiplier 
+
+d/q .The second spectral-gap factor is already visible in (99). The active-coordinate descent step perturbs consensus before mixing, and bounding that perturbation costs one factor of (1 − ρ2)−1. Unrolling the masked contraction costs another. Together they give the squared energy gap in Theorem 4, along with the sparse activation factor d/q .The q/d factor is intrinsic to this one-step partial-consensus model, as the next lemma shows. The remaining slack enters through Young’s inequality in (99) and the bound of the injected disagreement by the full per-node estimator moment. For matching updates, Proposition 1 instead separates aggregate estimation error from disagreement injection, exposing the effect of direction correlation. 
+
+Lemma 6. The sparse activation factor q/d in (102) is tight for partial coordinate mixing. In particular, there are disagreement states for which one pure partial-consensus step with η = 0 
+
+contracts the expected disagreement energy by exactly 
+
+1 − qd (1 − ρ2). (105) 
+
+Proof. Because W is symmetric and doubly stochastic, there is a unit vector v ⊥ 1 and an eigenvalue 
+
+λ with W v = λv and |λ| = ρ. Take a disagreement matrix whose j-th column is x(j) = aj v for arbitrary coefficients aj , and set η = 0 so that the step only applies partial consensus. If j / ∈ St, then 
+
+x(j)+ = x(j). If j ∈ St, then x(j)+ = W x (j) = aj λv , and hence 
+
+∥Jx (j)+ ∥2 =
+
+∥x(j)∥2, j / ∈ St,ρ2∥x(j)∥2, j ∈ St. (106) Since P(j ∈ St) = q/d ,
+
+E∥Jx (j)+ ∥2 =
+
+
+
+1 − qd (1 − ρ2)
+
+
+
+∥x(j)∥2. (107) Summing over coordinates gives (105). Thus, for algorithms that mix only the active coordinates and leave inactive coordinates unchanged, the q/d slowdown in the one-step consensus contraction cannot be removed by sharper analysis alone. A.16 PROOF OF THEOREM 4By Assumption 1 and the averaged update (57), 
+
+F (¯ xt+1 ) ≤ F (¯ xt) − η⟨∇ F (¯ xt), h t⟩ + Lη 2
+
+2 ∥ht∥2. (108) Taking expectations and substituting (94) and (93) gives 
+
+EF (¯ xt+1 ) ≤ EF (¯ xt) − 3η
+
+4 E∥∇ F (¯ xt)∥2 + CηL 2Et + CηB 2
+
+> μ
+
++CLη 2d E∥∇ F (¯ xt)∥2 + CLη 2dL 2Et
+
++ CLη 2 dσ 2
+
+N + CLη 2B2
+
+> μ
+
+.
+
+(109) 22 Preprint Choose the universal constant in (17) so that CLηd ≤ 1/4. The positive stationarity term is then at most (η/ 4) E∥∇ F (¯ xt)∥2. The same condition absorbs CLηd into the disagreement coefficient, and 
+
+η ≤ L−1 absorbs the smaller bias term. Thus 
+
+EF (¯ xt+1 ) ≤ EF (¯ xt) − η
+
+2 E∥∇ F (¯ xt)∥2 + CηL 2Et + CηB 2 
+
+> μ
+
++ CLη 2 dσ 2
+
+N . (110) Summing (110) from t = 0 to T − 1 and using F (¯ xT ) ≥ F ∗ gives 
+
+1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+E∥∇ F (¯ xt)∥2 ≤ 2( F (¯ x0) − F ∗)
+
+ηT + CL 2 1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+Et
+
++ CB 2 
+
+> μ
+
++ CLη dσ 2
+
+N .
+
+(111) Substitute the masked disagreement bound from Lemma 5. This gives 
+
+1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+E∥∇ F (¯ xt)∥2 ≤ C(F (¯ x0) − F ∗)
+
+ηT + CLη dσ 2
+
+N + CB 2
+
+> μ
+
++ CL 2η2 dqM 2node 
+
+(1 − ρ2)2 + CL 2 dq
+
+E0
+
+T (1 − ρ2) ,
+
+(112) Using B2 
+
+> μ
+
+= O(μ4d2q2) and M 2node = O(d(G2 + σ2) + μ4d2q2) gives the explicit finite-η form 
+
+RT := 1
+
+T
+
+X
+
+> t<T
+
+E∥∇ F (¯ xt)∥2
+
+≤ O 
+
+ ∆0
+
+ηT + ηdσ 2
+
+N + μ4d2q2
+
++ η2d[d(G2 + σ2) + μ4d2q2]
+
+q(1 − ρ2)2 + dE0
+
+qT (1 − ρ2)
+
+
+
+.
+
+(113) With common initialization and (18), for any feasible η,
+
+RT ≤ O 
+
+ ∆0
+
+ηT + η dσ 2
+
+N + 1
+
+T + η2 d2(G2 + σ2)
+
+q(1 − ρ2)2
+
+
+
+. (114) Taking η = cη T −1/2 in (114), for horizons satisfying (17), gives (19). The directed-link form (214) then follows from the round substitution in Appendix C.7. If σ2 > 0 and 
+
+η⋆ = Θ 
+
+r N ∆0
+
+dσ 2T
+
+!
+
+(115) satisfies (17), then 
+
+RT ≤ O 
+
+r ∆0dσ 2
+
+N T + 1
+
+T + N ∆0d(G2 + σ2)
+
+q(1 − ρ2)2σ2T
+
+!
+
+. (116) A.17 DESCENT ABSORPTION 
+
+We spell out the passage from (109) to (110). The only positive term containing the stationarity measure is 
+
+CLη 2d E∥∇ F (¯ xt)∥2. (117) Choose the universal constant c in (17) so that CLηd ≤ 1/4. Then (117) is at most 
+
+(η/ 4) E∥∇ F (¯ xt)∥2. Combining it with the coefficient −3η/ 4 in (109) leaves 
+
+− η
+
+2 E∥∇ F (¯ xt)∥2. (118) The two disagreement terms factor as 
+
+CηL 2Et + CLη 2dL 2Et = CηL 2Et(1 + Lηd ), (119) which is at most C′ηL 2Et under the same condition. Likewise, since Lη ≤ 1,
+
+CηB 2 
+
+> μ
+
++ CLη 2B2 
+
+> μ
+
+≤ C′ηB 2
+
+> μ
+
+. (120) 23 Preprint The remaining stochastic term is CLη 2dσ 2/N . After summing over t and dividing by ηT , it becomes 
+
+CLηdσ 2/N . These are precisely the three positive terms in (110); all graph dependence enters later through (104). A.18 WORKER -S CALED RATE DERIVATION 
+
+For common initialization, E0 = 0 . Equation (116) follows by setting 
+
+Aq (μ) := dq(1 − ρ2)2
+
+d(G2 + σ2) + μ4d2q2 . (121) Ignoring only constants depending on L, (113) can be written as 
+
+RT (η, μ ) := 1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+E∥∇ F (¯ xt)∥2 ≤ O 
+
+ ∆0
+
+ηT 
+
+
+
++O
+
+
+
+η dσ 2
+
+N
+
+
+
++O μ4d2q2+O η2Aq (μ) . (122) The first term is the usual descent term, the second term is the averaged stochastic ZO noise, the third term is the finite-difference bias, and the fourth term is the sparse decentralized consensus penalty. Balancing the first two terms in (122) gives 
+
+∆0
+
+ηT ≍ η dσ 2
+
+N , η⋆ ≍
+
+r N ∆0
+
+dσ 2T , (123) Substituting (123) back into the first two terms yields 
+
+∆0
+
+η⋆T + η⋆
+
+dσ 2
+
+N = O
+
+r ∆0dσ 2
+
+N T 
+
+!
+
+. (124) The sparse-consensus term becomes 
+
+η2 
+
+> ⋆
+
+Aq (μ) = O
+
+ N ∆0
+
+dσ 2Tdq(1 − ρ2)2
+
+d(G2 + σ2) + μ4d2q2
+
+. (125) Using the canonical smoothing choice 
+
+μ = Θ 
+
+
+
+(dq )−1/2T −1/4
+
+(126) gives 
+
+μ4d2q2 = O(T −1) (127) and therefore the finite-difference bias contributes O(T −1). The bias-dependent part inside (125) is also of smaller order than the displayed consensus term for the regimes used in our experiments. Thus 
+
+η2 
+
+> ⋆
+
+Aq (μ) = O
+
+ N ∆0d(G2 + σ2)
+
+q(1 − ρ2)2σ2T
+
+
+
++ higher-order smoothing terms . (128) Combining (124), (127), and (128) gives 
+
+RT ≤ O 
+
+r ∆0dσ 2
+
+N T 
+
+!
+
++ O
+
+ 1
+
+T
+
+
+
++ O
+
+ N ∆0d(G2 + σ2)
+
+q(1 − ρ2)2σ2T
+
+
+
+. (129) The same public coordinates are used across agents, so worker averaging removes independent oracle noise but not sparse-coordinate sampling itself. A.19 PARAMETER CHOICE 
+
+The smoothing radius μ controls finite-difference bias, the stepsize η balances descent against stochastic and network error, and the sparsity q controls communication and coordinate refresh. For a central-difference estimator with a third-order smoothness bound, the bias scales as 
+
+B2 
+
+> μ
+
+= O(μ4d2q2). (130) The dependence on q comes from ∥ut∥4 = q2 and the scaling factor d/q used to keep the sparse estimator unbiased to first order. If q is increased while μ is held fixed, the finite-difference truncation 24 Preprint error can grow. The canonical theoretical choice therefore sets 
+
+μ = Θ 
+
+ 1
+
+√dq T 1/4
+
+
+
+, (131) which keeps (130) at order T −1. The experimental values of μ are fixed separately to accommodate loss scale, minibatch noise, and numerical precision. The theoretical scaling prescribes a smaller radius as q or d increases. The stepsize has two competing constraints. The smooth descent step requires 
+
+η ≤ c(Ld )−1 (132) for a universal constant c. The stochastic rate suggests the larger balancing choice 
+
+η ≍
+
+r N ∆0
+
+dσ 2T , (133) whenever this value satisfies (132). In high-dimensional full-model tuning, the stability constraint can be much more restrictive than the formal stochastic balancing rule. This is consistent with the Qwen full-model study: the estimator is multiplied by d/q , so a learning rate that is harmless in a low-dimensional LoRA subspace can be unstable when the trainable coordinate set has billions of dimensions. The sparsity level q creates the main design tradeoff. Per round, larger q improves coordinate coverage and reduces the sparse-consensus factor d/q , but it also increases the value payload linearly. Under a fixed directed-link budget B, the number of affordable rounds is approximately 
+
+T (q) ≈ B
+
+qB val 
+
+. (134) Substitution into (214) cancels the explicit 1/q factor in the network term. The remaining displayed terms increase with q when the other constants and the prescribed horizon-dependent parameters are held fixed. This bound therefore favors smaller supports on communication alone; it does not select an interior optimum. Practical selection also accounts for the two forward queries per round, their latency, and finite-difference precision. For iid uniform supports at a node, coordinate exposure is measured by τ = qT /d . For any fixed coordinate j,
+
+E X
+
+> t<T
+
+1{j ∈ St} = qT d , Pr {j / ∈ ∪ t<T St} = (1 − q/d )T . (135) The first identity sums the activation probabilities; the second uses independence across rounds. Hence d/q is the mean waiting time, not a deterministic coverage period. At a fixed value-only budget, τ ≈ B /(dB val ), independent of q to first order. The support-size sweep in Table 9 compares the resulting optimization trajectories at matched bits. The graph parameter ρ enters through the disagreement recursion, producing (1 − ρ2)−2 in the bound. The one-step witness in Appendix A.15 establishes the q/d contraction factor; it does not establish sharpness of the full spectral dependence. Sparse momentum retains information between coordinate activations. Theorem 5 gives its convergence guarantee, and Appendix B.10 tests the interaction between its step size and query correlation. A.20 CONVERGENCE WITH SPARSE MOMENTUM 
+
+The finite difference and local update use the current mixing support. We apply contraction to the pre-query state and bound the resulting update separately. This argument covers global support, independent supports on matched edges, and a common support on all matched edges. Write At for the linear mixing operator and Π = I − N −111 ⊤. Each At preserves the average, commutes with Π, and is nonexpansive in Frobenius norm. Suppose that for an integer h ≥ 1 and 
+
+γ ∈ (0 , 1] , every block satisfies 
+
+E∥A kh +h−1 · · · A kh Z∥2 
+
+> F
+
+| F kh 
+
+ ≤ (1 − γ)∥Z∥2 
+
+> F
+
+(1⊤Z = 0) , (136) for every Fkh -measurable Z. The block’s supports and matching schedule are independent of the state at its start. Their dependence on subsequent within-block iterates is handled explicitly below. 25 Preprint Every node is active, and its rank-q projector Pi,t is conditionally uniform given the past. Put p = q/d 
+
+and aβ = β/ (1 − β).
+
+Theorem 5. Under Assumptions 1, 3, and 4, consider either global or perfect-matching ZO-COSMO with (3) , common initialization, and zero initial momentum. If (136) holds, then for any constant 
+
+η > 0, μ > 0, and 0 ≤ β < 1,
+
+1
+
+T
+
+X
+
+> t<T
+
+E∥∇ F (¯ xt)∥2 ≤ O ∆0
+
+ηT + LηM 2node + B2 
+
+> μ
+
++ L2η2M 2node 
+
+"
+
+h2
+
+γ2 + a2
+
+> β
+
+p
+
+#! 
+
+. (137) 
+
+The hidden constant is numerical. Choosing η = Θ( T −1/2) and μ = Θ(( dq )−1/2T −1/4) yields vanishing average stationarity for fixed problem parameters, h, γ , and β. A directed-link or per-node budget is incorporated by substituting the number of rounds affordable under that protocol’s actual payload. Proof. Let Gt, M t, V t stack the gradient estimates, stored momentum, and applied directions. On node i, the update is 
+
+mi,t +1 = ( I − Pi,t )mi,t + βP i,t mi,t + (1 − β)ˆ gi,t , vi,t = Pi,t mi,t +1 . (138) Since Pi,t ˆgi,t = ˆ gi,t , rearranging gives the exact identity 
+
+vi,t = ˆ gi,t − aβ (mi,t +1 − mi,t ). (139) This identity retains the inactive entries of mi,t and requires no independence between the query and the projector. First control the moments. Orthogonality of active and inactive coordinates and convexity of the squared norm give 
+
+E∥mi,t +1 ∥2 ≤ [1 − (1 − β)p]E∥mi,t ∥2 + (1 − β)M 2node , (140) 
+
+E∥vi,t ∥2 ≤ βp E∥mi,t ∥2 + (1 − β)M 2node . (141) Here only the old momentum is conditioned on the past; E∥Pi,t mi,t ∥2 = pE∥mi,t ∥2. Proposition 3 bounds the fresh estimate, including its dependence on the current support. Starting from zero momentum, induction proves 
+
+E∥mi,t ∥2 ≤ M 2node /p, E∥vi,t ∥2 ≤ M 2node , E∥¯gt∥2 ≤ M 2node . (142) The last bound follows from Jensen’s inequality for both common and edge-local directions. It uses the per-node second moment, without a worker-averaging factor. Next bound disagreement. The actual recursion is 
+
+Xt+1 = At(Xt − ηV t). (143) Over a block, expand it as 
+
+ΠXkh +h = Akh +h−1 · · · A kh ΠXkh − η
+
+> h−1
+
+X
+
+> s=0
+
+Akh +h−1 · · · A kh +sΠVkh +s. (144) Nonexpansiveness and ∥ Ph−1 
+
+> s=0
+
+bs∥2 ≤ h P 
+
+> s
+
+∥bs∥2 bound the normalized expected squared norm of the second term by η2h2M 2node . This bound is pathwise before expectation and remains valid when 
+
+Vkh +s depends on any of the block’s supports. Apply (136) only to the first term. For γ < 1, Young’s inequality with α = γ/ [2(1 − γ)] yields 
+
+Ekh +h ≤ (1 − γ/ 2) Ekh + 3η2h2M 2node 
+
+γ . (145) If γ = 1 , the homogeneous term has zero second moment and the same inequality follows directly. Common initialization gives Ekh ≤ 6η2h2M 2node /γ 2. Expanding a partial block of length r < h and using the same norm bound gives, including the final incomplete block, 
+
+sup 
+
+> t<T
+
+Et ≤ Cη 2h2M 2node /γ 2. (146) Finally, define the virtual network average 
+
+zt = ¯ xt − ηa β ¯mt. (147) 26 Preprint Average preservation and (139) imply zt+1 = zt − η¯gt exactly, with z0 = ¯ x0. The conditional mean of ¯gt is N −1 P 
+
+> i
+
+∇Fi(xi,t ) + ¯bt, where ∥¯bt∥ ≤ Bμ. Smoothness, Jensen’s inequality, and (142) therefore imply 
+
+E ∥E[¯ gt | F t] − ∇ F (zt)∥2 ≤ CL 2Et + CL 2η2a2 
+
+> β
+
+M 2node /p + CB 2
+
+> μ
+
+. (148) Applying smooth descent at zt, and using ⟨a, b ⟩ ≥ ∥ a∥2/2 − ∥ a − b∥2/2, gives 
+
+EF (zt+1 ) ≤ EF (zt) − η
+
+2 E∥∇ F (zt)∥2 + CηL 2Et + CηB 2
+
+> μ
+
++ CL 2η3a2 
+
+> β
+
+M 2node /p + Lη 2
+
+2 M 2node . (149) Sum over t < T , use F (zT ) ≥ F ∗, and divide by ηT / 2. The inequality 
+
+E∥∇ F (¯ xt)∥2 ≤ 2E∥∇ F (zt)∥2 + 2 L2η2a2 
+
+> β
+
+M 2node /p (150) then transfers the result back to the reported network average. Substitution of (146) proves (137). 
+
+Schedules covered by the bound. For global support, the frozen-input calculation gives h = 1 and 
+
+γ = p(1 − ρ2). For independent perfect matchings with λ2( ¯L) > 0, Theorem 2 gives h = 1 and 
+
+γ = pλ 2( ¯L)/2. A common uniform support on all edges of the matching gives the same pure-mixing expectation: independence across disjoint edge supports is not needed for that identity. The implemented ring schedule for even N ≥ 4 alternates two perfect matchings. Each phase is disconnected, so we bound contraction over two rounds. Write L0, L 1 for the matching Laplacians; 
+
+L0 + L1 = Lring . For a fixed centered Z, let Z′ = A0Z and define the expected energy drops 
+
+D0 = p
+
+2 tr( Z⊤L0Z), D1 = p
+
+2 E tr( Z′⊤ L1Z′). (151) The second support is fresh, so the total two-round drop is D0 + D1. Moreover, E∥Z − Z′∥2 
+
+> F
+
+= D0
+
+because the first mixing step is an orthogonal projection. Since ∥L1∥2 = 2 ,
+
+tr( Z⊤L1Z) ≤ 2E tr( Z′⊤ L1Z′) + 4 D0. (152) Consequently, p
+
+2 tr( Z⊤Lring Z) ≤ (1 + 2 p)D0 + 2 D1 ≤ 3( D0 + D1). (153) Thus (136) holds with 
+
+h = 2 , γ = pλ 2(Lring )6 = p
+
+3
+
+ 1 − cos(2 π/N ). (154) Substituting this block contraction into (137) establishes convergence for alternating-ring momentum updates with either common or independent edge supports. Direction-dependent moment bounds are developed in Appendix B.2. 
+
+## B CORRELATION AND OPTIMIZATION 
+
+We analyze Algorithm 2 without momentum, holding the matching schedule fixed across couplings. Correlated compression already distinguishes individual from aggregate estimator error (Szlendak et al., 2022). Here the same direction also determines which peer-state coordinates are mixed, so aggregate variance must be analyzed together with the disagreement update. The identities below describe that joint operation. In this section Dt = N −1∥ΠXt∥2 
+
+> F
+
+is the instantaneous state disagreement; its expectation is the Et
+
+used in the main convergence analysis. B.1 PROTOCOL AND COUPLINGS 
+
+Let N = 2 m nodes maintain xi ∈ Rd. A perfect matching M is sampled independently of the states. Each pair e = {i, j } uses a uniform q-coordinate support Se, signs ϵe, and 
+
+Pe = diag( 1Se ), ue = Peϵe, De = dq ueu⊤ 
+
+> e
+
+, p = qd . (155) Both endpoints use the same ue. Across distinct pairs we consider: 27 Preprint 1. G: one common support and one common sign vector; 2. S: one common support, with independent sign vectors across pairs; 3. I: independent supports and sign vectors across pairs. The public seed, round counter, and unordered edge identifiers generate all three choices without recurring support metadata. Each node evaluates 
+
+ˆgi = dqFi(xi + μu e) − Fi(xi − μu e)2μ ue, yi = xi − ηˆgi, (156) and sends q ordered values of yi to its matched peer. The endpoints average those coordinates and retain their own remaining entries. Every variant therefore uses two optimization queries and qB val 
+
+outgoing value bits per node per round. Initial seed setup is separate. Each run keeps its coupling fixed; support and sign draws are fresh at every round. B.2 CONDITIONAL MOMENTS 
+
+Fix the states and matching before drawing directions. Put 
+
+ae = ∇Fi(xi) + ∇Fj (xj )2 , ¯a = 1
+
+m
+
+X
+
+> e
+
+ae = 1
+
+N
+
+X
+
+> i
+
+∇Fi(xi), H2 
+
+> M
+
+= 1
+
+m
+
+X
+
+> e
+
+∥ae − ¯a∥2 .
+
+(157) For the ideal directional estimates let ve = Deae and ¯v = m−1 P 
+
+> e
+
+ve. Define 
+
+Vs = E ∥¯v − ¯a∥2 , Us = 1
+
+m
+
+X
+
+> e
+
+E ∥ve − ¯v∥2 , s ∈ { G, S, I}. (158) Here Us measures disagreement injected by the applied pair updates, not the current state disagree-ment. For 1 ≤ q ≤ d, the three couplings satisfy 
+
+Vs = αs ∥¯a∥2 + τsH2 
+
+> M
+
+, (159) 
+
+Us = ( d − 1 − αs) ∥¯a∥2 + ( d − τs)H2 
+
+> M
+
+, (160) where 
+
+(αG, τ G) = ( d − 1, 0) ,
+
+(αS, τ S) = 
+
+ dq − 1 + d − d/q m , d − d/q m
+
+
+
+, (161) 
+
+(αI, τ I) = 
+
+ d − 1
+
+m , d − 1
+
+m
+
+
+
+.
+
+In particular, Vs + Us = ( d − 1) ∥¯a∥2 + dH 2 
+
+> M
+
+is independent of the coupling. 
+
+Proof. The sparse Rademacher identities give 
+
+EDe = I, D2 
+
+> e
+
+= dD e, E ∥Dea∥2 = d ∥a∥2 , E ∥(De − I)a∥2 = ( d − 1) ∥a∥2 .
+
+(162) Under G, ¯v = D¯a, so VG = ( d − 1) ∥¯a∥2. Under I, centered pair estimates are independent. Consequently 
+
+VI = d − 1
+
+m2
+
+X
+
+> e
+
+∥ae∥2 = d − 1
+
+m
+
+ ∥¯a∥2 + H2
+
+> M
+
+. (163) For S, condition first on the common projector P . Independence of the signs gives E[De | P ] = (d/q )P . The support component of the variance is 
+
+E ∥(( d/q )P − I)¯ a∥2 = ( d/q − 1) ∥¯a∥2 . (164) 28 Preprint The conditional sign fluctuations are independent across pairs and centered given P . Their averaged contribution is 
+
+1
+
+m2
+
+X
+
+> e
+
+E ∥(De − (d/q )P )ae∥2 = d − d/q m2
+
+X
+
+> e
+
+∥ae∥2 (165) 
+
+= d − d/q m
+
+ ∥¯a∥2 + H2
+
+> M
+
+. (166) The law of total variance proves the middle line of (161). Finally, the pathwise identity 
+
+1
+
+m
+
+X
+
+> e
+
+∥ve − ¯v∥2 = 1
+
+m
+
+X
+
+> e
+
+∥ve∥2 − ∥ ¯v∥2 (167) and (162) give Us = d(∥¯a∥2 + H2 
+
+> M
+
+) − ∥ ¯a∥2 − Vs.For d > 1 and m > 1, I has lower average-estimation error than G exactly when 
+
+H2 
+
+> M
+
+< (m − 1) ∥¯a∥2 . (168) Any decrease in Vs is an equal increase in Us. Thus a smaller average-estimator variance does not alone order the optimization trajectories. At q = 1 , G and S coincide at the level of De because the sign cancels. At q = d, S and I have the same operator law because the support is fixed. For N = 2 ,all variants have the same law because there is only one pair. If d = 1 , every De = 1 and all Vs
+
+vanish. B.3 THE COUPLED MIXING STEP 
+
+Stack states as rows of X and let Π = I − N −111 ⊤. With Le = ( ei − ej )( ei − ej )⊤, the mixing operator is 
+
+AX = X − 12
+
+X
+
+> e∈M
+
+LeXP e. (169) Disjoint edges imply that A is an orthogonal projection in the Frobenius inner product. It preserves the average and commutes with Π.Let V have row ve at both endpoints of e. The actual ideal-direction update is 
+
+X+ = AX − ηV. (170) This follows by mixing the two local estimates: averaging De∇Fi(xi) and De∇Fj (xj ) gives Deae.Because the two rows of V agree within every pair, 
+
+AV = V, ⟨ΠAX, ΠV ⟩F = ⟨ΠX, ΠV ⟩F . (171) No independence between V and the query–mixing mask is used here. 
+
+Proposition 4. For fixed X, M , define ¯x = N −1 P 
+
+> i
+
+xi, D = N −1 ∥ΠX∥2 
+
+> F
+
+, and CM =
+
+N −1 P
+
+> e={i,j }
+
+⟨xi + xj − 2¯ x, a e⟩. Under the ideal-direction update, 
+
+ED+ = D − p
+
+2N
+
+X
+
+> {i,j }∈ M
+
+∥xi − xj ∥2 − 2ηC M + η2Us. (172) 
+
+Proof. Orthogonality gives the exact pure-mixing energy drop 
+
+∥ΠAX∥2 
+
+> F
+
+= ∥ΠX∥2 
+
+> F
+
+− 12
+
+X
+
+> e
+
+∥Pe(xi − xj )∥2 .
+
+Take its support expectation, expand (170), and apply (171). Since Eve = ae, the cross term is CM .The normalized update energy is precisely Us.Equation (172) separates pure mixing, gradient alignment, and update disagreement. Pair constancy determines the cross term while retaining the shared query–mixing mask. Proposition 7 gives the moments with stored momentum, and Theorem 5 proves its convergence. 29 Preprint B.4 GRAPH AND OBJECTIVE ASSUMPTIONS 
+
+Assumption 5. Each deterministic objective Fi is L-smooth, L > 0, and F = N −1 P 
+
+> i
+
+Fi satisfies 
+
+F ≥ F ∗ > −∞ . For all x,
+
+1
+
+N
+
+X
+
+> i
+
+∥∇ Fi(x) − ∇ F (x)∥2 ≤ ζ2. (173) 
+
+Assumption 6. For every used direction and point, the central-difference remainder obeys 
+
+|Fi(x + μu ) − Fi(x − μu ) − 2μ∇Fi(x)⊤u| ≤ (L3/3) μ3 ∥u∥3 . (174) Here the objectives are deterministic and nonconvex, with uniformly bounded gradient heterogeneity and unrestricted absolute gradients. Theorem 4 instead uses the stochastic-oracle assumptions from Section 4. Matchings are independent draws from a fixed state-independent distribution on perfect matchings. Write 
+
+¯L = EM
+
+X
+
+> e∈M
+
+Le, χ = 1 − λ2( ¯L)2 < 1, γ = pλ 2( ¯L)2 = p(1 − χ) > 0. (175) Because matching Laplacians have spectrum in [0 , 2] , 0 ≤ χ < 1. With Ft containing only past randomness, Xt is fixed when the current matching and directions are sampled. The pure-mixing contraction therefore applies to Xt, not to a mask-dependent post-query state. There is a second role for the matching spectrum. Let G stack the current local gradients and ¯a be their average. Pair averaging all coordinates uses the projection TM = I − 12
+
+P 
+
+> e
+
+Le. Hence 
+
+EM H2 
+
+> M
+
+= 1
+
+N tr  (Π G)⊤(I − ¯L/ 2)Π G
+
+≤ χN
+
+X
+
+> i
+
+∥∇ Fi(xi) − ¯a∥2 ≤ 2χ(L2D + ζ2). (176) The last inequality uses the network gradient as a candidate center, smoothness, and (173). Also 
+
+∥¯a − ∇ F (¯ x)∥2 ≤ L2D, ∥¯a∥2 ≤ 2 ∥∇ F (¯ x)∥2 + 2 L2D. (177) On complete graphs, uniform perfect matchings give χ = ( N − 2) /(2( N − 1)) . On even rings with independently sampled matching phases, χ = (1 + cos(2 π/N )) /2. The Qwen ring uses deterministic alternation, whose two-round contraction is proved in Appendix A.20. B.5 A C ORRELATION -D EPENDENT CORE RATE 
+
+For a fixed coupling s, abbreviate α = αs, τ = τs and define 
+
+r = d − 1 − α, J = χ(d − τ + 2 /γ ), K = r + J, Bμ = L3μ2dq 
+
+6 . (178) 
+
+Theorem 6. Under Assumptions 5–6 and (175) , run the two-query matching core with common initialization, fixed coupling, and constant η, μ > 0. If 
+
+η ≤ min 
+
+ 18L(1 + α + τ χ ) ,
+
+√γ
+
+16 L√K
+
+
+
+, (179) 
+
+where the second restriction is omitted for K = 0 , then with ∆0 = F (¯ x0) − F ∗,
+
+1
+
+T
+
+X
+
+> t<T
+
+E ∥∇ F (¯ xt)∥2 ≤ O 
+
+ ∆0
+
+ηT + Lητ χζ 2 + η2L2Jγ ζ2
+
++
+
+
+
+1 + η2L2
+
+γ (1 + γ−1)
+
+
+
+B2
+
+> μ
+
+
+
+. (180) For fixed problem and graph parameters, η = Θ( T −1/2) and μ = Θ(( dq )−1/2T −1/4) give an 
+
+O(T −1/2) bound. G has τ = 0 : taking η = Θ( T −1/3) and μ = Θ(( dq )−1/2T −1/6) yields 30 Preprint 
+
+O(T −2/3). The step condition (179) holds for sufficiently large horizons. These are upper bounds; no matching lower bound is established for S or I. For a nominal per-node value-payload budget B, substitute T = ⌊B /(qB val )⌋ whenever T ≥
+
+1. The couplings have identical payloads and round counts, so (180) isolates their optimization differences. The bound uses real-valued updates, omits quantization error, and retains dependence on 
+
+d, q, N, L, γ, χ, ζ .B.5.1 PROOF OF THEOREM 6Condition on Ft and suppress t. Taylor’s bound gives 
+
+ˆgi = De∇Fi(xi) + ei, ∥ei∥ ≤ Bμ. (181) After pair averaging the applied update has identical rows Deae + re at the two endpoints, where 
+
+re = ( ei + ej )/2 and ∥re∥ ≤ Bμ. Thus 
+
+X+ = AX − η(V + R), A(V + R) = V + R, ¯x+ = ¯ x − η(¯ v + ¯ r). (182) The pair-invariance identity holds for the residual as well, even though it depends on the direction. Let g = ∇F (¯ x). Equations (177) and (181) imply 
+
+E⟨g, ¯v + ¯ r⟩ ≥ 34 ∥g∥2 − 2L2D − 2B2
+
+> μ
+
+. (183) Indeed the conditional mean error from g has squared norm at most 2L2D + 2 B2
+
+> μ
+
+, and ⟨g, e ⟩ ≥ − ∥ g∥2 /4 − ∥ e∥2. By Proposition 1, ∥¯r∥ ≤ Bμ, and (176), 
+
+E ∥¯v + ¯ r∥2 ≤ 4(1 + α) ∥g∥2 + 4 L2(1 + α + τ χ )D + 4 τ χζ 2 + 2 B2
+
+> μ
+
+. (184) Smooth descent and the first condition in (179) now give 
+
+EF (¯ x+) ≤ F (¯ x) − η
+
+2 ∥g∥2 + 94 ηL 2D + 2 Lη 2τ χζ 2 + 3 ηB 2
+
+> μ
+
+. (185) Here Lη ≤ 1/8, the gradient coefficient is at most −3η/ 4 + 2 Lη 2(1 + α) ≤ − η/ 2, and the disagreement coefficient is at most 2ηL 2(1 + 1 /8) = 9 ηL 2/4.For disagreement, expand the squared norm of the actual update. Apply pure-mixing contraction only to X, then apply pair invariance to the cross term. The ideal cross term has magnitude at most √DpEM H2 
+
+> M
+
+; the residual contributes at most Bμ
+
+√D. Young’s inequality separately bounds each term by γD/4 plus 4η2/γ times its corresponding squared magnitude. Also E ∥Π( V + R)∥2 
+
+> F
+
+/N ≤
+
+2EM Us + 2 B2
+
+> μ
+
+. Consequently, 
+
+ED+ ≤ (1 − γ/ 2) D + 2 η2r ∥¯a∥2 + 2 η2(d − τ + 2 /γ )EM H2 
+
+> M
+
++ η2(2 + 4 /γ )B2
+
+> μ
+
+≤ (1 − γ/ 2 + 4 η2L2K)D + 4 η2r ∥g∥2 + 4 η2Jζ 2 + η2(2 + 4 /γ )B2
+
+> μ
+
+. (186) The second condition in (179) implies η2L2K ≤ γ/ 256 ; in particular the coefficient on D is at most 
+
+1 − γ/ 4.Use the potential 
+
+Φt = F (¯ xt) + 12 ηL 2
+
+γ Dt. (187) Adding the weighted form of (186) to (185) absorbs the disagreement term. Since r ≤ K,
+
+48 η3L2r/γ ≤ 3η/ 16 ≤ η/ 4. Dropping the remaining negative disagreement term gives 
+
+E[Φ t+1 | F t] ≤ Φt − η
+
+4 ∥∇ F (¯ xt)∥2 + 2 Lη 2τ χζ 2 + 48 η3L2Jγ ζ2
+
++
+
+
+
+3η + 12 η3L2
+
+γ (2 + 4 /γ )
+
+
+
+B2
+
+> μ
+
+. (188) 31 Preprint Take expectations, sum over t < T , and use Φ0 = F (¯ x0) and ΦT ≥ F ∗. Division by ηT / 4 gives the explicit bound 
+
+1
+
+T
+
+X
+
+> t<T
+
+E ∥∇ F (¯ xt)∥2 ≤ 4∆ 0
+
+ηT + 8 Lητ χζ 2 + 192 η2L2Jγ ζ2
+
++
+
+
+
+12 + 48 η2L2
+
+γ
+
+
+
+2 + 4
+
+γ
+
+ 
+
+B2
+
+> μ
+
+. (189) This proves (180). No uniform bound on ∥∇ Fi(xi)∥ was used. B.6 A Q UADRATIC CANCELLATION EXAMPLE 
+
+The trajectory experiment uses 
+
+Fi(x) = 12 x⊤Hx + b⊤ 
+
+> i
+
+x, H = diag( h1, . . . , h d) ≻ 0, X
+
+> i
+
+bi = 0 . (190) Then F (x) = x⊤Hx/ 2 and ζ2 = N −1 P 
+
+> i
+
+∥bi∥2. Central differences are exact for every μ > 0 in ideal arithmetic. 
+
+Proposition 5. For G on (190) , the network average satisfies 
+
+¯xt+1 = ¯ xt − ηD tH ¯xt (191) 
+
+regardless of the matching sequence and the individual linear terms. At the consensus optimum 
+
+xi = 0 , a single step of coupling s instead has E ∥¯x+∥2 = η2τsEM H2 
+
+> M
+
+.Proof. Average preservation and a common Dt give N −1 P 
+
+> i
+
+ˆgi = Dt(H ¯xt + N −1 P 
+
+> i
+
+bi) = 
+
+DtH ¯xt. At consensus zero, ¯a = 0 , so Proposition 1 gives the second assertion. Shared curvature makes the G average trajectory identical across these heterogeneity levels and topologies. Proposition 6 below derives the residual when local Hessians differ, and Proposition 7 adds oracle noise and momentum. B.7 MECHANISM EXPERIMENTS 
+
+The configuration was fixed before training and archived with a timestamp and source hashes. There are N = 8 nodes, d = 32 , q = 4 , eight seeds, three couplings, two topologies, three heterogeneity levels, and two step sizes: 288 runs. Each uses 1600 two-query rounds and 3200 optimization queries per node. The bit axis charges a nominal 32 bits per value, or 204800 bits per node. Computation uses NumPy double precision without packet quantization or physical transfer. All runs use the deterministic core, fixed parameters, and unclipped updates. The eigenvalues of H in (190) range geometrically from 1 to 4. Gaussian bi are centered and scaled to ζ ∈ { 0, 0.5, 2}, and all nodes start from d−1/21. Public directions and matchings are generated independently of these linear terms. Ring phases are independent fair draws at each round, rather than deterministic alternation. Within every comparison, supports/signs are the only protocol change. Objective and gradient diagnostics are evaluation-only and do not enter the update. The step η = 10 −4 satisfies (179) for every reported coupling and topology. The larger η = 0 .004 
+
+tests behavior outside that sufficient condition. All runs at both steps are finite and included in the results. For the frozen-state study, ∥¯a∥ = 1 and H2 
+
+> M
+
+takes six specified values. Each seed averages 1500 direction draws for each coupling; gradients are held fixed, so these are random-matrix moment diagnostics rather than optimization-query comparisons. Figure 5 overlays the exact formulas and measured means. At H2 
+
+> M
+
+= 0 , the predicted G/S/I average variances are 31 , 13 , and 7.75 ; at 
+
+H2 
+
+> M
+
+= 15 they are 31 , 103 , and 124 . All three intersect at H2 
+
+> M
+
+= m−1 = 3 , with the complementary ordering in disagreement injection. At η = 0 .004 , nonzero linear heterogeneity produces an optimization floor for S and I, while G retains the cancellation in (191). For ζ = 2 on the complete graph, the final objective is (1 .160 ±
+
+32 Preprint 
+
+Figure 5: Exact moment curves and eight-seed Monte Carlo means ± standard deviation. The dotted line is the predicted crossover. 
+
+0.421) × 10 −7 for G and 0.01118 ± 0.00309 for I. At zero heterogeneity, the final means are close despite the different frozen-state variances. The separation in this common-curvature example is driven by heterogeneity cancellation. 
+
+Figure 6: Objective gap at η = 0 .004 (outside the sufficient step certificate). Curves are eight-seed means and bands are one standard deviation. 
+
+33 Preprint 
+
+Figure 7: State disagreement for the same eight-seed runs. 
+
+Figure 8: Objective gap at η = 10 −4, which satisfies the sufficient step condition for all displayed settings. 
+
+34 Preprint 
+
+Figure 9: State disagreement at the certified step. Training plots use a symmetric-log scale, linear below 10 −5;standard-deviation bands are truncated at zero for nonnegative metrics. 
+
+B.8 CURVATURE HETEROGENEITY 
+
+The common-Hessian example isolates exact cancellation. With different local curvatures, the uncancelled part can be identified rather than absorbed into an absolute gradient bound. Let 
+
+Fi(x) = 12 x⊤Hix + b⊤ 
+
+> i
+
+x, H = 1
+
+N
+
+X
+
+> i
+
+Hi, b = 1
+
+N
+
+X
+
+> i
+
+bi, δ2 
+
+> H
+
+= 1
+
+N
+
+X
+
+> i
+
+∥Hi − H∥2op ,
+
+where the Hessians are symmetric. Write D = N −1 P 
+
+> i
+
+∥xi − ¯x∥2.
+
+Proposition 6. For arbitrary node states, 
+
+¯a = ∇F (¯ x) + rX , rX = 1
+
+N
+
+X
+
+> i
+
+(Hi − H)( xi − ¯x), ∥rX ∥2 ≤ δ2 
+
+> H
+
+D. (192) 
+
+Under G without momentum or oracle noise, the network-average step is ¯x+ = ¯ x−ηD (∇F (¯ x)+ rX )
+
+and 
+
+E∥Dr X ∥2 = d∥rX ∥2 ≤ dδ 2 
+
+> H
+
+D. (193) 
+
+Proof. Expand Hixi around ¯x. Since P
+
+> i
+
+(xi − ¯x) = 0 ,
+
+1
+
+N
+
+X
+
+> i
+
+(Hixi + bi) = H ¯x + b + 1
+
+N
+
+X
+
+> i
+
+(Hi − H)( xi − ¯x).
+
+The triangle and Cauchy–Schwarz inequalities give 
+
+∥rX ∥ ≤ 1
+
+N
+
+X
+
+> i
+
+∥Hi − H∥op ∥xi − ¯x∥ ≤ δH
+
+√D.
+
+The common direction commutes with averaging, and ED2 = dI gives (193). The averaging identity holds with different Hessians, with a residual controlled by state disagreement. Shared curvature or consensus gives rX = 0 . This identity applies to arbitrary quadratic states; applying Theorem 6 additionally requires its uniform gradient-heterogeneity assumption over Rd.B.9 ORACLE NOISE AND STORED MOMENTUM 
+
+Condition on the node states, stored local momenta, and current matching before drawing directions and oracle samples. For e = {i, j }, retain ae from (157) and put ce = ( mi + mj )/2, ¯c = m−1 P 
+
+> e
+
+ce,35 Preprint and θ = 1 − β, with 0 ≤ β < 1. Suppose local gradient errors ϵi are centered, mutually independent, and independent of the current directions under this conditioning. Define 
+
+σ2 
+
+> X
+
+= 1
+
+N
+
+X
+
+> i
+
+E∥ϵi∥2, ϵe = ( ϵi + ϵj )/2, p = q/d. 
+
+Neither equal node variances nor isotropic noise is needed. The ideal applied pair update and its network-average conditional mean are 
+
+we = βP ece + θD e(ae + ϵe), ν = E ¯w = βp ¯c + θ¯a. (194) This is the sparse-momentum rule (3) after mixing. Inactive memory entries are retained, not decayed. For a, c ∈ Rd, define the nonnegative quadratic form 
+
+Ψβ (a, c ) = β2p(1 − p)∥c∥2 + θ2(d − 1) ∥a∥2 + 2 βθ (1 − p)⟨c, a ⟩. (195) The cross term is essential: the stored direction and fresh query use the same support. 
+
+Proposition 7. With V β,σ s = E∥ ¯w − ν∥2, the three couplings satisfy 
+
+V β,σ  
+
+> G
+
+= Ψ β (¯ a, ¯c) + θ2dσ 2 
+
+> X
+
+/N, (196) 
+
+V β,σ  
+
+> I
+
+= 1
+
+m2
+
+X
+
+> e
+
+Ψβ (ae, c e) + θ2dσ 2 
+
+> X
+
+/N, (197) 
+
+V β,σ  
+
+> S
+
+= p(1 − p)∥β¯c + θ¯a/p ∥2 + θ2(d − 1/p )
+
+m2
+
+X
+
+> e
+
+∥ae∥2 + θ2dσ 2 
+
+> X
+
+/N. (198) 
+
+For U β,σ s = m−1 P 
+
+> e
+
+E∥we − ¯w∥2,
+
+V β,σ s + U β,σ s = 1
+
+m
+
+X
+
+> e
+
+β2p∥ce∥2 + θ2d∥ae∥2 + 2 βθ ⟨ce, a e⟩ + θ2dσ 2
+
+> X
+
+2 − ∥ ν∥2. (199) 
+
+Proof. Because P D = D, EP = pI , and ED = I, we have 
+
+E(P − pI )2 = p(1 − p)I, E(D − I)2 = ( d − 1) I, E[( P − pI )( D − I)] = (1 − p)I. 
+
+Expanding the squared norm of β(P − pI )c + θ(D − I)a proves (195) and its nonnegativity. For G, both random maps are common, so the noiseless average is βP ¯c + θD ¯a. For I, centered pair updates are independent; the variance of their average is the sum of variances divided by m2. These observations give the noiseless parts of (196)–(197). For S, condition first on the common P . The conditional mean of the noiseless average is P (β¯c +
+
+θ¯a/p ). Its variance is the first term of (198). Conditional sign fluctuations are independent across pairs. Their variance is θ2(d − 1/p )m−2 P 
+
+> e
+
+∥ae∥2, by the same conditional calculation as in Appendix B.2. Oracle cross terms vanish when conditioned on all directions. In every coupling, 
+
+E θN
+
+X
+
+> i
+
+De(i)ϵi
+
+> 2
+
+= θ2
+
+N 2
+
+X
+
+> i
+
+E[ϵ⊤ 
+
+> i
+
+D2
+
+> e(i)
+
+ϵi] = θ2dσ 2
+
+> X
+
+N .
+
+The first equality uses independence across nodes even when their directions coincide; the second uses independence from directions and ED2 
+
+> e
+
+= dI . The oracle component is also orthogonal in expectation to the noiseless update. Finally, 
+
+1
+
+m
+
+X
+
+> e
+
+E∥we∥2 = 1
+
+m
+
+X
+
+> e
+
+[β2p∥ce∥2 + θ2d∥ae∥2 + 2 βθ ⟨ce, a e⟩] + θ2dσ 2
+
+> X
+
+2 .
+
+Subtracting ∥ν∥2 and using the pathwise average/disagreement identity proves (199). In particular, at β = 0 , oracle noise adds dσ 2 
+
+> X
+
+/N to each average variance and dσ 2 
+
+> X
+
+(1 /2 − 1/N ) to each injection term. Sharing directions preserves cancellation of deterministic heterogeneity, not cancellation of independent oracle errors. 36 Preprint The momentum comparison is equally explicit. If HΨ = m−1 P 
+
+> e
+
+Ψβ (ae − ¯a, c e − ¯c), then 
+
+V β,σ  
+
+> I
+
+− V β,σ  
+
+> G
+
+= HΨ − (m − 1)Ψ β (¯ a, ¯c)
+
+m . (200) The comparison conditions on the same states and stored memories; both evolve differently along separate training trajectories. Finite differences introduce a controlled perturbation. Let ewe be the actual applied pair update under Assumption 4, with the same oracle sample used in the two queries. Let eVs = E∥ ew − E ew∥2. Then 
+
+∥E ew − ν∥ ≤ θB μ,
+
+qeVs −
+
+q
+
+V β,σ s ≤ θB μ. (201) Indeed, Taylor’s remainder bounds each local estimation error by Bμ. Pair and network averaging therefore bound the extra applied vector by θB μ. Centering cannot increase its second moment, and the reverse triangle inequality in L2 gives the second inequality. Stacking the actual applied pair vectors as rows of fW , pair constancy gives AfW = fW also holds. These formulas give the conditional moments for noisy sparse momentum with finite differences. Theorem 5 supplies the corresponding convergence guarantee. B.10 EXTENDED MECHANISM EXPERIMENTS 
+
+The follow-up study changes local curvature, oracle noise, and sparse momentum while preserving the matching and payload comparison. Its configuration and main-panel selection were fixed before training and archived with a timestamp and source hashes in results/correlation_v23/ protocol.json . All 1536 runs are retained. There are eight nodes and d = 32 coordinates, with q = 4 , μ = 10 −3, and 1600 rounds. Write 
+
+h = geomspace(1 , 4, d ). For each seed, a Gaussian matrix is centered by coordinate and divided by its largest absolute entry to obtain R, with N −1 P 
+
+> i
+
+Ri = 0 and |Rij | ≤ 1. We set 
+
+Hi = diag( hj (1 + ωR ij )) dj=1 , ω ∈ { 0, 0.6}.
+
+Thus all Hessians are positive, their average is fixed, and ω = 0 .6 introduces local curvature differences without changing the global objective. Gaussian linear terms are centered and scaled to N −1 P 
+
+> i
+
+∥bi∥2 = ζ2, with ζ ∈ { 0, 2}. Here ζ describes the linear terms, not a uniform gradient-heterogeneity bound for unequal Hessians. The oracle is fi(x; ϵi) = Fi(x) + ϵ⊤ 
+
+> i
+
+x, with ϵi ∼ N (0 , σ 2Id/d ). Samples are independent across nodes and rounds and reused within the two-point difference. They are paired across the compared couplings and parameters. The updates use the two function values, not analytic gradients; analytic quantities are recorded only for evaluation. Central differences are exact for these quadratic-plus-linear samples up to floating-point error. For each coupling, we test complete-graph uniform perfect matchings and independently sampled ring phases, eight seeds, both curvature settings, both linear-heterogeneity settings, and base steps 
+
+η0 ∈ { 0.001 , 0.004 }. Four update settings complete the grid: deterministic core (β, σ, η ) = (0 , 0, η 0);noisy core (0 , 0.5, η 0); noisy sparse momentum (0 .9, 0.5, η 0); and first-step-matched noisy momen-tum (0 .9, 0.5, 10 η0). The last choice makes (1 − β)η = η0, so its first update agrees with the noisy core for each realization when memory starts at zero. Subsequent updates need not agree. Every run uses 3200 optimization queries and a nominal 204800 outgoing bits per node. Computation is float64; values are charged at 32 bits without quantizing or transmitting packets. All runs remained finite, with no clipping, early stopping, or seed replacement. The measured residual satisfied (192) within numerical precision at every logged state. For ω = 0 .6, ζ = 2 , and η0 = 0 .004 , G remains below S and I at the same step under deterministic, noisy, and sparse-momentum updates (Figures 10–11). On the complete graph, the deterministic final objective is (2 .96 ± 1.13) × 10 −5 for G and (1 .34 ± 0.48) × 10 −2 for I. On the ring the G residual is larger, (1 .43 ± 0.49) × 10 −4, consistent with the loss of topology-independent cancellation when curvatures differ. The ordering also depends on step size. In the first-step-matched control at η = 0 .04 , G has a much larger final objective than I on both graphs. At the smaller base step, its first-step-matched η = 0 .01 
+
+37 Preprint retains the advantage when ζ = 2 . This dependence is compatible with (200), which compares conditional moments at a common state and memory, rather than complete trajectories. When ζ = 0 , the large deterministic advantage disappears (Figures 12–13), identifying heterogeneity as the source of the separation. Oracle noise raises the floor reached by G above its deterministic value. The eight-seed means and sample standard deviations for every configuration are in results/ correlation_v23/final_summary.csv , alongside raw trajectories, per-seed endpoints, and a validation audit. The archive contains objective and state-disagreement plots for all 16 combinations of graph, curvature, linear heterogeneity, and base step. The figures below include both momentum step-size choices.      
+
+> Figure 10: Unequal curvatures, ζ= 2 , complete graph. All panels use eight seeds; (d) increases the momentum step from 0.004 to 0.04 .
+
+38 Preprint 
+
+Figure 11: The same settings on iid ring matchings; (d) matches the first-update scale. 
+
+Figure 12: Unequal curvatures with zero linear heterogeneity on the complete graph. The pronounced heterogeneity-driven separation is absent. 
+
+39 Preprint   
+
+> Figure 13: Zero linear heterogeneity on the ring, eight-seed mean ±std. Bands are truncated at zero for the nonnegative objective gap.
+
+## C COMMUNICATION ACCOUNTING DETAILS 
+
+An indexed sparse method sends both values and coordinate identifiers; ZO-COSMO communicates only values after the public random seed is fixed. For a q-sparse update in dimension d, let 
+
+ℓd = ⌈log 2 d⌉ (202) be the number of bits needed to name a coordinate. The per-round directed-link costs are 
+
+CCOSMO = qB val , Cindexed = q(Bval + ℓd). (203) The fraction of an indexed sparse message spent only on coordinate identities is therefore 
+
+ridx (d, B val ) = ℓd
+
+Bval + ℓd
+
+. (204) The public-support design removes exactly this fraction of the sparse payload. The saving is modest for small dense floating-point messages, but it becomes dominant for high-dimensional models and for low-bit value quantization.                        
+
+> Table 2: Coordinate-identity overhead in indexed sparse communication. Setting Dimension dℓdBval = 32 Bval = 16 Bval = 8 Bval = 1
+> Qwen LoRA-scale experiment 2.52 ×10 622 40.7% 57.9% 73.3% 95.7% Qwen full-model study 6.53 ×10 933 50.8% 67.3% 80.5% 97.1%
+
+Table 2 quantifies the representation cost removed by index-free sparsity. In the Qwen full-model study, even with 32-bit values, an indexed sparse method spends slightly more than half of each sparse payload on coordinate names. If the value payload is quantized to 8 bits, the coordinate names become more than four fifths of the message. The same effect appears in LoRA-scale training, where the dimension is far smaller than full-model fine-tuning but still large enough that coordinate identifiers dominate low-bit sparse messages. 40 Preprint                    
+
+> Table 3: Representative directed-link payloads. Setting dqZO-COSMO Private-support / refresh cost Qwen LoRA-scale 32-bit values 2.52 M8,192 262 .1K bits ≥341 .6K entropy bound; 442 .4Kcoordinate list; 80 .6M dense Qwen full-model 32-bit values 6.53 B8,192 262 .1K bits ≥434 .6K entropy bound; 532 .5Kcoordinate list; 2.09 ×10 11 dense
+
+The entropy entries evaluate the lower bound qB val + log 2
+
+ dq
+
+ for a uniform private support. The coordinate-list entries give the implemented format. Together they distinguish the minimum support-description cost from the cost of explicit indices. C.1 PUBLIC RANDOMNESS AND THE COMMUNICATION OPERATOR 
+
+Shared randomness can encode different mathematical objects. Table 4 separates three decentralized uses. Here ¯δ is average degree, DG is graph diameter, and b = Bseed + Bscalar is the size of one seed–scalar update. Payload is the sum of packet bits crossing edges, divided by N ; sequential stages count the longest dependency chain within one optimization round.                    
+
+> Table 4: Payload and link stages for public-randomness protocols. Protocol Reconstructed object Destination Bits/node/round Link stages Global-support ZO-COSMO Current state slice Neighbors ¯δqB val 1
+> Edge-local ZO-COSMO Current state slice Matched peer qB val 1
+> Seed-scalar flooding (Kim & Lee, 2026) Local update Every node Ω(( N−1) b)≥DG
+
+Server-mediated methods send updates to a coordinator: DeComFL and MEERKAT reconstruct seed–scalar updates, while FeedSign aggregates seed–sign votes (Li et al., 2025; Ran et al., 2026; Cai et al., 2026). Table 4 compares peer-to-peer operators, whose destinations and dependency graphs differ from this server-mediated pattern. The flooding bound concerns delivery of every source packet to every node. Each of N distinct packets requires at least N − 1 packet-edge deliveries, giving N (N − 1) b network bits, or (N − 1) b
+
+per node; a diameter endpoint requires at least DG sequential links. Batching is allowed, but each original packet must reach every node; in-network aggregation is a different operator. SeedFlood uses this dissemination for all-gather-equivalent synchronization. Its SubCGE batches updates in a shared subspace, reducing application cost from O(N d ) to O(N + rd ) for subspace rank r (Kim & Lee, 2026). The table counts packet delivery separately from this application cost. A seed–scalar pair can be much smaller than q state values, making flooding attractive for small N or inexpensive multi-hop communication. Edge-local ZO-COSMO finishes in one link stage and keeps distinct local states, with constant per-node payload on a perfect matching. The support-locality experiment in Appendix D.2 measures the crossover at a common bit budget. C.2 SPARSE -M ESSAGE SERIALIZATION CHECK 
+
+We measure local encoding and decoding with contiguous 32-bit floating-point values. Indexed packets additionally use uint32 coordinates for Qwen LoRA and uint64 for full-model Qwen. These timings cover serialization only; network transfer is measured separately below.                   
+
+> Table 5: Sparse-message serialization check. Setting Value-only Indexed impl. Min. indexed Time ratio Qwen LoRA-scale 32 .0KiB 64 .0KiB 54 .0KiB 3.22 ×
+> Qwen full-model 32 .0KiB 96 .0KiB 65 .0KiB 4.04 ×
+
+The “Min. indexed” column is the ideal bit-packed cost q(32 + ℓd) rounded to bytes; the indexed implementation column is the ordinary contiguous-coordinate representation used by sparse tensor 41 Preprint code. The exact timing ratios are machine dependent, but the payload relation is not. Even under ideal bit packing, indexed sparse communication remains larger than the value-only message; under ordinary integer-coordinate serialization, the Qwen full-model indexed payload is three times the ZO-COSMO payload before any network overhead is counted. C.3 TWO -P ROCESS MESSAGE TRANSFER CHECK 
+
+We send LoRA-scale messages between two processes on the same host using PyTorch’s Gloo TCP backend. The sender transmits contiguous tensors and waits for a one-byte acknowledgement. Sparse messages are repeated 300 times and the dense message 30 times within each trial; method order rotates across 31 trials. Table 6 reports median exchange time, including the acknowledgement.                       
+
+> Table 6: Two-process transfer of Qwen LoRA-scale messages. Message Tensors Payload Median exchange Relative time ZO-COSMO value-only 132 .0KiB 127 .2μs1.00 ×
+> Indexed sparse 264 .0KiB 162 .8μs1.28 ×
+> Dense LoRA refresh 19.6MiB 2.69 ms 21 .16 ×
+
+Doubling the sparse payload increases median transfer time by 28% , indicating a substantial fixed-latency component. The dense refresh carries 308 × as many bits and takes 21 .16 × as long on this transport. We use payload bits for the method comparisons and report these same-host timings as a separate implementation measurement. C.4 AMORTIZED COST OF THE SHARED SEED 
+
+The value-only cost in (203) assumes that the public random seed has already been fixed. It is the per-round accounting for a repeated optimization run; the one-time overhead can be written separately. Let Bseed be the number of bits used to initialize the public pseudorandom generator and let Bsync (T )
+
+be the total number of bits used for occasional round-counter or resynchronization control messages over T rounds. The average directed-link payload of ZO-COSMO is then 
+
+¯CCOSMO (T ) = qB val + Bseed + Bsync (T )
+
+T . (205) This differs from (203) only by a term that vanishes with the number of optimization rounds. By contrast, an indexed sparse method pays coordinate identifiers every round: 
+
+¯Cindexed (T ) = qB val + qℓ d. (206) Seed setup is amortized across rounds, whereas coordinate lists recur in every message. For example, suppose a run uses a 128-bit seed and one 32-bit epoch counter every 100 rounds. Then 
+
+Bseed + Bsync (T )
+
+T ≤ 128 
+
+T + 0 .32 bits per round . (207) In the Qwen full-model setting with q = 8192 and 32-bit values, the value payload is 262 ,144 bits per round and the indexed coordinate payload is 270 ,336 bits per round. The seed and control overhead is therefore negligible relative to both the value payload and the repeated coordinate-identifier payload. The same accounting applies to balanced public schedules. An epoch seed suffices to regenerate the support without a coordinate list. After a missed round, the round id and seed recover the support, not the missed values or optimizer state; reliable delivery or explicit state recovery is still required. C.5 ZO-MARINA-TYPE BASELINE DEFINITION 
+
+ZO-MARINA-type alternates sparse ZO updates with periodic dense refreshes. The name refers to this communication pattern. MARINA itself uses compressed gradient differences and a variance-reduced estimator; the comparator averages independent two-query ZO updates and has no MARINA convergence guarantee. Algorithm 3 gives the two-worker Qwen implementation. On sparse rounds, each worker applies both decoded sparse updates, including overlaps. On dense rounds, it applies their full-vector average. Common initialization keeps the two replicas synchronized, 42 Preprint 
+
+Algorithm 3 ZO-MARINA-type for two-worker Qwen 
+
+Require: K, q, μ, η t, β ; initialize x1,0 = x2,0 and m1,0 = m2,0 = 0 
+
+1: for round t = 0 , 1, . . . , T − 1 do 
+
+2: Set qt = d if t mod K = 0 , and qt = q otherwise. 
+
+3: for i ∈ { 1, 2} do 
+
+4: Independently draw a size-qt support Si,t and Rademacher signs, defining ui,t .
+
+5: gi,t = dqt 
+
+> fi(xi,t +μu i,t ;ξi,t )−fi(xi,t −μu i,t ;ξi,t )2μ
+
+ui,t .
+
+6: Set Pi,t = diag( 1Si,t ) and update mi,t +1 by (3). 
+
+7: Send the active values of hi,t = Pi,t mi,t +1 to the other worker. 
+
+8: Include the coordinate list on sparse rounds; dense coordinates have fixed order. 
+
+9: end for 
+
+10: Both workers set xi,t +1 = xi,t − ηt 
+
+> 2
+
+(h1,t + h2,t ).
+
+11: end for 
+
+so this is an update-aggregation comparison. Dense query signs are independent across workers. The LoRA experiment uses K = 25 , with the first dense refresh at t = 0 .Each directed link carries q(Bval + ℓd) bits on sparse rounds and dB val bits on dense rounds. Over a complete refresh cycle, the average is 
+
+CMARINA = K − 1
+
+K q(Bval + ℓd) + 1
+
+K dB val . (208) For a finite horizon T ≥ 1, there are ⌈T /K ⌉ dense rounds, so the cumulative cost is 
+
+CT = ⌈T /K ⌉dB val + ( T − ⌈ T /K ⌉)q(Bval + ℓd). (209) With d = 2 ,523 ,136 , q = 8192 , and 32-bit values, the first dense packet costs 80 .740 Mbit per link. Extrapolating the same packet format to full-model Qwen gives about 2.09 ×10 11 bits per refresh. Seed-aware sparse protocols are evaluated separately. Equal-round comparisons fix the query count; fixed-budget comparisons also account for the afford-able horizon. When the first refresh exceeds the budget, the reported state is the initialization. C.6 COM -DSZO B ASELINE DEFINITION 
+
+Com-DSZO combines a two-point ZO estimator with error-compensated compressed consensus (Hua et al., 2026). We instantiate its published recursion with Top-k innovation compression. In matrix form, let Xt stack the node states, let bXt be the reconstructed state, let Bt accumulate disagreement, and let Qt be the compressed innovation. One round is 
+
+bXt+1 = bXt + ψQ t, (210) 
+
+Bt+1 = Bt + ψ(I − W )Qt, (211) 
+
+Xt+1 = Xt − γB t+1 − ηG ZO  
+
+> t
+
+, (212) 
+
+Qt+1 = Top q (Xt+1 − bXt+1 ). (213) The Rosenbrock problem is unconstrained, so the projection is the identity. We use the same two function evaluations and dense Rademacher ZO estimator as the dense baselines, ψ = 0 .5, γ = 0 .1,and η = 2 .5 × 10 −3. Top-q selects coordinates from the innovation, giving a message cost of 
+
+q(Bval + ℓd) bits. The baseline also stores dense reconstruction and disagreement arrays, bXt and Bt.This comparison tests adaptive compression with error compensation. The separate indexed control isolates representation cost by using the ZO-COSMO trajectory and charging its coordinate list. C.7 COMMUNICATION -B UDGET RATE 
+
+Under a directed-link budget B ≥ 2qB val , choose a horizon T = ⌊B /(qB val )⌋ satisfying Theorem 4, with its prescribed stepsize and smoothing radius. Let RCOSMO  
+
+> B
+
+denote the resulting averaged gradient norm. Then 
+
+RCOSMO  
+
+> B
+
+≤ O 
+
+
+
+∆0 + dσ 2
+
+N
+
+ r qB val 
+
+B + qB val 
+
+B + d2(G2 + σ2)Bval 
+
+(1 − ρ2)2B
+
+!
+
+. (214) 43 Preprint The communication-budget form of Theorem 4 follows by substituting the number of affordable rounds into the iteration bound. Let B denote the total number of transmitted bits per directed link. For ZO-COSMO, 
+
+TCOSMO =
+
+ B
+
+qB val 
+
+
+
+. (215) Using common initialization and the canonical smoothing choice, the simplified bound (19) has the schematic form 
+
+RT ≤ O 
+
+ a
+
+√T
+
+
+
++ O
+
+ 1
+
+T
+
+
+
++ O
+
+ bqT 
+
+
+
+, (216) where 
+
+a := ∆ 0 + dσ 2
+
+N , b := d2(G2 + σ2)(1 − ρ2)2 . (217) Substituting (215) into (216) gives 
+
+RCOSMO  
+
+> B
+
+≤ O a
+
+r qB val 
+
+B
+
+!
+
++ O
+
+ qB val 
+
+B
+
+
+
++ O
+
+ d2(G2 + σ2)Bval 
+
+(1 − ρ2)2B
+
+
+
+. (218) The network term is first-order independent of q after converting rounds to bits: larger supports mix more coordinates per round and consume proportionally more communication. The other displayed terms favor the additional rounds purchased by smaller supports. Appendix A.19 separates this prediction from query cost and finite-precision considerations in practical parameter selection. To isolate representation cost, consider transmitting the same q-sparse round with an explicit coordi-nate list. With the same value precision, the budget purchases 
+
+Tidx =
+
+ B
+
+q(Bval + ℓd)
+
+
+
+≈ TCOSMO 
+
+1 + ℓd/B val 
+
+. (219) Thus index metadata directly reduces the number of rounds available under the same bit budget. If the update sequence has the same iteration-wise bound and differs only in its encoding, the leading stochastic term is inflated by r
+
+1 + ℓd
+
+Bval 
+
+, (220) and the lower-order 1/T terms are inflated by 
+
+1 + ℓd
+
+Bval 
+
+. (221) These factors quantify the effect of encoding the same update sequence. For full-model Qwen with 32-bit values, (221) is 2.03 before any dense refresh is counted. Seed-aware sparse encodings provide a second value-only reference, as evaluated in the Qwen controls. The same calculation covers a mask refreshed every K rounds. A coordinate-list implementation has amortized multiplier 
+
+madapt (K) = 1 + ℓd
+
+KB val 
+
+, (222) while any zero-error code is lower bounded by 1 + H(S | R)/(KqB val ). For full-model Qwen, the coordinate-list factors are 2.03 , 1.10 , and 1.02 for K = 1 , 10 , 50 . Long mask reuse therefore makes metadata inexpensive when one stable subspace is adequate. ZO-COSMO addresses the complementary case in which supports continue to rotate for coordinate coverage and no data-dependent mask-selection state is maintained. For the ZO-MARINA-type baseline, combining (208) with the value-only ZO-COSMO cost gives the per-round cost multiplier 
+
+mMARINA = CMARINA 
+
+qB val 
+
+= K − 1
+
+K
+
+
+
+1 + ℓd
+
+Bval 
+
+
+
++ dKq . (223) The first term is the indexed sparse overhead; the second term is the amortized dense refresh. Under a fixed bit budget, ZO-COSMO can take approximately mMARINA times as many sparse rounds as this ZO-MARINA-type baseline. 44 Preprint               
+
+> Table 7: Round-cost multipliers relative to ZO-COSMO. Setting dqIndexed sparse multiplier ZO-MARINA-type multiplier, K= 25
+> Qwen LoRA-scale 2.52 ×10 68,192 1.69 ×13 .94 ×
+> Qwen full-model 6.53 ×10 98,192 2.03 ×≈3.19 ×10 4×
+
+The refresh cost in (223) grows as d/ (Kq ). The table uses the LoRA period K = 25 ; its full-model row extrapolates payload cost. In Qwen LoRA, the first dense packet exceeds the fixed comparison budget, so the corresponding entry reports initialization. Equal-round SST-2 results separately evaluate the trained refresh method with its full cumulative payload. 
+
+## D EXPERIMENTAL DETAILS AND REPRODUCIBILITY 
+
+We report all experiments using cumulative directed-link communication. For a target budget, each curve is evaluated at the latest logged checkpoint whose cumulative bit count does not exceed that budget. This avoids interpolating across different communication schedules. Sparse baselines that reveal their chosen coordinates are charged for both values and coordinate identifiers. ZO-COSMO is charged only for the transmitted values after the shared seed is fixed. For the ZO-MARINA-type baseline, we charge indexed sparse communication on ordinary rounds and the full dense vector on refresh rounds. D.1 FIXED -B UDGET EVALUATION PROTOCOL 
+
+Every run logs an iteration counter, a method name, a seed, the graph topology, the active support size q, the target metric, and the cumulative communication cost per node. Let r index a single method/seed/topology/ q run and let 
+
+(br, 0, m r, 0), . . . , (br,L r , m r,L r ) (224) be its logged cumulative-bit and metric pairs, sorted by br,ℓ . For a target budget B, the reported fixed-budget value is 
+
+bmr (B) = mr,ℓ ⋆ , ℓ⋆ = max {ℓ : br,ℓ ≤ B}. (225) If no checkpoint satisfies the budget, the run is excluded from that budget rather than extrapolated backwards. In the reported tables this case does not occur for the displayed budgets. The aggregate value is then the mean and standard deviation of bmr (B) over seeds: 
+
+¯m(B) = 1
+
+|R| 
+
+X
+
+> r∈R
+
+bmr (B), s(B)2 = 1
+
+|R| − 1
+
+X
+
+> r∈R
+
+  bmr (B) − ¯m(B)2. (226) The selected checkpoint lies within the budget. We use its measured value directly, without interpo-lating between different communication schedules. The per-node communication counter follows the graph. A directed message with payload cost C
+
+sent over every directed edge contributes approximately ¯dgraph C bits per node, where ¯dgraph is the average degree. The code records this value through the same accounting routine for every method. Thus a sparse value-only round, an indexed sparse round, and a dense refresh differ only through the payload formula: 
+
+Cvalue = qB val , Cindexed = q(Bval + ℓd), Cdense = dB val . (227) Fixed-budget plots use cumulative bits; equal-round controls show the corresponding optimization dynamics. Unless otherwise stated, sparse payloads use 32-bit values and momentum uses β = 0 .9. The Rosenbrock main comparison selects η from {8 × 10 −4, 1.2 × 10 −3, 1.6 × 10 −3, 2 × 10 −3, 2.5 ×
+
+10 −3, 3 × 10 −3} on pilot seed 0 and reports disjoint seeds 1–5. The support-size ablation fixes one learning rate. The network stress and support-locality tests use the core method ( β = 0 ) and heterogeneity scale 0.3. Edge supports are generated from (s0, t, min {i, j }, max {i, j }); no edge identifier or coordinate list is transmitted. The confirmatory QNLI study uses η = 5 × 10 −5 for both ZO-COSMO and Rand-k. The zero-momentum controls use either that nominal step or 5 × 10 −6 to match the initial scale (1 − β)η.45 Preprint 
+
+Algorithm 4 Fixed-Budget Table Extraction 
+
+Require: Raw logs with cumulative bits br,ℓ and metric mr,ℓ ; budgets B
+
+1: for budget B ∈ B do 
+
+2: for each method/seed/topology/ q run r do 
+
+3: Select ℓ⋆ = max {ℓ : br,ℓ ≤ B}
+
+4: Record bmr (B) = mr,ℓ ⋆
+
+5: end for 
+
+6: Report the seed mean and standard deviation of bmr (B)
+
+7: end for 
+
+Table 8: Core experimental hyperparameters. Experiment d N q Steps η μ                                                                
+
+> Rosenbrock main 20 10 13000 2.5×10 −35×10 −3
+> Rosenbrock qsweep 20 10 {1,2,4,8,16 }3000 8×10 −45×10 −3
+> Network stress 128 {4,8,16 ,32 ,64 }16 1200 4×10 −45×10 −3
+> Support locality 128 {8,16 ,32 ,64 }16 2200 4×10 −45×10 −3
+> Qwen LoRA confirmatory 2.52 ×10 628192 59 /100 5×10 −6–5×10 −510 −3
+> Qwen topology diagnostic 2.52 ×10 6{2,4,8}8192 100 5×10 −510 −3
+> Qwen edge-local study 2.52 ×10 6{4,8}8192 14 –100 5×10 −510 −3
+> Qwen full model 6.53 ×10 918192 200 10 −810 −3
+
+ZO-MARINA-type uses 2.5 × 10 −5. The topology and edge-local studies use five seeds and charge every repeated exchange. The fixed-budget study uses 26 .214 M bits per node. The same-matching extension runs to 1540 rounds with either a constant step or a common tenfold reduction after round 
+
+100 ; all other optimization settings are unchanged. Both report full-validation accuracy and label NLL. The Rosenbrock experiment permits direct runs of both sparse and dense baselines on the same nonconvex objective and query budget. The indexed control isolates recurring metadata cost, while Com-DSZO tests adaptive, error-compensated compression. For node i, the local Rosenbrock objective is 
+
+fi(x) = 
+
+> d−1
+
+X
+
+> r=1
+
+h
+
+α  zi,r +1 − z2
+
+> i,r
+
+2 + (1 − zi,r )2i
+
+, zi = x − si, (228) where α = 2 and si is a small node-specific shift. The shift scale is 0.02 in the reported runs. This creates mild heterogeneity without changing the qualitative geometry of the objective. We report both the objective at the network average and the average local objective in the logs; the main paper uses the objective at the network average because it is the quantity controlled by the convergence theorem. All Rosenbrock runs use the same initialization, smoothing radius, value precision, graph, and oracle budget within a seed. In the main comparison, the indexed control copies the ZO-COSMO support and update exactly and changes only the message cost. Com-DSZO instead uses dense local ZO directions and Top-k innovation compression as defined in Appendix C.6. The separate support-size ablation retains the earlier independent Rand-k comparator, a no-momentum control, and dense ZO-DSGD. 
+
+Table 9: Rosenbrock q-sensitivity at fixed bit budgets with the common step size η = 8 × 10 −4. Cells report ZO-COSMO / indexed Rand-k, mean ± standard deviation over five seeds; lower is better. 
+
+q 0.3M bits 1M bits 3M bits 1 0.131 ± 0.018 / 0.145 ± 0.017 0.119 ± 0.009 / 0.113 ± 0.006 0.119 ± 0.009 / 0.113 ± 0.006 
+
+2 0.632 ± 0.314 / 0.866 ± 0.384 0.121 ± 0.011 / 0.113 ± 0.008 0.121 ± 0.011 / 0.113 ± 0.008 
+
+4 7.283 ± 0.322 / 8.054 ± 0.540 0.172 ± 0.023 / 0.192 ± 0.023 0.121 ± 0.009 / 0.115 ± 0.009 
+
+8 13 .971 ± 0.306 / 14 .689 ± 0.569 1.630 ± 0.594 / 2.679 ± 0.947 0.124 ± 0.012 / 0.122 ± 0.015 
+
+16 22 .680 ± 3.168 / 23 .303 ± 0.827 9.385 ± 0.857 / 10 .234 ± 0.643 0.288 ± 0.058 / 0.401 ± 0.131 
+
+At q = 1 and q = 2 , both methods take many rounds at the larger budgets and approach saturation. At q = 8 and q = 16 , larger packets leave fewer rounds and the fixed-budget gap is clearer (Table 9). 46 Preprint The sweep illustrates how the value of compact encoding changes with support size, complementing the identical-update control in the main experiment. For all decentralized experiments, we use symmetric connected graphs and Metropolis mixing weights. Given an adjacency matrix A, the off-diagonal weights are 
+
+Wij = 11 + max {deg( i), deg( j)} if Aij = 1 , i ̸ = j, (229) and Wii = 1 − P  
+
+> j̸=i
+
+Wij . The reported spectral parameter is computed from the centered mixing matrix: 
+
+ρ = ρspec 
+
+
+
+W − 1
+
+N 11 ⊤
+
+
+
+, (230) where ρspec (·) is the spectral radius. Ring, grid, and Erd˝ os-Rényi graphs therefore differ mainly through this mixing parameter and average degree. The Erd˝ os-Rényi graphs are resampled until connected, with edge probability 0.4.The network stress test changes both N and the graph family while holding the objective dimension, support size, step size, and horizon fixed. It uses d = 128 , q = 16 , T = 1200 , five seeds, and node shifts of scale 0.3. Complete graphs provide the full-mixing reference; grids grow in two dimensions; rings deliberately drive the spectral gap toward zero. At N = 64 , their respective ρ
+
+values are 0, 0.9677 , and 0.9968 . All three reduce the objective to about 6.1% of its initial value. The network-average objective remains within 0.1% across graph families, while disagreement records the predicted deterioration on the ring. 22 23 24 25 26      
+
+> Number of agents, N
+> 0.998 0.999 1.000 1.001
+> Objective / complete-graph objective
+> Complete Grid Ring
+> 2223242526
+> Number of agents, N
+> 10 −2
+> 10 −1
+> 10 0
+> Consensus error
+> Complete graph: < 2 × 10 −29
+
+Figure 14: Five-seed topology stress test for the global-support update. 
+
+D.2 SUPPORT -L OCALITY EXPERIMENT 
+
+This experiment compares the communication operators in Algorithm 2. All methods use the same heterogeneous Rosenbrock network, d = 128 , q = 16 , two function queries per node and round, no momentum, and five seeds on even rings. Global-support ZO-COSMO sends q values to both ring neighbors, costing 2qB val = 1024 bits per node and round. Edge-local ZO-COSMO alternates the ring’s two perfect matchings and sends one q-value message, costing 512 bits per node and round. The seed–scalar control uses ideal all-gather communication. Each node forms a dense seed-reconstructible Rademacher ZO update, and every node applies the exact average after diameter-depth dissemination. We charge the spanning-tree lower bound (N − 1)(64 + 32) bits per node for a 64-bit seed and 32-bit scalar. This operator-level control uses exact aggregation and the minimum packet-edge count from Appendix C.1; SeedFlood’s SubCGE implementation is not reproduced. 
+
+Table 10: Relative objective at 1 Mbit per node. Parentheses give completed logged rounds. 
+
+N Global support Edge-local support Seed–scalar flood 8 0.0625 ± 0.0017 (970) 0.0530 ± 0.0013 (1950) 0.0558 ± 0.0007 (1480) 16 0.0643 ± 0.0003 (970) 0.0546 ± 0.0017 (1950) 0.0692 ± 0.0016 (690) 32 0.0650 ± 0.0010 (970) 0.0554 ± 0.0006 (1950) 0.0971 ± 0.0012 (330) 64 0.0649 ± 0.0010 (970) 0.0552 ± 0.0004 (1950) 0.1593 ± 0.0021 (160) 
+
+At N = 8 , the compact flood packet offsets its four sequential ring stages and remains competitive. Its payload then grows linearly with N and its propagation depth grows as N/ 2: by N = 64 , only 47 Preprint 8 16 32 64       
+
+> Number of agents, N
+> 10 −1
+> 6 × 10 −2
+> Final / initial objective
+> (a) Progress at 1 Mbit/node
+> Global support Edge-local support Seed-scalar flood
+> 816 32 64
+> Number of agents, N
+> 250 500 750 1000 1250 1500 1750 2000
+> Completed rounds
+> (b) Affordable ZO rounds
+> 816 32 64
+> Number of agents, N
+> 124816 32
+> Sequential link stages
+> (c) Propagation per ZO round
+
+Figure 15: One-hop support locality versus graph-wide seed–scalar dissemination. Bars show one standard deviation over five seeds. 
+
+160 logged rounds fit the budget. Edge-local support uses one message and one neighbor stage per active node and is best at every tested N . Global support is also one-hop, but spends twice the ring payload to mix both neighbors in each round. These results quantify the communication benefit of local mixing as the ring grows. 
+
+Same-matching support control. We fix the alternating matching and give every edge the same public support and signs. Both matching variants cost 512 bits per node and round, with identical query counts, initialization, and η = 4 × 10 −4. Their objectives are close at N = 8 , 16 , separating the scheduling gain from any additional benefit of independent supports. At N = 4 , the common-support variants are unstable on one of five seeds. Table 11 includes all five seeds with unclipped updates. 
+
+Table 11: Same-matching control at 1 Mbit per node, five-seed mean ± std of F (¯ xT )/F (¯ x0).
+
+N All-neighbor, common Matching, common Matching, edge-local 4 (1 .18 ± 2.63)10 86 (7 .61 ± 17 .01)10 106 0.0466 ± 0.0017 
+
+8 0.0626 ± 0.0017 0.0520 ± 0.0013 0.0529 ± 0.0013 
+
+16 0.0644 ± 0.0003 0.0543 ± 0.0015 0.0545 ± 0.0017 
+
+D.3 QWEN 2-7B E XPERIMENTS 
+
+Task selection. SST-2 starts near its accuracy ceiling, so we fixed a second-task rule before running any method. The candidate pool was QNLI, BoolQ, MRPC, and RTE: binary accuracy tasks with single-token label verbalizers and at most 6000 validation examples. We evaluated the unmodified Qwen2-7B model on each full validation set, retained tasks with accuracy in [55 , 90)% , and selected the eligible task with the largest validation set. Table 12 records the complete screen; the rule selects QNLI. 
+
+Table 12: Qwen2-7B task screen before method training. Task Validation examples Initial accuracy Selected QNLI 5463 60 .79% Yes BoolQ 3270 81 .01% No MRPC 408 69 .12% No RTE 277 78 .34% No 
+
+The confirmatory QNLI study evaluates all 5463 validation examples for ten paired seeds. Its initial accuracy is 60 .79% . We fix the directed-link budget at 26 .214 Mbit, enough for 100 value-only ZO-COSMO rounds. Indexed Rand-k costs 0.442 Mbit per round and therefore completes 59 rounds without exceeding the same budget. Method selection and optimization settings are paired by seed; the primary endpoint is full-validation accuracy. 
+
+Two-worker protocol. The LoRA benchmark simulates two decentralized workers. Each worker has an independent LoRA state and momentum, receives a disjoint contiguous training shard, uses batch size 4 and maximum sequence length 256 , and participates in exact complete-graph mixing. 48 Preprint The network-average model is evaluated on all 872 SST-2 examples or all 5463 QNLI examples. Rank-8 adapters on the query and value projections give d = 2 ,523 ,136 trainable coordinates. We use q = 8192 , μ = 10 −3, and subspace momentum β = 0 .9. ZO-COSMO and Indexed Rand-k use 
+
+η = 5 ×10 −5; the stable η = 2 .5×10 −5 setting is used for ZO-MARINA-type, whose dense refresh period is 25 rounds. Each worker makes two forward queries on its local minibatch. ZO-COSMO uses one public support and exchanges ordered update values. Rand-k uses independent node supports generated from 
+
+(s0, t, i ); its original encoding also sends their indices. Both replicas apply the same averaged sparse updates. Common initialization therefore keeps their trainable states identical, even when their momentum and queried supports differ. The N > 2 experiments below test disagreement reduction between distinct peer states. 
+
+Seed-aware re-encoding. This post-hoc control exposes the existing support-generator seed and node identifier to the receiver. It reconstructs each independent support while preserving the directions, values, update order, and trajectory. An existing 100-round Rand-k run then costs 100 qB val =26 .2144 Mbit per link instead of 100 q(Bval + 22) = 44 .2368 Mbit. The analysis reuses the original training logs. A packet-level test verifies exact float32 trajectory agreement between encodings. Seed setup and packet headers are accounted for separately from recurring value fields.                 
+
+> Table 13: QNLI at B= 26 .214 Mbit per directed link (ten seeds). Seed-aware Rand-kre-encodes existing runs. Method Mbit/round Rounds Accuracy (%) Explicit-index Rand-k0.442 59 61 .75 ±3.41
+> Seed-aware Rand-k0.262 100 66 .48 ±7.36
+> ZO-COSMO 0.262 100 65 .40 ±3.57
+
+The supplied CSVs contain individual-seed measurements; figures show mean and standard deviation. Explicit-index Rand-k leaves 0.44% of the budget unused. The paired ZO-COSMO contrast is +3 .65 
+
+points (95% percentile-bootstrap CI [0 .49 , 6.86] , 100 ,000 resamples). Against seed-aware Rand-k,it is −1.08 points (CI [−5.85 , 3.67] ), with mean query loss lower by 0.091 (CI [0 .006 , 0.175] ). The accuracy interval spans zero. ZO-MARINA-type is reported at its 60 .79% initialization because its first refresh costs 80 .7 Mbit, above the comparison budget.                 
+
+> Table 14: QNLI after 100 rounds (ten seeds). The first two rows are identical trajectories under different encodings. Method Rounds Mbit/link Accuracy (%) Query loss Indexed Rand-k100 44 .237 66 .48 ±7.36 6.700 ±0.178
+> Seed-aware Rand-k100 26 .214 66 .48 ±7.36 6.700 ±0.178
+> ZO-COSMO 100 26 .214 65 .40 ±3.57 6.609 ±0.190
+
+Momentum and effective step size. On a coordinate with zero momentum state, the first update is (1 − β)g. Thus removing β = 0 .9 while holding η fixed makes the first update ten times larger. Table 15 reports both that stress test and a control with η reduced by ten, which isolates momentum memory from this deterministic rescaling.                        
+
+> Table 15: QNLI momentum controls after 100 rounds (ten seeds). The matched-step comparison gives a
+> 3.92 -point momentum gain, with 95% paired bootstrap CI [1 .67 ,6.08] .Variant βη(1 −β)ηAccuracy (%) Same nominal step 05×10 −55×10 −550 .40 ±0.61
+> Core, matched first step 05×10 −65×10 −661 .48 ±3.31
+> ZO-COSMO 0.95×10 −55×10 −665 .40 ±3.57
+
+49 Preprint 
+
+Table 16: SST-2 after 100 rounds, mean ± standard deviation over five seeds. 
+
+Method η Final acc. (%) Last-50 query loss Total Mbit/link Relative ZO-COSMO (Ours) 5×10 −5 94 .13 ±0.42 0.741 ±0.165 26 .2 1.00 ×
+
+Indexed Rand-k 5×10 −5 94 .15 ±0.63 0.725 ±0.060 44 .2 1.69 ×
+
+ZO-MARINA-type 2.5×10 −5 94 .84 ±0.24 0.976 ±0.301 365 .4 13 .94 ×10 30 100 300 Cumulative payload (Mbit/link) 93.5 94.0 94.5 95.0 95.5 Validation accuracy (%) 
+
+> ZO-COSMO Indexed Rand-k
+> ZO-MARINA-type
+
+10 30 100 300 Cumulative payload (Mbit/link) 0.6 0.8 1.0 1.2 Mean query loss 
+
+Figure 16: Two-worker Qwen2-7B SST-2 results over five seeds. The dashed line marks the 26 .214 M-bit comparison budget. 0 250 500 750 1000 1250 1500 1750 2000 
+
+> Training Iterations
+> 2.15 2.20 2.25 2.30 2.35 2.40
+> Causal LM Fine-tuning Loss
+> Convergence Comparison on Qwen2-7B
+> ZO-COSMO
+
+(1) ZO-COSMO. 0 250 500 750 1000 1250 1500 1750 2000  
+
+> Training Iterations
+> 0246810 12 14
+> Causal LM Fine-tuning Loss
+> Convergence Comparison on Qwen2-7B
+> ZO-COSMO ZO-DSGD
+
+(2) Comparison. Figure 17: Qwen2-7B LoRA training-loss trajectories on SST-2. ZO-COSMO reaches loss 2.12 rather than 
+
+11 .46 for dense ZO-DSGD with 308 × less total payload. 
+
+At the 26 .214 M-bit budget, ZO-COSMO completes 100 rounds and Indexed Rand-k completes 59 
+
+rounds using 26 .100 M bits. Their accuracies are 94 .13 ± 0.42% and 94 .56 ± 0.75% , respectively; both remain in the pretrained model’s near-ceiling regime. ZO-COSMO has the lower interval query loss, 0.741 ± 0.165 versus 0.843 ± 0.065 . ZO-MARINA-type cannot purchase its first 80 .7M-bit dense refresh. The maximum sampled discrepancy between synchronized replicas is zero in every run. 
+
+Logical-worker topology simulation. Every logical worker has its own float32 LoRA state, momentum, and disjoint QNLI shard. Logical workers may share an in-memory copy of the immutable bfloat16 Qwen2-7B backbone. A placement audit runs the same four-worker trajectories on one and two backbone copies: all query values, final adapter fingerprints, and validation metrics agree exactly. Repeated runs and an additional intermediate evaluation also reproduce the trajectory exactly; evaluation restores every worker’s state. These checks verify the simulated graph updates independently of memory placement. We run N ∈ { 2, 4, 8} logical workers for 100 rounds over complete and ring graphs, using the same 
+
+q = 8192 , μ = 10 −3, β = 0 .9, batch size 4, and learning rate 5 × 10 −5 as the confirmatory run. The reported model is the network-average LoRA state, evaluated on all 5463 QNLI validation examples. One gossip pass costs 26 .214 Mbit per directed link. At N = 8 , this is 1.468 Gbit over the complete graph and 0.419 Gbit over the ring. 50 Preprint 2 4 8    
+
+> Logical workers
+> 60 65 70
+> QNLI accuracy (%)
+> (a) Network-average accuracy
+> 248
+> Logical workers
+> 0.0 2.5 5.0 7.5 10.0 12.5
+> Disagreement RMS (10 −3 )
+> (b) Adapter disagreement
+> Complete, 1 pass Ring, 1 pass Ring, extra gossip
+
+Figure 18: QNLI with 2–8 logical workers after 100 rounds (five-seed mean ± std). Extra ring passes are fully charged. 
+
+The complete-graph means are 66 .96 ± 3.57% , 66 .66 ± 5.31% , and 63 .92 ± 1.93% for N = 2 , 4, 8.With one ring pass, N = 4 reaches 62 .10 ± 4.58% and N = 8 reaches 62 .54 ± 1.85% . Their consensus RMS values, sampled on a fixed set of 2048 LoRA coordinates, are 0.00595 ± 0.00018 
+
+and 0.01043 ± 0.00076 . Repeating the exchange twice at N = 4 and four times at N = 8 changes the spectral factors from 0.333 to 0.111 and from 0.805 to 0.419 . RMS falls to 0.00192 ± 0.00005 
+
+and 0.00446 ± 0.00028 , while accuracy becomes 61 .19 ± 1.93% and 62 .97 ± 2.33% . Extra gossip consistently reduces disagreement, but its task-metric benefit is not uniform. 
+
+Edge-local QNLI study. We next compare global support with Algorithm 2 on complete and ring overlays for N ∈ { 4, 8}. The budget is 26 .214 Mbit per node. A global round sends one q-value message on every outgoing edge, so the last feasible checkpoints are 33 and 14 rounds on the N = 4 
+
+and N = 8 complete overlays, and 50 rounds on either ring. A perfect-matching round sends one message per node, allowing 100 edge-local rounds. The index-charged control is the same edge-local trajectory at round 59, re-encoded with 22 coordinate bits per value. We report full-validation accuracy and label NLL over five paired seeds; the 100-round control separates communication efficiency from per-round mixing strength. Comp.               
+
+> N= 4 Comp.
+> N= 8 Ring
+> N= 4 Ring
+> N= 8 58 60 62 64 66 68
+> QNLI accuracy (%)
+> (a) Matched payload
+> Comp.
+> N= 4 Comp.
+> N= 8 Ring
+> N= 4 Ring
+> N= 8 0.56 0.58 0.60 0.62 0.64 0.66
+> Validation label NLL
+> (b) Matched payload
+> Comp.
+> N= 4 Comp.
+> N= 8 Ring
+> N= 4 Ring
+> N= 8 57.5 60.0 62.5 65.0 67.5 70.0 72.5
+> QNLI accuracy (%)
+> (c) 100 rounds
+> Global support Edge-local + indices Edge-local
+
+Figure 19: QNLI with global and edge-local support (five-seed mean ± std). The first two panels fix 26 .214 
+
+Mbit per node; the last fixes 100 rounds. 
+
+On the eight-worker complete graph, global support, index-charged edge-local, and index-free edge-local updates reach 61 .44 ± 0.24% , 62 .16 ± 1.19% , and 64 .85 ± 3.03% accuracy. The index-free gain over global support is 3.42 points (95% paired bootstrap CI [1 .06 , 5.63] ), with a label-NLL reduction of 0.0366 (CI [0 .0030 , 0.0649] ). On the eight-worker ring, the endpoints are 61 .09 ±0.63% ,
+
+61 .88 ± 0.83% , and 63 .62 ± 0.85% : an accuracy gain of 2.53 points (CI [1 .87 , 3.07] ) and an NLL reduction of 0.0291 (CI [0 .0238 , 0.0343] ). At N = 4 , the corresponding accuracy gains are 1.05 points on the complete graph (CI [−2.00 , 4.10] )and 3.40 points on the ring (CI [0 .31 , 6.49] ). Equal-100-round accuracy intervals span zero in three settings; the eight-worker ring gives +1 .08 points (CI [0 .07 , 2.07] ), while all four equal-round NLL intervals span zero. Matching purchases more updates per bit, whereas all-neighbor mixing reaches more peers on each selected coordinate. The alternating ring satisfies the two-round contraction in 51 Preprint (154). These paired intervals describe each comparison separately, without a multiple-comparison adjustment. The next control holds scheduling fixed. Here d/q = 308 , so the 100-round Qwen runs have exposure τ = qT /d ≈ 0.325 . Under iid uniform supports, a coordinate has been selected with probability 1 − (307 /308) 100 ≈ 0.278 . The longer control below extends Qwen training to τ = 5 . The quadratic mechanism study reaches τ = 200 ,covering substantially more repeated coordinate activations. 
+
+Fixed-matching controls. On the four-worker alternating ring, G shares support and signs across matched pairs, S shares support with independent edge signs, and I uses independent edge supports and signs. G/S retain identical support draws; S/I retain identical ordered edge-sign draws. All arms use the same five seeds, initialization, shards, q = 8192 , μ = 10 −3, and β = 0 .9. Each worker maintains float32 adapters on the frozen bfloat16 backbone. The terminal cost at T = 1540 is 
+
+403 .702 Mbit and 3080 optimization queries per worker, with exposure qT /d = 5 .
+
+Scheduling at fixed query correlation. The secondary scheduling control compares matching G at round 100 with all-neighbor global-support mixing at round 50 , both at 26 .214 Mbit per worker. They use the same query-direction generator and initialization. Label NLL falls from 0.6472 ± 0.0231 to 
+
+0.5902 ±0.0474 , a reduction of 0.0570 (paired 95% CI [0 .0172 , 0.1050] ). Accuracy is 64 .58 ±5.40% 
+
+versus 60 .18 ± 1.86% (paired +4 .40 points, CI [−0.01 , 9.42] ). At equal 100 rounds, both intervals span zero. The same-budget NLL gain therefore persists with query correlation unchanged. 
+
+Long-horizon adaptation. All three couplings use η = 5 × 10 −5 for the first 100 updates and 
+
+η = 5 × 10 −6 thereafter, with momentum carried through the switch. The common schedule, five seeds, and terminal accuracy endpoint were fixed before training. We evaluate the full validation set at 100 , 308 , 912 , 924 , and 1540 rounds and reuse the archived constant-step study as the paired reference. All 15 new runs complete. Their round-100 accuracy, NLL, query statistics, disagreement, coverage, and payload reproduce the reference records exactly. At 1540 rounds, G, S, and I reach 74 .07 ± 2.58% , 77 .82 ± 2.80% , and 75 .97 ± 2.75% accuracy, respectively. Their gains over round 100 are 9.49 , 12 .56 , and 12 .38 points, with paired intervals 
+
+[6 .79 , 11 .84] , [7 .56 , 17 .08] , and [7 .87 , 16 .89] . Label NLL falls to 0.528 ± 0.022 , 0.501 ± 0.031 , and 
+
+0.528 ± 0.028 . Mean disagreement RMS is 0.00826 , 0.00804 , and 0.00728 , while visited-coordinate coverage reaches 99 .33 –99 .34% . Training thus remains effective after repeated coordinate activations, with lower disagreement than at round 100 .The archived constant-step counterparts end at 50 .12 ± 0.69% , 49 .72 ± 0.23% , and 50 .00 ± 0.96% ,with disagreement RMS 1.65 –1.71 . The shared step reduction improves terminal accuracy by 23 .95 ,
+
+28 .10 , and 25 .96 points. Figure 20 shows all scheduled checkpoints of both studies. 100 308 924 1540       
+
+> Rounds
+> 50 55 60 65 70 75 80
+> Validation accuracy (%)
+> G: shared direction
+> Step drop Constant step 100 308 924 1540
+> Rounds
+> S: shared support
+> 100 308 924 1540
+> Rounds
+> I: edge-local support
+
+Figure 20: Long-horizon QNLI, five-seed mean ± std. Solid: tenfold step reduction after round 100 ; dashed: constant step. Matching and random streams are paired. 
+
+Direction correlation at fixed support. With matching, support draws, query counts, and payload fixed, independent edge signs raise S above G by 3.75 accuracy points (95% paired CI [0 .24 , 6.79] )and lower label NLL by 0.0272 (CI [0 .0090 , 0.0485] ). The gain comes from cross-edge sign correla-tion under the same training schedule. Moving from S to I lowers disagreement RMS by 0.00077 
+
+52 Preprint (CI [0 .00022 , 0.00131] ), while the accuracy difference is −1.86 points (CI [−5.39 , 2.21] ). Thus the additional independent supports reduce disagreement without an established accuracy gain in this comparison. Intervals are descriptive paired estimates over five seeds, without multiple-comparison adjustment. 
+
+Long-horizon encoding comparison. At 403 .702 Mbit per worker, value-only messages afford 
+
+1540 rounds, whereas 32 -bit values with 22 -bit coordinate indices afford 912 . Re-encoding the same edge-local trajectory gives 73 .36 ± 4.04% accuracy at the indexed endpoint and 75 .97 ± 2.75% at the value-only endpoint: +2 .61 points (paired CI [0 .23 , 6.32] ). For G and S the corresponding differences are +5 .26 (CI [−0.05 , 10 .57] ) and +5 .11 points (CI [−1.27 , 12 .66] ). All three NLL intervals span zero. The optimizer trajectory is fixed; removing coordinate lists buys the additional rounds. The single-worker full-model study tests sparse-update stability at 6.53 B trainable coordinates and compares two encodings of the same trajectory. With q = 8192 , each update costs 262 .1K bits with public support or 532 .5K bits with explicit coordinates. In the Qwen full-model study, each step samples a public sparse Rademacher direction supported on 
+
+q coordinates of the selected trainable parameter set. The two-query loss difference is 
+
+b∂t = ℓ(θt + μu t; ξt) − ℓ(θt − μu t; ξt)2μ , (231) and the communicated sparse values correspond to 
+
+bgt,S t = dq b∂tut,S t . (232) Momentum is stored only on coordinates that have appeared in the sparse support, so the auxiliary optimizer state scales with the visited support rather than with the full parameter dimension. In the full-model run, the model itself is loaded in bfloat16, while the sparse momentum map can remain on CPU and grow with the number of distinct sampled coordinates. The full-model study uses the local Qwen2-7B checkpoint, SST-2 batches of size 8, maximum sequence length 256 , and evaluation on the SST-2 validation set. The trainable coordinate set contains all model parameters except token embeddings and the language-model head, giving 6.53 ×10 9
+
+coordinates. For q = 8192 , the value-only payload is 
+
+qB val = 8192 · 32 = 262 ,144 bits per step , (233) whereas an indexed sparse message additionally pays 
+
+q⌈log 2(6 .53 ×10 9)⌉ = 8192 · 33 = 270 ,336 index bits per step . (234) Adding coordinate identifiers to the same updates gives 532 .5K bits per step, 2.03 × the value-only payload. Supports, signs, and values are unchanged, so the difference is the support-description cost. This single-worker full-model run verifies sparse two-query updates at the advertised dimensionality, where coordinate metadata is already comparable to the value payload. The multi-worker LoRA experiments above evaluate decentralized optimization and graph topology. 53 Preprint 0 25 50 75 100 125 150 175 200 Sparse ZO steps 50 60 70 80 90 SST-2 validation accuracy (%) 
+
+> Qwen2-7B full-model ZO baseline
+> ZO-COSMO stable sparse ZO Naive sparse ZO baseline
+
+Figure 21: Qwen2-7B full-model sparse ZO study on SST-2. Table 17: Qwen2-7B full-model sparse ZO communication check. 
+
+Run / accounting Steps Outcome Bits / Step Relative Payload ZO-COSMO (Ours) 200 94 .84 % →
+
+95 .03 ±0.13 % 262 .1K 1.00 ×
+
+Same ZO-COSMO trajectory + explicit indices 200 identical after re-encoding 
+
+532 .5K 2.03 ×
+
+Naive sparse ZO, large step 20 94 .84% → 51 .95% 262 .1K 1.00 ×
+
+All random-support methods use 32-bit payload accounting. The index fraction ℓd/(Bval + ℓd)
+
+increases at smaller value widths (Table 2); those lower-bit entries are payload calculations, not quantized training results. D.4 REPRODUCIBILITY ARTIFACTS 
+
+Raw logs record the method, seed, topology when applicable, support size, metrics, and cumulative communication cost. Tables use the fixed-budget rule in Appendix D.1; figures are generated from the same logs. 
+
+Table 18: Main artifacts used for the reported experiments. Experiment Config Raw or summary logs Main figure/table artifact Rosenbrock main, strong-baseline, network-stress, and support-locality YAMLs fixed-budget, N -sweep, and support-locality raw logs composite synthetic figures and summary CSVs Correlation mechanism original and extension YAMLs protocols, trajectories, and frozen moments eight-seed moment and quadratic plots; plot audits Qwen2-7B two-worker, topology, edge-local, and full-model YAMLs ten-seed QNLI, edge-local, SST-2, and full-model logs LoRA communication, topology, and full-model figures Communication serialization and transfer scripts serialization and 31-trial transfer CSVs appendix communication diagnostics 
+
+The original mechanism study uses configs/correlation_v21.yaml , with raw CSVs and its source manifest in results/correlation_v21/ . The extension uses configs/ correlation_v23.yaml and results/correlation_v23/ ; its main panels were fixed before training, and the additional appendix views have a separate plot audit. Paths are relative to the experiment-code directory. 54 Preprint The uniform-precision Qwen topology and edge-local study uses configs/qwen_precision_ recheck_v25.yaml ; all 55 trials and 95 checkpoints are retained in results/ qwen_precision_recheck_v25/ . Aggregation checks initialization fingerprints, source hashes, checkpoint completeness, and payload formulas. The longer fixed-matching study uses configs/qwen_qnli_correlation_v25_fp32.yaml and results/qwen_ correlation_v25_fp32/ . Each trial records its query trace, coordinate coverage, evaluations, and final adapter states. The evaluation and placement audits are stored separately. The common step-drop extension uses configs/qwen_qnli_step_drop_v27.yaml . All 15 runs and 75 checkpoints are in results/qwen_step_drop_v27/ ; scripts/summarize_ qwen_step_drop.py verifies the archived reference hashes, exact round-100 matches, recorded learning rates, and payload counters before producing the figures and paired statistics. All three couplings use the same schedule. The support generator folds the seed with the round number and, when needed, a node or unordered edge identifier. Global-support ZO-COSMO uses no node identifier; edge-local ZO-COSMO agrees within each matched pair. Independent Rand-k uses node identifiers. Those supports are private only when the generator seed is withheld: making it public permits the seed-aware encoding without changing the independent-support trajectories. The Qwen configuration specifies the HuggingFace checkpoint and trainable-coordinate filter. The topology runner records logical workers, graph, spectral factor, active links, per-node and total payload, and sampled consensus error. The full-model run excludes embeddings and the language-model head, uses bfloat16 weights, and stores sparse momentum in a CPU dictionary. These choices reduce memory use while preserving the recorded protocol and payload. D.5 IMPLEMENTATION DETAILS 
+
+Global support is keyed by the master seed and round; edge-local support additionally uses the unordered endpoints of the active edge. The same support serves queries and message decoding. The explicit-index baselines send coordinate lists, while the seed-aware control reconstructs independent supports from node-specific public keys. For dense baselines, communication is charged as a full vector payload even if a local implementation stores tensors in contiguous blocks. For sparse baselines, communication is charged per directed link and per sparse vector. If an undirected graph edge carries messages in both directions, the total edge traffic is twice the directed-link number. The main method comparisons use directed-link cost. The edge-local topology study instead fixes payload per node because global and matching rounds activate different numbers of links; total network payload is recorded as well. Fine-tuning payloads are counted with 32-bit values. Table 2 gives the corresponding representation costs at other value widths. 
+
+Qwen LoRA-scale experiment. Dense ZO-DSGD communicates all LoRA parameters; ZO-COSMO sends only public sparse values. Both use forward-only loss differences. Each logical worker keeps independent float32 adapter and momentum states; the frozen backbone uses bfloat16. Adapter precision is set explicitly when each adapter is created and reset. Sharing a frozen backbone changes memory placement and scheduling, not these states or the graph update. 
+
+Qwen full-model experiment. The trainable set excludes token embeddings and the language-model head. Weights use bfloat16, and a coordinate map stores sparse momentum without a dense update buffer. The stable runs use seeds 0, 1, 2 and are re-encoded with explicit indices; the oversized-step row is a one-seed failure check. Table 3 gives the cost of a hypothetical dense refresh. D.6 ABLATION DESIGN 
+
+The momentum ablation keeps the public support and removes the momentum buffer; its matched-first-step control accounts for the resulting scale change. The independent-support ablation changes cross-node alignment. We evaluate both its original coordinate-list encoding and the seed-aware encoding reconstructed from node-specific public seeds. 55 Preprint The same-update indexed control isolates representation: it uses the identical public support, estimator, momentum, and masked consensus as ZO-COSMO, then charges the coordinate list that an ordinary sparse format would carry. Com-DSZO tests a different question. Its Top-k innovation is data-adaptive and error compensated, but it communicates indices and keeps two dense auxiliary arrays in addition to its compressed innovation. Comparing these methods separates an index-free representation gain from the optimization and memory benefits of a stronger compressor. The periodic-refresh control’s first dense packet exceeds the Qwen LoRA comparison budget, so that entry is marked at initialization. Its trained equal-round SST-2 result is reported separately with the full cumulative payload. 
+
+## E BROADER IMPACT AND ETHICS 
+
+Forward-only fine-tuning reduces storage of backward-pass activations. Local data and exchanged model states still require access controls; function-value access and decentralized execution alone provide no privacy guarantee. The experiments evaluate optimization and payload use with logical workers, while hardware and execution details are reported in Appendix D. 56

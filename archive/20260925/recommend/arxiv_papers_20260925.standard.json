@@ -1,0 +1,213 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-25T21:53:43.551294+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.29446v1",
+      "source": "arxiv",
+      "title": "SPADE-DFL: Communication-Efficient Decentralized Federated Learning via Derivative-Free Linearized ADMM",
+      "abstract": "Reducing communication in derivative-free decentralized learning requires controlling the disagreement accumulated over multiple local updates. This paper develops SPADE-DFL, a primal--dual method that allows the number of local function-value updates between neighbor exchanges to grow with the computation budget while preserving the nonprivate convergence order. For smooth nonconvex objectives under uniform query-moment bounds, the prescribed nonprivate schedule achieves a time-averaged stationarity and consensus bound of $\\mathcal{O}(T^{-1/3})$ using only $Θ(T^{2/3})$ communication rounds, where $T$ is the number of local updates per client. For private training, the accumulated data-dependent increment is isolated from the graph correction, allowing one protected state per client and round to generate all outgoing messages. We prove client-level differential privacy for the full interactive transcript and quantify the resulting optimization error over a finite horizon. Experiments on four classification tasks show that SPADE-DFL achieves higher mean test accuracy than existing decentralized learning methods.",
+      "authors": [
+        "Mengli Wei",
+        "Mengkai Zhu",
+        "Jiawen Chen",
+        "Wenwu Yu",
+        "Duxin Che"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.NI"
+      ],
+      "published": "2026-09-24T12:03:22+00:00",
+      "link": "https://arxiv.org/pdf/2609.29446v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "communication-efficient decentralized training reducing neighbor exchange rounds",
+      "llm_evidence_cn": "通信高效的去中心化训练，减少邻居交换轮数",
+      "llm_evidence": "通信高效的去中心化训练，减少邻居交换轮数",
+      "canonical_evidence": "通信高效的去中心化训练，减少邻居交换轮数",
+      "llm_tldr_en": "SPADE-DFL is a primal-dual derivative-free decentralized method that lets local updates between neighbor exchanges grow with computation budget, cutting communication rounds while preserving convergence order.",
+      "llm_tldr_cn": "去中心化学习中减少通信需控制多次本地更新累积的偏差。本文提出SPADE-DFL，一种基于无导数线性化ADMM的原始-对偶方法，使邻居交换之间的本地函数值更新次数可随计算预算增长。理论上在光滑非凸目标下仅用Θ(T^{2/3})通信轮数即达到O(T^{-1/3})的平稳性与一致性界，隐私训练亦有分析。该结果为通信高效的去中心化训练提供了理论保证。",
+      "llm_tldr": "去中心化学习中减少通信需控制多次本地更新累积的偏差。本文提出SPADE-DFL，一种基于无导数线性化ADMM的原始-对偶方法，使邻居交换之间的本地函数值更新次数可随计算预算增长。理论上在光滑非凸目标下仅用Θ(T^{2/3})通信轮数即达到O(T^{-1/3})的平稳性与一致性界，隐私训练亦有分析。该结果为通信高效的去中心化训练提供了理论保证。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.22755v1",
+      "source": "arxiv",
+      "title": "NSP: Accelerating Variable-Length LLM Training via Nested Sequence Parallelism",
+      "abstract": "Long-context LLM training on long-tailed corpora faces a central communication--balance tradeoff. Such sequence-length heterogeneity makes any single sequence-parallelism (SP) degree a poor fit for the workload: a small degree leaves the few long sequences badly imbalanced, while a large degree forces the many short sequences that dominate the workload to pay excessive communication. Existing dynamic-SP systems mix SP degrees within a batch, but to run several groups at once they partition the GPUs into disjoint groups, which reintroduces imbalance across groups and forces costly micro-batch workarounds.   We present NSP, a sequence-parallel training system that resolves this tradeoff by nesting differently sized SP groups on shared GPUs within a single training iteration. This lets long sequences use larger SP groups while keeping short sequences on smaller ones, so communication is incurred only where needed and load is balanced per GPU rather than per group. NSP realizes this idea with a tree-structured routing planner that assigns sequences under memory constraints and an executor that exploits the resulting hierarchy through inter-level phase streaming and tree-level recomputation. NSP supports common SP backends and requires no model changes. We evaluate NSP on Qwen3-MoE workloads with up to 384K-token contexts across multiple long-tail datasets on an internal production GPU cluster. Across these settings, NSP consistently improves end-to-end training throughput, outperforming Static SP by up to 1.48x and FlexSP by up to 1.16x.",
+      "authors": [
+        "Yi'ou Wang",
+        "Xiaoyang Li",
+        "Yijie Zheng",
+        "Shouda Liu",
+        "Yuxuan Wang"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-09-19T04:32:47+00:00",
+      "link": "https://arxiv.org/pdf/2609.22755v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "distributed parallel training system resolving communication-balance tradeoff",
+      "llm_evidence_cn": "分布式并行训练系统，解决通信与负载均衡的权衡",
+      "llm_evidence": "分布式并行训练系统，解决通信与负载均衡的权衡",
+      "canonical_evidence": "分布式并行训练系统，解决通信与负载均衡的权衡",
+      "llm_tldr_en": "NSP is a sequence-parallel training system that nests differently sized parallelism groups on shared GPUs, resolving the communication-balance tradeoff of variable-length LLM training without disjoint group partitioning.",
+      "llm_tldr_cn": "长上下文LLM训练在长尾语料上存在通信与负载均衡的矛盾，单一序列并行度难以适配长度异构的批次。本文提出NSP，在共享GPU上嵌套不同规模的序列并行组，避免将GPU划分为不相交组所引入的组间不均衡与微批开销。实验表明该方法缓解了通信-平衡权衡，提升了变长序列训练效率。该工作为分布式并行训练系统的调度设计提供了新思路。",
+      "llm_tldr": "长上下文LLM训练在长尾语料上存在通信与负载均衡的矛盾，单一序列并行度难以适配长度异构的批次。本文提出NSP，在共享GPU上嵌套不同规模的序列并行组，避免将GPU划分为不相交组所引入的组间不均衡与微批开销。实验表明该方法缓解了通信-平衡权衡，提升了变长序列训练效率。该工作为分布式并行训练系统的调度设计提供了新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "find papers on distributed GNN training systems with data parallel or asynchronous execution",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.26979v1",
+      "source": "arxiv",
+      "title": "Resource-Efficient Distributed Recursive Gaussian Processes",
+      "abstract": "Gaussian processes (GPs) provide a flexible framework for learning unknown functions from noisy measurements while quantifying predictive uncertainty, making them well suited for estimation in multi-agent systems. However, when measurements are collected by multiple agents, maintaining a unified GP model without centralized processing requires efficient distributed algorithms that can operate using local measurements and communication with neighboring agents. In this work, we develop two distributed recursive GP (RGP) algorithms for multi-output GP regression: ADMM-RGP and PDMM-RGP. We analyze the stability and convergence of both algorithms and develop parameter selection strategies to accelerate convergence, thus reducing the communication burden. The proposed methods are validated on a real-world multi-output wind dataset, and their convergence behavior is examined across communication graphs with varying connectivity. Numerical experiments demonstrate that ADMM-RGP and PDMM-RGP can significantly reduce communication relative to the state of the art, while maintaining comparable estimation accuracy and network-wide consensus.",
+      "authors": [
+        "Josephine King",
+        "Ali Emre Balci",
+        "Raj Thilak Rajan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "eess.SP"
+      ],
+      "published": "2026-09-22T19:14:16+00:00",
+      "link": "https://arxiv.org/pdf/2609.26979v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "distributed algorithms reducing communication burden",
+      "llm_evidence_cn": "降低通信负担的分布式算法",
+      "llm_evidence": "降低通信负担的分布式算法",
+      "canonical_evidence": "降低通信负担的分布式算法",
+      "llm_tldr_en": "Develops ADMM-RGP and PDMM-RGP distributed recursive Gaussian process algorithms with convergence-accelerating parameter selection to cut communication cost in multi-agent estimation.",
+      "llm_tldr_cn": "针对多智能体收集测量数据时难以在无中心化处理下维护统一高斯过程模型、通信开销大的问题，本文提出ADMM-RGP与PDMM-RGP两种分布式递归高斯过程回归算法。作者分析了两种算法的稳定性与收敛性，并设计参数选择策略以加速收敛，从而降低通信负担。该工作为分布式学习中的通信高效优化提供了可迁移思路，尽管面向的是高斯过程而非图神经网络。",
+      "llm_tldr": "针对多智能体收集测量数据时难以在无中心化处理下维护统一高斯过程模型、通信开销大的问题，本文提出ADMM-RGP与PDMM-RGP两种分布式递归高斯过程回归算法。作者分析了两种算法的稳定性与收敛性，并设计参数选择策略以加速收敛，从而降低通信负担。该工作为分布式学习中的通信高效优化提供了可迁移思路，尽管面向的是高斯过程而非图神经网络。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.27199v1",
+      "source": "arxiv",
+      "title": "ZO-COSMO: Index-Free One-Hop Mixing for Decentralized Zeroth-Order Optimization",
+      "abstract": "Sparse communication in decentralized zeroth-order learning requires compatible peer-state coordinates. We characterize this one-hop condition and develop \\textsf{ZO-COSMO}, coupling two-query estimation with average-preserving masked consensus using $q$ values per active link. Global supports serve all-neighbor mixing; matching updates require agreement only within each pair. We derive a sharp contraction-per-scalar bound within the matching class and convergence guarantees for the core and sparse-momentum updates. At fixed matching, exact moment identities characterize how shared directions preserve gradient-heterogeneity cancellation and redistribute estimation error and disagreement. Mechanism experiments cover unequal curvatures, noise, and sparse momentum. Further tests span $64$ synthetic agents and eight logical Qwen LoRA workers. At matched payload budgets, Qwen2-7B QNLI gains $3.65$ accuracy points over explicit-index Rand-$k$; edge-local updates gain $3.42$ and $2.53$ points over all-neighbor mixing on eight-worker complete and ring graphs. A matched-first-step ablation gives a $3.92$-point momentum benefit. Seed-aware and same-matching controls distinguish encoding, scheduling, and query correlation.",
+      "authors": [
+        "Shengjun Zhang",
+        "Tingyi Liu",
+        "Heng Zhang",
+        "Dong Xie"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "eess.SY",
+        "math.OC"
+      ],
+      "published": "2026-09-23T01:05:56+00:00",
+      "link": "https://arxiv.org/pdf/2609.27199v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "sparse communication decentralized optimization with one-hop mixing",
+      "llm_evidence_cn": "稀疏通信去中心化优化，单跳混合",
+      "llm_evidence": "稀疏通信去中心化优化，单跳混合",
+      "canonical_evidence": "稀疏通信去中心化优化，单跳混合",
+      "llm_tldr_en": "ZO-COSMO targets sparse communication in decentralized zeroth-order learning by coupling two-query estimation with average-preserving masked consensus using q values per active link, deriving contraction bounds and convergence guarantees for communication-efficient training.",
+      "llm_tldr_cn": "去中心化零阶学习中的稀疏通信要求对等节点状态坐标兼容，现有方法难以满足单跳条件。本文提出ZO-COSMO，将双查询估计与保持平均的掩码共识耦合，每条活跃链路仅用q个值。作者推导了匹配类内紧致的收缩-每标量界以及核心与稀疏动量更新的收敛保证，并分析了梯度异质性抵消与误差再分配机制，为通信高效的分布式训练提供了理论支撑与设计方法。",
+      "llm_tldr": "去中心化零阶学习中的稀疏通信要求对等节点状态坐标兼容，现有方法难以满足单跳条件。本文提出ZO-COSMO，将双查询估计与保持平均的掩码共识耦合，每条活跃链路仅用q个值。作者推导了匹配类内紧致的收缩-每标量界以及核心与稀疏动量更新的收敛保证，并分析了梯度异质性抵消与误差再分配机制，为通信高效的分布式训练提供了理论支撑与设计方法。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.27209v1",
+      "source": "arxiv",
+      "title": "Scalable Subgraph Sampling via Resistance Curvature",
+      "abstract": "Subgraph sampling reduces the training cost of large-scale graph neural networks, but sampling criteria may overlook the geometric roles of edges. We propose a resistance-curvature-guided sampling framework built on ERC-LG, a curvature approximation method for large-scale graphs. ERC-LG combines Johnson-Lindenstrauss projections with regularized multi-GPU batched conjugate gradient solvers, avoiding explicit Laplacian pseudoinverse computation and full embedding storage. The resulting curvature informs node- and edge-sampling probabilities for constructing GNN training subgraphs. Experiments show numerical agreement with pseudoinverse-based curvature and reduced runtime compared with CG-only computation. ERC-LG-based sampling variants achieve the highest mean accuracy on six of seven real-world datasets in downstream node classification.",
+      "authors": [
+        "Chaoqun Fei",
+        "Tinglve Zhou",
+        "Tianyong Hao",
+        "Yangyang Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-23T01:16:29+00:00",
+      "link": "https://arxiv.org/pdf/2609.27209v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "multi-GPU subgraph sampling to cut large-scale GNN training cost",
+      "llm_evidence_cn": "多GPU子图采样降低大规模GNN训练成本",
+      "llm_evidence": "多GPU子图采样降低大规模GNN训练成本",
+      "canonical_evidence": "多GPU子图采样降低大规模GNN训练成本",
+      "llm_tldr_en": "Proposes a resistance-curvature-guided subgraph sampling framework ERC-LG using Johnson-Lindenstrauss projections and multi-GPU batched conjugate gradient to reduce large-scale GNN training cost.",
+      "llm_tldr_cn": "针对大规模图神经网络训练成本高、传统子图采样忽略边几何角色的问题，本文提出基于电阻曲率的采样框架ERC-LG，结合Johnson-Lindenstrauss投影与正则化多GPU批量共轭梯度求解器，避免显式计算拉普拉斯伪逆与存储全部嵌入。实验表明其曲率估计与伪逆方法数值一致且运行时间更短，据此构造的训练子图取得最高平均精度，为分布式大图训练提供可扩展的采样依据。",
+      "llm_tldr": "针对大规模图神经网络训练成本高、传统子图采样忽略边几何角色的问题，本文提出基于电阻曲率的采样框架ERC-LG，结合Johnson-Lindenstrauss投影与正则化多GPU批量共轭梯度求解器，避免显式计算拉普拉斯伪逆与存储全部嵌入。实验表明其曲率估计与伪逆方法数值一致且运行时间更短，据此构造的训练子图取得最高平均精度，为分布式大图训练提供可扩展的采样依据。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "distributed training systems for graph neural networks",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

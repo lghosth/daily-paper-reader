@@ -1,0 +1,2259 @@
+Title: SPADE-DFL: Communication-Efficient Decentralized Federated Learning via Derivative-Free Linearized ADMM
+
+URL Source: https://arxiv.org/pdf/2609.29446v1
+
+Published Time: Fri, 25 Sep 2026 01:01:02 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+> 1
+
+# SPADE-DFL: Communication-Efficient Decentralized Federated Learning via Derivative-Free Linearized ADMM 
+
+Mengli Wei, Mengkai Zhu, Jiawen Chen, Wenwu Yu and Duxin Chen 
+
+Abstract —Reducing communication in derivative-free decen-tralized learning requires controlling the disagreement accumu-lated over multiple local updates. This paper develops SPADE-DFL, a primal–dual method that allows the number of local function-value updates between neighbor exchanges to grow with the computation budget while preserving the nonprivate convergence order. For smooth nonconvex objectives under uni-form query-moment bounds, the prescribed nonprivate schedule achieves a time-averaged stationarity and consensus bound of 
+
+O(T −1/3) using only Θ( T 2/3) communication rounds, where T
+
+is the number of local updates per client. For private training, the accumulated data-dependent increment is isolated from the graph correction, allowing one protected state per client and round to generate all outgoing messages. We prove client-level differential privacy for the full interactive transcript and quantify the resulting optimization error over a finite horizon. Experiments on four classification tasks show that SPADE-DFL achieves higher mean test accuracy than existing decentralized learning methods. 
+
+Index Terms —Decentralized federated learning, differential privacy, derivative-free optimization, one-point estimator, lin-earized ADMM. 
+
+I. I NTRODUCTION 
+
+Decentralized federated learning (DFL) trains a shared model through neighbor exchanges while keeping data lo-cal [1]. Communication constraints motivate clients to perform several local updates before exchanging model information [2], [3]. The central question is how much communication local computation can replace without compromising progress to-ward the shared objective [4]. When gradients are unavailable, local computation relies on randomized function evaluations [5]–[7]. Single-point methods extend this information model to decentralized learning [8], [9]. Local models can nevertheless drift apart during train-ing, so additional queries offer progress at the cost of a growing coordination problem. Compression can reduce the information transmitted in an exchange, but the number of exchanges remains part of the communication cost [10]–[12]. The question is therefore more specific. How much communi-cation can local loss evaluations replace while preserving the convergence order of collective learning? 
+
+Mengli Wei, Mengkai Zhu, Jiawen Chen and Duxin Chen are with the School of Mathematics, Southeast University, Nanjing 210096, China (e-mail: weimengli@seu.edu.cn). Wenwu Yu is with the School of Mathematics, Jiangsu Province Scientific Research Center for Applied Mathematics, Southeast University, Nanjing 210096, China. (e-mail: wwyu@seu.edu.cn). 
+
+Local computation reduces the frequency of neighbor ex-changes but also permits local models to drift apart before the next exchange. With single-point function-value information, the smoothing radius affects the approximation error of the local direction. The local training length, stepsize, smoothing radius and network gain therefore need to be selected jointly. Their interaction determines whether reducing the exchange frequency also reduces the total communication required to reach a given optimization accuracy. Privacy adds to this dependence on communicated states. Reconstruction attacks show that model information can re-veal local training data [13]. Distributed privacy mechanisms exploit graph structure [14], [15], including formulations based on noisy ADMM iterations [16]. Each released state sum-marizes a local query sequence whose influence continues through subsequent neighbor updates. Its protective perturba-tion therefore alters the feedback driving later computation. Privacy analysis follows this influence through the complete interaction using composition of successive releases [17], [18]. The construction separates the accumulated local learn-ing increment from the correction determined by preceding exchanges. Decentralized formulations of the alternating di-rection method of multipliers (ADMM) express agreement through constraints on neighboring models [19], [20]. Lin-earization makes the local primal update explicit [21], while curvature aided formulations permit local primal and dual steps without inner communication loops [22]. Local training further extends the computation performed between exchanges [4]. Reference estimates also provide a way to reuse information in zeroth-order optimization [23]. Building on these ideas, we construct local directions from a component memory that preserves the conditional mean of fresh single-point estimates. The ADMM correction is held fixed throughout each local stage. An exact message recursion relates accumulated local updates to subsequent network disagreement and supports the joint selection of the local training length and round gain. The placement of privacy protection also matters since clipping can bias stochastic updates [24]. We therefore isolate the ac-cumulated data dependent increment from the correction fixed by the preceding transcript. Clipping this increment before adding calibrated Gaussian noise produces one protected state per client and round from which all outgoing messages are constructed. Retaining the explicit graph correction makes the effect of each release visible in subsequent exchanges. The message recursion determines how the local stage can grow while preserving the convergence order under the nonprivate arXiv:2609.29446v1 [cs.LG] 24 Sep 2026 2
+
+parameter schedule. For private training, a finite horizon bound accounts for clipping and Gaussian releases in the stationarity and consensus criterion. The main contributions are as follows. 1) Communication savings from local loss evaluations. 
+
+We establish communication savings from local loss evaluations for smooth nonconvex objectives under uni-form query moment control. The prescribed nonprivate schedule yields a time averaged stationarity and con-sensus bound of O(T −1/3 + τ 2/T ) after T = Kτ 
+
+local updates per client. The drift term permits τ =Θ( T 1/3) local updates per exchange while retaining the 
+
+O(T −1/3) order. For a joint tolerance εstat , this reduces the sufficient communication bound from O(ε−3stat ) for the same method with τ = 1 to O(ε−2stat ) rounds. 2) Single-point local training and network dynamics. 
+
+SPADE-DFL incorporates a component-memory single-point estimator into local training ADMM. Under uni-form query-moment bounds, the memory correction preserves the conditional mean of fresh single-point estimates and admits a controlled second moment. An exact message recursion yields a modal representation of network disagreement. In the synchronized setting, the homogeneous disagreement modes are Schur stable exactly when 0 < τ βημρλ N < 8/3, where λN is the largest graph Laplacian eigenvalue. This characterization determines the admissible round gain used in the local training schedule. 3) Protecting local computation through the state used for coordination. We isolate the accumulated private update from the graph correction fixed by the observed history. One Gaussian release per client and round protects the clipped update, while all outgoing messages follow by deterministic processing. We prove differential privacy for the full interactive transcript under replace-ment of an entire client dataset, accounting for effects propagated through subsequent neighbor responses. A fi-nite horizon analysis traces release perturbations through the feedback governing objective descent. The resulting bound quantifies the optimization cost of privacy under local drift, linking information disclosed during commu-nication to collective learning accuracy. Sections II through IV cover related work, the method and its analysis. Section V presents the numerical study before Section VI concludes the paper. II. R ELATED WORK 
+
+A. Communication in Decentralized Learning 
+
+The benefit of local computation depends on whether progress made between exchanges survives the disagreement generated by heterogeneous objectives. Analyses of local gradient descent and gradient tracking make this dependence explicit [2]. ProxSkip establishes communication acceleration through randomized synchronization for strongly convex prob-lems [25]. Local exact diffusion incorporates bias correction into local training [3], while local training ADMM holds a neighbor correction fixed over several stochastic updates [4]. A differentially private variant applies clipping and Gaussian perturbation to stochastic gradients at each local step while retaining one neighbor-exchange phase per round [26]. Its analysis establishes privacy under single-record addition or removal and a stationarity bound for nonconvex objectives. The communication cost also depends on the mixing protocol. DSGD with CECA uses an exact consensus schedule [27], whereas tree based push pull limits the number of active neighbors [28]. Related analyses show how heterogeneity correction improves the dependence of transient behavior on topology [29]. Work on DFL examines this relationship through aggregation weight optimization [30] and the stability of decentralized training [31]. Compression addresses the amount transmitted at each exchange, with its overall benefit depending on the convergence cost of smaller messages [12]. Compressed gradient tracking treats communication over di-rected networks [10]. Differential error feedback reuses com-pression residuals [11], while BEER develops compression with gradient tracking for nonconvex objectives [32]. MoTEF uses momentum tracking to control stochastic error within an error feedback scheme [33]. For objectives that vary over time, compressed distributed methods connect communication to online regret [34]. 
+
+B. Learning from Function Values 
+
+Zeroth-order optimization studies how function evaluations can provide enough directional information for learning [5]. Single-point distributed methods use one noisy evaluation per update [8], [9]. The accuracy of the inferred direction can also be improved through curvature information [6] or stochastic ADMM constructions with explicit query complexity [7]. In networked problems, compressed stochastic methods incor-porate transmission error into the analysis [35]. Quantized gradient tracking with deterministic zeroth-order estimates yields linear convergence under the Polyak Łojasiewicz con-dition [36]. Function evaluations also change the implemen-tation cost of local learning. FedZO performs several local updates between server aggregations [37], while DeComFL represents communicated information by scalars to remove the dependence of the payload on model dimension [38]. For language model adaptation, MeZO avoids backpropagation by estimating directions from paired forward evaluations [39]. Its SVRG extension uses reference information to improve the optimization process [23]. These developments connect the choice of estimator to the work performed by the local solver. For decentralized solvers, ADMM expresses coordination through equality constraints on neighboring models [19], [20]. Linearization replaces the local primal solve with an explicit approximation [21]. Local training allows this computation to continue between exchanges [4]. Curvature aided methods use gradient directions or Newton approximations within local primal and dual updates without inner communication loops for convex composite objectives [22]. 
+
+C. Privacy across Distributed Interactions 
+
+Privacy in decentralized learning depends on what an ob-server can infer from a history of exchanges. Graph homomor-phic noise connects the protection of communicated states to 3                                            
+
+> TABLE I SELECTED ALGORITHMIC FEATURES OF THE METHODS DISCUSSED IN RELATED WORK .Method Communication Local Single-point Component ADMM Differential reduction updates oracle memory updates privacy Local training [2], [3], [25], [37], [38] ✓✓
+> LT-ADMM [4] ✓✓✓
+> LT-ADMM-VR [4] ✓✓✓✓
+> LT-ADMM-DP [26] ✓✓✓✓
+> Communication-saving methods [10], [11], [27], [28], [32]–[36] ✓
+> Nonprivate optimization [6], [23], [29], [30], [39] Single-point methods [8], [9] ✓
+> ADMM methods [7], [20], [21] ✓
+> ADMM variants [22], [40] ✓✓
+> Private learning [14], [15], [41]–[44] ✓
+> Private ADMM [16] ✓✓
+> DP-FedSAM (top k) [45] ✓✓✓
+> SPADE-DFL ✓✓✓✓✓✓
+
+learning performance [14]. Adaptive differentially quantized subspace perturbation exploits the consensus structure to ad-dress privacy with compressed communication [40]. Positive incentive noise designs use graph interactions to regulate the resulting utility [41]. Muffliato analyzes privacy amplification under a pairwise network observation model [42]. DECOR instead constructs Gaussian perturbations that cancel across neighboring clients using shared secret randomness [15]. Private ADMM connects iterative optimization to a noisy fixed point formulation [16]. Concentrated privacy and R´ enyi privacy provide composition rules for successive releases [17], [18]. The effect of a release also depends on how the local update is prepared. Clipping can introduce persistent stochastic bias [24]. DP-FedSAM examines private local training through sharpness aware optimization with update sparsification [45]. For learning from function values, DPZero develops private model adaptation without backpropagation [43]. PAZO uses public data to guide the private gradient approximation under a similarity assumption between the two data sources [44]. SPADE-DFL quantifies the communication savings attain-able from local single-point function evaluations. Under uni-form query-moment bounds, the prescribed nonprivate sched-ule permits the local training length to grow with the compu-tation budget while preserving the stationarity and consensus convergence order. For private training, the accumulated local update is clipped and perturbed once per round, and client-level privacy is established for the full interactive transcript under replacement of an entire fixed-size local dataset. Table I summarizes these distinctions from the methods discussed above. III. P ROBLEM FORMULATION AND METHODOLOGY 
+
+A. Problem Formulation 
+
+Consider a decentralized empirical-risk minimization sys-tem in which training samples remain distributed across N ≥ 2
+
+clients and no central server has direct access to their union [46], [47]. The N clients are connected by a graph G = ( V, E),where V = {1, . . . , N } and E is the edge set. Client i
+
+communicates only with neighbors in Ni := {j : {i, j } ∈ E} 
+
+and stores Di = {ξi,h }mi
+
+> h=1
+
+, where the sample ξi,h induces the component loss fi,h : Rd → R. The client-specific empirical risk and the client-uniform learning objective are defined respectively as 
+
+fi(x) = 1
+
+mimiX
+
+> h=1
+
+fi,h (x), F (x) = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+fi(x), (1) which separates the within-client empirical average from the network-level aggregation. Data heterogeneity and the local sample size are absorbed into fi. The component losses 
+
+fi,h , local empirical risks fi and aggregate objective F may be nonconvex. At a queried model point, client i observes component loss values but has no access to ∇fi,h or ∇fi. This information pattern arises when the local objective is exposed through the external black-box interface or its derivatives are computationally prohibitive [6]–[8]. To implement the common-model objective through neigh-bor exchanges, assign a local replica xi to each client. The resulting consensus formulation can be obtained from [19] as 
+
+min 
+
+> {xi}Ni=1
+
+1
+
+N
+
+> N
+
+X
+
+> i=1
+
+fi(xi) s.t. xi = xj , {i, j } ∈ E . (2) Since (2) separates local objectives and couples their replicas only along graph edges, connectivity makes the edge con-straints equivalent to x1 = · · · = xN , thereby recovering 
+
+min x F (x) and enabling decentralized ADMM through local loss evaluations and neighbor messages. The required objec-tive regularity and network conditions are stated in Assump-tions 1 and 2, respectively. 
+
+Assumption 1 ([5], [8]): Each component loss is con-tinuously differentiable and Lf -smooth, i.e., ∥∇ fi,h (x) −∇fi,h (y)∥ ≤ Lf ∥x − y∥, ∀x, y ∈ Rd. Furthermore, F is bounded below by F⋆ > −∞ .Assumption 2 ([20]): The communication graph G is fixed, undirected, unweighted, and connected. Messages are ex-changed synchronously over its edges. 
+
+For the graph representation, orient each edge arbitrarily and let B ∈ RN ×|E| be the resulting incidence matrix. For an edge e = (i, j ), set Bi,e = 1, Bj,e = −1, and all other entries in column e to zero. Then LG = BB ⊤ and 4
+
+0 = λ1 < λ 2 ≤ · · · ≤ λN define the graph Laplacian and its ordered eigenvalues, respectively. Suppressing unambiguous Kronecker products with Id, denote Π =  IN − 1 
+
+> N
+
+11 ⊤ ⊗ Id.Before specifying the primal–dual recursion, we characterize the single-point information available at a local model and establish the properties of a memory-based direction formed from such queries. 
+
+B. Single-Point Estimation and Memory Properties 
+
+Each sampled component provides one noisy function value from which a derivative-free direction can be formed. Let 
+
+F denote the information available before a query at an 
+
+F-measurable point x. Client i observes efi,h (x + μu ) =
+
+fi,h (x + μu ) + ζ, where μ > 0 is the smoothing radius, 
+
+u ∈ Rd is the current query direction and ζ is the query noise, respectively. The following assumption adapts the one-point perturbation model to the generated query points. 
+
+Assumption 3 ([8], [9]): For each generated query at an F-measurable point, there exist positive constants cu, R u, M 2 >
+
+0 such that E[u | F ] = 0, Euu ⊤ | F  = cuId and 
+
+∥u∥ ≤ Ru almost surely. Moreover, E[ζ | F , u ] = 0 and 
+
+E
+
+h
+
+| efi,h (x + μu )|2 | F 
+
+i
+
+≤ M2.
+
+The query-moment condition admits smooth objectives on an unconstrained parameter domain. If |fi,h (z)| ≤ Bf for every i, h and z ∈ Rd, and E[ζ2 | F , u ] ≤ σ2 
+
+> ζ
+
+, conditional centering of the query noise gives E
+
+h
+
+| efi,h (x + μu )|2 | F 
+
+i
+
+≤
+
+B2 
+
+> f
+
++ σ2 
+
+> ζ
+
+. A concrete example is the squared probability loss 
+
+f (x) = 12 ∥ softmax( W a ) − y∥2, where x = vec( W ), the feature vector a has uniformly bounded norm, and y is a one-hot label. This loss is globally smooth and takes values in [0 , 1] 
+
+throughout the parameter space. Thus, bounded smooth losses with uniformly bounded conditional noise variance provide a query-moment bound independent of the query locations and smoothing radii. Taking Bf and σζ independent of the training budget also provides the uniformity required by the convergence rates. Under Assumption 3, the local single-point estimator is 
+
+qi,h (x; u, ζ ) = 1
+
+cu
+
+u efi,h (x + μu ). (3) Each evaluation of (3) requires one function value. The esti-mator is used without division by μ. At local step t of round 
+
+k, client i evaluates (3) at x = ϕti,k with smoothing radius μk
+
+and direction uti,h,k ; the resulting query is denoted by qti,h,k .In round k, client i starts from the released model xi,k 
+
+and performs τi local updates with mini-batch size 1 ≤
+
+bi ≤ mi. Set ϕ0 
+
+> i,k
+
+= xi,k . To reuse component-level single-point information, one memory entry is initialized for every 
+
+h ∈ { 1, . . . , m i} by setting r0 
+
+> i,h,k
+
+= xi,k , drawing a reference direction uref ,0
+
+> i,h,k
+
+, and storing 
+
+a0 
+
+> i,h,k
+
+= 1
+
+cu
+
+uref ,0 
+
+> i,h,k
+
+efi,h 
+
+
+
+r0 
+
+> i,h,k
+
++ μkuref ,0
+
+> i,h,k
+
+
+
+. (4) The initial table average is ¯a0 
+
+> i,k
+
+:= m−1
+
+> i
+
+Pmi 
+
+> h=1
+
+a0
+
+> i,h,k
+
+, and this initialization uses one function query per component at the beginning of the round. Let Fk,t contain the public transcript, released and auxiliary states, frozen penalties, current local iterates, memory table, and all randomness revealed before local step (k, t ). The current mini-batches, query directions, and query noises are excluded. Conditional on Fk,t , each Bti,k is uniform over the 
+
+Algorithm 1 SPADE-DFL at client i
+
+Input: Local data Di; neighbor set Ni; public model x0; parameters 
+
+β, ρ, τ i, b i; schedules {ηk , μ k , R clip  
+
+> k
+
+, σ dp ,k }K−1 
+
+> k=0
+
+.
+
+Output: Private released model xi,K and auxiliary states 
+
+{zij,K }j∈N i . 
+
+> 1:
+
+for k = 0 , . . . , K − 1 do  
+
+> 2:
+
+Set ϕ0 
+
+> i,k
+
+= xi,k , freeze pi,k by (6), and initialize the derivative-free estimator memory by (4).  
+
+> 3:
+
+for t = 0 , . . . , τ i − 1 do  
+
+> 4:
+
+Sample Bti,k , evaluate one qti,h,k per selected component using (3), and form vti,k by (5).  
+
+> 5:
+
+Update ϕt+1  
+
+> i,k
+
+by (7), replace the sampled memory pairs, and recompute ¯at+1  
+
+> i,k
+
+. 
+
+> 6:
+
+end for  
+
+> 7:
+
+Set yi,k +1 = ϕτi 
+
+> i,k
+
+and si,k = −ηk
+
+Pτi−1 
+
+> t=0
+
+vti,k . 
+
+> 8:
+
+Clip the accumulated local update, where clip R(0) = 0 :
+
+¯si,k = clip Rclip 
+
+> k
+
+(si,k ) = si,k min 
+
+(
+
+1, Rclip 
+
+> k
+
+∥si,k ∥
+
+)
+
+. 
+
+> 9:
+
+Independently sample the Gaussian release noise as 
+
+νi,k ∼ N  0, σ 2dp ,k Id
+
+ . 
+
+> 10:
+
+Compute and release xi,k +1 by (8).  
+
+> 11:
+
+Exchange the messages in (9) and update all zij,k +1 by (10).  
+
+> 12:
+
+end for 
+
+subsets of size bi and is independent of the current query randomization; current batches are independent across clients. With ¯ati,k := m−1
+
+> i
+
+Pmi 
+
+> h=1
+
+ati,h,k , define 
+
+vti,k = 1
+
+|B ti,k |
+
+X
+
+> h∈B ti,k
+
+ qti,h,k − ati,h,k 
+
+ + ¯ ati,k . (5) After forming vti,k , each sampled pair is replaced by 
+
+(rt+1 
+
+> i,h,k
+
+, a t+1 
+
+> i,h,k
+
+) := ( ϕti,k , q ti,h,k ), while unsampled entries re-main unchanged and ¯at+1  
+
+> i,k
+
+is recomputed. To state the oracle and memory errors, define 
+
+ri,h (x, μ ) := E[qi,h (x; u, ζ ) | F ] − μ∇fi,h (x),rti,k := Evti,k | F k,t 
+
+ − μk∇fi(ϕti,k ).
+
+For compactness, set cr := Lf R3 
+
+> u
+> 2cu
+
+and Q2 := R2
+
+> uM2
+> c2
+> u
+
+. The two statements below characterize the mean and moment properties of the unnormalized single-query estimator under Assumption 3 and those of the memory recursion in (4)–(5), respectively. 
+
+Lemma 1: Under Assumptions 1 and 3, the following statements hold. 
+
+(i) For each F-measurable query point x, it holds that 
+
+E[qi,h (x; u, ζ ) | F ] = μ∇fi,h (x) + ri,h (x, μ ), where 
+
+∥ri,h (x, μ )∥ ≤ cr μ2, and E∥qi,h (x; u, ζ )∥2 ≤ Q2.
+
+(ii) For each local step (k, t ), it holds that E
+
+h
+
+vti,k | F k,t 
+
+i
+
+=
+
+μk∇fi(ϕti,k ) + rti,k , where ∥rti,k ∥ ≤ cr μ2
+
+> k
+
+, while 
+
+m−1
+
+> i
+
+Pmi 
+
+> h=1
+
+E
+
+h
+
+∥ati,h,k ∥2
+
+i
+
+≤ Q2 and E
+
+h
+
+∥vti,k ∥2
+
+i
+
+≤ 9Q2.
+
+Lemma 1(i) characterizes the conditional mean, smooth-ing remainder, and second moment of a component query. Lemma 1(ii) shows that the memory correction preserves the conditional mean of fresh single-point estimates with a controlled second moment. The next subsection incorporates this direction into the local training ADMM recursion. 
+
+C. SPADE-DFL 
+
+Repeated neighbor synchronization can dominate the cost of derivative-free decentralized learning. To reduce the com-5SPADE-DFL  ,G V E Undirected graph   : : , i j i j N ENeighbor Set 1k k Communication round No server | neighbor-only exchange 
+
+Local single point zero order update Private dataset  , 1  
+
+> imii h h
+
+ 
+
+D Private model release Neighbor-only ADMM communication 
+
+Clipping the accumulated local update Gaussian noise private release 
+
+> Clipping bounds update sensitivity
+
+ 2, ,~ 0, dp i k k dI
+
+N
+
+Client 1 
+
+Client i 
+
+Client r Client N Client 2 Client 3 Client j Client l   
+
+> 
+
+  
+
+> 11
+
+.1m,in { , } s.t.  
+
+> 
+
+ 
+
+Ni i   
+
+> Niixiij
+
+fiNjxx x E
+
+> Client j 4
+> Client j 3
+> Client j 1
+> Client j 2
+> Client i
+> 1,i k
+
+x 
+
+# ……  
+
+> Client j 5
+> ,,,
+
+min 1, 
+
+> clip
+
+      
+
+> ki k i k i k
+
+Rs s s‖ ‖     
+
+> One protected state generates all outgoing messages
+> ,,,
+> i
+> i k ii k ij k j
+
+p x z
+
+ 
+
+  N
+
+N
+
+Frozen ADMM penalty vector  
+
+> 0,,
+
+i k i k x
+
+
+
+Set local starting point 
+
+> Communication-round model → local-step iterate
+
+Initialize ZO memory table 
+
+ ,0 ,0 , , , , , , , , , 0 01: ref ref 
+
+      
+
+> i h k i h k i h i h kuki h k
+
+a uu f rc
+
+
+
+> 1
+
+a 2a 3a 4a ha
+
+> Memory initialization query
+
+0,1, , 1it
+
+ Local loop 
+
+> Mini-batch and single point query
+
+ , , , , , , , , 
+
+1: t t t ti h k i h k i h iuk k i h k q u f uc
+
+ 
+
+> One function evaluation per selected component Form the memory corrected direction Current estimate - historical estimate + memory average
+
+    
+
+> ,
+> ,, , , , ,,
+
+1: | | 
+
+  ti k        
+
+> tttti k i h k i h k i k thBi k
+
+v q a aB 
+
+> Update ZO Memory Continue with the next local update until step is completed i
+> 
+
+Unprotected local model    
+
+> ,1,i
+> i k i k
+
+y
+
+> 
+
+  
+
+> Accumulate the round-k
+> data-dependent update
+> Local iterate before private release
+> 1,,0
+> 
+
+    
+
+> i
+> ti k ki k t
+
+s v
+
+> 
+
+
+
+Send to all neighbors    
+
+> ,,,1
+
+2  i j k ij k i k m z x
+
+
+
+Receive neighbor information, update edge variable 
+
+ , 1 , ,
+
+12 
+
+> 
+
+ ij k ij k j i k z z m
+
+Enter the next round of communication           
+
+> 0,1,,1,1,1,1
+
+,         j k j i k ij k i k i k i k x m z p x
+
+ 1 k k
+
+... Black box compatibility Privacy Protection Efficient communication 
+
+> …… ……
+> 0189
+> Local single-point updates
+
+ 1, , , ,       
+
+> ttti k i k ki k ki k
+
+v p
+
+        
+
+Different topological structures   
+
+> ,,,
+
+, 2clip clip 
+
+  i k k i k i k ks R s s R‖ ‖ ‖ ‖      
+
+> ,1,,,,
+
+  i k i k i k k i k i k i k x x p s
+
+    1 1 1, , , , , , ,    
+
+> 1,
+> 
+
+               
+
+> imtttti h k i h k i k i h k hi
+> aqaam
+> Keep fixed throughout all local updates in round k
+> ,i k p
+> Effective stepsize: kkk
+>   
+
+Fig. 1. Workflow of SPADE-DFL. In round k, each client freezes its ADMM penalty, initializes the one-point estimator memory, and performs τi local derivative-free control-variate updates. The accumulated data-dependent local update is clipped and perturbed once before release, after which all neighbor messages and auxiliary-variable updates are computed from the released state. 
+
+munication frequency, SPADE-DFL freezes the ADMM cor-rection during a local stage, performs multiple single-query updates, and communicates only after the stage is completed. Consequently, client i executes τi local updates between two consecutive neighbor exchanges, which is illustrated in Algorithm 1. Round k uses step size ηk > 0 and smoothing radius μk > 0, while ρ, β > 0 determine the ADMM correction. All clients use xi, 0 = x0 and zij, 0 = ρx 0 for every 
+
+j ∈ N i, hence zij, 0 + zji, 0 = ρ(xi, 0 + xj, 0) on each edge. The initialization, graph, and parameter schedules are public and data-independent. Fresh local randomization is independent across clients, and release noise is independent of all pre-release variables. 
+
+1) Local Derivative-Free Training: At the beginning of round k, client i sets ϕ0
+
+i,k = xi,k and freezes the neighbor-dependent ADMM penalty at the current released state as 
+
+pi,k = ρ|N i|xi,k − X
+
+j∈N i
+
+zij,k . (6) The same pi,k is used throughout all τi local updates and the local model evolves as 
+
+ϕt+1 
+
+i,k = ϕti,k − ηk
+
+ vti,k + μkβp i,k 
+
+ , (7) Let αk = ηkμk and bvti,k = vti,k /μ k. The local update equivalently reads ϕt+1 
+
+i,k = ϕti,k − αk
+
+bvti,k + βp i,k 
+
+
+
+. Thus, αk
+
+is the effective descent stepsize and αkβ is the coefficient of the frozen ADMM correction per local step. Under the synchronized parameters settings, a = τ αβ is the aggregate network gain over one communication round. After τi updates, define yi,k +1 := ϕτi
+
+i,k and si,k := −ηk
+
+Pτi−1
+
+t=0 vti,k . Since pi,k 
+
+is fixed within the round, it follows that yi,k +1 = xi,k −
+
+τiηkμkβp i,k + si,k . Therefore, the state yi,k +1 is intermediate and unreleased. 
+
+2) Private Release and Decentralized Communication: Be-fore communication, SPADE-DFL sanitizes the accumulated data-dependent update si,k once, while leaving the explicit ADMM correction unchanged. The release noise is indepen-dent of all variables generated before the corresponding release and is conditionally independent across clients and rounds. Specifically, client i projects the accumulated data-dependent update si,k onto the closed Euclidean ball centered at the origin with radius Rclip 
+
+k , and denotes the resulting clipped vector by ¯si,k . It then samples a zero-mean Gaussian vector 
+
+νi,k with covariance σ2dp ,k Id. The private released state is 
+
+xi,k +1 = xi,k − τiηkμkβp i,k + ¯ si,k + νi,k . (8) Define ecl 
+
+i,k := ¯ si,k − si,k , which gives the equivalent decom-position xi,k +1 = yi,k +1 + ecl 
+
+i,k + νi,k . The released state is then used to form each outgoing message as 
+
+mi→j,k = zij,k − 2ρx i,k +1 , j ∈ N i. (9) After receiving the corresponding message from neighbor j,client i updates the directed auxiliary state as 
+
+zij,k +1 = 12 (zij,k − mj→i,k ) . (10) Client i completes τi local updates before each neighbor exchange, with all outgoing messages constructed from the released state xi,k +1 . Communication is thus amortized over multiple local updates and each directed edge carries one d-dimensional ADMM message per round, the complete work-flow of which is summarized in Fig. 1. IV. T HEORETICAL ANALYSIS 
+
+The exact message recursion determines the graph correc-tion from the released history. Conditioning on this history 6
+
+gives the release law used for privacy accounting. The dis-agreement and descent bounds then yield the communication and query budgets. 
+
+A. Exact Message Recursion and Transcript Privacy 
+
+Variables without node or edge subscripts denote stacked vectors and Kronecker products with Id are omitted when unambiguous. For each oriented edge e = (i, j ), define 
+
+ωe,k := ( zij,k − zji,k )/2. Set ω−1 := 0 and λk := −Bω k−1.These variables express the neighbor exchanges as a recursion for the graph correction. 
+
+Lemma 2: Under the common initialization in Algorithm 1, the message rules (9) –(10) satisfy 
+
+ωk+1 = ωk − ρ
+
+2 B⊤xk+1 , (11) 
+
+pk = ρL G xk − Bω k−1. (12) 
+
+Equivalently, 
+
+pk = ρL G xk + λk, (13) 
+
+λk+1 = λk + ρ
+
+2 LG xk. (14) 
+
+Moreover, λk ∈ range( B), 1⊤λk = 0 and 1⊤pk = 0 .Proof: See Appendix B. Two inputs are adjacent for client i if Di is replaced by D′ 
+
+> i
+
+of the same prescribed size mi, with all other datasets unchanged. Let HK be the augmented transcript of released states and exchanged messages through round K − 1, together with the public initialization and schedules. Given the released-state history, all directed messages and auxiliary states are deterministic. Thus, privacy of HK implies privacy of any observed message transcript. For δi ∈ (0 , 1) , define 
+
+ρi, priv := 
+
+> K−1
+
+X
+
+> k=0
+
+2( Rclip  
+
+> k
+
+)2
+
+σ2dp ,k 
+
+, ϵ i := ρi, priv + 2 
+
+q
+
+ρi, priv log(1 /δ i).
+
+Applying adaptive composition to the Gaussian releases gives the following privacy guarantee for the full interactive tran-script. 
+
+Theorem 1 (Transcript privacy): Use the public, data-independent initialization and schedules in Section III-C. Suppose σdp ,k > 0 for k = 0 , . . . , K − 1. Then HK is ρi, priv -zCDP and (ϵi, δ i)-DP with respect to replacement of Di.Proof: See Appendix B. Conditioning on Hk fixes the explicit graph correction. The clipped local increment may remain randomized, so the proof bounds the divergence between Gaussian mixtures before applying adaptive composition. 
+
+B. Network Stability and Disagreement 
+
+Throughout Sections IV-B–IV-D, impose Assumptions 1–3 and the common initialization in Section III-C. Use synchro-nized constants τi = τ ≥ 1, ηk = η > 0, and μk = μ > 0,with ρ, β > 0 fixed within each run. The clipping and noise schedules may vary with k.Typically, write ¯ϕtk := N −1 P 
+
+> i
+
+ϕti,k and ¯xk := 
+
+N −1 P 
+
+> i
+
+xi,k . Define the disagreement measures as 
+
+Ck := 1
+
+N E[∥Πxk∥2], Cϕk,t := 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+E[∥ϕti,k − ¯ϕtk∥2].
+
+Then, the clipping and cumulative release energies are 
+
+Ecl ,K := 
+
+> K−1
+
+X
+
+> k=0
+
+Ecl  
+
+> k
+
+, Edp ,K := 
+
+> K−1
+
+X
+
+> k=0
+
+dσ 2dp ,k ,
+
+where Ecl  
+
+> k
+
+:= 1
+
+> N
+
+PNi=1 E[∥ecl 
+
+> i,k
+
+∥2]. Thus, Lemma 2 associates each nonzero Laplacian eigenvalue λ with the homogeneous modal matrix 
+
+Mλ =
+
+1 − aρλ −aρλ/ 2 1
+
+
+
+,
+
+where α = ημ and a = τ βα . Local updates, clipping and release noise enter as additive inputs. Under the stability condition 
+
+0 < aρλ N < 83 , (15) let Pλ ≻ 0 solve 
+
+M ⊤ 
+
+> λ
+
+PλMλ − Pλ = −I2. (16) Define 
+
+p := min  
+
+> 2≤ℓ≤N
+
+λmin (Pλℓ ), p := max  
+
+> 2≤ℓ≤N
+
+λmax (Pλℓ ),
+
+and set χ := 1 /(2 p) and cw := p(2 p − 1) . Let U⊥ contain or-thonormal eigenvectors for the nonzero Laplacian eigenvalues, and write 
+
+ξk := col  (U ⊤⊥ ⊗ Id)xk, (U ⊤⊥ ⊗ Id)λk
+
+ .
+
+Let S reorder ξk into 2d-dimensional primal–dual pairs in-dexed by eigenmode. The Lyapunov matrix and energy are 
+
+P := S⊤ diag Nℓ=2 (Pλℓ ⊗ Id)S, Vk := 1
+
+N E[ξ⊤ 
+
+> k
+
+Pξk].
+
+This Lyapunov energy measures how network contraction competes with perturbations from local updates and private releases. 
+
+Lemma 3 (Schur stability and input bound): The matrices 
+
+Mλ are Schur stable for all nonzero graph modes if and only if (15) holds. Under this condition, (16) has a unique positive-definite solution for each mode, and, for each round k,
+
+Vk+1 ≤ (1 − χ)Vk + cw
+
+h
+
+18 η2τ 2Q2 + 2 Ecl 
+
+> k
+
++
+
+
+
+1 − 1
+
+N
+
+
+
+dσ 2dp ,k 
+
+i
+
+. (17) 
+
+Furthermore, 
+
+Ck ≤ Vk
+
+p , (18) 
+
+1
+
+N E∥pk∥2 ≤ 2( ρ2λ2 
+
+> N
+
++ 1) 
+
+p Vk. (19) 
+
+The common initialization gives V0 = 0 .Proof: See Appendix C. The modal condition governs homogeneous disagreement, while the oracle and descent bounds control the stochastic inputs. The single-client case follows by removing the network terms. 
+
+Remark 1: The modal analysis describes coordination among N ≥ 2 clients. For N = 1 , the graph correction and dual state vanish, so pk = λk = 0 . Both disagreement measures are identically zero because the network average equals the sole client’s iterate. The algorithm then performs local derivative-free updates with clipping and Gaussian noise applied at each release. Its descent estimate follows directly from smoothness and the oracle bounds in Lemma 1, without introducing graph eigenvalues or modal Lyapunov constants. 7
+
+To bound within-round drift, define 
+
+Γ := 3 + 6( τ − 1) 2α2β2(ρ2λ2 
+
+> N
+
++ 1) 
+
+p .
+
+The next estimate transfers control of the released-state dis-agreement to the local iterates between communication rounds. 
+
+Lemma 4 (Within-round disagreement): Under (15) , for each round k and t = 0 , . . . , τ − 1,
+
+Cϕk,t ≤ ΓVk + 27 η2t2Q2. (20) 
+
+Proof: See Appendix D. 
+
+C. Finite-Horizon Stationarity and Consensus 
+
+For the descent bound, collect the local-query and smooth-ing terms in 
+
+Aloc := 9Lf
+
+2 τ η 2Q2 + τ αc 2 
+
+> r
+
+μ2
+
++ 98 αL 2 
+
+> f
+
+η2Q22τ (τ − 1)(2 τ − 1) + 1 .
+
+Applying smoothness with the oracle and disagreement bounds gives the objective decrease over one communication round. 
+
+Lemma 5 (One-round descent): Under the standing assump-tions and (15) , for each round k,
+
+E[F (¯ xk+1 )] ≤ E[F (¯ xk)] − α
+
+8 
+
+> τ−1
+
+X
+
+> t=0
+
+E[∥∇ F ( ¯ϕtk)∥2]+ αL 2 
+
+> f
+
+τ Γ2 Vk + Aloc +
+
+ 4
+
+α + Lf
+
+2
+
+
+
+Ecl  
+
+> k
+
++ Lf
+
+2N dσ 2dp ,k . (21) 
+
+Proof: See Appendix D. Define the time-averaged stationarity–consensus criterion 
+
+SK := 1
+
+Kτ 
+
+> K−1
+
+X 
+
+> k=0
+> τ−1
+
+X
+
+> t=0
+
+E[∥∇ F ( ¯ϕtk)∥2] + 1
+
+K
+
+> K−1
+
+X
+
+> k=0
+
+Ck,
+
+and the average release energies 
+
+Ecl ,K := Ecl ,K 
+
+K , Edp ,K := Edp ,K 
+
+K .
+
+Summing the descent inequality and controlling the accumu-lated disagreement yield the following bound on SK .
+
+Theorem 2 (Stationarity and consensus): Suppose Assump-tions 1–3 hold. Use the common initialization and the syn-chronized parameters in Section IV-B, with a fixed round gain 
+
+a = τ βημ satisfying (15) . Then, for each K ≥ 1,
+
+SK = O 1
+
+Kτ α + ημ + μ2 + η2τ 2
+
++
+
+
+
+1 + 1
+
+τ α 2
+
+
+
+Ecl ,K +
+
+
+
+1 + 1
+
+N τ α 
+
+
+
+Edp ,K 
+
+!
+
+. (22) 
+
+The implicit constant depends only on the initial objective gap, 
+
+ρ, a, the fixed graph, and the smoothness and oracle constants. It is independent of K, τ , η, μ, and the release energies. Proof: See Appendix D. The first four terms in (22) account for derivative-free descent and local drift; the remaining terms quantify clipping and Gaussian release. These residual terms do not establish an unavoidable error floor. The bound is time-averaged, not a last-iterate guarantee; the internal iterates used in SK are not additional releases. For the non-private case, set ecl  
+
+> i,k
+
+= 0 and σdp ,k = 0 , and write T := Kτ . For fixed η0, μ 0 > 0 and 0 < a 0 < 8/(3 ρλ N ),choose 
+
+ηT = η0T −1/2, μT = μ0T −1/6, βT,τ = a0
+
+τ η T μT
+
+. (23) Substituting this schedule into Theorem 2 quantifies how the local stage length affects the rate. 
+
+Corollary 1 (Non-private local-update rate): Under the conditions of Theorem 2, use (23) with zero clipping error and release noise. If the oracle moment bound is uniform over this family of runs, then 
+
+SK = O
+
+
+
+T −1/3 + τ 2
+
+T
+
+
+
+. (24) 
+
+In particular, τ = O(T 1/3) preserves the O(T −1/3) order, and τ = Θ( T 1/3) gives K = Θ( T 2/3).Proof: See Appendix D. Under this schedule, the round gain remains fixed while the individual parameters vary. The following remark addresses convex objectives. 
+
+Remark 2: For convex objectives, Theorem 2 still bounds stationarity and disagreement under the stated assumptions. If a minimizer x⋆ exists, convexity gives F (x) − F (x⋆) ≤⟨∇ F (x), x − x⋆⟩, so exact stationarity implies global optimal-ity. Turning this relation into an objective-gap rate requires additional control of the distance to the solution set. In particular, Corollary 1 preserves the stationarity and consensus rate with the same reduction in communication rounds for convex instances. 
+
+D. Communication and Query Complexity 
+
+Under the non-private schedule of Corollary 1, choosing 
+
+τ = Θ( T 1/3) preserves the O(T −1/3) stationarity–consensus rate. For a tolerance εstat > 0 on SK , sufficient budgets are 
+
+T = O(ε−3stat ) local updates and K = O(ε−2stat ) communication rounds. The latter improves on the sufficient O(ε−3stat ) round bound for the τ = 1 specialization. Client i uses mi + τ b i
+
+function queries per round, including memory initialization, giving Qi = Km i +T b i = O(miε−2stat +biε−3stat ). Each directed edge carries one d-dimensional vector per round, so the total scalar communication cost is 2|E| dK = O(|E| dε −2stat ). The memory table occupies O(mid) storage in addition to the model and edge states. For private training with a constant clipping radius and uniform release-noise variance, Theorem 1 gives σ2dp ∝ K at a fixed total zCDP budget. At fixed T , in-creasing τ reduces both the number of releases K = T /τ and the noise variance required per release. Theorem 2 quantifies the accompanying local-drift and release-error terms, relating these communication savings to the stationarity–consensus bound. The constants in this comparison remain controlled as the local-stage length grows. For fixed ρ and graph, (23) maintains 
+
+a = a0, so the modal matrices Mλ and their Lyapunov solutions Pλ are unchanged. Since (τ − 1) 2α2β2 ≤ a20, the coefficient Γ is uniformly bounded in T and τ . The uniform oracle-moment condition in Corollary 1 also makes the bound 
+
+9Q2 in Lemma 1(ii) independent of T and τ . Applying (23) to Theorem 2 gives (24) with uniform constants and 8 
+
+> Fig. 2. Illustrative brain images related to Alzheimer’s disease and brain tumors.
+
+the explicit local-drift term τ 2/T . The privacy calculation uses the same round-level description. Each client forms its outgoing messages by deterministic post-processing of one protected state and the preceding transcript, as established in Theorem 1. Under replacement of one client’s dataset, privacy composes over that client’s K releases, whereas the communication count includes all 2|E| K directed messages. The other clients’ conditional response laws are unchanged under this replacement, so adaptive composition covers the full interactive transcript. V. E XPERIMENTAL EVALUATION 
+
+We evaluate SPADE-DFL on four classification tasks under heterogeneous client-data partitions. We also examine the effects of client count and privacy budget, and compare communication costs under matched local-update budgets on a bounded nonconvex problem. 
+
+A. Datasets and Models 
+
+We use four datasets, i.e., MNIST 1, Fashion-MNIST 2,Alzheimer’s disease 3, and Brain Tumor MRI 4. The MNIST task distinguishes digits 6 and 7, and the Fashion-MNIST task distinguishes T-shirt/top from Trouser. The Alzheimer’s disease task uses structured clinical features for binary clas-sification. Brain Tumor MRI is used for four-class image classification. For MNIST and Fashion-MNIST, the original 784-dimensional image vectors are reduced to 10 principal com-ponents before training. The Alzheimer’s disease task uses 39-dimensional structured clinical features. For Brain Tu-mor MRI, a frozen ResNet-18 V1 network extracts 512-dimensional representations. Principal component analysis fit-ted on the training split reduces these representations to 10 dimensions, followed by a four-class linear softmax classifier with 40 trainable parameters. Four client-data distributions are considered: independent and identically distributed (IID), Dirichlet partitions with con-centration parameters α = 0 .6 and α = 0 .3, and a pathological partition. A smaller Dirichlet concentration produces stronger variation in class proportions across clients. The same data partition and random seed are used across methods within each comparison. 
+
+> 1https://www.kaggle.com/datasets/hojjatk/mnist-dataset
+> 2https://www.kaggle.com/datasets/zalando-research/fashionmnist
+> 3https://www.kaggle.com/datasets/rabieelkharoua/alzheimers-disease-dataset
+> 4https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset
+
+B. Comparative Evaluation under Heterogeneous Client Data 
+
+We compare SPADE-DFL with LT-ADMM-VR, LT-ADMM-DP, DP-SGD, DP-FedAvg, 1P-DSG, and 1P-DSGT. The LT-ADMM-VR, LT-ADMM-DP, DP-SGD, and DP-FedAvg implementations use symmetric two-point component-loss estimates, while 1P-DSG, 1P-DSGT, and SPADE-DFL use one-point estimates. Function-query budgets and privacy settings vary across methods. The comparison uses 50 rounds and 30 paired random seeds. The decentralized implementations use N = 31 clients on an undirected Erd˝ os–R´ enyi graph with edge probability 0.3. The centralized DP-SGD baseline uses pooled data with N = 1 , so its results are shared across the client-data partitions. SPADE-DFL uses τ = 2 local updates for MNIST, Fashion-MNIST, and Brain Tumor MRI, and τ = 8 for Alzheimer’s disease. For the comparative experiments, SPADE-DFL reinitializes the estimator memory at the beginning of each round using (4) and is evaluated without release noise. For MNIST, Fashion-MNIST, and Brain Tumor MRI, the curves and final-round values are summarized over 30 random seeds using the arithmetic mean and population standard deviation. For Alzheimer’s disease, the same statistics are calculated over 150 fold–seed trajectories obtained from five stratified folds and 30 seeds per fold. All accuracy values are reported as percentages. Figs. 3–6 present the accuracy trajectories over 50 communication rounds. In each figure, the panels from left to right correspond to IID, Dirichlet α = 0 .6,Dirichlet α = 0 .3, and pathological partitions. The curves show the arithmetic mean, and the shaded regions show ± one population standard deviation. Table II reports the correspond-ing final-round accuracies. Boldface marks the largest mean in each row, underlining marks the largest competing mean, and 
+
+∆best denotes their difference in percentage points. Under the stated oracle and privacy configurations, SPADE-DFL achieved the highest mean test accuracy at round 50 in all 16 dataset–partition combinations reported in Table II. The gains over the best competing method ranged from 0.86 percentage points on IID Brain Tumor MRI to 4.83 percentage points on Fashion-MNIST with Dirichlet α = 0 .6. Across the four partitions, SPADE-DFL achieved mean accuracies of 95.15–95.40% on MNIST, 93.17–93.36% on Fashion-MNIST, 75.64–77.31% on Alzheimer’s disease, and 74.07–74.44% on Brain Tumor MRI. 
+
+C. Sensitivity to Client Count and Privacy Budget 
+
+Tables III and IV report validation accuracy for SPADE-DFL under Dirichlet partitions with α = 0 .3; MNIST, Fashion-MNIST, and Alzheimer’s disease use balanced-capacity parti-tions, whereas Brain Tumor MRI uses the ordinary Dirichlet partition recorded in the adopted runs. The reported privacy budgets use client-level replacement adjacency with δ = 10 −5,where adjacent inputs replace one client’s entire fixed-size dataset while leaving all other clients’ fixed preprocessed datasets unchanged; the accountant composes one Gaussian release per client per round with sensitivity 2Rclip  
+
+> k
+
+, and the guarantee is conditional on the frozen preprocessing and partition rather than end-to-end from raw data. 90 10 20 30 40 50 
+
+Rounds 
+
+30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+IID 0 10 20 30 40 50 
+
+Rounds 
+
+30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+Non-IID: Dir 0.6 0 10 20 30 40 50 
+
+Rounds 
+
+30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+Non-IID: Dir 0.3 0 10 20 30 40 50 
+
+Rounds 
+
+30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+Pathological 
+
+Fig. 3. Test accuracy on binary MNIST. 0 10 20 30 40 50 
+
+Rounds 
+
+30 35 40 45 50 55 60 65 70 75 80 85 90 95 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+IID 0 10 20 30 40 50 
+
+Rounds 
+
+30 35 40 45 50 55 60 65 70 75 80 85 90 95 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+Non-IID: Dir 0.6 0 10 20 30 40 50 
+
+Rounds 
+
+30 35 40 45 50 55 60 65 70 75 80 85 90 95 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+Non-IID: Dir 0.3 0 10 20 30 40 50 
+
+Rounds 
+
+30 35 40 45 50 55 60 65 70 75 80 85 90 95 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+Pathological 
+
+Fig. 4. Test accuracy on binary Fashion-MNIST. 0 10 20 30 40 50 
+
+Rounds 
+
+35 40 45 50 55 60 65 70 75 80 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+IID 0 10 20 30 40 50 
+
+Rounds 
+
+35 40 45 50 55 60 65 70 75 80 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+Non-IID: Dir 0.6 0 10 20 30 40 50 
+
+Rounds 
+
+35 40 45 50 55 60 65 70 75 80 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+Non-IID: Dir 0.3 0 10 20 30 40 50 
+
+Rounds 
+
+35 40 45 50 55 60 65 70 75 80 
+
+> Accuracy (%)
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+Pathological 
+
+Fig. 5. Test accuracy on Alzheimer’s disease. 0 10 20 30 40 50 
+
+Rounds 
+
+15 20 25 30 35 40 45 50 55 60 65 70 75 80 
+
+> Accuracy (%)
+
+IID 
+
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+0 10 20 30 40 50 
+
+Rounds 
+
+15 20 25 30 35 40 45 50 55 60 65 70 75 80 
+
+> Accuracy (%)
+
+Non-IID: Dir 0.6 
+
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+0 10 20 30 40 50 
+
+Rounds 
+
+15 20 25 30 35 40 45 50 55 60 65 70 75 80 
+
+> Accuracy (%)
+
+Non-IID: Dir 0.3 
+
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+0 10 20 30 40 50 
+
+Rounds 
+
+15 20 25 30 35 40 45 50 55 60 65 70 75 80 
+
+> Accuracy (%)
+
+Pathological 
+
+> LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL
+
+Fig. 6. Test accuracy on Brain Tumor MRI. TABLE II TEST ACCURACY AT ROUND 50 UNDER THE CONFIGURATIONS IN SECTION V-B. 
+
+Dataset Distribution LT-ADMM-VR LT-ADMM-DP DP-SGD DP-FedAvg 1P-DSG 1P-DSGT SPADE-DFL ∆best 
+
+MNIST IID 85 .30 ±7.35 92 .22 ±3.97 55 .81 ±13 .16 71 .69 ±8.96 62 .15 ±12 .91 76 .58 ±11 .20 95 .40 ±3.24 +3 .18 
+
+Dir. ( α = 0 .6) 83 .95 ±7.29 92 .04 ±5.01 55 .81 ±13 .16 71 .68 ±9.11 61 .81 ±12 .81 75 .68 ±11 .33 95 .31 ±2.68 +3 .27 
+
+Dir. ( α = 0 .3) 85 .07 ±6.97 91 .55 ±4.75 55 .81 ±13 .16 71 .75 ±9.15 61 .15 ±12 .78 75 .45 ±11 .17 95 .15 ±3.13 +3 .60 
+
+Pathological 85 .21 ±7.48 92 .05 ±4.85 55 .81 ±13 .16 71 .69 ±9.11 61 .98 ±12 .97 75 .97 ±11 .81 95 .37 ±3.08 +3 .32 
+
+Fashion-MNIST IID 84 .95 ±5.94 88 .74 ±4.03 57 .33 ±13 .79 70 .67 ±9.98 58 .01 ±12 .37 74 .43 ±11 .36 93 .28 ±2.21 +4 .54 
+
+Dir. ( α = 0 .6) 84 .48 ±6.51 88 .42 ±4.68 57 .33 ±13 .79 70 .89 ±10 .04 57 .90 ±13 .03 74 .92 ±10 .46 93 .25 ±1.87 +4 .83 
+
+Dir. ( α = 0 .3) 84 .12 ±6.86 89 .13 ±3.22 57 .33 ±13 .79 70 .77 ±10 .18 58 .03 ±12 .94 75 .09 ±10 .63 93 .36 ±2.18 +4 .23 
+
+Pathological 84 .39 ±6.13 89 .32 ±4.29 57 .33 ±13 .79 70 .49 ±10 .30 57 .69 ±12 .61 75 .11 ±10 .99 93 .17 ±2.22 +3 .85 
+
+Alzheimer’s disease IID 71 .28 ±3.18 73 .99 ±2.64 68 .47 ±3.44 71 .10 ±3.10 57 .11 ±4.41 64 .86 ±4.08 77 .27 ±2.91 +3 .28 
+
+Dir. ( α = 0 .6) 70 .34 ±3.32 73 .10 ±3.24 68 .47 ±3.44 69 .56 ±3.43 56 .20 ±4.95 63 .56 ±4.49 77 .31 ±2.86 +4 .21 
+
+Dir. ( α = 0 .3) 69 .33 ±3.93 72 .02 ±3.60 68 .47 ±3.44 68 .18 ±3.51 56 .49 ±4.75 63 .27 ±4.54 75 .73 ±3.62 +3 .71 
+
+Pathological 68 .56 ±3.72 71 .61 ±3.02 68 .47 ±3.44 70 .17 ±3.05 55 .42 ±4.93 61 .84 ±4.95 75 .64 ±2.58 +4 .03 
+
+Brain Tumor MRI IID 51 .46 ±5.42 60 .06 ±4.47 61 .40 ±3.79 73 .52 ±0.75 32 .28 ±6.81 47 .35 ±7.86 74 .38 ±0.52 +0 .86 
+
+Dir. ( α = 0 .6) 52 .09 ±7.11 60 .81 ±4.06 61 .40 ±3.79 73 .28 ±0.79 32 .23 ±7.24 47 .95 ±7.35 74 .35 ±0.55 +1 .07 
+
+Dir. ( α = 0 .3) 50 .50 ±7.08 58 .01 ±5.35 61 .40 ±3.79 72 .96 ±0.92 32 .81 ±6.40 48 .22 ±6.26 74 .07 ±0.80 +1 .11 
+
+Pathological 53 .81 ±6.08 59 .61 ±4.86 61 .40 ±3.79 73 .20 ±0.87 32 .03 ±7.24 48 .06 ±7.70 74 .44 ±0.63 +1 .24 10 
+
+TABLE III VALIDATION ACCURACY UNDER VARYING CLIENT COUNTS , ε = 32 .              
+
+> Dataset N= 30 N= 40 N= 50 N= 75 N= 100
+> MNIST 99 .21 ±0.15 99 .03 ±0.15 99 .21 ±0.19 99 .21 ±0.23 99 .15 ±0.11
+> Fashion-MNIST 94 .22 ±0.67 92 .28 ±0.98 92 .23 ±1.03 93 .00 ±0.90 93 .55 ±0.70
+> Alzheimer’s disease 72 .16 ±0.79 72 .16 ±1.43 72 .84 ±0.89 72 .49 ±1.06 73 .00 ±0.48
+> Brain Tumor MRI 65 .46 ±3.72 68 .82 ±3.56 65 .00 ±2.34 70 .46 ±3.02 70 .96 ±3.40
+
+TABLE IV VALIDATION ACCURACY UNDER VARYING PRIVACY BUDGETS , N = 100 .                   
+
+> Dataset ε= 4 ε= 8 ε= 16 ε= 24 ε= 32
+> MNIST 93 .32 ±8.71 97 .98 ±1.79 99 .05 ±0.12 99 .15 ±0.16 99 .15 ±0.11
+> Fashion-MNIST 92 .50 ±2.18 93 .38 ±1.81 93 .43 ±1.01 93 .58 ±0.88 93 .55 ±0.70
+> Alzheimer’s disease 61 .05 ±3.17 67 .26 ±2.55 71 .56 ±0.74 72 .81 ±0.76 73 .00 ±0.48
+> Brain Tumor MRI 43 .29 ±9.92 54 .00 ±6.73 64 .18 ±5.50 69 .25 ±4.60 70 .96 ±3.40 010 20 30 40 50
+
+Rounds      
+
+> 62.5 65.0 67.5 70.0 72.5 75.0 77.5 80.0 82.5
+> Accuracy (%)
+> mean ± 95% CI
+> IID Dir. 0.6 Dir. 0.3 Mixed Path. Dir. 0.1
+> 010 20 30 40 50 −0.1 0.0 0.1
+> Difference vs. IID (percentage points)
+
+Fig. 7. Test accuracy across five MNIST partitions. 
+
+Table III varies the number of clients from 30 to 100 at ε = 32 . MNIST accuracy remained between 99.03% and 99.21%. The corresponding ranges were 92.23–94.22% for Fashion-MNIST, 72.16–73.00% for Alzheimer’s disease, and 65.00–70.96% for Brain Tumor MRI. Brain Tumor MRI showed the largest variation and reached its highest mean accuracy at N = 100 .Table IV varies ε from 4 to 32 at N = 100 . Mean validation accuracy increased from 93.32% to 99.15% on MNIST, from 92.50% to 93.55% on Fashion-MNIST, from 61.05% to 73.00% on Alzheimer’s disease, and from 43.29% to 70.96% on Brain Tumor MRI. The largest gain occurred on Brain Tumor MRI. MNIST accuracy changed little beyond 
+
+ε = 16 , while Fashion-MNIST varied by approximately one percentage point over the tested range. 
+
+D. Client Heterogeneity and Roundwise Comparisons 
+
+A separate heterogeneity experiment evaluates SPADE-DFL on binary MNIST using N = 1000 clients on a degree-two ring, τ = 8 , and (ε, δ ) = (8 , 10 −5). The experiment uses 50 communication rounds and 30 paired random seeds. In Fig. 7, the curves show the arithmetic mean, and the shaded regions show two-sided 95% Student’s t confidence intervals. IID Mixed Path. Dir. 0.6 Dir. 0.3 Dir. 0.1 
+
+Client-data distribution 
+
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Client p(y=7)
+
+Fig. 8. Client-level digit-7 proportions across MNIST partitions. −20 −10 0 10 20 
+
+Accuracy change vs. LT-ADMM-VR (percentage points)   
+
+> 012345678
+> −log10(BH-adjusted p-value)
+> SPADE-DFL, IID SPADE-DFL, Dir. 0.6 SPADE-DFL, Dir. 0.3 SPADE-DFL, Pathological 1P-DSG, Dir. 0.3 DP-SGD, Dir. 0.3
+> n=30 paired seeds; 1200 comparisons
+> Worse Not resolved Better
+
+Fig. 9. Accuracy differences relative to LT-ADMM-VR. 
+
+The inset reports the matched-seed mean accuracy difference relative to the IID partition. Fig. 8 shows the client-level proportion of digit 7 under IID, pathological denoted by Mixed Path, and Dirichlet partitions with α ∈ { 0.6, 0.3, 0.1}. The mean accuracy curves in Fig. 7 are closely aligned across the five partitions. Fig. 8 shows greater variation in the proportion of digit-7 samples across clients under the non-IID partitions. In Fig. 9, each point represents one method–partition–round comparison relative to LT-ADMM-VR. The horizontal coor-dinate is the paired mean accuracy difference over 30 seeds. Statistical comparisons use two-sided paired Wilcoxon signed-rank tests, with Benjamini–Hochberg correction across the 1,200 comparisons. These tests provide comparisons along the training trajectories, whose successive rounds are statistically dependent. 
+
+E. Communication–Optimization Trade-off 
+
+Fig. 10 compares communication after every local update, corresponding to τ = 1, with the prescribed local-update schedule τ = T 1/3. The experiment uses N = 20 clients arranged in a cycle, model dimension d = 20 , and total 11 1k 3.4k 10.6k 29.8k 
+
+Total local-update budget, T    
+
+> 10⁵ 10⁶ 10⁷
+> Transmitted model scalars
+> 10× 15× 22× 31×
+> SPADE-DFL local Shaded area: communication saved Every update
+> 90.0–96.8% saved
+> Fig. 10. Communication cost under matched local-update budgets.
+
+local-update budgets T ∈ { 1000 , 3375 , 10648 , 29791 }. These budgets correspond to τ ∈ { 10 , 15 , 22 , 31 } under the local-update schedule. Cumulative communication is measured as 2|E| dK trans-mitted model scalars, where K = T /τ . The local-update schedule reduced communication by factors of 10, 15, 22, and 31 for the four update budgets. At T = 29 ,791 , the communication volume was 768,800 scalars with τ = 31 and 23,832,800 scalars with τ = 1 , a reduction of 96.8%. The empirical stationarity–consensus criterion decreased with the update budget under both schedules. At T = 29 ,791 ,its mean over 30 paired seeds was 0.010392 with τ = 31 and 0.000372 with τ = 1 . At this budget, the 96.8% reduction in transmitted scalars is accompanied by a larger stationarity– consensus residual. VI. C ONCLUSION 
+
+SPADE-DFL characterizes how local computation can re-place neighbor communication when learning relies on single-point function evaluations. For smooth nonconvex objectives under uniform query-moment bounds, the prescribed nonpri-vate schedule yields a time-averaged stationarity and consen-sus bound of O(T −1/3 + τ 2/T ), where T is the number of local updates per client and τ is the number of updates between exchanges. This dependence permits τ = Θ( T 1/3),reducing communication to Θ( T 2/3) rounds while preserv-ing the O(T −1/3) convergence order. The communication interval also determines how often local information is pri-vately released. Protecting the accumulated data-dependent increment once per round establishes client-level differential privacy for the full interactive transcript. With a fixed clipping radius and total zCDP budget, fewer exchanges reduce the required uniform Gaussian noise variance per release. The finite-horizon bound quantifies the accompanying local drift, clipping, and release errors, making explicit how the choice of communication interval affects the optimization cost of private training. APPENDIX AORACLE AND MEMORY BOUNDS 
+
+Proof of Lemma 1: For (i), apply smoothness at the F-measurable point x:
+
+fi,h (x + μu ) = fi,h (x) + μ⟨∇ fi,h (x), u ⟩ + R(x, u, μ ), (25) 
+
+|R(x, u, μ )| ≤ Lf μ2
+
+2 ∥u∥2. (26) Assumption 3 gives E[u | F ] = 0 , E[uu ⊤ | F ] = cuId, and 
+
+E[uζ | F ] = E[u E[ζ | F , u ] | F ] = 0 . Hence the constant and noise terms vanish, while the linear term yields μ∇fi,h (x).The remainder satisfies 
+
+ri,h (x, μ ) = 1
+
+cu
+
+E[uR (x, u, μ ) | F ],
+
+∥ri,h (x, μ )∥ ≤ Lf μ2
+
+2cu
+
+E[∥u∥3 | F ] ≤ cr μ2.
+
+Moreover, (3) and the query-value moment bound imply 
+
+E[∥qi,h (x; u, ζ )∥2] ≤ R2
+
+> u
+
+c2
+
+> u
+
+E[| efi,h (x + μu )|2] ≤ R2
+
+> u
+
+M2
+
+c2
+
+> u
+
+= Q2.
+
+For (ii), condition on Fk,t , which fixes the memory ta-ble. For the expectation calculation, couple potential queries 
+
+{qti,h,k }mi 
+
+> h=1
+
+independently of the current batch selection; only sampled queries are evaluated. Uniform sampling in (5) gives 
+
+E[vti,k | F k,t ] = 1
+
+mimiX
+
+> h=1
+
+E[qti,h,k | F k,t ]= μk∇fi(ϕti,k ) + rti,k . (27) since the sampled-memory mean cancels ¯ati,k . Part (i) bounds each component remainder, and thus ∥rti,k ∥ ≤ cr μ2
+
+> k
+
+.Each initialized entry has second moment at most Q2. An entry is refreshed with probability bi/m i, independently of its current value. Therefore, 
+
+E[∥at+1 
+
+> i,h,k
+
+∥2] ≤
+
+
+
+1 − bi
+
+mi
+
+
+
+E[∥ati,h,k ∥2] + bi
+
+mi
+
+Q2.
+
+Induction gives E[∥ati,h,k ∥2] ≤ Q2 for each h and t. This is an unconditional bound on the stored entries. Uniform sampling, Jensen’s inequality, and total expectation then yield 
+
+E
+
+ 1
+
+bi
+
+X
+
+> h∈B ti,k
+
+qti,h,k 
+
+> 2
+
+ ≤ Q2,
+
+E
+
+ 1
+
+bi
+
+X
+
+> h∈B ti,k
+
+ati,h,k 
+
+> 2
+
+ ≤ Q2, E[∥¯ati,k ∥2] ≤ Q2.
+
+Applying ∥x − y + z∥2 ≤ 3( ∥x∥2 + ∥y∥2 + ∥z∥2) to (5) gives 
+
+E[∥vti,k ∥2] ≤ 9Q2, completing the proof. APPENDIX BMESSAGE RECURSION AND TRANSCRIPT PRIVACY 
+
+Proof of Lemma 2: For an oriented edge e = ( i, j ),(9)–(10) give 
+
+zij,k +1 = 12 (zij,k − zji,k + 2 ρx j,k +1 ) ,zji,k +1 = 12 (zji,k − zij,k + 2 ρx i,k +1 ) . (28) Their difference gives (11), and their sum gives 
+
+zij,k +1 + zji,k +1 = ρ(xi,k +1 + xj,k +1 ). (29) 12 
+
+The same sum identity holds at k = 0 , since xi, 0 = xj, 0 = x0
+
+and zij, 0 = zji, 0 = ρx 0. Consequently, 
+
+zij,k = Bi,e ωe,k + ρ
+
+2 (xi,k + xj,k ). (30) Substitution into (6) yields 
+
+pk = ρ
+
+2 LG xk − Bω k. (31) Using ωk = ωk−1 − (ρ/ 2) B⊤xk in (31) proves (12). The definition λk = −Bω k−1 then gives (13)–(14). At initializa-tion, the shifted identity holds due to ω−1 = ω0 = 0 and 
+
+B⊤(1 ⊗ x0) = 0 . Finally, λk ∈ range( B), 1⊤B = 0 , and 
+
+1⊤LG = 0 imply the zero-sum identities. 
+
+Proof of Theorem 1: Fix client i and condition on the transcript history Hk. The vector ci,k := xi,k − τiηkμkβp i,k 
+
+is then fixed. Let QDi,k be the conditional law of ¯si,k .Independence of the release noise gives 
+
+PDi,k =
+
+Z
+
+N (ci,k + s, σ 2dp ,k Id) QDi,k (d s). (32) Both mixing laws under adjacent datasets are supported on 
+
+{s : ∥s∥ ≤ Rclip  
+
+> k
+
+}, so 
+
+∥s − s′∥ ≤ 2Rclip  
+
+> k
+
+. (33) For any R´ enyi order γ > 1, use the common product measure 
+
+QDi,k ⊗ QD′ 
+
+> i,k
+
+to couple the mixture centers. Data processing and the log-sum inequality give 
+
+Dγ (PDi,k ∥PD′
+
+> i,k
+
+) ≤ sup 
+
+> s,s ′
+
+Dγ
+
+
+
+N (ci,k + s, σ 2dp ,k Id)
+
+N (ci,k + s′, σ 2dp ,k Id)
+
+
+
+. (34) The equal-covariance Gaussian formula and (33) imply 
+
+Dγ (PDi,k ∥PD′
+
+> i,k
+
+) ≤ γ(2 Rclip  
+
+> k
+
+)2
+
+2σ2dp ,k 
+
+= 2γ(Rclip  
+
+> k
+
+)2
+
+σ2dp ,k 
+
+. (35) Thus, client i’s conditional release is 2( Rclip  
+
+> k
+
+)2/σ 2dp ,k -zCDP. All outgoing messages are deterministic post-processing of the released state and history. Under client-i adjacency, the other clients’ datasets are fixed; their responses use the tran-script and fresh independent randomness, adding no separate privacy charge for client i. Adaptive composition yields the cumulative zCDP budget, whose conversion to approximate DP gives the stated privacy guarantee. The adjacency relation replaces the entire local dataset, establishing the stated client-level guarantee. APPENDIX CSCHUR STABILITY AND DISAGREEMENT BOUNDS 
+
+Proof of Lemma 3: Summing (7) and applying (8) gives 
+
+xk+1 = xk − ap k + wk, (36) 
+
+wk = −η 
+
+> τ−1
+
+X
+
+> t=0
+
+vtk + ecl  
+
+> k
+
++ νk. (37) Equations (13)–(14) then yield the modal recursion 
+
+bxλ,k +1 
+
+bλλ,k +1 
+
+
+
+= Mλ
+
+bxλ,k 
+
+bλλ,k 
+
+
+
++
+
+ bwλ,k 
+
+0
+
+
+
+. (38) The trace and determinant are 
+
+tr( Mλ) = 2 − aρλ, det( Mλ) = 1 − aρλ 
+
+2 . (39) The second-order Jury criterion gives 
+
+1 − det( Mλ) = aρλ 
+
+2 ,
+
+1 − tr( Mλ) + det( Mλ) = aρλ 
+
+2 ,
+
+1 + tr( Mλ) + det( Mλ) = 4 − 3aρλ 
+
+2 . (40) These three expressions are positive exactly when 0 < aρλ < 
+
+8/3. Requiring this for each nonzero Laplacian eigenvalue gives (15). For a Schur-stable Mλ, the convergent series 
+
+Pλ =
+
+> ∞
+
+X
+
+> r=0
+
+(M rλ )⊤M rλ (41) is the unique positive-definite solution of (16). In the ordering of ξk, set 
+
+M := S⊤ diag Nℓ=2 (Mλℓ ⊗ Id)S.
+
+Then M ⊤PM − P = −I2( N −1) d. Writing ∥ξ∥2 
+
+> P
+
+:= ξ⊤Pξ,we obtain 
+
+∥M ξ ∥2 
+
+> P
+
+= ∥ξ∥2 
+
+> P
+
+− ∥ ξ∥2 ≤
+
+
+
+1 − 1
+
+p
+
+
+
+∥ξ∥2 
+
+> P
+
+. (42) Since p > 1, Young’s inequality with parameter [2( p − 1)] −1
+
+yields 
+
+∥M ξ + col( bw, 0) ∥2 
+
+> P
+
+≤
+
+
+
+1 − 12p
+
+
+
+∥ξ∥2
+
+> P
+
++ p(2 p − 1) ∥ bw∥2. (43) Here bw = ( U ⊤⊥ ⊗ Id)w, so ∥ bw∥ = ∥Πw∥.The release noise is independent and zero-mean, eliminating its cross terms with the local update and clipping error. Since 
+
+Π is nonexpansive, Cauchy–Schwarz and Lemma 1(ii) give 
+
+1
+
+N E[∥Πwk∥2] ≤ 2η2τN 
+
+> τ−1
+
+X
+
+> t=0
+
+E[∥vtk∥2] + 2 Ecl 
+
+> k
+
++
+
+
+
+1 − 1
+
+N
+
+
+
+dσ 2dp ,k 
+
+≤ 18 η2τ 2Q2 + 2 Ecl  
+
+> k
+
++
+
+
+
+1 − 1
+
+N
+
+
+
+dσ 2dp ,k . (44) Taking expectations in (43) and dividing by N proves (17). The eigenvalue bounds on P imply (18). Using pk =
+
+ρL G xk + λk further gives 
+
+1
+
+N E[∥pk∥2] ≤ 2ρ2λ2 
+
+> N
+
+Ck + 2
+
+N E[∥λk∥2] ≤ 2( ρ2λ2 
+
+> N
+
++ 1) 
+
+p Vk,
+
+which proves (19). The common initialization has zero primal disagreement and λ0 = 0 , hence V0 = 0 .APPENDIX DDESCENT AND CONVERGENCE BOUNDS 
+
+Proof of Lemma 4: Iterating (7) gives 
+
+ϕtk = xk − η
+
+> t−1
+
+X
+
+> s=0
+
+vsk − tαβp k. (45) Since Πpk = pk, applying Π and ∥a + b + c∥2 ≤ 3( ∥a∥2 +
+
+∥b∥2 + ∥c∥2) yields, by Lemma 1(ii), 
+
+Cϕk,t ≤ 3Ck + 27 η2t2Q2 + 3 t2α2β2 1
+
+N E∥pk∥2 . (46) Equations (18)–(19) and t ≤ τ − 1 give (20). 13 
+
+Proof of Lemma 5: The zero-sum identity 1⊤pk = 0 
+
+gives 
+
+¯ϕt+1  
+
+> k
+
+= ¯ϕtk − η¯vtk, ¯vtk = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+vti,k . (47) Set Gtk := ∇F ( ¯ϕtk) and gtk := N −1 P 
+
+> i
+
+∇fi(ϕti,k ). Smooth-ness and Jensen’s inequality imply 
+
+E∥gtk − Gtk∥2 ≤ L2 
+
+> f
+
+Cϕk,t . (48) Lemma 1(ii) also gives 
+
+E¯vtk | F k,t 
+
+ = μg tk + ¯ rtk, ∥¯rtk∥ ≤ cr μ2. (49) where ¯rtk := N −1 P 
+
+> i
+
+rti,k . By smoothness, conditional expec-tation, and E[∥¯vtk∥2] ≤ 9Q2,
+
+EF ( ¯ϕt+1  
+
+> k
+
+) ≤ EF ( ¯ϕtk) − αE⟨Gtk, g tk⟩
+
+− ηE⟨Gtk, ¯rtk⟩ + 9Lf
+
+2 η2Q2. (50) The inequalities 
+
+⟨Gtk, g tk⟩ ≥ 12 ∥Gtk∥2 − 12 ∥gtk − Gtk∥2,η|⟨ Gtk, ¯rtk⟩| ≤ α
+
+4 ∥Gtk∥2 + αc 2 
+
+> r
+
+μ2 (51) therefore yield 
+
+EF ( ¯ϕt+1  
+
+> k
+
+) ≤ EF ( ¯ϕtk) − α
+
+4 E∥Gtk∥2
+
++ αL 2
+
+> f
+
+2 Cϕk,t + αc 2 
+
+> r
+
+μ2 + 9Lf
+
+2 η2Q2. (52) Sum over t and use Lemma 4. Since Pτ −1 
+
+> t=0
+
+t2 = τ (τ −1)(2 τ −
+
+1) /6, the definition of Aloc gives 
+
+E[F ( ¯ϕτk )] ≤ E[F (¯ xk)] − α
+
+4 
+
+> τ−1
+
+X
+
+> t=0
+
+E[∥Gtk∥2]+ αL 2 
+
+> f
+
+τ Γ2 Vk + Aloc − 98 αL 2 
+
+> f
+
+η2Q2. (53) The average release satisfies 
+
+¯xk+1 = ¯ϕτk + ¯ ecl  
+
+> k
+
++ ¯ νk. (54) Conditionally on the pre-noise variables, ¯νk is zero-mean and 
+
+E∥¯νk∥2 = dσ 2dp ,k 
+
+N . (55) A second application of smoothness yields 
+
+E[F (¯ xk+1 )] ≤ EF ( ¯ϕτk ) + E⟨∇ F ( ¯ϕτk ), ¯ecl  
+
+> k
+
+⟩
+
++ Lf
+
+2 E∥¯ecl  
+
+> k
+
+∥2 + Lf
+
+2N dσ 2dp ,k . (56) Young’s inequality gives 
+
+⟨∇ F ( ¯ϕτk ), ¯ecl  
+
+> k
+
+⟩ ≤ α
+
+16 ∥∇ F ( ¯ϕτk )∥2 + 4
+
+α ∥¯ecl  
+
+> k
+
+∥2. (57) Since ¯ϕτk = ¯ϕτ −1 
+
+> k
+
+− η¯vτ −1 
+
+> k
+
+, smoothness also gives 
+
+E∥∇ F ( ¯ϕτk )∥2 ≤ 2E∥Gτ −1 
+
+> k
+
+∥2 + 18 L2 
+
+> f
+
+η2Q2. (58) Finally, Jensen’s inequality yields E[∥¯ecl  
+
+> k
+
+∥2] ≤ Ecl  
+
+> k
+
+. Substitut-ing (57)–(58) into (56) adds at most (α/ 8) E[∥Gτ −1 
+
+> k
+
+∥2] to the gradient terms. The accompanying (9 /8) αL 2 
+
+> f
+
+η2Q2 cancels the last term in (53). Bounding each remaining gradient coefficient by −α/ 8 proves (21). 
+
+Proof of Theorem 2: Define 
+
+RK := 18 Kη 2τ 2Q2 + 2 Ecl ,K +
+
+
+
+1 − 1
+
+N
+
+
+
+Edp ,K .
+
+Summing (17) and using VK ≥ 0 gives 
+
+χ
+
+> K−1
+
+X
+
+> k=0
+
+Vk ≤ V 0 + cwRK . (59) Equation (18) then implies 
+
+1
+
+K
+
+> K−1
+
+X
+
+> k=0
+
+Ck ≤ V0 + cwRK
+
+Kχp . (60) Summing (21) and using F (¯ xK ) ≥ F⋆ yields 
+
+α
+
+8
+
+> K−1
+
+X 
+
+> k=0
+> τ−1
+
+X
+
+> t=0
+
+E[∥∇ F ( ¯ϕtk)∥2] ≤ F (¯ x0) − F⋆ + KA loc 
+
++ αL 2 
+
+> f
+
+τ Γ2
+
+> K−1
+
+X
+
+> k=0
+
+Vk +
+
+ 4
+
+α + Lf
+
+2
+
+
+
+Ecl ,K + Lf
+
+2N Edp ,K . (61) Substitute (59), divide by Kτ α/ 8, and add (60). This gives 
+
+SK ≤ 8[ F (¯ x0) − F⋆]
+
+Kτ α + 8Aloc 
+
+τ α 
+
++
+
+
+
+4L2 
+
+> f
+
+Γ + 1
+
+p
+
+ V0 + cwRK
+
+Kχ 
+
++
+
+ 32 
+
+τ α 2 + 4Lf
+
+τ α 
+
+
+
+Ecl ,K + 4Lf
+
+N τ α Edp ,K . (62) The common initialization gives V0 = 0 . For fixed a = τ βα ,
+
+ρ, and graph, 
+
+(τ − 1) 2α2β2 =
+
+ τ − 1
+
+τ
+
+2
+
+a2 ≤ a2.
+
+Thus, Γ is bounded uniformly over τ , and the Lyapunov constants are fixed. Directly from their definitions, 
+
+Aloc 
+
+τ α = O
+
+ ημ + μ2 + η2τ 2
+
+
+
+,
+
+RK
+
+K = O η2τ 2 + Ecl ,K + Edp ,K 
+
+ .
+
+For α > 0 and τ ≥ 1, 1/(τ α ) ≤ 1 + 1 /(τ α 2). Substitution into (62) establishes (22). 
+
+Proof of Corollary 1: The schedule (23) fixes a =
+
+τ β T,τ ηT μT = a0. Since T = Kτ , each of 1/(T η T μT ),
+
+ηT /μ T , and μ2 
+
+> T
+
+is O(T −1/3), while η2 
+
+> T
+
+τ 2 = O(τ 2/T ).The release terms vanish, so (22) gives (24). The stated local-update range and communication count follow from 
+
+τ 2/T = O(T −1/3) and K = T /τ .REFERENCES [1] S. Zehtabi, D.-J. Han, R. Parasnis, S. Hosseinalipour, and C. G. Brinton, “Decentralized sporadic federated learning: A unified algorithmic frame-work with convergence guarantees,” in The Thirteenth International Conference on Learning Representations , 2025. [2] T. Wu, Z. Li, and Y. Sun, “The effectiveness of local updates for decentralized learning under data heterogeneity,” IEEE Transactions on Signal Processing , vol. 73, pp. 751–765, 2025. [3] S. A. Alghunaim, “Local exact-diffusion for decentralized optimization and learning,” IEEE Transactions on Automatic Control , vol. 69, no. 11, pp. 7371–7386, 2024. [4] X. Ren, N. Bastianello, K. H. Johansson, and T. Parisini, “Communication-efficient stochastic distributed learning,” IEEE Trans-actions on Automatic Control , vol. 71, no. 9, pp. 5741–5756, 2026. [5] S. Ghadimi and G. Lan, “Stochastic first- and zeroth-order methods for nonconvex stochastic programming,” SIAM Journal on Optimization ,vol. 23, no. 4, pp. 2341–2368, 2013. [6] H. Ye, Z. Huang, C. Fang, C. J. Li, and T. Zhang, “Hessian-aware zeroth-order optimization,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 47, no. 6, pp. 4869–4877, 2025. 14 
+
+[7] F. Huang, S. Gao, J. Pei, and H. Huang, “Nonconvex zeroth-order stochastic ADMM methods with lower function query complexity,” 
+
+IEEE Transactions on Pattern Analysis and Machine Intelligence , pp. 1–13, 2024, early Access. [8] E. Mhanna and M. Assaad, “Single point-based distributed zeroth-order optimization with a non-convex stochastic objective function,” in 
+
+Proceedings of the 40th International Conference on Machine Learning ,ser. Proceedings of Machine Learning Research, vol. 202. PMLR, 2023, pp. 24 701–24 719. [9] ——, “Zero-order one-point gradient estimate in consensus-based dis-tributed stochastic optimization,” Transactions on Machine Learning Research , Nov. 2024. [10] Z. Song, L. Shi, S. Pu, and M. Yan, “Compressed gradient tracking for decentralized optimization over general directed networks,” IEEE Transactions on Signal Processing , vol. 70, pp. 1775–1787, 2022. [11] R. Nassif, S. Vlaski, M. Carpentiero, V. Matta, and A. H. Sayed, “Differential error feedback for communication-efficient decentralized learning,” IEEE Transactions on Signal Processing , vol. 73, pp. 1905– 1921, 2025. [12] Y. He, X. Huang, and K. Yuan, “Unbiased compression saves communi-cation in distributed optimization: When and how much?” in Advances in Neural Information Processing Systems , vol. 36, 2023, pp. 47 991– 48 020. [13] P. Guo, R. Wang, S. Zeng, J. Zhu, H. Jiang, Y. Wang, Y. Zhou, F. Wang, H. Xiong, and L. Qu, “Exploring the vulnerabilities of federated learning: A deep dive into gradient inversion attacks,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 48, no. 4, pp. 4810–4826, 2026. [14] E. Rizk, S. Vlaski, and A. H. Sayed, “Enforcing privacy in distributed learning with performance guarantees,” IEEE Transactions on Signal Processing , vol. 71, pp. 3385–3398, 2023. [15] Y. Allouah, A. Koloskova, A. El Firdoussi, M. Jaggi, and R. Guerraoui, “The privacy power of correlated noise in decentralized learning,” in 
+
+Proceedings of the 41st International Conference on Machine Learning ,ser. Proceedings of Machine Learning Research, vol. 235. PMLR, 2024, pp. 1115–1143. [16] E. Cyffers, A. Bellet, and D. Basu, “From noisy fixed-point iterations to private ADMM for centralized and federated learning,” in Proceedings of the 40th International Conference on Machine Learning , ser. Pro-ceedings of Machine Learning Research, vol. 202. PMLR, 2023, pp. 6683–6711. [17] M. Bun and T. Steinke, “Concentrated differential privacy: Simplifi-cations, extensions, and lower bounds,” in Theory of Cryptography Conference . Springer, 2016, pp. 635–658. [18] I. Mironov, “R´ enyi differential privacy,” in 2017 IEEE 30th Computer Security Foundations Symposium , 2017, pp. 263–275. [19] S. Boyd, N. Parikh, E. Chu, B. Peleato, and J. Eckstein, “Distributed optimization and statistical learning via the alternating direction method of multipliers,” Foundations and Trends in Machine Learning , vol. 3, no. 1, pp. 1–122, 2011. [20] W. Shi, Q. Ling, K. Yuan, G. Wu, and W. Yin, “On the linear convergence of the ADMM in decentralized consensus optimization,” 
+
+IEEE Transactions on Signal Processing , vol. 62, no. 7, pp. 1750–1761, 2014. [21] Q. Ling, W. Shi, G. Wu, and A. Ribeiro, “DLM: Decentralized linearized alternating direction method of multipliers,” IEEE Transactions on Signal Processing , vol. 63, no. 15, pp. 4051–4064, 2015. [22] Y. Li, P. G. Voulgaris, D. M. Stipanovi´ c, and N. M. Freris, “Communi-cation efficient curvature aided primal-dual algorithms for decentralized optimization,” IEEE Transactions on Automatic Control , vol. 68, no. 11, pp. 6573–6588, 2023. [23] T. Gautam, Y. Park, H. Zhou, P. Raman, and W. Ha, “Variance-reduced zeroth-order methods for fine-tuning language models,” in Proceedings of the 41st International Conference on Machine Learning , ser. Pro-ceedings of Machine Learning Research, vol. 235. PMLR, 2024, pp. 15 180–15 208. [24] A. Koloskova, H. Hendrikx, and S. U. Stich, “Revisiting gradient clipping: Stochastic bias and tight convergence guarantees,” in Proceed-ings of the 40th International Conference on Machine Learning , ser. Proceedings of Machine Learning Research, vol. 202. PMLR, 2023, pp. 17 343–17 363. [25] K. Mishchenko, G. Malinovsky, S. Stich, and P. Richt´ arik, “ProxSkip: Yes! Local gradient steps provably lead to communication acceleration! Finally!” in Proceedings of the 39th International Conference on Ma-chine Learning , ser. Proceedings of Machine Learning Research, vol. 162. PMLR, 2022, pp. 15 750–15 769. [26] X. Ren, Y. Ma, N. Bastianello, K. H. Johansson, T. Parisini, and A. A. Malikopoulos, “Communication-efficient distributed learning with differential privacy,” arXiv preprint arXiv:2604.02558 , 2026. [27] L. Ding, K. Jin, B. Ying, K. Yuan, and W. Yin, “DSGD-CECA: Decentralized SGD with communication-optimal exact consensus algo-rithm,” in Proceedings of the 40th International Conference on Machine Learning , ser. Proceedings of Machine Learning Research, vol. 202. PMLR, 2023, pp. 8067–8089. [28] R. You and S. Pu, “B-ary tree push-pull method is provably efficient for distributed learning on heterogeneous data,” in Advances in Neural Information Processing Systems , vol. 37, 2024, pp. 97 523–97 561. [29] K. Yuan, S. A. Alghunaim, and X. Huang, “Removing data heterogene-ity influence enhances network topology dependence of decentralized SGD,” Journal of Machine Learning Research , vol. 24, no. 280, pp. 1–53, 2023. [30] Z. Zhai, X. Yuan, X. Wang, and G. Y. Li, “Decentralized federated learning with distributed aggregation weight optimization,” IEEE Trans-actions on Pattern Analysis and Machine Intelligence , vol. 48, no. 3, pp. 3899–3910, 2026. [31] Y. Sun, L. Shen, and D. Tao, “Toward understanding generalization and stability gaps between centralized and decentralized federated learn-ing,” IEEE Transactions on Pattern Analysis and Machine Intelligence ,vol. 48, no. 4, pp. 4744–4755, 2026. [32] H. Zhao, B. Li, Z. Li, P. Richt´ arik, and Y. Chi, “BEER: Fast O(1 /T )
+
+rate for decentralized nonconvex optimization with communication compression,” in Advances in Neural Information Processing Systems ,vol. 35, 2022, pp. 31 653–31 667. [33] R. Islamov, Y. Gao, and S. U. Stich, “Towards faster decentralized stochastic optimization with communication compression,” in Proceed-ings of the 13th International Conference on Learning Representations ,2025. [34] J. Li, C. Li, J. Fan, and T. Huang, “Online distributed stochastic gradient algorithm for nonconvex optimization with compressed communication,” 
+
+IEEE Transactions on Automatic Control , vol. 69, no. 2, pp. 936–951, 2024. [35] Y. Hua, S. Liu, Y. Hong, and W. Ren, “Distributed stochastic zeroth-order optimization with compressed communication,” IEEE Transac-tions on Automatic Control , vol. 71, no. 2, pp. 1294–1301, 2026. [36] L. Xu, X. Yi, C. Deng, Y. Shi, T. Chai, and T. Yang, “Quantized zeroth-order gradient tracking algorithm for distributed nonconvex optimization under Polyak–Łojasiewicz condition,” IEEE Transactions on Cybernet-ics , vol. 54, no. 10, pp. 5746–5758, 2024. [37] W. Fang, Z. Yu, Y. Jiang, Y. Shi, C. N. Jones, and Y. Zhou, “Communication-efficient stochastic zeroth-order optimization for fed-erated learning,” IEEE Transactions on Signal Processing , vol. 70, pp. 5058–5073, 2022. [38] Z. Li, B. Ying, Z. Liu, C. Dong, and H. Yang, “Achieving dimension-free communication in federated learning via zeroth-order optimization,” in Proceedings of the 13th International Conference on Learning Rep-resentations , 2025. [39] S. Malladi, T. Gao, E. Nichani, A. Damian, J. D. Lee, D. Chen, and S. Arora, “Fine-tuning language models with just forward passes,” in 
+
+Advances in Neural Information Processing Systems , vol. 36, 2023, pp. 53 038–53 075. [40] Q. Li, J. S. Gundersen, M. Lopuha¨ a-Zwakenberg, and R. Heusdens, “Adaptive differentially quantized subspace perturbation (ADQSP): A unified framework for privacy-preserving distributed average consensus,” 
+
+IEEE Transactions on Information Forensics and Security , vol. 19, pp. 1780–1793, 2024. [41] L. Wang, S. Yang, Y. Wan, W. Xu, and M.-L. Zhang, “Privacy preserving decentralized learning with positive-incentive noise,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 48, no. 7, pp. 8520– 8534, 2026. [42] E. Cyffers, M. Even, A. Bellet, and L. Massouli´ e, “Muffliato: Peer-to-peer privacy amplification for decentralized optimization and averaging,” in Advances in Neural Information Processing Systems , vol. 35, 2022, pp. 15 889–15 902. [43] L. Zhang, B. Li, K. K. Thekumparampil, S. Oh, and N. He, “DPZero: Private fine-tuning of language models without backpropagation,” in 
+
+Proceedings of the 41st International Conference on Machine Learning ,ser. Proceedings of Machine Learning Research, vol. 235. PMLR, 2024, pp. 59 210–59 246. [44] X. Gong and T. Li, “Private zeroth-order optimization with public data,” in Advances in Neural Information Processing Systems , vol. 38, 2025, pp. 58 619–58 665. [45] Y. Shi, K. Wei, L. Shen, Y. Liu, X. Wang, B. Yuan, and D. Tao, “Toward the flatter landscape and better generalization in federated learning under 15 
+
+client-level differential privacy,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 47, no. 12, pp. 11 632–11 643, 2025. [46] B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. Ag¨ uera y Arcas, “Communication-efficient learning of deep networks from de-centralized data,” in Proceedings of the 20th International Conference on Artificial Intelligence and Statistics , ser. Proceedings of Machine Learning Research, vol. 54. PMLR, 2017, pp. 1273–1282. [47] P. Kairouz, H. B. McMahan, B. Avent et al. , “Advances and open problems in federated learning,” Foundations and Trends in Machine Learning , vol. 14, no. 1–2, pp. 1–210, 2021.

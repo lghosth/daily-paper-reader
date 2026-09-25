@@ -1,0 +1,254 @@
+Title: Scalable Subgraph Sampling via Resistance Curvature
+
+URL Source: https://arxiv.org/pdf/2609.27209v1
+
+Published Time: Thu, 24 Sep 2026 00:24:54 GMT
+
+Number of Pages: 5
+
+Markdown Content:
+## SCALABLE SUBGRAPH SAMPLING VIA RESISTANCE CURVATURE 
+
+## Chaoqun Fei 1, Tinglve Zhou 1, Tianyong Hao 2, Yangyang Li 3,∗ 
+
+> 1
+
+## School of Artificial Intelligence, South China Normal University  
+
+> 2
+
+## School of Computer Science, South China Normal University  
+
+> 3
+
+## Academy of Mathematics and Systems Science, Chinese Academy of Sciences 
+
+ABSTRACT 
+
+Subgraph sampling reduces the training cost of large-scale graph neural networks, but sampling criteria may overlook the geometric roles of edges. We propose a resistance-curvature-guided sampling framework built on ERC-LG, a curvature approximation method for large-scale graphs. ERC-LG combines Johnson-Lindenstrauss projections with regular-ized multi-GPU batched conjugate gradient solvers, avoiding explicit Laplacian pseudoinverse computation and full em-bedding storage. The resulting curvature informs node- and edge-sampling probabilities for constructing GNN training subgraphs. Experiments show numerical agreement with pseudoinverse-based curvature and reduced runtime com-pared with CG-only computation. ERC-LG-based sampling variants achieve the highest mean accuracy on six of seven real-world datasets in downstream node classification. 
+
+Index Terms — Effective Resistance Curvature, JL Pro-jection, batched CG, Subgraph sampling 
+
+1. INTRODUCTION 
+
+Graph neural networks (GNNs) face substantial memory and computational costs when trained on large graphs. Neigh-borhood [1], layer-wise [2], and subgraph [3] sampling pro-vide scalable alternatives to full-graph training. However, sampling may discard connections important for information propagation, motivating sampling criteria that account for the structural roles of edges. Discrete graph curvature provides edge-level geomet-ric information for distinguishing redundant connections from potential bottlenecks and bridges. ORG-sub [4] uses Ollivier-Ricci curvature to guide sampling and improve small-community coverage. However, it focuses on com-munity analysis rather than GNN training, and its scalabil-ity on massive graphs remains unverified. Moreover, exact Ollivier-Ricci curvature requires edge-wise optimal transport computations, making graph-wide evaluation expensive. Our previous work introduced an efficient effective resis-tance curvature computation scheme[5]. Effective resistance curvature (ERC) uses effective resistance to capture multi-path connectivity without optimal transport. By replacing 
+
+> ∗Corresponding author: Yangyang Li.
+
+Laplacian pseudoinversion with diagonally perturbed matrix inversion, the scheme achieved speedups of up to approxi-mately 1,000 ×. It maintained near-identical curvature values to the pseudoinverse-based reference and comparable perfor-mance to Ollivier-Ricci curvature in structural discrimination and graph representation learning. Nevertheless, explicit ma-trix inversion retains quadratic storage requirements, limiting its applicability to larger graphs. To address this bottleneck, we propose an efficient ap-proximation method for large-scale graphs short for ERC-LG. The key idea is to use Johnson–Lindenstrauss (JL) projections to reduce the number of linear systems required for resis-tance estimation. Regularized multi-GPU batched CG avoids explicit pseudoinversion, while streaming distance accumu-lation avoids storing the full embedding. We further design ERC-LG-based sampling methods for GNN training. Our main contributions are as follows: 1) We develop ERC-LG by adapting JL-based effective resistance approximation to ERC computation, to-gether with regularized multi-GPU batched CG and streaming edge-distance accumulation, avoiding ex-plicit pseudoinverse computation and full embedding storage. 2) We design ERC-LG-based node and edge sampling methods that incorporate edge-level geometric infor-mation into sampling probabilities for GNN training-subgraph construction. 3) We evaluate numerical agreement, computational effi-ciency, and downstream node classification. ERC-LG-based sampling variants achieve the highest mean ac-curacy on six of seven real-world datasets. 
+
+2. RELATED WORK 2.1. Sampling for Large-Scale Graph Neural Networks 
+
+Existing GNN sampling methods mainly include neighbor sampling, layer-wise sampling, and subgraph sampling. GraphSAGE [1] controls computational cost by sampling a fixed number of neighbors at each layer. FastGCN [2] interprets graph convolution as an integral transform and applies layer-wise importance sampling. Subgraph sam-pling instead directly constructs minibatch training graphs. arXiv:2609.27209v1 [cs.LG] 23 Sep 2026 ClusterGCN [3] organizes training batches through graph clustering, while GraphSAINT [6] combines subgraph sam-pling with normalization corrections to reduce training cost and control sampling bias. REGNN [7] combines random-walk sampling and historical embeddings to enable scalable mini-batch GNN training. 
+
+2.2. Graph Learning with Discrete Curvature 
+
+Discrete graph curvature provides geometric information for analyzing and adapting graph structures in represen-tation learning. Topping et al. [8] use curvature-guided rewiring to address oversquashing. RicciPool [9] combines Ollivier-Ricci flow with spectral clustering for graph pool-ing. ORG-sub [4] uses Ollivier-Ricci curvature to improve small-community coverage, while LC-sub [10] employs a 3-cycle-based curvature approximation for combinatorial subgraph sampling. Spielman and Srivastava [11] approx-imate effective resistance through random projections and Laplacian solves for spectral sparsification, whereas we adapt this idea to graph-wide ERC estimation and GNN sampling. Devriendt and Lambiotte [12] define node and edge resistance curvatures. Our previous work accelerates ERC computation through matrix perturbation [5], while DGSL-RCF [13] uses resistance curvature flow for iterative graph refinement. 
+
+3. METHOD 
+
+We approximate ERC using JL projections and multi-GPU batched CG, then use the resulting edge geometry to guide node and edge sampling. 
+
+3.1. ERC Approximation for Large-Scale Graphs 
+
+3.1.1. Resistance curvature 
+
+For an undirected graph G = ( V, E ) with n nodes and m
+
+edges, let L = D − A = B⊤W B , where B ∈ Rm×n is an oriented incidence matrix and W = diag( we) contains positive edge weights ( W = I for unweighted graphs). Let 
+
+buv = eu − ev , effective resistance Ruv , node curvature pu
+
+and edge curvature κuv [12] are defined as below: 
+
+Ruv = b⊤ 
+
+> uv
+
+L†buv . (1) 
+
+pu = 1 − 12
+
+X 
+
+> v∈N (u)
+
+wuv Ruv , κuv = 2( pu + pv )
+
+Ruv 
+
+. (2) Here, L† is the Moore-Penrose pseudoinverse of L, and κuv 
+
+denotes the ERC of edge (u, v ).
+
+3.1.2. Johnson-Lindenstrauss embedding 
+
+Utilizing L†LL † = L†, the effective resistance can be rewrit-ten as a squared embedding distance: 
+
+Ruv = ∥b⊤ 
+
+> uv
+
+L†B⊤W 1/2∥22. (3) Following [11], we use JL projections [14] to approximately preserve such pairwise distances, eliminating the need to store the full set of embedding coordinates. Let Q ∈ Rm×K have 
+
+Algorithm 1 ERC Approximation for Large-scale Graphs                                                                   
+
+> Require: Graph G, dimension K, regularization ε, GPUs P, batch size b,CG tolerance τ
+> Ensure: Edge curvatures bκ
+> 1: Construct sparse Land define LεX=LX +εX ; partition the K
+> projection columns across PGPUs 2: for GPU g= 1 , . . . , P in parallel do
+> 3: Store local sparse graph operators; r(g)←0∈Rm
+> 4: for each assigned column batch tof size at most bdo
+> 5: Form Y(t)=B⊤W1/2Q(t)from streamed independent
+> Q(t)
+> ij ∼Unif {± 1/√K}
+> 6: Solve LεbZ(t)
+> ε=Y(t)by batched column-wise CG to relative residual tolerance τ
+> 7: Add this batch’s squared edge distances to r(g)in edge blocks, using Eq. (6) 8: Release batch workspace 9: end for
+> 10: end for
+> 11: Aggregate bR←P
+> gr(g); return bκusing Eq. (2)
+
+independent entries uniformly sampled from {± 1/√K}, and define Y = B⊤W 1/2Q. Since each column of Y lies in the range of L, the low-dimensional embedding and its associated system satisfy 
+
+Z = L†Y, LZ = LL †Y = Y. (4) Thus, computing the embedding requires solving K linear systems sharing the coefficient matrix L, without explicitly forming the pseudoinverse. 
+
+3.1.3. Regularization and Parallel Solution 
+
+The coefficient matrix L in Eq. (4) is singular. To construct a symmetric positive definite system suitable for standard CG, we follow the diagonal perturbation approach in our prior work[5] and introduce ε > 0, replacing the original system with 
+
+Lε = L + εI, LεZε = Y. (5) Since the columns of Y lie in the range of L, Zε approaches the target embedding Z = L†Y as ε → 0 and finite perturba-tion introduces regularization bias. We distribute the K independent right-hand sides across GPUs and perform column-wise CG [15] in batches on each device. Each GPU maintains a local sparse graph copy and evaluates matrix products through LεX = LX +εX , without explicit inversion. Let bZε denote the approximate embedding computed by CG. Effective resistances on the original edges are estimated as 
+
+bRuv = ∥ bZε,u, : − bZε,v, :∥22. (6) After accumulating each batch’s squared-distance contri-butions, its workspace is released, avoiding storage of the full embedding. Finally, contributions from all GPUs are aggre-gated, and curvature is computed using Eq. (2). Algorithm 1 summarizes the procedure. 3.2. Resistance-Curvature-Guided Subgraph Sampling 
+
+Node sampling and edge sampling are two basic approaches to large-graph sampling, drawing nodes or edges according to probability distributions. We use ERC-LG to construct these distributions and develop curvature-guided node and edge sampling strategies. 
+
+3.2.1. Curvature-guided Node sampling 
+
+Higher-curvature edges often occur in densely interconnected regions. We aggregate their normalized scores to favor seed nodes representing such local structures: 
+
+qnode  
+
+> u
+
+= X 
+
+> v∈N (u)
+
+bκuv − κmin 
+
+κmax − κmin + η , (7) where κmin and κmax are the extrema of approximate edge curvature, and η > 0 ensures numerical stability. By sum-ming curvature-based scores over incident edges, the aggre-gation implicitly captures both node degree and local edge geometry, guiding the selection of seed nodes whose neigh-borhoods form training subgraphs. If all weights vanish, sam-pling is uniform over nonisolated nodes. 
+
+3.2.2. Curvature-guided Edge sampling 
+
+Lower-curvature edges may indicate bottlenecks or inter-region connections with limited alternative paths. To in-crease their retention probability, we use decreasing curvature weights: 
+
+qedge  
+
+> uv
+
+= pmax (−bκuv + 2 κmax , 0) + 1 . (8) The square-root transformation moderates weight differences while favoring lower-curvature connections. Selected edges and their endpoints form the sampled subgraph. Thus, node sampling emphasizes local structural repre-sentation, while edge sampling emphasizes potentially critical connections. Sampling probabilities are obtained by normal-izing these weights over all nodes or edges, respectively. 
+
+3.3. Complexity and Memory 
+
+For T average CG iterations per right-hand side, total curva-ture computation costs O(( n+m)K(T +1)) . Under balanced workloads, ideal parallel time is O
+
+ (n+m)K(T +1)  
+
+> P
+
++ n + m
+
+
+
++
+
+Tcomm , where Tcomm accounts for data distribution and result aggregation. Streaming projection generation and distance accumula-tion limit peak memory per GPU to O(n + m + nb ), in-cluding sparse graph operators, edge accumulators, and CG workspace. This excludes downstream GNN features and ac-tivations. Each GPU retains an O(n + m) graph copy; in-creasing P distributes computation but does not reduce this storage requirement. Constructing the curvature-based sam-pling weights takes O(n + m) time. 
+
+4. EXPERIMENTS 
+
+Our experiments address three questions: RQ1 . How does the proposed curvature-guided sampling framework perform on large-scale graphs for downstream node classification? 
+
+RQ2 . How closely does approximate ERC agree with the pseudoinverse-based reference in numerical values and signs? 
+
+RQ3 . How efficient is ERC-LG in runtime and GPU mem-ory, and how does its runtime scale with the number of GPUs? Additional experimental results, parameter sensitiv-ity analyses (e.g., K, b, and ε), and implementation details, together with the ERC-LG code, are publicly available at 
+
+https://github.com/cqfei/ERC-large-graph .
+
+4.1. Experimental Settings 
+
+The datasets used in our experiments consist of medium-scale datasets including PubMed 1, Amazon Photo 2, and Coauthor CS 2, as well as large-scale datasets Flickr 3, ogbn-arxiv 4, Reddit 5, and ogbn-products 4. We select representative large-graph GNN methods including ClusterGCN [3], Graph-SAGE [1], FastGCN [2], GraphSAINT [6], and REGNN [7], as well as the curvature-aware large-graph sampling methods ORG-sub [4] and LC-sub [10] as our baselines. To com-pare the impact of sampling quality on downstream tasks, we adopt the same two-layer GCN as the downstream model for all methods, following the training protocol of Graph-SAINT for 200 epochs. In each epoch, a fixed number of subgraphs are sampled, and mini-batch training is performed on these sampled subgraphs. For PubMed, ogbn-arxiv, and ogbn-products, we follow the official dataset splits, while 10-fold cross-validation is adopted for the remaining datasets. Performance is evaluated by the mean classification accuracy and standard deviation. All the models are implemented in PyTorch 1.12.0 and Python 3.9. Experiments are conducted on a server equipped with an Intel(R) Xeon(R) Gold 6248R CPU, 8 × NVIDIA RTX 3090 GPUs (24GB VRAM), and 256GB RAM. For ORC 6 and ERC-REG 7, we adopt their public Python implementations, respectively. 
+
+4.2. Experimental Results 
+
+4.2.1. Node Classification on Sampled Subgraphs 
+
+We evaluate four ERC-LG-based sampling variants in two groups. LC-sub(ERC-LG) and ORG-sub(ERC-LG) retain their original sampling frameworks but replace the curvature estimators with ERC-LG. ERC-LG-sub(node) and ERC-LG-sub(edge) follow GraphSAINT with sampling probabil-ities proportional to the curvature-based weights in Eqs. (7) and (8), respectively. 
+
+> 1https://github.com/shchur/gnn-benchmark/tree/master/data/planetoid
+> 2https://github.com/shchur/gnn-benchmark/tree/master/data/npz
+> 3https://github.com/GraphSAINT/GraphSAINT
+> 4https://github.com/snap-stanford/ogb
+> 5https://snap.stanford.edu/graphsage/
+> 6https://github.com/saibalmars/GraphRicciCurvature
+> 7https://github.com/cqfei/resistance-curvature
+
+Table 1 . Node classification results (%) of different sampling methods. The best results are marked in bold. 
+
+Method PubMed Amazon Photo Coauthor CS Flickr ogbn-arxiv Reddit ogbn-products ClusterGCN 87.91 ±0.41 93.40 ±0.71 93.36 ±0.20 51.57 ±0.41 64.64 ±0.57 91.36 ±0.29 72.44 ±1.16 GraphSAGE 88.03 ±0.48 89.86 ±0.74 93.14 ±0.25 44.18 ±2.44 56.95 ±1.80 90.50 ± 0.10 69.17 ±0.92 FastGCN 85.83 ±0.57 92.05 ±0.72 92.17 ±0.36 42.21 ±0.35 58.92 ±1.42 86.50 ±0.77 70.82 ±0.36 GraphSAINT(node) 88.01 ±0.09 93.06 ±0.13 93.80 ±0.15 51.31 ±0.16 65.60 ±0.19 87.12 ±0.30 77.68 ±0.32 GraphSAINT(edge) 87.70 ±0.02 93.49 ±0.20 93.71 ±0.09 51.25 ±0.21 62.27 ±0.19 82.21 ±0.26 58.92 ±0.14 REGNN 87.85 ±0.32 92.81 ±0.91 91.36 ±0.12 51.68 ±0.13 65.87 ±0.25 94.71 ±0.30 72.40 ±0.02 LC-sub 88.08 ±0.04 93.70 ±0.18 93.97 ±0.20 51.18 ±0.10 64.94 ±0.33 87.50 ±0.24 77.67 ±0.12 ORG-sub 87.96 ±0.22 93.76 ±0.09 93.79 ±0.05 51.27 ±0.20 63.68 ±0.61 89.50 ±0.22 76.76 ±0.11 LC-sub(ERC-LG) 87.97 ±0.15 93.61 ±0.23 93.92 ±0.05 51.18 ±0.14 64.82 ±0.33 90.47 ±0.09 77.42 ±0.17 ORG-sub(ERC-LG) 88.12 ±0.09 93.83 ±0.30 93.81 ±0.14 51.27 ±0.12 61.12 ±0.21 91.67 ±0.04 76.20 ±0.30 ERC-LG-sub(node) 87.94 ±0.10 93.24 ±0.27 93.90 ±0.23 51.32 ±0.11 65.60 ±0.15 87.41 ±0.23 77.50 ±0.24 ERC-LG-sub(edge) 88.07 ±0.10 93.63 ±0.22 94.05 ±0.03 52.06 ±0.18 66.67 ±0.22 90.35 ±0.18 77.78 ±0.35 
+
+Table 1 shows that ERC-LG-based variants achieve the highest mean accuracy on six of seven datasets, while REGNN leads on Reddit. ERC-LG-sub(edge) ranks first on four datasets and outperforms GraphSAINT(edge) on all seven; ERC-LG-sub(node) performs similarly to Graph-SAINT(node). LC-sub(ERC-LG) remains close to LC-sub on six datasets and improves Reddit accuracy. ORG-sub(ERC-LG) leads on PubMed and Amazon Photo but underperforms ORG-sub on ogbn-arxiv and ogbn-products, indicating that the benefits of curvature substitution depend on the dataset. 
+
+4.2.2. Numerical Agreement of Curvature Estimates 
+
+We evaluate numerical agreement by comparing ERC-REG (diagonal perturbation), ERC-JL (JL projection), and ERC-LG against pseudoinverse-based ERC on stochastic block model (SBM). Metrics include mean absolute error (MAE), Spearman correlation, and sign agreement (Sign), with K
+
+denoting the projection dimension. Table 2 shows that ERC-REG achieves an MAE of 10 −5. Increasing K improves ERC-LG’s agreement, reaching an MAE of 0.00937, Spear-man correlation of 0.9687, and Sign of 92.39% at K = 4096 .ERC-LG and ERC-JL yield nearly identical metrics across all tested dimensions. Thus, incorporating CG yields com-parable agreement with the reference, while larger projection dimensions improve approximation accuracy. 
+
+Table 2 . Curvature approximation results on SBM dataset 
+
+K Method MAE Spearman Sign - ERC-REG 0.00001 1.0000 1.0000 1024 ERC-JL 0.01793 0.8900 0.8555 ERC-LG 0.01794 0.8900 0.8555 2048 ERC-JL 0.01303 0.9401 0.8943 ERC-LG 0.01304 0.9401 0.8943 4096 ERC-JL 0.00937 0.9687 0.9239 ERC-LG 0.00937 0.9687 0.9239 
+
+4.2.3. Computational Efficiency and GPU Memory Usage 
+
+Table 3 summarizes peak memory usage per GPU (upper block) and runtime (lower block). Reducing the batch size 
+
+Table 3 . GPU memory and runtime 
+
+Setting Flickr ogbn-arxiv Reddit 
+
+b = 256 2950 4924 10118 
+
+b = 512 4708 8646 14689 ERC-LG 27 131 1382 ERC-CG 253 4518 -          
+
+> Upper: memory (MB), K= 2048 ;lower: runtime (s), P= 2 ,b= 256 . “-” denotes a timeout. 2468
+> Number of GPUs
+> 0500 1000 1500 2000
+> Time Cost (s)
+> Flickr (K=2048) Flickr (K=4096) ogbn-arxiv (K=2048) ogbn-arxiv (K=4096) Reddit (K=2048) Reddit (K=4096)
+
+Fig. 1 . Multi-GPU curvature runtime 
+
+from 512 to 256 lowers memory usage on all three datasets, including a reduction from 14,689 to 10,118 MB on Reddit. Compared with ERC-CG, which uses CG without JL pro-jection, ERC-LG is approximately 9.4× faster on Flickr and 
+
+34 .5× faster on ogbn-arxiv. It also completes curvature com-putation on Reddit in 1382 seconds, supporting the computa-tional benefit of JL projection. On ogbn-products, the max-imum feasible batch size in our implementation is b = 76 
+
+due to the 24 GB GPU memory limit. ERC-LG neverthe-less completes curvature computation in 11366s on 4 GPUs (K = 2048 ), demonstrating its applicability to graphs beyond the sizes reported in Table 3. Figure 1 shows that runtime decreases as the GPU count increases from 2 to 8 on all three datasets, for both K = 2048 
+
+and K = 4096 . Multi-GPU execution therefore further re-duces curvature computation time. 
+
+5. CONCLUSION 
+
+We proposed ERC-LG, combining JL projection and regu-larized multi-GPU batched CG to approximate ERC without explicit pseudoinverse computation. The resulting curvature guides node and edge sampling for GNN training. Experi-ments show its numerical accuracy and computational effi-ciency, with ERC-LG-based sampling variants achieving the highest mean classification accuracy on six of seven datasets. These results support ERC-LG as a practical means of incor-porating resistance geometry into large-scale graph sampling and representation learning. 6. ACKNOWLEDGMENTS 
+
+This work was supported in part by the National Natu-ral Science Foundation of China (No. 62406315), China Postdoctoral Science Foundation (2025M771504), Basic and Applied Basic Research Foundation of Guangdong Province (2024A1515110108), Key Research and Devel-opment Projects of Shaanxi Province (2025SF-YBXM-023), and Shaanxi Provincial Public Health Scientific Research Innovation Team Project (202511). 
+
+7. REFERENCES 
+
+[1] W. Hamilton, Z. Ying, and J. Leskovec, “Inductive rep-resentation learning on large graphs,” in Advances in Neural Information Processing Systems , 2017, vol. 30. [2] J. Chen, T. Ma, and C. Xiao, “Fastgcn: Fast learning with graph convolutional networks via importance sam-pling,” in International Conference on Learning Repre-sentations , 2018. [3] W.-L. Chiang, X. Liu, S. Si, Y. Li, S. Bengio, and C.-J. Hsieh, “Cluster-gcn: An efficient algorithm for train-ing deep and large graph convolutional networks,” in 
+
+ACM SIGKDD International Conference on Knowledge Discovery & Data Mining , 2019, pp. 257–266. [4] S. Wu, H. Cheng, J. Cai, P. Ma, and W. Zhong, “Sub-sampling in large graphs using ricci curvature,” in The Eleventh International Conference on Learning Repre-sentations , 2023. [5] C. Fei, T. Zhou, T. Hao, and Y. Li, “Efficient curvature-aware graph network,” arXiv:2511.01443 , 2025. [6] H. Zeng, H. Zhou, A. Srivastava, R. Kannan, and V. Prasanna, “Graphsaint: Graph sampling based in-ductive learning method,” in International Conference on Learning Representations , 2020. [7] H. Ding, Z. Wei, and Y. Ye, “Scalable and effective graph neural networks via trainable random walk sam-pling,” IEEE Transactions on Knowledge and Data En-gineering , vol. 37, no. 02, pp. 896–909, 2025. [8] J. Topping, F. Di Giovanni, B. P. Chamberlain, X. Dong, and M. M. Bronstein, “Understanding over-squashing and bottlenecks on graphs via curvature,” in Interna-tional Conference on Learning Representations , 2022. [9] C. Fei, G. Li, T. Zhou, C. Wang, and Y. Li, “Geometric flow enhanced graph coarsening,” arXiv:2609.14962 ,2026. [10] D. W. Shu, Y. Kim, and J. Kwon, “Localized curvature-based combinatorial subgraph sampling for large-scale graphs,” Pattern Recognition , vol. 139, pp. 109475, 2023. [11] D. A. Spielman and N. Srivastava, “Graph sparsification by effective resistances,” in Proceedings of the fortieth annual ACM symposium on Theory of computing , 2008, pp. 563–568. [12] K. Devriendt and R. Lambiotte, “Discrete curvature on graphs from the effective resistance,” Journal of Physics: Complexity , vol. 3, no. 2, pp. 025008, 2022. [13] C. Fei, H. Liu, T. Zhou, Y. Li, and T. Hao, “Dynamic graph structure learning via resistance curvature flow,” 
+
+arXiv:2601.08149 , 2026. [14] William B. Johnson and Joram Lindenstrauss, “Exten-sions of Lipschitz mappings into a Hilbert space,” in 
+
+Conference on Modern Analysis and Probability , vol. 26 of Contemporary Mathematics , pp. 189–206. American Mathematical Society, 1984. [15] Magnus R. Hestenes and Eduard Stiefel, “Methods of conjugate gradients for solving linear systems,” Journal of Research of the National Bureau of Standards , vol. 49, no. 6, pp. 409–436, 1952.

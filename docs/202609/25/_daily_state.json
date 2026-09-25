@@ -1,0 +1,89 @@
+{
+  "date": "20260925",
+  "date_label": "2026-09-26",
+  "generated_at": "2026-09-26 05:54:23 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.29446v1",
+      "route": "202609/25/2609.29446v1-spade-dfl-communication-efficient-decentralized-federated-learning-via-derivative-free-linearized-admm",
+      "title": "SPADE-DFL: Communication-Efficient Decentralized Federated Learning via Derivative-Free Linearized ADMM",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通信高效的去中心化训练，减少邻居交换轮数",
+      "first_seen_at": "2026-09-26 05:54:23 北京时间",
+      "updated_at": "2026-09-26 05:54:23 北京时间"
+    },
+    {
+      "paper_id": "2609.22755v1",
+      "route": "202609/25/2609.22755v1-nsp-accelerating-variable-length-llm-training-via-nested-sequence-parallelism",
+      "title": "NSP: Accelerating Variable-Length LLM Training via Nested Sequence Parallelism",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "分布式并行训练系统，解决通信与负载均衡的权衡",
+      "first_seen_at": "2026-09-26 05:54:23 北京时间",
+      "updated_at": "2026-09-26 05:54:23 北京时间"
+    },
+    {
+      "paper_id": "2609.26979v1",
+      "route": "202609/25/2609.26979v1-resource-efficient-distributed-recursive-gaussian-processes",
+      "title": "Resource-Efficient Distributed Recursive Gaussian Processes",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "降低通信负担的分布式算法",
+      "first_seen_at": "2026-09-26 05:54:23 北京时间",
+      "updated_at": "2026-09-26 05:54:23 北京时间"
+    },
+    {
+      "paper_id": "2609.27199v1",
+      "route": "202609/25/2609.27199v1-zo-cosmo-index-free-one-hop-mixing-for-decentralized-zeroth-order-optimization",
+      "title": "ZO-COSMO: Index-Free One-Hop Mixing for Decentralized Zeroth-Order Optimization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "稀疏通信去中心化优化，单跳混合",
+      "first_seen_at": "2026-09-26 05:54:23 北京时间",
+      "updated_at": "2026-09-26 05:54:23 北京时间"
+    },
+    {
+      "paper_id": "2609.27209v1",
+      "route": "202609/25/2609.27209v1-scalable-subgraph-sampling-via-resistance-curvature",
+      "title": "Scalable Subgraph Sampling via Resistance Curvature",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "多GPU子图采样降低大规模GNN训练成本",
+      "first_seen_at": "2026-09-26 05:54:23 北京时间",
+      "updated_at": "2026-09-26 05:54:23 北京时间"
+    }
+  ]
+}
