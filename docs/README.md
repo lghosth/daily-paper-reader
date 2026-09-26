@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-26</span>
+      <span class="dpr-home-dashboard-kicker">2026-09-27</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 5 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 0 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>5</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>0</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-09-26 05:54:23 北京时间<br>状态：成功<br>下次更新：约 2026-09-27 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-09-27 06:14:26 北京时间<br>状态：成功<br>下次更新：约 2026-09-28 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,9 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日共生成 5 篇推荐（精读 0 篇，速读 5 篇）</p>
-<p>速读：《SPADE-DFL: Communication-Efficient Decentralized Federated Learning via Derivative-Free Linearized ADMM》（7.0/10）, 《NSP: Accelerating Variable-Length LLM Training via Nested Sequence Parallelism》（6.0/10）, 《Resource-Efficient Distributed Recursive Gaussian Processes》（6.0/10）</p>
-<p>这些结果覆盖了当下较热的方向，建议先看精读区论文的关键问题与方法。</p>
+<p>今日无新推荐，系统未产出可展示论文。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -93,12 +91,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">5 篇</strong>
+    <strong class="dpr-home-dashboard-count">0 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="SPADE-DFL: Communication-Efficient Decentralized Federated Learning via Derivative-Free Linearized ADMM">SPADE-DFL: Communication-Efficient Decentralized Federated Learning via Derivative-Free Linearized ADMM</span></li><li><span class="dpr-home-dashboard-paper-title" title="NSP: Accelerating Variable-Length LLM Training via Nested Sequence Parallelism">NSP: Accelerating Variable-Length LLM Training via Nested Sequence Parallelism</span></li><li><span class="dpr-home-dashboard-paper-title" title="Resource-Efficient Distributed Recursive Gaussian Processes">Resource-Efficient Distributed Recursive Gaussian Processes</span></li></ul>
+<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>5</strong></span></div>
+
 </section>
 </div>
 
