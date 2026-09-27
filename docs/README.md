@@ -48,7 +48,7 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-27</span>
+      <span class="dpr-home-dashboard-kicker">2026-09-28</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
     <strong class="dpr-home-dashboard-count">共 0 篇</strong>
@@ -58,7 +58,7 @@
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>0</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-09-27 06:14:26 北京时间<br>状态：成功<br>下次更新：约 2026-09-28 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-09-28 06:05:51 北京时间<br>状态：成功<br>下次更新：约 2026-09-29 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
