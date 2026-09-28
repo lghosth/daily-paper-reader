@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-29",
+  "date": "2026-09-28",
+  "generated_at": "2026-09-28T23:48:16",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/28/2609.27291v1-ngn-learning-neural-network-size-as-a-differentiable-count",
+      "section": "quick",
+      "title_en": "NGN: Learning Neural Network Size as a Differentiable Count",
+      "authors": "Lixing Li",
+      "date": "2026-09-23",
+      "pdf": "https://arxiv.org/pdf/2609.27291v1",
+      "score": "6.0",
+      "evidence": "可微学习网络规模并应用于图网络，连接架构选择与权重优化",
+      "tldr": "神经网络规模通常在训练前选定，导致架构选择与权重优化割裂，固定尺寸也未必匹配任务。本文提出 Neurogenesis Network（NGN），为每组有序结构组件学习边界并选择激活前缀，使规模可作为可微计数随权重联合训练，边界能从紧凑初始化增长，部署时丢弃边界外组件。实验覆盖 MLP、卷积/图网络、Transformer、状态空间模型、LoRA 与适配器：仅部署学习到的前缀通常性能变化很小，所选架构与同规模固定模型表现相近。这表明结构容量可直接作为计数优化，为自动确定网络规模提供通用机制。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Neural network size is usually chosen before training, separating architecture selection from weight optimization. We introduce the Neurogenesis Network (NGN), a differentiable parameterization for learning how many ordered structural components a model should use. For each ordered component group, one learnable boundary selects an active prefix while the model parameters are trained. The boundary can grow from a compact initialization and can be deployed by discarding components beyond the learned boundary. Controlled experiments examine convergence of the learned boundary, the performance of deployed prefixes, and comparisons with fixed-size models and alternative approaches to learning capacity. We then apply the same mechanism to MLPs, convolutional and graph networks, Transformers, state-space models, LoRA, and adapters. Across these settings, deploying only the learned prefix usually changes performance little, and the selected architectures perform similarly to fixed models trained at the same size. These results show that structural capacity can be optimized directly as a count.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/28/2609.28053v1-exact-quantile-balancing-and-load-error-injection-for-mixture-of-experts",
+      "section": "quick",
+      "title_en": "Exact Quantile Balancing and Load-Error Injection for Mixture-of-Experts",
+      "authors": "Pit Neitemeier, Jiaze Li, Alessio Serra, Philipp Scholl, Sohir Maskey",
+      "date": "2026-09-23",
+      "pdf": "https://arxiv.org/pdf/2609.28053v1",
+      "score": "6.0",
+      "evidence": "通信高效的分布式MoE训练负载均衡",
+      "tldr": "MoE 训练既要全局负载均衡以避免专家利用不足，也要局部均衡以提升专家并行效率。现有分布式分位均衡依赖分片或近似全局分位，专家偏置又与 token 无关，难以保证微批级均衡。为此提出 EQB，以极低通信精确计算全局批 BF16 分位；并提出 LEI，将局部负载误差注入路由分数梯度。在 7.5B MoE、最高 500B token 训练中，EQB 改善全局均衡与下游性能，LEI 改善局部均衡并优于 GShard 损失。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Mixture-of-Experts (MoE) training requires global load balance to prevent expert under-utilization and local balance for efficient expert-parallel execution. Existing distributed Quantile Balancing (QB) uses shard-dependent or approximate global quantiles, while token-independent expert biases cannot ensure microbatch-level balance. We introduce Exact Quantile Balancing (EQB), which computes exact global-batch BF16 quantiles with negligible communication, and Load-Error Injection (LEI), which injects local load errors directly into router-score gradients. On 7.5B-parameter MoEs trained for up to 500B tokens, EQB improves global balance and downstream performance over naive QB, while LEI improves local balance and outperforms the GShard loss at comparable quality.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

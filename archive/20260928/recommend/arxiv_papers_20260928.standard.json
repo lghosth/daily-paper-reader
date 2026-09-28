@@ -1,0 +1,92 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-28T23:47:55.572262+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.27291v1",
+      "source": "arxiv",
+      "title": "NGN: Learning Neural Network Size as a Differentiable Count",
+      "abstract": "Neural network size is usually chosen before training, separating architecture selection from weight optimization. We introduce the Neurogenesis Network (NGN), a differentiable parameterization for learning how many ordered structural components a model should use. For each ordered component group, one learnable boundary selects an active prefix while the model parameters are trained. The boundary can grow from a compact initialization and can be deployed by discarding components beyond the learned boundary. Controlled experiments examine convergence of the learned boundary, the performance of deployed prefixes, and comparisons with fixed-size models and alternative approaches to learning capacity. We then apply the same mechanism to MLPs, convolutional and graph networks, Transformers, state-space models, LoRA, and adapters. Across these settings, deploying only the learned prefix usually changes performance little, and the selected architectures perform similarly to fixed models trained at the same size. These results show that structural capacity can be optimized directly as a count.",
+      "authors": [
+        "Lixing Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-23T03:29:30+00:00",
+      "link": "https://arxiv.org/pdf/2609.27291v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "differentiable learning of network size, applied to graph networks, bridging architecture selection and weight optimization",
+      "llm_evidence_cn": "可微学习网络规模并应用于图网络，连接架构选择与权重优化",
+      "llm_evidence": "可微学习网络规模并应用于图网络，连接架构选择与权重优化",
+      "canonical_evidence": "可微学习网络规模并应用于图网络，连接架构选择与权重优化",
+      "llm_tldr_en": "NGN learns network size as a differentiable count: a learnable boundary selects an active prefix of ordered components, enabling capacity learning. Applied to MLPs, CNNs and graph networks, it bridges architecture selection and weight training.",
+      "llm_tldr_cn": "针对网络规模通常在训练前人工确定、架构选择与权重优化相互割裂的问题，本文提出神经发生网络NGN，为每组有序结构组件学习一个可微边界，仅激活前缀组件并随训练增长。受控实验考察边界收敛性与部署前缀性能，并与固定规模模型及容量学习基线比较，最后将该机制推广至MLP、卷积网络与图网络。该工作为图神经架构搜索中的可微容量选择提供了新思路。",
+      "llm_tldr": "针对网络规模通常在训练前人工确定、架构选择与权重优化相互割裂的问题，本文提出神经发生网络NGN，为每组有序结构组件学习一个可微边界，仅激活前缀组件并随训练增长。受控实验考察边界收敛性与部署前缀性能，并与固定规模模型及容量学习基线比较，最后将该机制推广至MLP、卷积网络与图网络。该工作为图神经架构搜索中的可微容量选择提供了新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.28053v1",
+      "source": "arxiv",
+      "title": "Exact Quantile Balancing and Load-Error Injection for Mixture-of-Experts",
+      "abstract": "Mixture-of-Experts (MoE) training requires global load balance to prevent expert under-utilization and local balance for efficient expert-parallel execution. Existing distributed Quantile Balancing (QB) uses shard-dependent or approximate global quantiles, while token-independent expert biases cannot ensure microbatch-level balance. We introduce Exact Quantile Balancing (EQB), which computes exact global-batch BF16 quantiles with negligible communication, and Load-Error Injection (LEI), which injects local load errors directly into router-score gradients. On 7.5B-parameter MoEs trained for up to 500B tokens, EQB improves global balance and downstream performance over naive QB, while LEI improves local balance and outperforms the GShard loss at comparable quality.",
+      "authors": [
+        "Pit Neitemeier",
+        "Jiaze Li",
+        "Alessio Serra",
+        "Philipp Scholl",
+        "Sohir Maskey"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-09-23T13:07:05+00:00",
+      "link": "https://arxiv.org/pdf/2609.28053v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "communication-efficient distributed MoE training load balance",
+      "llm_evidence_cn": "通信高效的分布式MoE训练负载均衡",
+      "llm_evidence": "通信高效的分布式MoE训练负载均衡",
+      "canonical_evidence": "通信高效的分布式MoE训练负载均衡",
+      "llm_tldr_en": "MoE training needs both global and local load balance. EQB computes exact global-batch BF16 quantiles with negligible communication, and LEI injects local load errors into router gradients, improving balance and performance.",
+      "llm_tldr_cn": "MoE训练需要全局负载均衡以避免专家闲置，同时需要局部均衡以支持高效专家并行，而现有分位数均衡依赖分片相关或近似的全局分位数。本文提出EQB，以可忽略通信计算精确的全局批次BF16分位数，并提出LEI将局部负载误差直接注入路由梯度。在75亿参数、训练至5000亿token的MoE上，EQB改善全局均衡与下游性能，LEI改善局部均衡并优于GShard损失。该工作为分布式MoE训练提供低通信开销的精确负载均衡方案。",
+      "llm_tldr": "MoE训练需要全局负载均衡以避免专家闲置，同时需要局部均衡以支持高效专家并行，而现有分位数均衡依赖分片相关或近似的全局分位数。本文提出EQB，以可忽略通信计算精确的全局批次BF16分位数，并提出LEI将局部负载误差直接注入路由梯度。在75亿参数、训练至5000亿token的MoE上，EQB改善全局均衡与下游性能，LEI改善局部均衡并优于GShard损失。该工作为分布式MoE训练提供低通信开销的精确负载均衡方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
