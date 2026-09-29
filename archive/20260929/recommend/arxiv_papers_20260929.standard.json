@@ -1,0 +1,174 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-29T22:34:56.280954+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2609.34420v1",
+      "source": "arxiv",
+      "title": "MegaGraph: Towards Efficient Training of Large-Scale Graph Transformers with Automated Hybrid Parallelism",
+      "abstract": "Graph Transformers (GTs) offer superior representation capabilities by overcoming the depth limitations and over-smoothing issues of traditional Graph Neural Networks (GNNs). However, scaling GTs to large graphs poses critical bottlenecks. Specifically, the attention score matrix and its associated topology-aware bias matrix jointly incur significant per-layer memory overhead, and heavy graph embedding layers result in severe workload imbalances. These characteristics are unique to GT training and are not addressed by parallelism techniques designed for either conventional GNNs or Transformers, making a dedicated solution necessary. This paper introduces MegaGraph, the first automated hybrid parallelism framework designed for efficient GT training. MegaGraph designs three specialized strategies, namely graph-aware context parallelism, heterogeneous pipeline parallelism, and hybrid data parallelism, to support efficient training on large-scale graphs. However, coordinating these three parallelism strategies yields an exponentially large configuration space. To address this complexity, an automatic search engine leverages precise cost models via a Profile - Model - Search workflow to identify the optimal parallelism configuration. Evaluations demonstrate that MegaGraph enables training on large-scale graphs where state-of-the-art baselines fail due to out-of-memory (OOM) errors. The framework reduces per-device peak memory by up to 77.8\\% and achieves up to 4.51$\\times$ training speedup while maintaining model accuracy.",
+      "authors": [
+        "Tong Qiao",
+        "Ao Zhou",
+        "Yingjie Qi",
+        "Chunming Hu",
+        "Jianlei Yang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-28T06:37:07+00:00",
+      "link": "https://arxiv.org/pdf/2609.34420v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "automated hybrid parallelism framework for large-scale graph transformer training",
+      "llm_evidence_cn": "面向大规模图Transformer训练的自动化混合并行框架",
+      "llm_evidence": "面向大规模图Transformer训练的自动化混合并行框架",
+      "canonical_evidence": "面向大规模图Transformer训练的自动化混合并行框架",
+      "llm_tldr_en": "MegaGraph targets the per-layer memory overhead of attention and topology-aware bias matrices plus embedding-layer workload imbalance when scaling Graph Transformers. It introduces the first automated hybrid parallelism framework for large graphs, improving training efficiency of distributed graph learning.",
+      "llm_tldr_cn": "图Transformer在大图上训练时，注意力分数矩阵与拓扑偏置矩阵带来巨大逐层显存开销，图嵌入层还会造成严重负载不均，而传统GNN或Transformer的并行方案无法应对。本文提出MegaGraph，首个面向大规模图Transformer训练的自动化混合并行框架，自动搜索并组合并行策略以缓解上述瓶颈。实验表明该框架能显著提升大规模图Transformer的训练效率与可扩展性。其贡献在于为分布式图学习系统提供了专门的并行训练方案。",
+      "llm_tldr": "图Transformer在大图上训练时，注意力分数矩阵与拓扑偏置矩阵带来巨大逐层显存开销，图嵌入层还会造成严重负载不均，而传统GNN或Transformer的并行方案无法应对。本文提出MegaGraph，首个面向大规模图Transformer训练的自动化混合并行框架，自动搜索并组合并行策略以缓解上述瓶颈。实验表明该框架能显著提升大规模图Transformer的训练效率与可扩展性。其贡献在于为分布式图学习系统提供了专门的并行训练方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "distributed training systems for graph neural networks",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.33392v1",
+      "source": "arxiv",
+      "title": "AutoHGNN: Robust and Efficient Neural Architecture Search for Hypergraph Neural Networks",
+      "abstract": "Hypergraph neural networks have achieved significant success in recent years. However, manual architecture crafting is labor-intensive and often fails to capture complex, higher-order relations, making the automation of hypergraph neural network structure design crucial. To improve the automation and adaptability of hypergraph learning, this paper proposes AutoHGNN, a neural architecture search framework tailored for hypergraph neural networks. First, we introduce a Hyper-Interaction Module (HIM) into the search space to address the mismatch between conventional graph neural network designs and hypergraph data. Second, we propose Hypergraph Stable Topological Distance (HyperSTD) as a structural selection criterion to identify architectures that best preserve the intrinsic structural affinities of the original hypergraph during differentiable search. Extensive experiments on various benchmark datasets demonstrate that AutoHGNN consistently outperforms manually designed and automatically searched baselines in classification accuracy and time efficiency, proving that the discovered architectures are significantly more effective.",
+      "authors": [
+        "Sirui Li",
+        "Pietro Liò b",
+        "Xinsheng Li",
+        "Baisong Liu",
+        "Chengbin Peng"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-27T09:16:13+00:00",
+      "link": "https://arxiv.org/pdf/2609.33392v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "neural architecture search framework tailored for hypergraph neural networks",
+      "llm_evidence_cn": "面向超图神经网络的神经架构搜索框架",
+      "llm_evidence": "面向超图神经网络的神经架构搜索框架",
+      "canonical_evidence": "面向超图神经网络的神经架构搜索框架",
+      "llm_tldr_en": "AutoHGNN automates hypergraph neural network design with a NAS framework that adds a Hyper-Interaction Module to the search space and uses Hypergraph Stable Topological Distance as a structural selection criterion.",
+      "llm_tldr_cn": "超图神经网络结构设计依赖人工，难以刻画复杂高阶关系且成本高昂，自动化设计因此十分关键。本文提出AutoHGNN，将超交互模块引入搜索空间以适配超图数据，并提出超图稳定拓扑距离作为结构选择准则来自动搜索架构。实验显示该框架在提升自动化与适应性的同时保持鲁棒与高效。其贡献在于为超图学习提供了可扩展的图神经架构搜索范式。",
+      "llm_tldr": "超图神经网络结构设计依赖人工，难以刻画复杂高阶关系且成本高昂，自动化设计因此十分关键。本文提出AutoHGNN，将超交互模块引入搜索空间以适配超图数据，并提出超图稳定拓扑距离作为结构选择准则来自动搜索架构。实验显示该框架在提升自动化与适应性的同时保持鲁棒与高效。其贡献在于为超图学习提供了可扩展的图神经架构搜索范式。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph neural architecture search",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.34334v1",
+      "source": "arxiv",
+      "title": "HOCCL: Offloading Collective Communication from GPU Cores to Accelerate Distributed Training",
+      "abstract": "Large language model training involves massive computation on GPU streaming multiprocessors (SMs), the primary compute units of GPUs. Since SMs host specialized accelerators such as Tensor Cores, their efficient utilization is critical to training efficiency. Unfortunately, existing collective communication systems compete with computation for SMs, as they consume SMs for communication-related data movement and synchronization operations.   We observe that communication can, in principle, be driven by DMA engines, thereby eliminating SM involvement in communication. Based on this insight, we propose HOCCL, a zero-SM collective communication framework consisting of three components: a stream manager, a point-to-point (P2P) executor, and a collective scheduler. The stream manager preserves operator-level temporal ordering with other GPU kernels. The P2P executor enables zero-SM point-to-point communication, while the collective scheduler orchestrates P2P transfers to maximize bandwidth. Experiments show that HOCCL preserves near-peak communication performance, achieving within 3% of the state of the art on average, while eliminating communication occupancy on nearly 10% of total GPU SMs. By freeing SM resources for computation, HOCCL improves end-to-end training throughput by up to 5%.",
+      "authors": [
+        "Yao Fei",
+        "Gongming Zhao",
+        "Hongli Xu",
+        "Jin Fang",
+        "Jiacheng Zhu",
+        "Shuo Xu",
+        "Kun Huang",
+        "Zhuolong Yu"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI"
+      ],
+      "published": "2026-09-28T05:10:42+00:00",
+      "link": "https://arxiv.org/pdf/2609.34334v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "offloads collective communication to DMA to accelerate distributed training",
+      "llm_evidence_cn": "将集合通信卸载到DMA以加速分布式训练",
+      "llm_evidence": "将集合通信卸载到DMA以加速分布式训练",
+      "canonical_evidence": "将集合通信卸载到DMA以加速分布式训练",
+      "llm_tldr_en": "Collective communication competes with computation for GPU streaming multiprocessors, hurting distributed training efficiency. HOCCL offloads communication to DMA engines via a stream manager and P2P executor, forming a zero-SM collective communication framework that reduces SM contention during training.",
+      "llm_tldr_cn": "现有集合通信系统会与计算争抢GPU流多处理器，导致分布式训练效率受限。本文提出HOCCL，将通信数据搬运与同步从GPU核心卸载到DMA引擎，构建零SM占用的集合通信框架，包含流管理器与点对点执行器等组件。实验表明该方案能减少通信对计算资源的抢占，从而加速分布式训练。其思路对通信高效的分布式训练系统具有直接借鉴价值，尽管原文以大规模语言模型训练为验证场景。",
+      "llm_tldr": "现有集合通信系统会与计算争抢GPU流多处理器，导致分布式训练效率受限。本文提出HOCCL，将通信数据搬运与同步从GPU核心卸载到DMA引擎，构建零SM占用的集合通信框架，包含流管理器与点对点执行器等组件。实验表明该方案能减少通信对计算资源的抢占，从而加速分布式训练。其思路对通信高效的分布式训练系统具有直接借鉴价值，尽管原文以大规模语言模型训练为验证场景。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.34360v1",
+      "source": "arxiv",
+      "title": "CoeF-SFL: Preserving Collaborative Server-Client Learning with Enhanced Communication Efficiency",
+      "abstract": "Split Federated Learning (SFL) enables resource-constrained clients to participate in collaborative training, but vanilla SFL exchanges smashed data and gradients at every batch, which incurs significant communication overhead. Recent methods reduce this overhead with an auxiliary network at the client-side cut layer. However, we identify that this approach makes the client optimize a local objective that differs from the end-to-end objective, which fundamentally limits the collaborative training between the client and the server. We propose Compensated Feedback based SFL (CoeF-SFL), a communication-efficient framework that retains the end-to-end objective without any auxiliary network. In CoeF-SFL, the client and the server exchange the smashed data and the gradients once per round and reuse them during local training. Since this reuse makes the gradients stale on the client side, we compensate them with a curvature-based correction in the activation space and develop two variants. CoeF-D approximates the Hessian with a diagonal gradient outer product, while CoeF-J exploits the tractable Jacobian-based Hessian of a surrogate loss that upper-bounds the true loss. We provide the theoretical background of each method, characterizing its compensation. Across vision and language tasks, model capacities, cut layers, and data distributions, CoeF-SFL significantly outperforms auxiliary-network-based methods under the same communication frequency, and the improvement is most substantial on vision tasks. Code is available at https://anonymous.4open.science/r/CoeF-SFL-2686/README.md",
+      "authors": [
+        "Junwoo Bae",
+        "Jin-Hyun Ahn"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "stat.ML"
+      ],
+      "published": "2026-09-28T05:38:11+00:00",
+      "link": "https://arxiv.org/pdf/2609.34360v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "communication-efficient split federated learning framework",
+      "llm_evidence_cn": "通信高效的拆分联邦学习框架",
+      "llm_evidence": "通信高效的拆分联邦学习框架",
+      "canonical_evidence": "通信高效的拆分联邦学习框架",
+      "llm_tldr_en": "Vanilla split federated learning exchanges smashed data and gradients every batch, causing heavy communication overhead, while auxiliary-network fixes distort the client objective. CoeF-SFL proposes a compensated-feedback framework that keeps the end-to-end objective without auxiliary networks, cutting communication cost.",
+      "llm_tldr_cn": "标准拆分联邦学习在每个批次都要交换中间数据与梯度，通信开销巨大；而引入辅助网络的方法又使客户端优化目标偏离端到端目标。本文提出CoeF-SFL，一种基于补偿反馈的通信高效框架，在不使用辅助网络的前提下保留端到端训练目标。实验表明该方法能在降低通信开销的同时维持客户端与服务端的协作训练效果。其贡献在于为通信高效协同训练提供了兼顾目标一致性的新思路。",
+      "llm_tldr": "标准拆分联邦学习在每个批次都要交换中间数据与梯度，通信开销巨大；而引入辅助网络的方法又使客户端优化目标偏离端到端目标。本文提出CoeF-SFL，一种基于补偿反馈的通信高效框架，在不使用辅助网络的前提下保留端到端训练目标。实验表明该方法能在降低通信开销的同时维持客户端与服务端的协作训练效果。其贡献在于为通信高效协同训练提供了兼顾目标一致性的新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

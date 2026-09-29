@@ -1,0 +1,599 @@
+Title: MegaGraph: Towards Efficient Training of Large-Scale Graph Transformers with Automated Hybrid Parallelism
+
+URL Source: https://arxiv.org/pdf/2609.34420v1
+
+Published Time: Tue, 29 Sep 2026 03:24:23 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# MegaGraph: Towards Efficient Training of Large-Scale Graph Transformers with Automated Hybrid Parallelism 
+
+Tong Qiao ∗, Ao Zhou †, Yingjie Qi ∗, Chunming Hu †‡ and Jianlei Yang ∗§‡ ∗School of Computer Science and Engineering, Beihang University, China 
+
+§Qingdao Research Institute, Beihang University, Qingdao, China 
+
+†School of Software, Beihang University, China 
+
+‡State Key Laboratory of Complex and Critical Software Environment, Beihang University, China 
+
+Abstract —Graph Transformers (GTs) offer superior repre-sentation capabilities by overcoming the depth limitations and over-smoothing issues of traditional Graph Neural Networks (GNNs). However, scaling GTs to large graphs poses critical bottlenecks. Specifically, the attention score matrix and its associated topology-aware bias matrix jointly incur significant per-layer memory overhead, and heavy graph embedding layers result in severe workload imbalances. These characteristics are unique to GT training and are not addressed by parallelism techniques designed for either conventional GNNs or Trans-formers, making a dedicated solution necessary. This paper introduces MegaGraph, the first automated hybrid parallelism framework designed for efficient GT training. MegaGraph de-signs three specialized strategies, namely graph-aware context parallelism, heterogeneous pipeline parallelism, and hybrid data parallelism, to support efficient training on large-scale graphs. However, coordinating these three parallelism strategies yields an exponentially large configuration space. To address this complexity, an automatic search engine leverages precise cost models via a Profile → Model → Search workflow to identify the optimal parallelism configuration. Evaluations demonstrate that MegaGraph enables training on large-scale graphs where state-of-the-art baselines fail due to out-of-memory (OOM) errors. The framework reduces per-device peak memory by up to 77.8% and achieves up to 4.51 × training speedup while maintaining model accuracy. 
+
+Index Terms —Graph Transformer, Automatic Parallelism, Dis-tributed Training, Hybrid Parallelism 
+
+I. I NTRODUCTION 
+
+Graph Neural Networks (GNNs) have demonstrated signifi-cant success across diverse domains, such as recommendation systems [1], link prediction [2], and knowledge graph analy-sis [3]. Traditional GNNs rely on iterative local aggregation mechanisms to handle the non-Euclidean nature of graph data [4, 5]. However, this mechanism faces a fundamen-tal dilemma. Stacking layers to expand the receptive field inevitably triggers over-smoothing, which severely degrades the representation capability of deep architectures [6, 7]. Recently, the Transformer architecture [8] has driven signifi-cant advances in Large Language Models (LLMs), motivating 
+
+This work was supported in part by the National Key R&D Program of China (Grant No. 2024YFB4505601), the Shandong Provincial Natural Sci-ence Foundation (Grant No. ZR2026LJS009) and the Beijing Natural Science Foundation (Grant No. L243031). The corresponding authors are Jianlei Yang 
+
+and Chunming Hu . Email: jianlei@buaa.edu.cn, hucm@buaa.edu.cn. GCN Memory GT Memory       
+
+> 8.0 7.0 6.0 5.0 4.0 3.0 2.0 1.0 90 92 94 96 98 20 22 24 26 28 04816 32 64 128
+> Layers GPU Memory (GB) Accuracy (%)
+> Over smoothing!
+> Graph Scale Model Depth
+> GCN [4]
+> GraphSAGE [16] BGL [13]
+> TorchGT [21] NodeFormer [11]
+> Large Graph + Deep Model
+> Graphormer [9]
+> GT Accuracy. GCN Accuracy.
+> (a) The accuracy–memory trade-off in deep Graph Transformers. (b) Landscape of existing graph learning systems by model depth and graph scale.
+> Memory Explosion!
+> Cluster-GCN [17]
+> ANS-GT [12] MPNN [5]
+
+Fig. 1. Scalability of graph representation learning. 
+
+researchers to extend it to graph-structured data. By incorpo-rating structural encoding into the attention mechanism, Graph Transformers (GTs) leverage global attention to connect all nodes, breaking the depth limitations of traditional GNNs [9– 12]. However, the global attention mechanism incurs an O( N 2)per-layer memory footprint, and the total memory further accumulates as the number of layers increases. As shown in Fig. 1(a), GT accuracy improves steadily with increasing depth, overcoming the over-smoothing issue of GNNs, but GPU memory grows rapidly as well. The conflict between the expressive power of deep GTs and the memory ceiling of a single GPU constitutes the core bottleneck, making distributed training essential. Furthermore, existing parallelism techniques cannot be di-rectly applied to GTs. LLM parallelism strategies assume dense and regular computational workloads, but graph struc-ture violates these assumptions. The attention bias matrix loses row-column alignment during ring attention rotation in stan-dard context parallelism (CP). In addition, the node embedding lookup table scales linearly with the total node count, break-ing the uniform partitioning assumption of standard pipeline parallelism (PP). GNN distributed training systems [13] are designed for shallow message-passing architectures, relying on neighbor sampling and graph partitioning for data parallelism. These systems lack support for the attention partitioning and pipeline scheduling required by deep GTs. Moreover, the configuration space for hybrid parallelism grows combinato-rially, making manual tuning intractable. Although adaptive and automatic GNN training on CPU-GPU heterogeneous platforms has been explored [14, 15], these approaches target 1arXiv:2609.34420v1 [cs.LG] 28 Sep 2026 conventional message-passing GNNs rather than the deep GTs we study. As shown in Fig. 1(b), existing graph learning systems fall into three categories. Classical full-graph aggregation GNNs with shallow architectures are primarily designed for small and medium-scale graphs. Sampling-based mini-batch GNNs [16, 17] can scale to large graphs, but remain con-strained by the over-smoothing problem, preventing the design of deeper network architectures. Current GT models leverage global attention to support deeper architectures, but can only handle small and medium-scale graphs and struggle to scale to large-scale graphs. A clear gap remains at the intersection of large-scale graphs and deep models. We propose MegaGraph, the first automated hybrid paral-lelism framework designed for GT training, which supports training on large-scale graphs with deep network architectures. MegaGraph comprises two core modules: a hybrid parallelism backend tailored to Graph Transformer workloads, and an automatic search engine that identifies the optimal strategy from the combinatorially growing configuration space. Our main contributions are summarized as follows.  
+
+> •
+
+We propose the MegaGraph parallelism backend with three specialized strategies. Graph-aware context paral-lelism distributes both the attention computation and the associated bias matrix across multiple GPUs. Hetero-geneous pipeline parallelism balances workloads across stages through non-uniform layer partitioning. Hybrid data parallelism further scales training throughput along the graph data dimension.  
+
+> •
+
+We design an automatic search engine following a Profile 
+
+→ Model → Search workflow, which leverages precise cost models and memory-aware pruning to identify the optimal parallelism configuration within seconds from an exponentially large search space.  
+
+> •
+
+Evaluations demonstrate that MegaGraph enables training on large-scale graphs where existing baselines fail with OOM, reducing peak memory by 77.8% and achiev-ing 4.51 × training speedup compared with the best-performing baseline, while maintaining model accuracy. II. P RELIMINARIES & M OTIVATIONS 
+
+A. Preliminaries: Graph Transformer 
+
+Fig. 2 illustrates the training workflow of hierarchical GTs [12]. Given an input graph with topology and node features, graph coarsening first compresses it into a set of super nodes, each containing an internal subgraph. During training, nodes are sampled to form mini-batches. The attention bias matrix battn is then constructed based on the topological relationships among local nodes within the batch and between local nodes and super nodes. This mechanism is known as structural encoding, which encodes topological relationships as additive bias terms injected into the multi-head attention computation. In each Transformer layer, node features are 𝐌 !!          
+
+> Local-Local
+> 𝐌 !"
+> Local-Super
+> 𝐌 "!
+> Super-Local
+> 𝐌 ""
+> Super-Super
+> 𝑑 !
+> 𝑑 "
+> 𝑑 !
+> Topology
+> ①Input Graph
+> Feature
+> ②Coarsened Graph
+> ③Data Construction
+> Super Nodes Batch: [,… ]
+> Attention bias:
+> 𝑸 𝑲 𝑽
+> Output Norm FFN LayerNorm
+> 𝑸𝑲 𝐓
+> 𝒅 +
+> Feature Attention Bias
+> ④Graph Transformer
+> Fig. 2. The hierarchical Graph Transformer training workflow comprising graph coarsening, data construction, and Transformer layer computation.
+
+linearly projected to produce the query matrix Q, key matrix 
+
+K, and value matrix V. The attention is computed as: Attention (Q, K, V) = Softmax 
+
+ QK ⊤
+
+√d + battn 
+
+
+
+V. (1) Through graph coarsening, the global attention complexity is reduced from O( |V| 2) to O( N 2), where N is the total number of nodes in a single batch, including both local nodes and super nodes ( N ≪ |V| ). 
+
+B. Motivations 
+
+Observation 1: Per-layer attention and bias matrices dom-inate GPU memory. Even after coarsening, each layer of a hierarchical GT must store an N × N attention score matrix and an equally sized battn bias matrix. In standard context parallelism, the sequence is evenly partitioned across GPUs, where each GPU holds a portion of Q, K, and V, and KV blocks are rotated via ring attention [18] to complete the full attention computation. However, this mechanism cannot be directly applied to GTs. This mechanism assumes that attention scores are solely determined by QK ⊤, so KV blocks can be correctly computed on any GPU after rotation. In GTs, however, the attention computation additionally requires the precomputed battn , which encodes topological relationships between nodes and cannot be derived online from QK ⊤.When KV blocks are rotated to another GPU, the locally stored column partition of battn no longer corresponds to the rotated KV block, leading to incorrect attention score computation. The graph partitioning and neighbor sampling methods commonly used in distributed GNN training are also inapplica-ble. GNNs rely on neighbor aggregation [16], where each node only accesses its local neighborhood, allowing the graph to be partitioned into independent subgraphs for separate processing. GT attention, in contrast, is all-to-all, requiring each node to compute attention scores with every other node in the batch. Partitioning into subgraphs would break the integrity of global attention. Therefore, neither the context parallelism from LLM training nor the graph partitioning and sampling from GNN training can be directly applied to distribute the attention computation of GTs. 
+
+Motivation 1: A new context parallelism strategy is needed that jointly partitions the attention computation and the bias matrix across GPUs while preserving their consistency at every computation step. 2MegaGraph Input 
+
+> Input Graph Super Nodes coarsen
+> Preprocessing
+> MegaGraph Parallelism Backend ( §3.A)
+> Pipeline Parallelism
+> Load balance Hybrid layers Pipeline mode
+> Data Parallelism Context Parallelism
+> GPU0
+
+{ }
+
+> Local Q 0
+
+{ }
+
+> Remote K1, V 1
+> GPU1
+
+{ }
+
+> Local Q 1
+
+{ }      
+
+> Remote K0, V 0
+> Ring attn
+> GPU0 GPU1 GPU3
+> batch
+> Strategy Search
+> Automatic Search Engine ( §3.B)
+> Profiling
+> Communication Cost
+> Computation Latency
+> Memory Overhead GPU0 GPU1
+> Profile on device mesh
+> GPU0 GPU1
+> results
+> Cost Model
+> Latency model Memory model Activation Optimizer Model
+> Configuration Space
+> Pruning
+> DP CP PP Batch Size
+
+…
+
+> State Tcycle
+> Tstate
+> Tsync
+> iter Search Support Optimal Config.
+> 𝑑 !
+> 𝑑 "
+> 𝑑 !
+> Attention Bias
+> Hardware
+> Deploy
+> Computing Node 1 Computing Node 0
+> Device Mesh 0 (A100*1) Device Mesh 1 (A100*1) Device Mesh 2 (M40*2) Device Mesh 3 (M40*2)
+> Input
+
+Fig. 3. The overview of MegaGraph framework. 
+
+Observation 2: Graph embedding and data construction introduce significant additional memory overhead. Beyond the per-layer attention overhead discussed above, the overall mem-ory pressure also grows with model depth as parameters, acti-vations, and gradients accumulate across layers. In LLM train-ing, pipeline parallelism was proposed to address this problem by distributing model layers across multiple GPUs [19]. Stan-dard pipeline parallelism adopts uniform layer partitioning, as vocabulary embedding tables and data preprocessing have small memory footprints, resulting in approximately balanced workloads across stages. In GT training, however, the node embedding lookup table scales linearly with the total graph node count as |V| × d, consuming significantly more memory than a single Transformer layer’s weights on large graphs. In addition, the data construction module generates attention bias tensors and feature buffers for each batch during training, further increasing memory consumption. These overheads are concentrated in the first stage of the pipeline, causing uniform layer partitioning to result in the first stage consuming far more memory than the remaining stages, leading to severe workload imbalance and pipeline bubbles. 
+
+Motivation 2: GT training demands a non-uniform layer partitioning strategy that accounts for the varying memory overhead across pipeline stages. 
+
+Observation 3: The hybrid parallelism configuration space grows combinatorially. As discussed above, GT training re-quires both context parallelism and non-uniform pipeline par-allelism. Context parallelism introduces a search dimension 
+
+Pcp , while non-uniform pipeline parallelism must choose one of   L−1
+
+> Ppp −1
+
+ layer partitions across Ppp stages. For example, 
+
+ 23 3
+
+ = 1771 schemes for L = 24 , Ppp = 4 . Multiplying in the data-parallelism degree Pdp , the full configuration space grows combinatorially, making exhaustive search infeasible. 
+
+Motivation 3: The optimal training configuration must be efficiently identified from the combinatorially growing configuration space. III. M ETHODOLOGY 
+
+Fig. 3 illustrates the overall architecture of the MegaGraph framework. This framework is logically decoupled into two core modules: 1) MegaGraph Parallelism Backend : This module exe-cutes distributed training with three specialized paral-lelism strategies, each targeting a different granularity of the training workload. 2) Automatic Search Engine : This module serves as the decision center of the framework. It predicts execution costs based on precise cost models. Following a Profile 
+
+→ Model → Search workflow, this engine automatically identifies the optimal parallelism configuration for a given graph and hardware setup. These two modules interact closely and depend on each other. First, the automatic search engine constructs precise mathematical cost models using the profiling data provided by the parallelism backend. Next, the automatic search engine determines the optimal parallelism strategy within the vast configuration space based on these cost models. Finally, this optimal strategy is deployed back to the parallelism backend to guide distributed training. 
+
+A. MegaGraph Parallelism Backend 
+
+We design three specialized parallelism strategies and in-tegrate them into the parallelism backend: graph-aware con-text parallelism partitions memory along the attention dimen-sion, heterogeneous pipeline parallelism balances workloads along the layer dimension, and hybrid data parallelism scales throughput along the graph data dimension. 
+
+1) Graph-Aware Context Parallelism: We propose graph-aware context parallelism (GA-CP), which distributes the at-tention computation and the bias matrix battn across multiple GPUs while preserving computational correctness. GA-CP simultaneously partitions both the attention computation and the bias matrix along the node dimension, ensuring each rank retains the complete structural information of its local nodes relative to all nodes in the batch. During ring attention rotation of KV blocks, the corresponding columns of battn 
+
+are dynamically sliced to match the current KV block, ensur-ing computational correctness. The implementation comprises three core mechanisms, as shown in Fig. 4 and detailed below. 
+
+① Ring-Based KV Block Rotation. Each input batch contains 
+
+N ′ local graph nodes and Ns global super nodes, with total node count N = N ′+Ns. To avoid constructing the full N ×N
+
+attention bias matrix on a single device, we decompose the 3GPU 0                
+
+> Input Subgraph
+> Topology Feature Attention Bias
+> 𝐐 𝟎 𝐊 𝟎 𝐕 𝟎
+> Bias Sharding
+> 𝐛 𝟎
+> Online Softmax
+> 𝐐 "𝐊 #$
+> 𝑑/2 + 𝐛 "…𝐕 #
+> 𝐐 #𝐊 "$
+> 𝑑/2 + 𝐛 #…𝐕 "
+> 𝐐 #𝐊 #$
+> 𝑑/2 + 𝐛 #…𝐕 #
+> 𝐐 "𝐊 𝟏 $
+> 𝑑/2 + 𝐛 "…𝐕 "
+> 𝐕 𝟏 𝐊 𝟏 𝐐 𝟏
+> 𝐛 𝟏
+> GPU 1
+> Ring-Based KV Rotation
+> Online Softmax
+> 𝐀𝐭𝐭𝐞𝐧𝐭𝐢𝐨𝐧 𝟎 𝐀𝐭𝐭𝐞𝐧𝐭𝐢𝐨𝐧 𝟏
+
+Fig. 4. Graph-aware context parallelism: KV blocks rotate through the ring while bias columns are dynamically sliced to match each incoming KV block. 
+
+computation into Pcp iterative steps along a communication ring, where Pcp denotes the context parallelism degree. During computation, the regular nodes are partitioned while the global super nodes are replicated. Each rank i statically retains a local query shard Qi of shape [ N ′ 
+
+> Pcp
+
++ Ns, d ], covering its assigned   
+
+> N′
+> Pcp
+
+regular nodes and all Ns super nodes. Similarly, the key-value pairs (K, V) are partitioned into identically sized blocks and circulate across the devices. At the end of every iteration, rank i sends its current KV blocks to the downstream rank and simultaneously receives the next KV blocks from the upstream rank. After Pcp iterations, the local Qi traverses all K and 
+
+V blocks in the batch, completing the global information aggregation. 
+
+② Query-Dimension Bias Sharding. Graph Transformers rely on dense structural bias matrices, such as shortest path distances, to encode topological information. Since each rank must correctly index into battn regardless of which KV block arrives after rotation, simply partitioning the bias matrix by columns, as in standard CP, is insufficient. We therefore introduce query-dimension bias sharding during the data load-ing phase, which both resolves the alignment mismatch and eliminates the memory redundancy of replicating the full 
+
+N × N bias matrix. Each rank i instantiates only a partial bias shard of shape [ N ′ 
+
+> Pcp
+
++ Ns, N ′ + Ns], which contains the structural information of its local nodes relative to all nodes in the batch. During the ring attention computation, whenever rank i receives a key block Kj containing both local graph nodes and global super nodes, the system executes a two-part dynamic slicing operation. Specifically, it extracts the N ′
+
+> Pcp
+
+columns corresponding to rank j’s regular nodes, and the Ns
+
+columns corresponding to the global super nodes. These two sliced segments are then concatenated into a sub-block that matches the shape of Kj for the attention computation. The computation is formulated as follows: 
+
+Score local = Qi · KTj + bi[: , Indices (Kj )] . (2) This strategy approximately reduces the memory footprint of the bias matrix by a factor of Pcp while fully preserving the topological information encoded in battn .
+
+③ Online Softmax & Communication. Unlike standard ring attention where scores depend solely on the current KV block, Device mesh 0 Device mesh 1                                
+
+> GPU0 GPU1 GPU2 GPU3 GPU4 GPU5
+> Device mesh 2
+> Normalize
+> Stage 0 Stage 1 Stage 2 Normalize
+> Stage 0 Stage 1 Stage 2 Stage 0 Stage 1 Time Stage 2
+> b0b1
+> b1b0b0b1
+> b0b1
+> b1b0b0b1
+> Stage 0 Stage 1 Time Stage 2
+> b0b1
+> b1b0b0b1
+> b0b1
+> b1b0b0b1
+> Backward Forward Bubble
+> Device mesh 0 Device mesh 1 Device mesh 2
+> 00
+> Embedding Embedding
+> Time consuming!
+> Imbalanced stages Balanced stages
+> Layer split: 2, 4, 3 (heterogeneous)
+> GPU0 GPU1 GPU2 GPU3 GPU4 GPU5
+
+Fig. 5. Comparison of pipeline parallelism strategies for Graph Transformers. Heterogeneous pipeline parallelism achieves better workload balance through non-uniform layer allocation. 
+
+GT attention scores additionally include a step-varying bias term bi[: , Indices (Kj )] that changes as different KV blocks rotate in. Directly applying standard online softmax [20] would update running_max and running_sum based on incomplete scores, leading to incorrect results. We therefore incorporate the dynamically extracted bias slice into the score before each online softmax update, ensuring that normalization statistics always reflect the full bias-augmented score. This formulation guarantees numerical stability and allows attention computation to be pipelined with KV block communication, with Pcp −1 P2P exchanges each transmitting 2S ×d elements (one K block and one V block), where S = N ′/P cp + Ns
+
+denotes the per-rank node count. 
+
+2) Heterogeneous Pipeline Parallelism: In a GT training pipeline, the first stage hosts not only Transformer layers but also the embedding lookup table and data construction module, whose memory load far exceeds that of subsequent stages. As shown in Fig. 5 (upper), this imbalance under standard uniform layer partitioning produces substantial pipeline bubbles at runtime, wasting both memory and training time. MegaGraph introduces an embedding-aware non-uniform layer allocation strategy, as illustrated in Fig. 5 (lower). Rather than partitioning layers uniformly, MegaGraph explicitly ac-counts for the disproportionate overhead of the embedding lookup table and data construction module concentrated in the first stage, assigning it fewer Transformer layers to compensate and distributing the remaining layers more heavily across subsequent stages. This brings per-stage execution times into balance, directly reducing pipeline bubbles and improving throughput. Execution follows the GPipe [19] micro-batch schedule, where each training batch is divided into K micro-batches that flow through the pipeline stages in sequence. Fig. 6 quantifies this effect. When training a 24-layer GT across 4 GPUs with uniform partitioning, the first stage con-sumes approximately 65% more peak memory than subsequent stages. Adjusting the allocation to [3 , 7, 7, 7] brings all stages to a comparable level. 
+
+3) Hybrid Data Parallelism: Beyond context and pipeline parallelism, data parallelism further scales training throughput along the graph data dimension. The data construction module 4Features & Attention Bias Activations Model Weights Fixed                
+
+> GPU 0 GPU 1 GPU 2 GPU 3 1065 01054 1054 1063 MiB
+> Peak GPU Memory
+> Heterogeneous PP [3, 7, 7, 7] OOM Risk!
+> GPU 0 GPU 1 GPU 2 GPU 3 1497 0909 909 920 MiB Peak GPU Memory
+> Homogeneous PP [6, 6, 6, 6]
+> Balanced Workload Imbalanced Workload Fig. 6. Peak memory footprint breakdown under different pipeline layer partition strategies.
+
+partitions mini-batches across Pdp device meshes, where each mesh holds a complete model replica and independently processes its data partition. Gradients are synchronized across meshes via All-Reduce after each training step. 
+
+B. Automatic Configuration Search 
+
+Because our parallelism backend offers high flexibility, finding the optimal configuration goes beyond simply setting the degrees of parallelism. It requires fine-grained tuning, such as specifying the exact number of layers assigned to each pipeline stage. Consequently, traditional manual tuning methods based on empirical heuristics are inadequate. To identify the optimal parallelism configuration in large-scale graph training, we design an automatic configuration search module following a Profile → Model → Search workflow, as detailed in the following subsections. 
+
+1) Profiling: To control the runtime overhead of the au-tomatic configuration search module, we adopt a lightweight profiling method on actual hardware devices. In the Mega-Graph parallel architecture, a device mesh consists of Ppp ×
+
+Pcp GPUs that host one complete model replica, and the system comprises Pdp such device meshes. The effective computational capacity of each device mesh is determined by the available computational power and network commu-nication bandwidth of its constituent GPUs, which may vary due to existing workloads on shared environments. We profile computation and communication in two independent phases. During the computation profiling phase, the system uses the hook functions provided by PyTorch. We register hook functions on torch.nn.Module , which automatically in-tercept and record runtime timestamps whenever these model components are invoked during the forward and backward passes. For each candidate context parallelism degree Pcp ,the system runs a lightweight profiling pass and records the forward propagation time tf wd and backward propagation time tbwd of a single Transformer layer, along with the computation time of the node embedding layer temb and the output projection layer tproj , since all these components are affected by the local node count S.During the communication profiling phase, the system benchmarks the network infrastructure of the GPU system. We measure the actual network transmission time for a given message size C. Specifically, the system records the point-to-point transfer time tp2p(C) used for tensor passing be-tween pipeline stages. Furthermore, the system evaluates the collective communication time tallreduce (C) used for global gradient synchronization within data parallel groups. To ensure the profiling data reliably reflects actual perfor-mance, the system first executes a few warm-up iterations to eliminate cold-start effects. Subsequently, it collects data over 3 actual profiling runs and calculates the average to produce re-liable estimates. This step filters out system jitter and provides the expected runtime overhead that closely matches real-world scenarios. These measurements are then used to parameterize the latency and memory cost models. 
+
+2) Cost Model Construction: We develop memory and latency cost models to evaluate the training overhead under different parallelism configurations. Let N = N ′ + Ns denote the total number of nodes in a batch. 
+
+Memory cost model. The memory footprint of each device mesh Mmesh consists of four components: model weights 
+
+Mweight covering parameters, gradients, and optimizer states; activations Mact for intermediate tensors required by back-ward propagation; features and bias Mf eat for attention bias tensors; and fixed overhead Mf ixed for framework context, communication buffers, and pipeline metadata. The total mem-ory is expressed as: 
+
+Mmesh = Mweight + Mact + Mf eat + Mf ixed . (3) The individual components are computed as follows. For pipeline stage i assigned l Transformer layers, the model weight memory is: 
+
+Mweight = cf p × l × (4 d2 + 2 d × df f ) + Mextra , (4) where d is the hidden dimension, df f is the FFN dimension, 
+
+cf p is a constant that converts parameter count to memory bytes, accounting for the storage of parameters, gradients, and optimizer states, and Mextra captures the additional parame-ters of the embedding layer with input dimension din and the projection layer with output dimension dout :
+
+Mextra =
+
+
+
+cf p × din × d if i = 0 
+
+cf p × d × dout if i = Ppp − 10 otherwise 
+
+. (5) The activation memory depends on batch size b and attention head count h, while the feature-bias memory additionally accounts for the input feature buffer at the first stage: 
+
+Mact = l ·b·
+
+ N ′
+
+Pcp 
+
++ Ns
+
+
+
+·(cmlp · d + cattn · h · (N ′ + Ns)) ,
+
+(6) 
+
+Mf eat = b ·
+
+ N ′
+
+Pcp 
+
++ Ns
+
+
+
+·
+
+
+
+cbias · l · (N ′ + Ns)+ cfeat · din · ⊮[i = 0] 
+
+
+
+,
+
+(7) where cmlp , cattn , cbias , and cf eat are constant coefficients fitted from profiling measurements, and ⊮[·] denotes the indi-cator function. 
+
+Latency cost model. The latency cost model predicts the execution time of a single training step. We observe that when the number of layers l exceeds a threshold lbreak =
+
+cbreak /(b × d), where cbreak is a hardware-specific cache 5Algorithm 1 Automatic Optimal Strategy Search 
+
+Input: W, L, M limit , K 
+
+Output: (P ∗
+
+> pp
+
+, P ∗
+
+> cp
+
+, P ∗
+
+> dp
+
+) and layer partition 
+
+1: Tmin ← ∞ , BestConfig ← ∅ 
+
+2: for each valid (Ppp , P cp ) with W = Ppp Pcp Pdp do 
+
+3: dp [0][0] ← 0; other entries ← ∞ 
+
+4: for i = 1 to Ppp do 
+
+5: for j = 0 to L − 1; k = j + 1 to L do 
+
+6: if MemCost (j+1 , k ) > M limit then 
+
+7: continue 
+
+8: end if 
+
+9: Ts ← TimeCost (j+1 , k )
+
+10: dp [i][ k] ← min  dp [i][ k], max( dp [i−1][ j], T s)
+
+11: end for 
+
+12: end for 
+
+13: if dp [Ppp ][ L]̸ = ∞ then 
+
+14: Tstep ← StepLatency (dp [Ppp ][ L], P pp , K )
+
+15: if Tstep < T min then 
+
+16: BestConfig ← (Ppp , P cp , P dp , Backtrack (dp )) 
+
+17: end if 
+
+18: end if 
+
+19: end for 
+
+20: return BestConfig 
+
+capacity constant, the working set surpasses L2 cache capacity, incurring an approximately γ-fold latency penalty on global memory access. The computation latency is therefore modeled piecewise: 
+
+Tcomp =
+
+(
+
+l × (tf wd + tbwd ) + Textra if l ≤ lbreak 
+
+l × γ × (tf wd + tbwd ) + Textra if l > l break 
+
+,
+
+(8) where Textra = temb · ⊮[i = 0] + tproj · ⊮[i = Ppp − 1] ,and γ is fitted from hardware profiling measurements. Fig. 7 validates that when the number of layers exceeds lbreak , cache thrashing incurs an approximately γ-fold latency increase. Communication latency is also modeled based on profiling data. Under the GPipe schedule, the local batch b is divided into K micro-batches. The pipeline cycle time tcycle is deter-mined by the bottleneck stage: 
+
+tcycle = max 
+
+> i∈[0 ,P pp )
+
+T (i)
+
+> comp
+
+K + tp2p(Sact ), (9) where Sact = ( b/K ) × (N ′/P cp + Ns) × d is the boundary activation tensor size transferred between pipeline stages, and 
+
+T (i) 
+
+> comp
+
+denotes the full-batch computation time for stage i,evaluated via Eq. 8 with the layer count li assigned to that stage, where dividing by K gives the per-micro-batch computation time. The data loading stall time Tstall , caused by CPU-side subgraph sampling and attention bias construction, is measured directly during profiling. The final single-step training latency combines the pipeline execution time, data loading stalls, and All-Reduce over the total parameter size 
+
+Sparam :
+
+T = ( K +Ppp −1) ×tcycle +Tstall +tallreduce (Sparam ). (10) 
+
+3) Optimal Strategy Search: The search minimizes end-to-end latency to maximize throughput. Let W denote the total number of available GPUs. The configuration space covers all valid parallelism combinations satisfying W = Ppp × Pcp ×
+
+Pdp and the heterogeneous layer partitions for each Ppp . As (a)  Piecewise Latency Cost Model . (b)  Effective Bandwidth .   
+
+> Cache Thrashing
+> Threshold ( 𝑙 𝑏𝑟𝑒𝑎𝑘 )
+> Layers
+> Computation Latency  𝑇 𝑐𝑜𝑚𝑝 /s
+> 𝑙
+> Cost Model: 𝑙 > 𝑙 𝑏𝑟𝑒𝑎𝑘
+> Cost Model: 𝑙 ≤ 𝑙 𝑏𝑟𝑒𝑎𝑘
+> Measured Latency
+> Bandwidth
+> GB /s
+> Layers 𝑙
+> Cache Thrashing
+> Threshold ( 𝑙 𝑏𝑟𝑒𝑎𝑘 )
+> Cache Thrashing
+> L2 Cache
+> Resident
+> Latency Penalty
+> (𝛶 ≈ 1.68 )
+
+Fig. 7. Validation of the piecewise latency cost model with Pdp = 2 .
+
+discussed above, uniform partitioning causes stage imbalance, so the search must explore heterogeneous layer assignments. We design a dynamic programming algorithm with memory-aware pruning, as detailed in Alg. 1, where L denotes the total number of model layers.. For each (Ppp , P cp , P dp ), the algorithm finds the optimal layer partition that balances execu-tion time across stages. State dp [i][ k] represents the minimum latency for allocating k layers into i stages: 
+
+dp [i][ k] = min  
+
+> 0≤j<k
+
+max 
+
+
+
+dp [i − 1][ j], T comp (j + 1 , k, P cp )
+
+
+
+,
+
+(11) where Tcomp is computed via Eq. 8. Any branch where the predicted stage memory Mstage exceeds the device limit 
+
+Mlimit is pruned, preventing OOM errors while substantially reducing the search space. Upon completion, the algorithm evaluates the final step latency Tstep via Eq. 10 and outputs the optimal configuration (P ∗
+
+> pp
+
+, P ∗
+
+> cp
+
+, P ∗
+
+> dp
+
+) with its layer partition. IV. E XPERIMENT 
+
+A. Experimental Setup 
+
+Datasets. We use five public graph datasets. End-to-end experiments use Products as the large-scale benchmark, Reddit and Reddit2 as medium-scale datasets, and Citeseer for small-scale evaluation. The Computers dataset serves as the ablation and configuration search benchmark, since it is large enough for all parallelism strategies to exhibit meaningful trade-offs, yet tractable for full configuration search. The Arxiv dataset provides additional cross-architecture accuracy validation. 
+
+Baselines. We compare against two baselines. ANS-GT [12] is a hierarchical GT training framework that supports single-GPU training only. TorchGT [21] is based on Graphormer [9], supporting multi-GPU sequence-parallel full attention. Mega-Graph integrates the same hierarchical GT model as ANS-GT, extended with our hybrid parallelism backend and automatic search engine. The comparison with ANS-GT isolates system-level gains under the same model, while TorchGT provides a cross-architecture accuracy reference. 
+
+End-to-End Experiment Configuration. For the end-to-end comparison, all three systems are configured identically: 16 layers, 8 heads, hidden dimension of 64, and FFN di-mension of 64. MegaGraph and ANS-GT share the same hierarchical GT model with attention bias dimension of 4 and 1 global node. TorchGT is based on Graphormer with its default structural encoding, and runs in full attention mode to align the attention scope. The batch size is 1024 for small and medium graphs, and 8192 for large graphs. TorchGT on a single GPU 6Citeseer Products Reddit Reddit2 Citeseer Products Reddit Reddit2 Citeseer Products Reddit Reddit2 Test Accuracy (%) Test Accuracy (%) Epoch Time (s, Log Scale) Memory Footprint (GB) Epoch         
+
+> (b) Convergence on Citeseer. (a) End-to-End Test Accuracy. (d) Peak GPU Memory Consumption. (c) Training Time per Epoch.
+> ANS-GT TorchGT-1G TorchGT-2G MegaGraph-1G MegaGraph-2G TorchGT-1G’ OOM OOM OOM OOM OOM OOM OOM OOM OOM
+> MegaGraph-1G TorchGT-1G ANS-GT
+
+Fig. 8. End-to-end performance comparison using a 16-layer, 8-head GT with hidden and FFN dimension 64. OOM entries indicate training failure. TorchGT-1G ′ denotes a reduced batch size of 6800. 
+
+goes OOM with batch size 8192, so we reduce its single-GPU batch size to 6800, denoted TorchGT-1G ′. Throughout end-to-end comparisons, the suffixes -1G and -2G denote single-GPU and two-GPU training configurations, respectively. All experiments train for 100 epochs with peak learning rate 2e-4 and weight decay 0.01. 
+
+Hardware and Metrics. End-to-end and ablation experi-ments run on dual A100 (80 GB), cost model validation on dual Tesla M40 (12 GB), and Pareto search on 4 ×RTX 4090 (24 GB). We measure test accuracy (%), steady-state GPU training time (s/epoch), and peak GPU memory (GB). 
+
+B. End-to-End Performance 
+
+Accuracy Preservation & Convergence. We first verify that the parallel backend preserves model quality. MegaGraph single-GPU and two-GPU results differ by less than 0.2 percentage points across all datasets. As shown in Fig. 8(a), MegaGraph consistently outperforms TorchGT across all eval-uated datasets, with the advantage being particularly pro-nounced on large-scale graphs, where MegaGraph exceeds TorchGT by over 10 percentage points on Products. This reflects the architectural difference between hierarchical GT and flat Graphormer: on small and medium graphs where ANS-GT can also run, MegaGraph and ANS-GT achieve comparable accuracy, confirming that the parallel backend introduces no accuracy degradation. We also trained ANS-GT and TorchGT on Arxiv under the same model configu-ration, where ANS-GT similarly outperforms TorchGT by a large margin, further corroborating this conclusion. Fig. 8(b) shows the convergence curves on Citeseer, where MegaGraph achieves accuracy comparable to ANS-GT, confirming that the parallel backend introduces no accuracy degradation, while both hierarchical GT models consistently outperform TorchGT. 
+
+Memory Elimination & Speedup. ANS-GT, sharing the same hierarchical GT model, goes OOM on both Products and Reddit. MegaGraph’s hybrid parallelism backend eliminates this bottleneck, enabling training on these large graphs. Scal-ing from one to two GPUs, MegaGraph achieves near-linear speedup (1.88 × on Products, 2.02 × on Reddit), and delivers 4.51 × and 4.36 × speedup over TorchGT on the two-GPU (a) Memory Prediction Accuracy.      
+
+> Measured Memory Predicted Memory
+> Prediction Error (%) Frequency Error Distribution
+> MiB MiB
+> DP=2 PP=2 CP=2
+> Measured Latency Predicted Latency
+> ms ms
+> Prediction Error (%) Frequency  Error Distribution
+> (b) Latency Prediction Accuracy.
+> Perfect Match Line
+> Pearson R: 0.95
+> MAE: 13.39%
+> Pearson R: 0.99
+> MAE: 3.37%
+
+Fig. 9. Accuracy of the memory and latency cost models. Diagonal lines indicate perfect prediction ( Y = X). 
+
+setting, as shown in Fig. 8(c). On memory, MegaGraph-1G requires only 16.53 GB on Products, a 77.8% reduction from TorchGT-1G ′’s 74.4 GB even after TorchGT reduces its batch size to 6800 to avoid OOM, and MegaGraph-2G achieves a further 70.5% reduction over TorchGT-2G, as shown in Fig. 8(d). 
+
+C. Accuracy of Cost Model 
+
+As shown in Fig. 9, we validated the cost models on dual Tesla M40 across 216 configurations (covering b ∈ { 1, 2, 4, 8},
+
+l ∈ { 2, 4, 8, 16 , 24 , 32 }, h ∈ { 4, 8, 16 }, d ∈ { 32 , 64 , 128 }). Memory prediction achieves MAPE = 3.37% with R 2 = 0.994, which is sufficient for the search engine’s memory-aware prun-ing. When layers exceed lbreak ≈ 8, the working set surpasses L2 cache capacity, causing a γ ≈ 1.68 × latency penalty. The piecewise linear model accurately captures this transition (R 2
+
+= 0.961). Model parameters are fitted from profiling measure-ments, naturally supporting cross-GPU-architecture transfer. The communication terms tp2p and tallreduce are directly measured from the target hardware rather than analytically modeled, and their accuracy is further corroborated by the end-to-end Pareto search results in Section IV-D, where the search engine’s recommendations consistently match observed performance. 
+
+D. Automatic Configuration Search 
+
+Ablation Study. We isolate each parallelism strategy’s contribution on Computers dataset with 32 layers, hidden dimension of 128, 32 heads, batch size 256, on 2 ×A100. This ablation validates the two core design choices of our par-allelism backend. Graph-aware context parallelism (GA-CP) targets the per-layer attention memory bottleneck arising from the N × N attention score and bias matrices in GT training. Heterogeneous pipeline parallelism addresses the workload imbalance caused by the graph embedding table and data construction overhead concentrated in the first pipeline stage. The unbalanced pipeline parallelism row further validates the necessity of automatic layer partitioning. As shown in Tab. I, enabling graph-aware context paral-lelism allows each GPU to hold only half of the attention sequence, reducing peak memory from 70.56 GB to 13.50 GB, a 5.2 × reduction, with only 13% slowdown compared to the best pipeline parallelism configuration. With naive even-split layer partitioning in pipeline parallelism, the embedding over-head causes the bottleneck GPU to reach 53.68 GB, strictly 7TABLE I ABLATION OF PARALLELISM STRATEGIES . E ACH CONFIGURATION IS DENOTED AS A (Ppp , P cp , P dp ) TRIPLE . M EM 0 AND MEM 1 REPORT PEAK MEMORY PER GPU. 
+
+Config Time/ep Mem 0 Mem 1 Strategy 
+
+(1,1,1) Baseline 8.13s 70.56 GB N/A None (1,2,1) CP=2 4.92s 13.50 GB 13.50 GB GA-CP (2,1,1) PP=2 balanced 
+
+4.35s 36.83 GB 34.06 GB Hetero. PP (2,1,1) PP=2 unbalanced 6.00s 53.68 GB 17.21 GB Naive PP Epoch Time (s) sGB Peak GPU Memory per Device (GB)                 
+
+> Pure DP ( 𝑃 !" = 4 )CP Dominate ( 𝑃 #" ≥ 2 )PP + DP ( 𝑃 "" , 𝑃 !" = 2, 2 )PP + CP ( 𝑃 "" , 𝑃 $" = 2, 2 )Pure PP ( 𝑃 "" = 4 )Pareto Frontier
+> Attention sharding only Hybrid layer + attention Layer partitioning only Layer + data parallelism
+> Recommend configuration
+
+Fig. 10. Pareto-optimal configuration search on a Graph Transformer model, with 32 layers across 166 configurations on 4 ×RTX 4090. 
+
+dominated by context parallelism in both speed and memory, validating the necessity of heterogeneous layer partitioning. Heterogeneous pipeline parallelism automatically adjusts the layer assignment across stages, achieving the best throughput at 4.35 s/epoch, 13% faster than context parallelism, but with peak memory at 36.83 GB, 2.7 × that of context parallelism. Neither strategy dominates across both metrics simultaneously, confirming that no single parallelism choice is universally optimal and that an automatic search engine is essential for selecting the right configuration under different hardware and memory constraints. 
+
+Pareto Frontier. Fig. 10 shows the Pareto frontier across 166 configurations in 5 strategy regions on 4 ×RTX 4090. As shown in the figure, each strategy occupies a distinct region of the frontier. DP dominates on throughput but does not reduce per-GPU memory, while CP achieves the lowest memory at the cost of communication overhead. PP sits between the two, and hybrid configurations cover the remaining trade-offs. None of the Pure DP configurations lie on the Pareto frontier, as CP+DP hybrid strategies match their throughput with lower memory, confirming that the optimal strategy is hardware- and objective-dependent. The DP algorithm with memory pruning finds the global optimum in ∼3s. Under the 24 GB RTX 4090 constraint, the search engine selects a PP+DP hybrid, with all recommended configurations fitting within device memory. V. C ONCLUSION 
+
+To address the memory and computational bottlenecks in training large-scale Graph Transformers, this paper proposes MegaGraph, an automated hybrid parallel training framework. MegaGraph designs three specialized parallelism strategies: graph-aware context parallelism addresses the attention mem-ory bottleneck while preserving topological bias alignment, heterogeneous pipeline parallelism compensates for the work-load imbalance caused by graph embedding and data con-struction overhead, and hybrid data parallelism provides extra acceleration along the graph data dimension. To navigate the combinatorially large configuration space these strategies induce, an automatic search engine follows a Profile → Model 
+
+→ Search workflow with precise cost models and memory-aware pruning, identifying the optimal parallelism configura-tion within seconds. Experimental results demonstrate that MegaGraph enables training on large-scale graphs where existing baselines fail with OOM, reducing peak memory by 77.8% and achiev-ing 4.51 × training speedup compared with TorchGT, while maintaining model accuracy. In future work, we plan to extend MegaGraph to dynamic graph architectures and explore elastic scheduling mechanisms on larger-scale heterogeneous computing systems. REFERENCES 
+
+[1] L. Yang, S. Wang, Y. Tao et al. , “DGRec: Graph neural network for recommen-dation with diversified embedding generation,” in Proceedings of WSDM , 2023. [2] Y. Wang, X. Hu, Q. Gan et al. , “Efficient link prediction via GNN layers induced by negative sampling,” IEEE TKDE , vol. 37, no. 1, pp. 253–264, 2025. [3] W. Bi, X. Cheng, B. Xu et al. , “Bridged-GNN: Knowledge bridge learning for effective knowledge transfer,” in Proceedings of CIKM , 2023. [4] T. N. Kipf and M. Welling, “Semi-supervised classification with graph convolu-tional networks,” in Proceedings of ICLR , 2017. [5] J. Gilmer, S. S. Schoenholz, P. F. Riley et al. , “Neural message passing for quantum chemistry,” in Proceedings of ICML , 2017. [6] Q. Li, Z. Han, and X.-M. Wu, “Deeper insights into graph convolutional networks for semi-supervised learning,” in Proceedings of AAAI , 2018. [7] D. Chen, Y. Lin, W. Li et al. , “Measuring and relieving the over-smoothing problem for graph neural networks from the topological view,” in Proceedings of AAAI , 2020. [8] A. Vaswani, N. Shazeer, N. Parmar et al. , “Attention is all you need,” in 
+
+Proceedings of NeurIPS , 2017. [9] C. Ying, T. Cai, S. Luo et al. , “Do transformers really perform bad for graph representation?” in Proceedings of NeurIPS , 2021. [10] L. Ramp´ aˇ sek, M. Galkin, V. P. Dwivedi et al. , “Recipe for a general, powerful, scalable graph transformer,” in Proceedings of NeurIPS , 2022. [11] Q. Wu, W. Zhao, Z. Li et al. , “Nodeformer: A scalable graph structure learning transformer for node classification,” in Proceedings of NeurIPS , 2022. [12] Z. Zhang, Q. Liu, Z. Wang et al. , “Hierarchical graph transformer with adaptive node sampling,” in Proceedings of NeurIPS , 2022. [13] T. Liu, Y. Chen, D. Li et al. , “BGL:GPU-efficient GNN training by optimizing graph data I/O and preprocessing,” in Proceedings of NSDI , 2023. [14] T. Qiao, J. Yang, Y. Qi et al. , “GNNavigator: Towards adaptive training of graph neural networks via automatic guideline exploration,” in Proceedings of DAC ,2024. [15] T. Qiao, A. Zhou, Y. Qi et al. , “Towards affordable, adaptive and automatic GNN training on CPU-GPU heterogeneous platforms,” in Proceedings of ICCD . IEEE, 2025, pp. 87–94. [16] W. Hamilton, Z. Ying, and J. Leskovec, “Inductive representation learning on large graphs,” in Proceedings of NeurIPS , 2017. [17] W.-L. Chiang, X. Liu et al. , “Cluster-gcn: An efficient algorithm for training deep and large graph convolutional networks,” in Proceedings of KDD , 2019. [18] H. Liu, M. Zaharia, and P. Abbeel, “Ring attention with blockwise transformers for near-infinite context,” arXiv preprint arXiv:2310.01889 , 2023. [19] Y. Huang, Y. Cheng, A. Bapna et al. , “Gpipe: Efficient training of giant neural networks using pipeline parallelism,” in Proceedings of NeurIPS , 2019. [20] T. Dao, D. Fu, S. Ermon et al. , “Flashattention: Fast and memory-efficient exact attention with io-awareness,” in Proceedings of NeurIPS , 2022. [21] M. Zhang, J. Sun et al. , “Torchgt: A holistic system for large-scale graph transformer training,” in Proceedings of SC , 2024. 
+
+8

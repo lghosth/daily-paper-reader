@@ -1,0 +1,73 @@
+{
+  "date": "20260929",
+  "date_label": "2026-09-30",
+  "generated_at": "2026-09-30 06:36:59 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.34420v1",
+      "route": "202609/29/2609.34420v1-megagraph-towards-efficient-training-of-large-scale-graph-transformers-with-automated-hybrid-parallelism",
+      "title": "MegaGraph: Towards Efficient Training of Large-Scale Graph Transformers with Automated Hybrid Parallelism",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向大规模图Transformer训练的自动化混合并行框架",
+      "first_seen_at": "2026-09-30 06:36:59 北京时间",
+      "updated_at": "2026-09-30 06:36:59 北京时间"
+    },
+    {
+      "paper_id": "2609.33392v1",
+      "route": "202609/29/2609.33392v1-autohgnn-robust-and-efficient-neural-architecture-search-for-hypergraph-neural-networks",
+      "title": "AutoHGNN: Robust and Efficient Neural Architecture Search for Hypergraph Neural Networks",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向超图神经网络的神经架构搜索框架",
+      "first_seen_at": "2026-09-30 06:36:59 北京时间",
+      "updated_at": "2026-09-30 06:36:59 北京时间"
+    },
+    {
+      "paper_id": "2609.34334v1",
+      "route": "202609/29/2609.34334v1-hoccl-offloading-collective-communication-from-gpu-cores-to-accelerate-distributed-training",
+      "title": "HOCCL: Offloading Collective Communication from GPU Cores to Accelerate Distributed Training",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "将集合通信卸载到DMA以加速分布式训练",
+      "first_seen_at": "2026-09-30 06:36:59 北京时间",
+      "updated_at": "2026-09-30 06:36:59 北京时间"
+    },
+    {
+      "paper_id": "2609.34360v1",
+      "route": "202609/29/2609.34360v1-coef-sfl-preserving-collaborative-server-client-learning-with-enhanced-communication-efficiency",
+      "title": "CoeF-SFL: Preserving Collaborative Server-Client Learning with Enhanced Communication Efficiency",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通信高效的拆分联邦学习框架",
+      "first_seen_at": "2026-09-30 06:36:59 北京时间",
+      "updated_at": "2026-09-30 06:36:59 北京时间"
+    }
+  ]
+}

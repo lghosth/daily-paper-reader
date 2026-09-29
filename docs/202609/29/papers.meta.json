@@ -1,0 +1,69 @@
+{
+  "label": "2026-09-30",
+  "date": "2026-09-29",
+  "generated_at": "2026-09-29T22:37:02",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202609/29/2609.34420v1-megagraph-towards-efficient-training-of-large-scale-graph-transformers-with-automated-hybrid-parallelism",
+      "section": "deep",
+      "title_en": "MegaGraph: Towards Efficient Training of Large-Scale Graph Transformers with Automated Hybrid Parallelism",
+      "authors": "Tong Qiao, Ao Zhou, Yingjie Qi, Chunming Hu, Jianlei Yang",
+      "date": "2026-09-28",
+      "pdf": "https://arxiv.org/pdf/2609.34420v1",
+      "score": "9.0",
+      "evidence": "面向大规模图Transformer训练的自动化混合并行框架",
+      "tldr": "图Transformer训练受限于注意力矩阵与拓扑偏置矩阵的高显存开销，以及图嵌入层导致的严重负载不均，现有GNN或Transformer并行方案难以应对。MegaGraph提出自动混合并行框架，融合图感知上下文并行、异构流水线并行和混合数据并行，并用Profile-Model-Search搜索最优配置。实验显示其可训练基线OOM的大规模图，单设备峰值显存最多降77.8%，训练提速最高4.51倍且保持精度，为GT高效训练提供专用方案。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Graph Transformers (GTs) offer superior representation capabilities by overcoming the depth limitations and over-smoothing issues of traditional Graph Neural Networks (GNNs). However, scaling GTs to large graphs poses critical bottlenecks. Specifically, the attention score matrix and its associated topology-aware bias matrix jointly incur significant per-layer memory overhead, and heavy graph embedding layers result in severe workload imbalances. These characteristics are unique to GT training and are not addressed by parallelism techniques designed for either conventional GNNs or Transformers, making a dedicated solution necessary. This paper introduces MegaGraph, the first automated hybrid parallelism framework designed for efficient GT training. MegaGraph designs three specialized strategies, namely graph-aware context parallelism, heterogeneous pipeline parallelism, and hybrid data parallelism, to support efficient training on large-scale graphs. However, coordinating these three parallelism strategies yields an exponentially large configuration space. To address this complexity, an automatic search engine leverages precise cost models via a Profile - Model - Search workflow to identify the optimal parallelism configuration. Evaluations demonstrate that MegaGraph enables training on large-scale graphs where state-of-the-art baselines fail due to out-of-memory (OOM) errors. The framework reduces per-device peak memory by up to 77.8\\% and achieves up to 4.51$\\times$ training speedup while maintaining model accuracy.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/29/2609.33392v1-autohgnn-robust-and-efficient-neural-architecture-search-for-hypergraph-neural-networks",
+      "section": "deep",
+      "title_en": "AutoHGNN: Robust and Efficient Neural Architecture Search for Hypergraph Neural Networks",
+      "authors": "Sirui Li, Pietro Liò b, Xinsheng Li, Baisong Liu, Chengbin Peng",
+      "date": "2026-09-27",
+      "pdf": "https://arxiv.org/pdf/2609.33392v1",
+      "score": "8.0",
+      "evidence": "面向超图神经网络的神经架构搜索框架",
+      "tldr": "超图神经网络虽已取得显著成效，但人工设计结构耗时且难以刻画高阶关系，自动化设计因此十分关键。本文提出面向超图神经网络的架构搜索框架 AutoHGNN：在搜索空间中引入超交互模块 HIM 以适配超图数据，并提出超图稳定拓扑距离 HyperSTD 作为可微搜索的结构选择准则。在多个基准数据集上，AutoHGNN 在分类精度和时间效率上均稳定优于人工设计与自动搜索基线，证明所发现架构更有效。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Hypergraph neural networks have achieved significant success in recent years. However, manual architecture crafting is labor-intensive and often fails to capture complex, higher-order relations, making the automation of hypergraph neural network structure design crucial. To improve the automation and adaptability of hypergraph learning, this paper proposes AutoHGNN, a neural architecture search framework tailored for hypergraph neural networks. First, we introduce a Hyper-Interaction Module (HIM) into the search space to address the mismatch between conventional graph neural network designs and hypergraph data. Second, we propose Hypergraph Stable Topological Distance (HyperSTD) as a structural selection criterion to identify architectures that best preserve the intrinsic structural affinities of the original hypergraph during differentiable search. Extensive experiments on various benchmark datasets demonstrate that AutoHGNN consistently outperforms manually designed and automatically searched baselines in classification accuracy and time efficiency, proving that the discovered architectures are significantly more effective.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/29/2609.34334v1-hoccl-offloading-collective-communication-from-gpu-cores-to-accelerate-distributed-training",
+      "section": "quick",
+      "title_en": "HOCCL: Offloading Collective Communication from GPU Cores to Accelerate Distributed Training",
+      "authors": "Yao Fei, Gongming Zhao, Hongli Xu, Jin Fang, Jiacheng Zhu, Shuo Xu, Kun Huang, Zhuolong Yu",
+      "date": "2026-09-28",
+      "pdf": "https://arxiv.org/pdf/2609.34334v1",
+      "score": "6.0",
+      "evidence": "将集合通信卸载到DMA以加速分布式训练",
+      "tldr": "大模型分布式训练中，集合通信会占用GPU的SM资源，与张量核心等计算单元争抢，降低训练效率。HOCCL提出零SM集合通信框架，利用DMA引擎驱动通信，并通过流管理器、P2P执行器和集合调度器维持算子顺序与带宽。实验显示其通信性能平均仅落后SOTA约3%，释放近10%的总GPU SM，端到端训练吞吐最高提升5%。该工作将通信从GPU核心卸载，为缓解计算与通信资源竞争提供了新思路。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Large language model training involves massive computation on GPU streaming multiprocessors (SMs), the primary compute units of GPUs. Since SMs host specialized accelerators such as Tensor Cores, their efficient utilization is critical to training efficiency. Unfortunately, existing collective communication systems compete with computation for SMs, as they consume SMs for communication-related data movement and synchronization operations.   We observe that communication can, in principle, be driven by DMA engines, thereby eliminating SM involvement in communication. Based on this insight, we propose HOCCL, a zero-SM collective communication framework consisting of three components: a stream manager, a point-to-point (P2P) executor, and a collective scheduler. The stream manager preserves operator-level temporal ordering with other GPU kernels. The P2P executor enables zero-SM point-to-point communication, while the collective scheduler orchestrates P2P transfers to maximize bandwidth. Experiments show that HOCCL preserves near-peak communication performance, achieving within 3% of the state of the art on average, while eliminating communication occupancy on nearly 10% of total GPU SMs. By freeing SM resources for computation, HOCCL improves end-to-end training throughput by up to 5%.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/29/2609.34360v1-coef-sfl-preserving-collaborative-server-client-learning-with-enhanced-communication-efficiency",
+      "section": "quick",
+      "title_en": "CoeF-SFL: Preserving Collaborative Server-Client Learning with Enhanced Communication Efficiency",
+      "authors": "Junwoo Bae, Jin-Hyun Ahn",
+      "date": "2026-09-28",
+      "pdf": "https://arxiv.org/pdf/2609.34360v1",
+      "score": "6.0",
+      "evidence": "通信高效的拆分联邦学习框架",
+      "tldr": "分割联邦学习（SFL）可让资源受限客户端参与协作训练，但每批次交换粉碎数据与梯度带来高昂通信开销；辅助网络方案虽降开销，却使客户端优化目标偏离端到端目标。CoeF-SFL无需辅助网络，每轮仅交换一次粉碎数据与梯度并在本地训练中复用，同时用激活空间曲率校正补偿陈旧梯度，提出CoeF-D与CoeF-J两种变体。在视觉与语言任务、不同模型容量、切层和数据分布下，其相同通信频率下显著优于辅助网络方法，视觉任务提升最明显。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Split Federated Learning (SFL) enables resource-constrained clients to participate in collaborative training, but vanilla SFL exchanges smashed data and gradients at every batch, which incurs significant communication overhead. Recent methods reduce this overhead with an auxiliary network at the client-side cut layer. However, we identify that this approach makes the client optimize a local objective that differs from the end-to-end objective, which fundamentally limits the collaborative training between the client and the server. We propose Compensated Feedback based SFL (CoeF-SFL), a communication-efficient framework that retains the end-to-end objective without any auxiliary network. In CoeF-SFL, the client and the server exchange the smashed data and the gradients once per round and reuse them during local training. Since this reuse makes the gradients stale on the client side, we compensate them with a curvature-based correction in the activation space and develop two variants. CoeF-D approximates the Hessian with a diagonal gradient outer product, while CoeF-J exploits the tractable Jacobian-based Hessian of a surrogate loss that upper-bounds the true loss. We provide the theoretical background of each method, characterizing its compensation. Across vision and language tasks, model capacities, cut layers, and data distributions, CoeF-SFL significantly outperforms auxiliary-network-based methods under the same communication frequency, and the improvement is most substantial on vision tasks. Code is available at https://anonymous.4open.science/r/CoeF-SFL-2686/README.md",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
