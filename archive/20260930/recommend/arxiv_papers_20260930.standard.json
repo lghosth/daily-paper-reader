@@ -1,0 +1,53 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-30T22:35:18.187682+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.35130v1",
+      "source": "arxiv",
+      "title": "CTP-FL: Common-Trajectory Gradient Prediction for Federated Learning",
+      "abstract": "Communication-efficient federated optimization commonly spends several   gradient evaluations between server updates. Existing local-update   methods use this computation to advance an independent model on each   client. Under heterogeneous data, however, these models evaluate   gradients at different locations, making the aggregated update   difficult to interpret as a gradient of the global objective.   We study an alternative use of the same computation budget:   \\emph{evaluate the global objective along a shared, predicted path}.   We propose Common-Trajectory Predictive Federated Learning   (\\texttt{CTP-FL}). At each round, all clients construct the same   sequence of query points from the current global model and the   previous aggregated direction, evaluate $K$ stochastic gradients   along this sequence, and upload their average. The server then   performs a single global update. Thus, \\texttt{CTP-FL} uses $K$   mini-batch gradients per client and one model-sized vector in each   communication direction, matching the per-round computation and   communication of full-participation FedAvg-M.   Shared query points make the aggregated direction an unbiased   estimator of the average \\emph{global} gradient along the predicted   path. The remaining discrepancy from the gradient at the current   model is controlled by the path length, without assuming bounded   client-gradient dissimilarity or bounded gradients. For smooth   non-convex objectives, we establish an   $\\mathcal{O}\\!\\left(   \\sqrt{LΔσ^2/(NKR)}+LΔ/R   \\right)$   average-stationarity bound under full participation. The analysis   isolates a testable trade-off: extending the prediction path provides   more forward-looking gradient information but increases its   displacement bias.",
+      "authors": [
+        "Junkang Liu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-28T13:22:45+00:00",
+      "link": "https://arxiv.org/pdf/2609.35130v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "communication-efficient federated optimization via shared predicted trajectory",
+      "llm_evidence_cn": "通过共享预测轨迹实现通信高效的联邦优化",
+      "llm_evidence": "通过共享预测轨迹实现通信高效的联邦优化",
+      "canonical_evidence": "通过共享预测轨迹实现通信高效的联邦优化",
+      "llm_tldr_en": "CTP-FL lets all clients evaluate the global objective along a shared predicted trajectory instead of independent local updates, improving the interpretability and communication efficiency of federated optimization under heterogeneous data.",
+      "llm_tldr_cn": "联邦优化中客户端在服务器更新之间进行多次梯度评估，但异构数据下各客户端在不同位置评估梯度，使聚合更新难以解释为全局目标的梯度。本文提出CTP-FL，让所有客户端沿同一预测路径构造相同查询点来评估全局目标。结果在相同计算预算下改善了聚合更新的可解释性与通信效率。该工作为通信高效的分布式训练提供共享轨迹梯度预测新思路。",
+      "llm_tldr": "联邦优化中客户端在服务器更新之间进行多次梯度评估，但异构数据下各客户端在不同位置评估梯度，使聚合更新难以解释为全局目标的梯度。本文提出CTP-FL，让所有客户端沿同一预测路径构造相同查询点来评估全局目标。结果在相同计算预算下改善了聚合更新的可解释性与通信效率。该工作为通信高效的分布式训练提供共享轨迹梯度预测新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

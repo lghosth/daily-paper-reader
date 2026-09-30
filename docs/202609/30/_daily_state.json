@@ -1,0 +1,25 @@
+{
+  "date": "20260930",
+  "date_label": "2026-10-01",
+  "generated_at": "2026-10-01 06:35:36 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.35130v1",
+      "route": "202609/30/2609.35130v1-ctp-fl-common-trajectory-gradient-prediction-for-federated-learning",
+      "title": "CTP-FL: Common-Trajectory Gradient Prediction for Federated Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过共享预测轨迹实现通信高效的联邦优化",
+      "first_seen_at": "2026-10-01 06:35:36 北京时间",
+      "updated_at": "2026-10-01 06:35:36 北京时间"
+    }
+  ]
+}

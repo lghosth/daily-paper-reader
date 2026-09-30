@@ -1,0 +1,24 @@
+{
+  "label": "2026-10-01",
+  "date": "2026-09-30",
+  "generated_at": "2026-09-30T22:35:39",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202609/30/2609.35130v1-ctp-fl-common-trajectory-gradient-prediction-for-federated-learning",
+      "section": "quick",
+      "title_en": "CTP-FL: Common-Trajectory Gradient Prediction for Federated Learning",
+      "authors": "Junkang Liu",
+      "date": "2026-09-28",
+      "pdf": "https://arxiv.org/pdf/2609.35130v1",
+      "score": "6.0",
+      "evidence": "通过共享预测轨迹实现通信高效的联邦优化",
+      "tldr": "联邦学习常用多步本地更新节省通信，但在异构数据下各客户端在不同位置计算梯度，聚合方向难以解释为全局目标梯度。CTP-FL 让所有客户端基于当前全局模型和上一轮聚合方向，构造相同查询点序列，沿共同预测路径评估 K 个随机梯度并上传平均。服务器每轮只做一次全局更新，计算与通信量和全参与 FedAvg-M 相当。共享查询点使聚合方向成为路径上全局梯度的无偏估计，路径长度控制剩余偏差，并在光滑非凸目标下给出平均平稳性收敛界。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Communication-efficient federated optimization commonly spends several   gradient evaluations between server updates. Existing local-update   methods use this computation to advance an independent model on each   client. Under heterogeneous data, however, these models evaluate   gradients at different locations, making the aggregated update   difficult to interpret as a gradient of the global objective.   We study an alternative use of the same computation budget:   \\emph{evaluate the global objective along a shared, predicted path}.   We propose Common-Trajectory Predictive Federated Learning   (\\texttt{CTP-FL}). At each round, all clients construct the same   sequence of query points from the current global model and the   previous aggregated direction, evaluate $K$ stochastic gradients   along this sequence, and upload their average. The server then   performs a single global update. Thus, \\texttt{CTP-FL} uses $K$   mini-batch gradients per client and one model-sized vector in each   communication direction, matching the per-round computation and   communication of full-participation FedAvg-M.   Shared query points make the aggregated direction an unbiased   estimator of the average \\emph{global} gradient along the predicted   path. The remaining discrepancy from the gradient at the current   model is controlled by the path length, without assuming bounded   client-gradient dissimilarity or bounded gradients. For smooth   non-convex objectives, we establish an   $\\mathcal{O}\\!\\left(   \\sqrt{LΔσ^2/(NKR)}+LΔ/R   \\right)$   average-stationarity bound under full participation. The analysis   isolates a testable trade-off: extending the prediction path provides   more forward-looking gradient information but increases its   displacement bias.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

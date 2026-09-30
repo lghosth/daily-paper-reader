@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-30</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-01</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 4 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 1 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>2</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>2</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>1</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-09-30 06:36:59 北京时间<br>状态：成功<br>下次更新：约 2026-10-01 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-01 06:35:36 北京时间<br>状态：成功<br>下次更新：约 2026-10-02 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,9 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>2026-09-30 日报完成：4 篇论文入库，精读 2 篇、速读 2 篇，重点落在图模型与分布式训练效率。</p>
-<p>最值得看的是精读两篇：MegaGraph（9.0）聚焦大规模图 Transformer 的自动化混合并行训练，AutoHGNN（8.0）探索超图神经网络的鲁棒高效 NAS。</p>
-<p>普通读者可先读这两篇的摘要与结论，若关注工程落地再速览 HOCCL 和 CoeF-SFL 的通信优化思路。</p>
+<p>今日速读1篇、精读0篇，唯一入选的是联邦学习方向的《CTP-FL: Common-Trajectory Gradient Prediction for Federated Learning》（6.0/10）。</p>
+<p>该文用&quot;共同轨迹&quot;来预测梯度，若思路成立，或可为缓解联邦学习中的梯度传输压力提供新角度，但6.0分属中等，结论仍需验证。</p>
+<p>普通读者可先读其摘要与实验部分，重点看预测精度和通信开销是否真有改善，再决定是否值得精读。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -80,12 +80,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">2 篇</strong>
+    <strong class="dpr-home-dashboard-count">0 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="MegaGraph: Towards Efficient Training of Large-Scale Graph Transformers with Automated Hybrid Parallelism">MegaGraph: Towards Efficient Training of Large-Scale Graph Transformers with Automated Hybrid Parallelism</span></li><li><span class="dpr-home-dashboard-paper-title" title="AutoHGNN: Robust and Efficient Neural Architecture Search for Hypergraph Neural Networks">AutoHGNN: Robust and Efficient Neural Architecture Search for Hypergraph Neural Networks</span></li></ul>
+<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>2</strong></span></div>
+
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -93,12 +93,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">2 篇</strong>
+    <strong class="dpr-home-dashboard-count">1 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="HOCCL: Offloading Collective Communication from GPU Cores to Accelerate Distributed Training">HOCCL: Offloading Collective Communication from GPU Cores to Accelerate Distributed Training</span></li><li><span class="dpr-home-dashboard-paper-title" title="CoeF-SFL: Preserving Collaborative Server-Client Learning with Enhanced Communication Efficiency">CoeF-SFL: Preserving Collaborative Server-Client Learning with Enhanced Communication Efficiency</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="CTP-FL: Common-Trajectory Gradient Prediction for Federated Learning">CTP-FL: Common-Trajectory Gradient Prediction for Federated Learning</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>2</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>1</strong></span></div>
 </section>
 </div>
 

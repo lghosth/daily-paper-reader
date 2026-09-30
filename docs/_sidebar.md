@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-10-01 <!--dpr-date:20260930-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/30/2609.35130v1-ctp-fl-common-trajectory-gradient-prediction-for-federated-learning" data-sidebar-item="{&quot;title&quot;: &quot;CTP-FL: Common-Trajectory Gradient Prediction for Federated Learning&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.35130v1-ctp-fl-common-trajectory-gradient-prediction-for-federated-learning&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;通过共享预测轨迹实现通信高效的联邦优化&quot;}">CTP-FL: Common-Trajectory Gradient Prediction for Federated Learning</a>
   * 2026-09-30 <!--dpr-date:20260929-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/29/2609.34420v1-megagraph-towards-efficient-training-of-large-scale-graph-transformers-with-automated-hybrid-parallelism" data-sidebar-item="{&quot;title&quot;: &quot;MegaGraph: Towards Efficient Training of Large-Scale Graph Transformers with Automated Hybrid Parallelism&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.34420v1-megagraph-towards-efficient-training-of-large-scale-graph-transformers-with-automated-hybrid-parallelism&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;dgnn-nas&quot;}], &quot;evidence&quot;: &quot;面向大规模图Transformer训练的自动化混合并行框架&quot;}">MegaGraph: Towards Efficient Training of Large-Scale Graph Transformers with Automated Hybrid Parallelism</a>
