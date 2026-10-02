@@ -1,0 +1,3857 @@
+Title: Communication-Efficient Agnostic Federated Learning via Faster Convergence and Compression
+
+URL Source: https://arxiv.org/pdf/2609.36610v1
+
+Published Time: Wed, 30 Sep 2026 00:49:19 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+Preprint 
+
+# COMMUNICATION -E FFICIENT AGNOSTIC FEDERATED 
+
+# LEARNING VIA FASTER CONVERGENCE AND 
+
+# COMPRESSION 
+
+Haomin Bai 1,2 Junyan Sun 1,2 Sifan Yang 1,2 Bo Xue 3 Lijun Zhang 1,2∗
+
+> 1
+
+State Key Laboratory of Novel Software Technology, Nanjing University, Nanjing, China 
+
+> 2
+
+School of Artificial Intelligence, Nanjing University, Nanjing, China 
+
+> 3
+
+Department of Computer Science, City University of Hong Kong, Hong Kong, China 
+
+{baihm,sunjy,yangsf,zhanglj }@lamda.nju.edu.cn boxue4-c@my.cityu.edu.hk 
+
+## ABSTRACT 
+
+Agnostic federated learning (AFL) seeks a model that performs reliably across 
+
+m heterogeneous workers, but communication remains a bottleneck. We improve communication efficiency by reducing the number of synchronization rounds via faster convergence and the communication cost per round via compression. We first propose AFL-BR, which updates the dual weights over workers using on-line mirror ascent with KL divergence and blockwise restarts. It achieves an 
+
+O((log m)1/4T −1/8) stationarity rate after T update rounds, reducing the m-dependence of the synchronization rounds required for convergence from polyno-mial to logarithmic order. Building on AFL-BR, we develop AFL-C OM by ap-plying bidirectional compression with error feedback (EF). Instead of compress-ing local gradients, workers apply EF to their dual-weighted gradients, enabling direct control of the aggregated compression error under time-varying weights. We then establish an O(( δ−1 + (log m)1/4)T −1/8) stationarity rate for AFL-COM under general δ-approximate compressors and improve the δ-dependence from δ−1 to δ−1/2 for additive-and-idempotent compressors with shared random-ness (SR). With suitable compression levels, AFL-C OM retains the same conver-gence rate as AFL-BR at a lower per-round communication cost, yielding reduc-tions in total communication complexity by factors of (log m)1/4 with Top-k and 
+
+(log m)1/2 with Rand-k and SR. Experiments validate the improved synchroniza-tion and communication efficiency of our methods. 
+
+## 1 INTRODUCTION 
+
+Federated learning (FL) enables multiple workers to collaboratively train a model while keeping data distributed (McMahan et al., 2017), making it attractive for privacy-sensitive applications and large-scale model training (Li et al., 2020). Classical FL methods learn a global model by minimizing the average loss over m workers. In practice, however, data distributions across workers can be highly heterogeneous (Ye et al., 2023), making an average-optimal model vulnerable to distribution shifts and unfair across workers (Mohri et al., 2019). These limitations are particularly concerning in high-stakes applications such as healthcare (Chen et al., 2023) and finance (Long et al., 2020). To address these issues, Mohri et al. (2019) propose agnostic FL (AFL), which seeks a model that performs robustly across arbitrary mixtures of local data distributions. Let ∆m = {q ∈ Rm : q ≥
+
+0m, 1⊤
+
+> m
+
+q = 1 } denote the probability simplex. AFL solves the minimax problem 
+
+min  
+
+> w∈W
+
+max 
+
+> q∈∆m
+
+(
+
+ϕ(w, q) = 
+
+> m
+
+X
+
+> i=1
+
+qiRi(w)
+
+)
+
+, (1) where q denotes the dual weights over m workers and Ri(w) = Ez∼P i [ℓ(w; z)] is the local ob-jective of worker i, namely, the expected loss of model w ∈ Rd on samples drawn from the local 
+
+> ∗
+
+Lijun Zhang is the corresponding author. 
+
+1arXiv:2609.36610v1 [cs.LG] 29 Sep 2026 Preprint Table 1: Comparison of nonconvex AFL methods using Top-k and Rand-k as examples. d is the model dimension and m the number of workers. Definitions of compressors are provided in Appendix B.1. ⋆, ♣ Hidden m-dependence is made explicit; see Appendices C.1 and C.2. § Set 
+
+k = Θ( d(log m)−1/4) in Theorem 2. ∗ Set k = Θ( d(log m)−1/2) with SR in Theorem 3. Parfenov et al. (2026) is omitted since it relies on a Minty-inspired condition with a different criterion.                                      
+
+> Algorithm Technique Synchronization rounds for ε-stationarity Communication cost per round Communication complexity
+> SGDA ⋆–O(m7/2ε−8)O(dm )O(dm 9/2ε−8)
+> DRFA ♣Local updates O(ε−12 +m2ε−8)O(dm )O(dmε −12 +dm 3ε−8)
+> Fully synchronized O(m2ε−8)O(dm )O(dm 3ε−8)
+> AFL-BR (Algorithm 1) –O((log m)2ε−8)O(dm )O(dm (log m)2ε−8)
+> AFL-C OM
+> (Algorithm 2) Compression (Top-k)§O((log m)2ε−8)O(dm (log m)−1/4)O(dm (log m)7/4ε−8)
+> Compression (Rand-kwith SR) ∗O((log m)2ε−8)O(dm (log m)−1/2)O(dm (log m)3/2ε−8)
+
+data distribution Pi. The same objective also appears in group distributionally robust optimization (GDRO), with workers interpreted as groups (Sagawa et al., 2020). We focus on smooth and possibly nonconvex local objectives over W = Rd, as commonly encountered in neural-network training. Despite the robustness benefits of AFL, communication overhead remains a major bottleneck to its scalability and efficiency (Kairouz et al., 2021). We measure communication complexity by the total amount of information exchanged between workers and the server to attain an ε-stationary solution. It is determined by the number of synchronization rounds and the communication cost per round, which can be reduced through faster convergence and compression, respectively. Existing nonconvex AFL methods, however, remain limited in both respects: 1. First, existing guarantees exhibit polynomial dependence on m (Lin et al., 2020; Deng et al., 2020), causing the number of synchronization rounds to grow rapidly with the federa-tion size. Although Deng et al. (2020) reduces synchronization frequency via local updates, its slower convergence requires more rounds than its fully synchronized specialization. 2. Second, existing work on compressed AFL only supports uplink communication and is restricted to unbiased compressors (Parfenov et al., 2026). Moreover, its nonconvex guar-antee relies on a Minty-inspired global condition, which is generally difficult to verify. Bidirectional compression with general contractive compressors remains unexplored. In this work, we address both sources of communication overhead in turn. First, we propose AFL-BR, a blockwise-restarted algorithm that updates the dual weights using online mirror ascent with KL divergence (Hazan, 2016). The main challenge in analysis is to control a dual-gap term with a time-varying comparator while exploiting the KL geometry, whose ℓ1/ℓ ∞ structure avoids the polynomial dimension factors of Euclidean analysis. Since the optimal dual weights vary with the model iterate, static-regret guarantees for a fixed comparator do not apply directly. To handle the changing comparators, we partition the iterations into blocks and use the block-start maximizer as a fixed comparator, decomposing the dual gap into a comparator-mismatch term controlled by model movement and a static-regret term. A further challenge is that the resulting static-regret bound de-pends on the block-initial KL divergence, which can be arbitrarily large. We therefore restart the dual weights from the uniform distribution at each block boundary, ensuring the initial KL diver-gence is bounded by ln m. Together, we establish an O((log m)1/4T −1/8) stationarity guarantee, which yields O((log m)2ε−8) synchronization rounds for finding an ε-stationary solution, reducing their dependence on m from at least quadratic (Lin et al., 2020; Deng et al., 2020) to logarithmic. For the second objective, the dominant per-round communication cost arises from transmitting high-dimensional gradients used to update the model, whereas the dual update exchanges only O(m)
+
+scalar entries. Building on AFL-BR, we develop AFL-C OM , which applies bidirectional com-pression with error feedback (EF) (Karimireddy et al., 2019) to the vectors exchanged for model updates. Since AFL aggregates local gradients using time-varying dual weights, standard EF on local gradients cannot directly control the global compression error. AFL-C OM therefore applies 2Preprint EF to dual-weighted local gradients, enabling sharp control of the aggregated error. Under gen-eral δ-approximate compressors, we establish an O(( δ−1 + (log m)1/4)T −1/8) stationarity rate. Choosing δ = Ω((log m)−1/4) keeps the compression error no larger than the term already present in AFL-BR, preserving the order of synchronization rounds for convergence while reducing the communication cost per round. For Top-k sparsification (Stich et al., 2018), which retains the k
+
+coordinates with largest absolute values, choosing k = Θ( d(log m)−1/4) reduces the per-round cost from O(dm ) to O(dm (log m)−1/4) and the communication complexity from O(dm (log m)2ε−8)
+
+of AFL-BR to O(dm (log m)7/4ε−8).We further show that, when using additive-and-idempotent compressors with shared randomness (SR), the downlink compression error vanishes, yielding a sharper O(( δ−1/2 + (log m)1/4)T −1/8)
+
+stationarity rate. The corresponding squared-norm bound has the same δ−1 dependence as the lower-bound term for fixed-weight distributed nonconvex optimization (Huang et al., 2022). For Rand-k
+
+sparsification (Stich et al., 2018) with SR, setting k = Θ( d(log m)−1/2) reduces the communication complexity to O(dm (log m)3/2ε−8), improving over AFL-BR by a factor of (log m)1/2. Table 1 summarizes these guarantees. Our contributions are summarized as follows: 1. We propose AFL-BR, which updates the dual weights using KL-based online mirror ascent with blockwise restarts. It achieves a stationarity rate of O((log m)1/4T −1/8), reducing the 
+
+m-dependence of synchronization rounds from polynomial to logarithmic order. The same approach also yields a new algorithm and convergence analysis for nonconvex GDRO. 2. Building on AFL-BR, we develop AFL-C OM , which uses bidirectional compression with EF. Under general δ-approximate compressors, it achieves an O(( δ−1 +(log m)1/4)T −1/8)
+
+stationarity rate. With Top-k and k = Θ( d(log m)−1/4), it reduces the communication complexity by a factor of (log m)1/4 relative to AFL-BR. 3. For additive-and-idempotent compressors with SR, we show that the downlink compres-sion error vanishes, improving the δ-dependence of the stationarity rate from δ−1 to δ−1/2.With Rand-k using k = Θ( d(log m)−1/2) and SR, AFL-C OM further reduces the commu-nication complexity by a factor of (log m)1/2 relative to AFL-BR. 4. Experiments demonstrate the synchronization efficiency of AFL-BR and show that AFL-COM further reduces the total communication cost. 
+
+## 2 RELATED WORK 
+
+2.1 AGNOSTIC FEDERATED LEARNING AND GDRO AFL can be viewed as a worker-level instance of GDRO, with workers serving as predefined groups (Mohri et al., 2019; Sagawa et al., 2020). In the centralized setting, relevant GDRO methods include stochastic mirror descent (Nemirovski et al., 2009; Carmon & Hausler, 2022) and two-player approaches based on online learning (Soma et al., 2022; Haghtalab et al., 2022; Zhang et al., 2023; Bai et al., 2025; Zhang et al., 2026). However, their theoretical guarantees rely on convex losses and do not directly extend to the smooth nonconvex AFL setting considered here. Nonconvex AFL can be addressed through general nonconvex–concave minimax methods such as SGDA (Lin et al., 2020), which achieves an O(T −1/8) stationarity rate. To reduce communica-tion, Deng et al. (2020) propose DRFA, which performs multiple local updates between periodic dual updates. While this design reduces the number of synchronization rounds to O(T 3/4), it slows the stationarity rate to O(T −1/16 ), resulting in even more synchronization rounds to reach a target accuracy. Faster rates are possible under stronger structures or assumptions, including O(T −1/6)
+
+using nested inner loops (Rafique et al., 2022) and O(T −1/4) under strict-complementarity and bounded-iterate assumptions (Shen et al., 2024). More recently, Parfenov et al. (2026) incorporate communication compression into AFL, but their nonconvex guarantee relies on a Minty-inspired global condition and restricts compression to the worker-to-server direction and unbiased compres-sors. Additional results for convex AFL and variants are deferred to Appendix A. 3Preprint 2.2 COMMUNICATION COMPRESSION 
+
+Communication compression methods can be broadly categorized into quantization (Horv´ ath et al., 2022) and sparsification (Wangni et al., 2018). They have been widely used in distributed optimiza-tion (Alistarh et al., 2017; Wang et al., 2022; Li et al., 2022) and federated learning (Haddadpour et al., 2021). A key mechanism for convergence under compression is error feedback (EF) (Seide et al., 2014; Karimireddy et al., 2019), which maintains an accumulated compression error and adds it back to subsequent updates. EF21 (Richt´ arik et al., 2021; Gruntkowska et al., 2023) is a variant of EF that tracks the transmitted information and compresses the resulting residual. In the parameter-server setting, compression has been applied to the uplink (from workers to the server) (Reisizadeh et al., 2020; Basu et al., 2020; Richt´ arik et al., 2021; Parfenov et al., 2026), the downlink (from the server to workers) (Gruntkowska et al., 2024), and in both directions (Sattler et al., 2020; Zheng et al., 2021; Beznosikov et al., 2022; Gruntkowska et al., 2023). The most closely related work is Parfenov et al. (2026), which studies compressed AFL but only for uplink communication with unbiased compressors. Moreover, Zecchin et al. (2023) study compressed AFL under dual regular-ization in a decentralized setting, which differs from the parameter-server setting considered here. Regarding fundamental limits, smooth nonconvex distributed stochastic optimization with contrac-tive compression admits a lower bound of Ω( δ−1T −1 + m−1/2T −1/2) on the expected squared gradient norm (Huang et al., 2022). Fixing q = m−11m reduces AFL to fixed-weight distributed optimization, so this lower bound provides a benchmark for the dependence on δ.
+
+## 3 FAST CONVERGENCE FOR NONCONVEX AFL 
+
+In this section, we study AFL with smooth nonconvex local objectives and develop AFL-BR, which reduces the m-dependence of the stationarity guarantee from polynomial to logarithmic order. 3.1 PROBLEM SETUP AND EXISTING GUARANTEES 
+
+For problem (1), define the worst-case objective Φ( w) = max q∈∆m ϕ(w, q), where ϕ(w, q) = Pmi=1 qiRi(w). Let Ft contain all randomness revealed before the stochastic oracle queries at round 
+
+t, and define Et[·] = E[· | F t]. Since Φ is generally nonsmooth even when each Ri(·) is smooth, we measure convergence through the gradient of its Moreau envelope (Davis & Drusvyatskiy, 2019), a standard criterion in nonconvex–concave minimax optimization (Lin et al., 2020; Deng et al., 2020). 
+
+Definition 1 (Moreau envelope) . For a function Φ : Rd → R and a parameter λ > 0, its Moreau envelope is defined as Φλ(x) = min y∈Rd
+
+Φ( y) + 12λ ∥y − x∥22 for x ∈ Rd.We impose the following assumptions for the nonconvex analysis. 
+
+Assumption 1. For every i ∈ [m], the local objective Ri is differentiable and L-smooth, i.e., 
+
+∥∇ Ri(w) − ∇ Ri(w′)∥2 ≤ L∥w − w′∥2 for all w, w′ ∈ Rd.
+
+Assumption 2. The function Φ( w) is lower bounded, i.e., Φ∗ = inf w∈Rd Φ( w) > −∞ .An output w is called an ε-stationary solution if E[∥∇ Φ1/(2 L)(w)∥2] ≤ ε. We further impose the following assumptions on the stochastic oracles used for updates. 
+
+Assumption 3. For each i ∈ [m] and any w ∈ Rd, a sample z ∼ P i produces ∇ℓ(w; z) satisfying 
+
+Ez∼P i [∇ℓ(w; z)] = ∇Ri(w), ∥∇ Ri(w)∥2 ≤ G, Ez∼P i
+
+∥∇ ℓ(w; z) − ∇ Ri(w)∥22
+
+ ≤ σ2
+
+> w
+
+. (2) For convenience, we denote Γ2 
+
+> w
+
+:= G2 + σ2
+
+> w
+
+, which bounds the stochastic-gradient second moment. 
+
+Assumption 4. For every i ∈ [m] and w ∈ Rd, let ξi(w; z) = ℓ(w; z) − Ri(w). There exists 
+
+σq > 0 such that Ez∼P i [ξi(w; z)] = 0 and Ez∼P i [exp ( λξ i(w; z))] ≤ exp( λ2σ2 
+
+> q
+
+/2) for all λ ∈ R.Assumption 4 constrains only the centered stochastic-loss fluctuation and does not require a uniform bound on either Ri(w) or ℓ(w; z), in contrast to the uniform boundedness assumptions used in prior AFL methods (Mohri et al., 2019; Deng et al., 2020). Moreover, Assumption 4 is satisfied by Gaussian noise with variance at most σ2 
+
+> q
+
+and by any centered noise supported on an interval of width at most 2σq via Hoeffding’s lemma (Cesa-Bianchi & Lugosi, 2006). 4Preprint 
+
+Algorithm 1 AFL-BR 
+
+1: Initialize w1 ∈ Rd and q1 = 1 
+
+> m
+
+1m
+
+2: for t = 1 , 2, . . . , T do 
+
+3: On each worker i ∈ [m]:
+
+4: Draw z(i) 
+
+> t
+
+∼ P i and compute g(i) 
+
+> w,t
+
+= ∇ℓ(wt; z(i) 
+
+> t
+
+) and g(i) 
+
+> q,t
+
+= ℓ(wt; z(i) 
+
+> t
+
+)
+
+5: Send g(i) 
+
+> w,t
+
+and g(i) 
+
+> q,t
+
+to the server 
+
+6: On the server: 
+
+7: Construct gq,t = [ g(1)  
+
+> q,t
+
+, . . . , g(m) 
+
+> q,t
+
+]⊤ and gw,t = Pmi=1 qt,i g(i)
+
+> w,t
+
+8: if t ≡ 0 (mod B) then set qt+1 = 1 
+
+> m
+
+1m else update qt+1 according to (4) 
+
+9: Send gw,t to all workers 
+
+10: On each worker i ∈ [m]:
+
+11: Receive gw,t and update wt+1 = wt − ηwgw,t 
+
+12: end for 
+
+13: Output: wr , where r ∼ Unif {1, . . . , T }
+
+Existing guarantees and motivation. Existing guarantees are stated in terms of global Euclidean quantities whose dependence on m is implicit, potentially obscuring substantial scalability costs. Accounting for this dependence reveals polynomial scaling in m. In particular, SGDA (Lin et al., 2020) specialized to AFL yields an O(m7/16 T −1/8) stationarity rate, while fully synchronized DRFA (Deng et al., 2020) improves the worker dependence to O(m1/4T −1/8), corresponding to 
+
+O(m2ε−8) synchronization rounds. Moreover, its local-update variant has a synchronization-round bound of O(ε−12 + m2ε−8). These polynomial m-factors arise from joint smoothness and ora-cle variance in SGDA and dual-gradient bounds in DRFA, motivating an analysis that avoids such 
+
+m-dependent Euclidean quantities. See Appendix C for details. 3.2 AFL-BR: A B LOCKWISE -R ESTARTED ALGORITHM FOR NONCONVEX AFL The m-dependence of the convergence guarantee is governed by the cumulative dual gap arising in the Moreau-envelope analysis, namely PTt=1 εqt , where εqt = ϕ(wt, q∗ 
+
+> t
+
+) − ϕ(wt, qt) for q∗ 
+
+> t
+
+∈
+
+arg max q∈∆m ϕ(wt, q). If the comparator q∗ 
+
+> t
+
+is fixed, the term PTt=1 εqt would reduce to static regret, which can be controlled by KL-based online mirror ascent with only logarithmic dependence on m (Hazan, 2016). However, this static-regret guarantee does not apply directly because q∗ 
+
+> t
+
+varies with wt, which evolves throughout the optimization process. A natural alternative is to track the sequence {q∗ 
+
+> t
+
+}Tt=1 using dynamic-regret techniques (Herbster & Warmuth, 1998; Lu & Zhang, 2019; Chen et al., 2021). Such guarantees, however, depend on the path variation of {q∗ 
+
+> t
+
+}Tt=1 , which can grow linearly with T and render the resulting convergence bound vacuous. Following the blockwise analyses (Lin et al., 2020; Deng et al., 2020), we fix the comparator over short intervals. Specifically, we partition [T ] into consecutive blocks {I c}Nc=1 of length at most B,and let sc denote the first index of Ic. Then, for every t ∈ I c, we decompose the dual gap as 
+
+εqt = ϕ(wt, q∗ 
+
+> t
+
+) − ϕ(wt, q∗ 
+
+> sc
+
+)
+
+| {z }
+
+> At
+
++ ϕ(wt, q∗ 
+
+> sc
+
+) − ϕ(wt, qt)
+
+| {z }
+
+> Bt
+
+. (3) The first term measures the mismatch caused by fixing the comparator as the model evolves, while the second measures the dual error against this fixed comparator. By the optimality of q∗ 
+
+> sc
+
+at wsc and the G-Lipschitzness of ϕ(·, q) under Assumption 3, we have 
+
+At = ϕ(wt, q∗ 
+
+> t
+
+) − ϕ(wsc , q∗ 
+
+> t
+
+) + ϕ(wsc , q∗ 
+
+> t
+
+) − ϕ(wt, q∗ 
+
+> sc
+
+)
+
+≤ ϕ(wt, q∗ 
+
+> t
+
+) − ϕ(wsc , q∗ 
+
+> t
+
+) + ϕ(wsc , q∗ 
+
+> sc
+
+) − ϕ(wt, q∗ 
+
+> sc
+
+) ≤ 2G∥wt − wsc ∥2.
+
+Hence, the comparator mismatch is controlled by the model movement within the block. It remains to control Bt. Since q∗ 
+
+> sc
+
+is fixed over Ic, P 
+
+> t∈I c
+
+Bt has the form of static regret. We therefore update the dual weights using online mirror ascent with KL divergence as 
+
+qt+1 = arg max 
+
+> q∈∆m
+
+{ηq ⟨gq,t , q⟩ − DKL (q∥qt)} , (4) 5Preprint where gq,t = [ g(1)  
+
+> q,t
+
+, . . . , g (m) 
+
+> q,t
+
+]⊤ with g(i) 
+
+> q,t
+
+= ℓ(wt; z(i) 
+
+> t
+
+), and DKL (q∥qt) = Pmi=1 qi ln( qi/q t,i )
+
+denotes the KL divergence. The update (4) has the closed form qt+1 ,i ∝ qt,i exp( ηq g(i)
+
+> q,t
+
+), ∀i ∈ [m].Moreover, directly running (4) over all T rounds does not provide a uniform blockwise guarantee, since the static-regret bound on each block Ic depends on the initial divergence DKL (q∗ 
+
+> sc
+
+∥qsc ),which is not uniformly bounded. Indeed, qsc can assign arbitrarily small mass to the support of the comparator q∗ 
+
+> sc
+
+. To resolve this issue, we restart the dual weights as qsc = m−11m at each block boundary, guaranteeing DKL (q∗ 
+
+> sc
+
+∥qsc ) ≤ ln m and hence a uniform bound across blocks. Combining the restarted dual update with stochastic gradient descent on the model yields AFL-BR, summarized in Algorithm 1. At each round, the workers evaluate both stochastic gradients and stochastic losses, while the server aggregates the gradients according to the current weights. We next establish the convergence guarantee. A further challenge is that standard static-regret bounds depend on the magnitudes of the stochastic losses (Cesa-Bianchi & Lugosi, 2006), which are not uniformly bounded here. To this end, we decompose the stochastic loss into the true loss and noise, and control the noise jointly with the KL stability term through the negative-entropy and log-sum-exp conjugacy. The sub-Gaussian condition then yields a finite bound without requiring uniform boundedness of either Ri(w) or ℓ(w; z), leading to the following guarantee. 
+
+Theorem 1. Suppose Assumptions 1–4 hold with m ≥ 2 and T ≥ 9. Let ∆Φ = Φ 1/(2 L)(w1) − Φ∗.For Algorithm 1, set B = ⌈√T ⌉, ηw = (8 LT 3/4)−1, and ηq = 2 √ln m/ (σq T 1/4). Then 
+
+E
+
+h
+
+∇Φ1/(2 L)(wr ) 22
+
+i
+
+≤ 32 L∆Φ
+
+T 1/4 + 4GΓw
+
+T 1/4 + 16 Lσ q
+
+√ln mT 1/4 + 10Γ 2
+
+> w
+
+T 1/2 + Γ2
+
+> w
+
+2T 3/4 .
+
+Remark. Theorem 1 implies E[∥∇ Φ1/(2 L)(wr )∥2] = O((log m)1/4T −1/8) by Jensen’s inequality. Hence, obtaining an ε-stationary solution requires O((log m)2ε−8) synchronization rounds. Com-pared with the baselines in Table 1, this reduces the m-dependence of the number of synchronization rounds required for convergence from polynomial to logarithmic order. With O(dm ) scalar entries communicated per round, the resulting total communication complexity is O(dm (log m)2ε−8).
+
+Remark. As a byproduct, AFL-BR also yields an O((log m)1/4T −1/8) stationarity guarantee for centralized nonconvex GDRO when all worker-side computations are executed on a single machine. 
+
+## 4 AFL-C OM : AFL WITH BIDIRECTIONAL COMPRESSION 
+
+AFL-BR reduces the m-dependence of the synchronization-round bound through faster conver-gence. We further reduce the per-round communication cost via bidirectional compression with 
+
+δ-approximate compressors, defined below with examples in Appendix B.1. 
+
+Definition 2. An operator C : Rd → Rd is a δ-approximate compressor if, for some δ ∈ (0 , 1] ,
+
+E[∥C (x) − x∥22] ≤ (1 − δ)∥x∥22, for all x ∈ Rd, where the expectation is over the randomness of C.4.1 BIDIRECTIONAL COMPRESSION AND GUARANTEES UNDER GENERAL COMPRESSORS 
+
+In each round of AFL-BR, workers upload high-dimensional local gradients and scalar losses, while the server broadcasts the aggregated gradient. Since gradient transmission dominates the commu-nication cost, we compress these model-update messages bidirectionally and use EF (Karimireddy et al., 2019) to control the compression errors. A natural approach is to apply EF independently to each worker’s raw local gradient, i.e., worker i transmits ∆(i) 
+
+> w,t
+
+= C(e(i) 
+
+> t
+
++ g(i)
+
+> w,t
+
+) and accumulates the residual e(i) 
+
+> t+1
+
+= e(i) 
+
+> t
+
++ g(i) 
+
+> w,t
+
+− ∆(i)
+
+> w,t
+
+. The server then aggregates the compressed messages using the current dual weights. However, since the weights are applied outside the EF recursion, the accu-mulated uplink error Pts=1 
+
+Pmi=1 qs,i (g(i) 
+
+> w,s
+
+− ∆(i)
+
+> w,s
+
+) is not directly controlled by the worker-side EF guarantee, which only bounds the unweighted residual Pts=1 (g(i) 
+
+> w,s
+
+− ∆(i)
+
+> w,s
+
+). This mismatch leads to a loose bound on the weighted global error. We address the mismatch by applying EF to the dual-weighted gradients qt,i g(i)
+
+> w,t
+
+. To this end, the server sends qt,i to worker i at the end of round t − 1. This incurs a communication cost of m
+
+6Preprint 
+
+Algorithm 2 AFL-C OM 
+
+1: Initialize w1 ∈ Rd, q1 = 1 
+
+> m
+
+1m, be1 = 0d, and e(i)1 = 0d for all i ∈ [m]
+
+2: for t = 1 , 2, . . . , T do 
+
+3: On each worker i ∈ [m]:
+
+4: Draw z(i) 
+
+> t
+
+∼ P i and compute g(i) 
+
+> w,t
+
+= ∇ℓ(wt; z(i) 
+
+> t
+
+) and g(i) 
+
+> q,t
+
+= ℓ(wt; z(i) 
+
+> t
+
+)
+
+5: Compute ∆(i) 
+
+> w,t
+
+= C(e(i) 
+
+> t
+
++ qt,i g(i)
+
+> w,t
+
+) and update e(i) 
+
+> t+1
+
+= e(i) 
+
+> t
+
++ qt,i g(i) 
+
+> w,t
+
+− ∆(i)
+
+> w,t
+
+6: Send ∆(i) 
+
+> w,t
+
+and g(i) 
+
+> q,t
+
+to the server 
+
+7: On the server: 
+
+8: Construct gq,t = [ g(1)  
+
+> q,t
+
+, . . . , g(m) 
+
+> q,t
+
+]⊤ and bgw,t = Pmi=1 ∆(i)
+
+> w,t
+
+9: Compute ∆w,t = C(bet + bgw,t ) and update bet+1 = bet + bgw,t − ∆w,t 
+
+10: if t ≡ 0 (mod B) then set qt+1 = 1 
+
+> m
+
+1m else update qt+1 according to (4) 
+
+11: Broadcast ∆w,t to all workers and send qt+1 ,i to worker i
+
+12: On each worker i ∈ [m]:
+
+13: Receive ∆w,t and qt+1 ,i , and update wt+1 = wt − ηw∆w,t 
+
+14: end for 
+
+15: Output: wr , where r ∼ Unif {1, . . . , T }
+
+floats per round, which is negligible compared with communicating high-dimensional gradients. Specifically, worker i sends ∆(i) 
+
+> w,t
+
+= C(e(i) 
+
+> t
+
++ qt,i g(i)
+
+> w,t
+
+) and updates e(i) 
+
+> t+1
+
+= e(i) 
+
+> t
+
++ qt,i g(i) 
+
+> w,t
+
+− ∆(i)
+
+> w,t
+
+.The server aggregates bgw,t = Pmi=1 ∆(i) 
+
+> w,t
+
+and applies EF again on the downlink by broadcasting 
+
+∆w,t = C(bet + bgw,t ) and updating bet+1 = bet + bgw,t − ∆w,t . Each worker then updates wt+1 =
+
+wt − ηw∆w,t , while the dual weights follow the same blockwise-restarted mirror-ascent update as in AFL-BR. We present the resulting procedure in Algorithm 2, termed AFL-C OM , and establish its convergence under general δ-approximate compressors as follows. 
+
+Theorem 2. Suppose Assumptions 1–4 hold with m ≥ 2 and T ≥ 9. Let ∆Φ = Φ 1/(2 L)(w1) − Φ∗.For Algorithm 2, set B = ⌈√T ⌉, ηw = (8 LT 3/4)−1, and ηq = 2 √ln m/ (σq T 1/4). If C is a general 
+
+δ-approximate compressor, then 
+
+E
+
+h
+
+∇Φ1/(2 L)(wr ) 22
+
+i
+
+≤ 32 L∆Φ
+
+T 1/4 + 4GΓw(16 + 4 δ − δ2)
+
+δ2T 1/4 + 16 Lσ q
+
+√ln mT 1/4 + 10Γ 2
+
+> w
+
+T 1/2
+
++ 3GΓw(8 + 2 δ − δ2)
+
+δ2T 3/4 + Γ2
+
+> w
+
+2T 3/4 .
+
+(5) 
+
+Remark. Theorem 2 establishes a stationarity bound of O(( δ−1 + (log m)1/4)T −1/8). Hence, choosing δ = Ω((log m)−1/4) preserves the O((log m)1/4T −1/8) rate of AFL-BR while reduc-ing the per-round communication cost. For Top-k with δ = k/d , taking k = Θ( d(log m)−1/4)
+
+reduces the per-round communication cost to O(dm (log m)−1/4), yielding a total communication complexity of O(dm (log m)7/4ε−8), a factor of (log m)1/4 lower than that of AFL-BR. 4.2 SHARPER GUARANTEE FOR ADDITIVE -AND -I DEMPOTENT COMPRESSORS 
+
+For fixed-weight distributed nonconvex optimization, i.e., q = m−11m in (1), the compression-dependent lower bound on expected squared gradient norm scales as Ω( δ−1) (Huang et al., 2022). This suggests that the O(δ−2) dependence in Theorem 2 may be improvable and raises the question of whether sharper control of compression errors can improve the δ-dependence. We answer this question affirmatively for additive-and-idempotent compressors with shared randomness (SR). 
+
+Definition 3. A randomized compressor satisfying Definition 2 is written as C(ξ)(·), where ξ denotes its internal randomness. For every realization ξ, we define the following two properties: 1. C is additive if C(ξ) (Pni=1 ui) = Pni=1 C(ξ)(ui) for any n ∈ N+ and u1, . . . , un ∈ Rd.2. C is idempotent if C(ξ) C(ξ)(x) = C(ξ)(x) for any x ∈ Rd.We denote the class of compressors satisfying both properties by CAI .7Preprint Examples of compressors in CAI are detailed in Appendix B.1. In particular, unscaled Rand-k is in 
+
+CAI with δ = k/d . For randomized compressors, SR means that the server and all workers use the same compressor realization in each round. We note that SR can be implemented without per-round coordination or additional per-round communication, with details provided in Appendix B.2. 
+
+Key observation. When AFL-C OM uses a compressor C ∈ C AI with SR, the downlink compression introduces no error . Indeed, for all t ∈ [T ], the uplink aggregate bgw,t satisfies 
+
+C(ξt)(bgw,t ) = C(ξt)
+
+> m
+
+X
+
+> i=1
+
+C(ξt) 
+
+e(i) 
+
+> t
+
++ qt,i g(i)
+
+> w,t
+
+!
+
+> (additivity)
+
+= C(ξt) C(ξt)
+
+> m
+
+X
+
+> i=1
+
+e(i) 
+
+> t
+
++
+
+> m
+
+X
+
+> i=1
+
+qt,i g(i)
+
+> w,t
+
+!! 
+
+> (idempotence)
+
+= C(ξt)
+
+> m
+
+X
+
+> i=1
+
+e(i) 
+
+> t
+
++
+
+> m
+
+X
+
+> i=1
+
+qt,i g(i)
+
+> w,t
+
+!
+
+> (additivity)
+
+=
+
+> m
+
+X
+
+> i=1
+
+C(ξt) 
+
+e(i) 
+
+> t
+
++ qt,i g(i)
+
+> w,t
+
+
+
+= bgw,t .
+
+Since be1 = 0d, the server-side EF recursion yields bet = 0d for all t ∈ [T ]. Hence, the downlink introduces no additional compression residual, as formalized in Lemma 6. This sharper control improves the dependence on δ, leading to the following convergence guarantee. 
+
+Theorem 3. Suppose Assumptions 1–4 hold with m ≥ 2 and T ≥ 9. Let ∆Φ = Φ 1/(2 L)(w1) − Φ∗.For Algorithm 2, set B = ⌈√T ⌉, ηw = (8 LT 3/4)−1, and ηq = 2 √ln m/ (σq T 1/4). If C ∈ C AI and SR is used, then 
+
+E
+
+h
+
+∇Φ1/(2 L)(wr ) 22
+
+i
+
+≤ 32 L∆Φ
+
+T 1/4 + 16 GΓw
+
+δT 1/4 + 16 Lσ q
+
+√ln mT 1/4 + 10Γ 2
+
+> w
+
+T 1/2 + 6GΓw
+
+δT 3/4 + Γ2
+
+> w
+
+2T 3/4 .
+
+Remark. Theorem 3 implies a stationarity bound of O(( δ−1/2 + (log m)1/4)T −1/8), improving the dependence on δ from δ−1 in Theorem 2 to δ−1/2. Hence, choosing δ = Ω((log m)−1/2) preserves the O((log m)1/4T −1/8) rate of AFL-BR. For Rand-k with SR, taking k = Θ( d(log m)−1/2)
+
+reduces the communication cost per round to O(dm (log m)−1/2) and yields a communication com-plexity of O(dm (log m)3/2ε−8), a factor of (log m)1/2 lower than that of AFL-BR. 
+
+## 5 EXPERIMENTS 
+
+We evaluate the two components of our communication-efficiency gains, namely, reducing the num-ber of synchronization rounds and reducing the per-round communication cost through compression. 5.1 SCALING WITH THE NUMBER OF WORKERS 
+
+We first examine how the number of workers affects optimization efficiency. We use FEM-NIST (Caldas et al., 2018), which provides naturally heterogeneous writer-level partitions with 62 
+
+output classes, and consider m ∈ { 20 , 50 , 100 , 500 , 1000 }. For each m, we rank writers by their number of local samples and select the top-m writers, with each writer’s data randomly split 80/20 into training and test sets. 20 50 100 500 1000 
+
+> Number of workers (m)
+> 500 1000 1500 2000
+> Sync. rounds to target  SGDA DRFA AFL-BR
+
+Figure 1: Synchronization rounds versus 
+
+m on FEMNIST. We compare AFL-BR with SGDA and DRFA under full participation, with DRFA performing three local updates per synchronization. All methods train a two-layer CNN from scratch, with more details provided in Appendix D.1. For each m, we choose a shared target worst-worker test accuracy for all methods and record the first checkpoint reaching that target. We report the mean over five runs, with error bars showing one stan-dard deviation. As shown in Figure 1, AFL-BR and DRFA are comparable for m = 20 and m = 50 , while AFL-BR reaches the target in fewer synchronization rounds than both baselines for m = 100 , 500 , and 
+
+1000 . These large-m results are consistent with the improved m-dependence in the number of synchro-nization rounds achieved by AFL-BR, demonstrating its efficiency as the federation scales. 8Preprint 0.0 0.8 1.6 2.4                    
+
+> Update rounds (×10 3)
+> 0.0 0.2 0.4 0.6 0.8
+> Worst-worker accuracy  (a)
+> 0.00 0.25 0.50 0.75
+> Synchronization rounds (×10 3)
+> (b)
+> 0123
+> Communication cost (×10 9)
+> (c)
+> 0.0 0.6 1.2 1.8
+> Update rounds (×10 4)
+> 0.0 0.2 0.4 0.6
+> Worst-worker accuracy  (d)
+> 0.0 1.5 3.0 4.5
+> Synchronization rounds (×10 3)
+> (e)
+> 0.0 0.8 1.6
+> Communication cost (×10 9)
+> (f)
+> FedAvg DRFA AFL AFL-BR AFL-Com(T) AFL-Com(R)
+
+Figure 2: Worst-worker test accuracy. The top and bottom rows correspond to Fashion-MNIST and CIFAR-10, respectively. From left to right, the columns report performance against update rounds, synchronization rounds, and cumulative communication cost. 5.2 COMMUNICATION EFFICIENCY WITH COMPRESSION 
+
+We evaluate AFL-BR and AFL-C OM on Fashion-MNIST (Xiao et al., 2017) and CIFAR-10 (Krizhevsky & Hinton, 2009) with m = 10 workers and label-skewed data. We instantiate Algorithm 2 with Top-k and Rand-k, denoted by AFL-C OM (T) and AFL-C OM (R), retaining 30% 
+
+and 10% of the coordinates, respectively. The Rand-k variant uses shared randomness across all workers and the server. The baselines include AFL (Mohri et al., 2019), equivalent here to apply-ing SGDA to problem (1), and DRFA (Deng et al., 2020). We also include F ED AVG (McMahan et al., 2017) as a standard FL baseline that minimizes the average local loss. F ED AVG and DRFA perform three local updates per synchronization, whereas AFL, AFL-BR, and AFL-C OM perform one model update. Further details and results are provided in Appendix D.2. Figure 2 reports worst-worker test accuracy against update rounds, synchronization rounds, and cumulative communication cost. Results are averaged over five runs, with shaded regions indicating one standard deviation. As shown in Figure 2(a) and (d), the AFL methods generally achieve higher worst-worker test ac-curacy than F ED AVG , consistent with their objective of minimizing the worst-worker risk. Among the AFL methods, AFL-BR reaches a given worst-worker accuracy in fewer update rounds than AFL and DRFA, indicating faster convergence, while AFL-C OM (T) and AFL-C OM (R) closely track AFL-BR despite compression. Panels (b) and (e) of Figure 2 show that AFL-BR reaches a given accuracy in fewer synchronization rounds than AFL and remains competitive with or bet-ter than DRFA. Despite a less favorable synchronization-round bound than its fully synchronized specialization, DRFA improves over AFL in practice through multiple local updates. Moreover, AFL-BR achieves comparable or better efficiency through faster convergence with only one update per synchronization. We finally compare the performance against cumulative communication cost. Each Top-k message costs k + k⌈log 2 d⌉/32 float-equivalents, accounting for values and indices, while Rand-k with SR costs only k, as the coordinate indices are reconstructed locally using SR. Panels (c) and (f) of Figure 2 show that both AFL-C OM variants attain comparable worst-worker accuracy at sub-stantially lower communication cost than the uncompressed AFL baselines. AFL-C OM (R) is the most communication-efficient on both datasets, consistent with our sharper analysis for additive-and-idempotent compressors with SR, where the downlink compression residual vanishes. 9Preprint Overall, panels (a), (b), (d), and (e) of Figure 2 illustrate the benefit of faster convergence, with AFL-BR requiring fewer update and synchronization rounds to attain a given accuracy, while panels (c) and (f) show that AFL-C OM further reduces the communication cost through compression. 
+
+## 6 CONCLUSION 
+
+We improve the communication efficiency of AFL by reducing both the number of synchronization rounds required for convergence and the communication cost per round. We first propose AFL-BR, which reduces the worker dependence of existing guarantees from polynomial to logarithmic order. Building on it, we develop AFL-C OM by introducing bidirectional compression with EF for dual-weighted local gradients. We establish its convergence under general δ-approximate compressors and further obtain a sharper dependence on δ for additive-and-idempotent compressors with SR. Ex-periments suggest substantial communication savings with competitive worst-worker performance. 
+
+## REFERENCES 
+
+Jayadev Acharya, Cl´ ement L. Canonne, and Himanshu Tyagi. Inference under information con-straints ii: Communication constraints and shared randomness. IEEE Transactions on Informa-tion Theory , 66(12):7856–7877, 2020. Dan Alistarh, Demjan Grubic, Jerry Li, Ryota Tomioka, and Milan Vojnovic. Qsgd: Communication-efficient sgd via gradient quantization and encoding. In Advances in Neural Information Processing Systems 30 , pp. 1707–1718, 2017. Haomin Bai, Dingzhi Yu, Shuai Li, Haipeng Luo, and Lijun Zhang. Group distributionally robust optimization with flexible sample queries. ArXiv e-prints , arXiv:2505.15212, 2025. Debraj Basu, Deepesh Data, Can Karakus, and Suhas N. Diggavi. Qsparse-local-sgd: Distributed sgd with quantization, sparsification, and local computations. IEEE Journal on Selected Areas in Information Theory , 1(1):217–226, 2020. Aleksandr Beznosikov, Peter Richt´ arik, Michael Diskin, Max Ryabinin, and Alexander Gasnikov. Distributed methods with compressed communication for solving variational inequalities, with theoretical guarantees. In Advances in Neural Information Processing Systems 35 , pp. 14013– 14029, 2022. Aleksandr Beznosikov, Samuel Horv´ ath, Peter Richt´ arik, and Mher Safaryan. On biased compres-sion for distributed learning. Journal of Machine Learning Research , 24(276):1–50, 2023. Sebastian Caldas, Sai Meher Karthik Duddu, Peter Wu, Tian Li, Jakub Koneˇ cn´ y, H. Brendan McMa-han, Virginia Smith, and Ameet Talwalkar. Leaf: A benchmark for federated settings. ArXiv e-prints , arXiv: 1812.01097, 2018. Yair Carmon and Danielle Hausler. Distributionally robust optimization via ball oracle acceleration. In Advances in Neural Information Processing Systems 35 , pp. 35866–35879, 2022. N. Cesa-Bianchi and G. Lugosi. Prediction, Learning, and Games . Cambridge University Press, 2006. Chuyan Chen, Yutong He, Pengrui Li, Weichen Jia, and Kun Yuan. Greedy low-rank gradient compression for distributed learning with convergence guarantees. IEEE Transactions on Signal Processing , 74:937–951, 2026. Liyu Chen, Haipeng Luo, and Chen-Yu Wei. Impossible tuning made possible: A new expert algorithm and its applications. In Proceedings of Thirty Fourth Conference on Learning Theory ,volume 134, pp. 1216–1259, 2021. Richard J. Chen, Judy J. Wang, Drew F. K. Williamson, Tiffany Y. Chen, Jana Lipkova, Ming Y. Lu, Sharifa Sahai, and Faisal Mahmood. Algorithmic fairness in artificial intelligence for medicine and healthcare. Nature Biomedical Engineering , 7(6):719–742, 2023. 10 Preprint Damek Davis and Dmitriy Drusvyatskiy. Stochastic model-based minimization of weakly convex functions. SIAM Journal on Optimization , 29(1):207–239, 2019. Yuyang Deng, Mohammad Mahdi Kamani, and Mehrdad Mahdavi. Distributionally robust federated averaging. In Advances in Neural Information Processing Systems 33 , pp. 15111–15122, 2020. Kaja Gruntkowska, Alexander Tyurin, and Peter Richt´ arik. EF21-p and friends: Improved theoret-ical communication complexity for distributed optimization with bidirectional compression. In 
+
+Proceedings of the 40th International Conference on Machine Learning , pp. 11761–11807, 2023. Kaja Gruntkowska, Alexander Tyurin, and Peter Richt´ arik. Improving the worst-case bidirectional communication complexity for nonconvex distributed optimization under function similarity. In 
+
+Neural Information Processing Systems 37 , 2024. Zhishuai Guo and Tianbao Yang. Communication-efficient federated group distributionally robust optimization. In Advances in Neural Information Processing Systems 37 , pp. 23040–23077, 2024. Farzin Haddadpour, Mohammad Mahdi Kamani, Aryan Mokhtari, and Mehrdad Mahdavi. Feder-ated learning with compression: Unified analysis and sharp guarantees. In Proceedings of The 24th International Conference on Artificial Intelligence and Statistics , pp. 2350–2358, 2021. Nika Haghtalab, Michael I. Jordan, and Eric Zhao. On-demand sampling: Learning optimally from multiple distributions. In Advances in Neural Information Processing Systems 35 , pp. 406–419, 2022. Jenny Hamer, Mehryar Mohri, and Ananda Theertha Suresh. FedBoost: A communication-efficient algorithm for federated learning. In Proceedings of the 37th International Conference on Machine Learning , pp. 3973–3983, 2020. Elad Hazan. Introduction to online convex optimization. Found. Trends Optim. , 2(3–4):157–325, 2016. Mark Herbster and Manfred K. Warmuth. Tracking the best expert. Machine Learning , 32(2): 151–178, 1998. Samuel Horv´ ath, Chen-Yu Ho, Ludovit Horvath, Atal Narayan Sahu, Marco Canini, and Peter Richt´ arik. Natural compression for distributed deep learning. In Proceedings of Mathematical and Scientific Machine Learning , pp. 129–141, 2022. Xinmeng Huang, Yiming Chen, Wotao Yin, and Kun Yuan. Lower bounds and nearly optimal algorithms in distributed learning with communication compression. In Advances in Neural In-formation Processing Systems 35 , pp. 18955–18969, 2022. Chaouki Ben Issaid, Anis Elgabli, and Mehdi Bennis. DR-DSGD: A distributionally robust decen-tralized learning algorithm over graphs. Transactions on Machine Learning Research , 2022. Peter Kairouz, H. Brendan McMahan, Brendan Avent, Aur´ elien Bellet, Mehdi Bennis, Arjun Nitin Bhagoji, Kallista Bonawitz, Zachary Charles, Graham Cormode, Rachel Cummings, Rafael G. L. D’Oliveira, Hubert Eichner, Salim El Rouayheb, David Evans, Josh Gardner, Zachary Garrett, Adri` a Gasc´ on, Badih Ghazi, Phillip B. Gibbons, Marco Gruteser, Zaid Harchaoui, Chaoyang He, Lie He, Zhouyuan Huo, Ben Hutchinson, Justin Hsu, Martin Jaggi, Tara Javidi, Gauri Joshi, Mikhail Khodak, Jakub Koneˇ cn´ y, Aleksandra Korolova, Farinaz Koushanfar, Sanmi Koyejo, Tancr` ede Lepoint, Yang Liu, Prateek Mittal, Mehryar Mohri, Richard Nock, Ayfer ¨ Ozg¨ ur, Rasmus Pagh, Hang Qi, Daniel Ramage, Ramesh Raskar, Mariana Raykova, Dawn Song, Weikang Song, Sebastian U. Stich, Ziteng Sun, Ananda Theertha Suresh, Florian Tram` er, Praneeth Vepakomma, Jianyu Wang, Li Xiong, Zheng Xu, Qiang Yang, Felix X. Yu, Han Yu, and Sen Zhao. Advances and open problems in federated learning. Foundations and Trends® in Machine Learning , 14: 1–210, 2021. Sai Praneeth Karimireddy, Quentin Rebjock, Sebastian Stich, and Martin Jaggi. Error feedback fixes SignSGD and other gradient compression schemes. In Proceedings of the 36th International Conference on Machine Learning , pp. 3252–3261, 2019. 11 Preprint Alex Krizhevsky and Geoffrey Hinton. Learning multiple layers of features from tiny images. Tech-nical Report 0, University of Toronto, Toronto, Ontario, 2009. Mounssif Krouka, Chaouki Ben Issaid, and Mehdi Bennis. Distributionally robust federated learning with client drift minimization. IEEE Transactions on Machine Learning in Communications and Networking , 4:438–456, 2026. Li Li, Yuxi Fan, Mike Tse, and Kuo-Yi Lin. A review of applications in federated learning. Com-puters & Industrial Engineering , 149:106854, 2020. Zhize Li, Haoyu Zhao, Boyue Li, and Yuejie Chi. Soteriafl: A unified framework for private feder-ated learning with communication compression. In Advances in Neural Information Processing Systems 35 , pp. 4285–4300, 2022. Tianyi Lin, Chi Jin, and Michael Jordan. On gradient descent ascent for nonconvex-concave min-imax problems. In Proceedings of the 37th International Conference on Machine Learning , pp. 6083–6093, 2020. Guodong Long, Yue Tan, Jing Jiang, and Chengqi Zhang. Federated learning for open banking. In Federated Learning: Privacy and Incentive , pp. 240–254. Springer International Publishing, 2020. Shiyin Lu and Lijun Zhang. Adaptive and efficient algorithms for tracking the best expert. ArXiv e-prints , arXiv: 1909.02187, 2019. Brendan McMahan, Eider Moore, Daniel Ramage, Seth Hampson, and Blaise Aguera y Arcas. Communication-Efficient Learning of Deep Networks from Decentralized Data. In Proceed-ings of the 20th International Conference on Artificial Intelligence and Statistics , pp. 1273–1282, 2017. Mehryar Mohri, Gary Sivek, and Ananda Theertha Suresh. Agnostic federated learning. In Pro-ceedings of the 36th International Conference on Machine Learning , pp. 4615–4625, 2019. A. Nemirovski, A. Juditsky, G. Lan, and A. Shapiro. Robust stochastic approximation approach to stochastic programming. SIAM Journal on Optimization , 19(4):1574–1609, 2009. Valery Parfenov, Nail Bashirov, Daniil Medyakov, Dmitry Bylinkin, and Aleksandr Beznosikov. Unlocking the potential of weighting methods in federated learning through communication com-pression. In The Fourteenth International Conference on Learning Representations , 2026. Hassan Rafique, Mingrui Liu, Qihang Lin, and Tianbao Yang. Weakly-convex–concave min–max optimization: provable algorithms and applications in machine learning. Optimization Methods and Software , 37(3):1087–1121, 2022. Amirhossein Reisizadeh, Aryan Mokhtari, Hamed Hassani, Ali Jadbabaie, and Ramtin Pedarsani. Fedpaq: A communication-efficient federated learning method with periodic averaging and quan-tization. In Proceedings of the Twenty Third International Conference on Artificial Intelligence and Statistics , pp. 2021–2031, 2020. Peter Richt´ arik, Igor Sokolov, and Ilyas Fatkhullin. EF21: A new, simpler, theoretically better, and practically faster error feedback. In Advances in Neural Information Processing Systems 34 , pp. 4384–4396, 2021. Jae Ro, Mingqing Chen, Rajiv Mathews, Mehryar Mohri, and Ananda Theertha Suresh. Communication-efficient agnostic federated averaging. In Interspeech 2021 , pp. 871–875, 2021. Mher Safaryan, Egor Shulgin, and Peter Richt´ arik. Uncertainty principle for communication com-pression in distributed and federated learning and the search for an optimal compressor. Informa-tion and Inference: A Journal of the IMA , 11(2):557–580, 2022. Shiori Sagawa, Pang Wei Koh, Tatsunori B. Hashimoto, and Percy Liang. Distributionally robust neural networks for group shifts: On the importance of regularization for worst-case generaliza-tion. In International Conference on Learning Representations , 2020. 12 Preprint Felix Sattler, Simon Wiedemann, Klaus-Robert M¨ uller, and Wojciech Samek. Robust and communication-efficient federated learning from non-i.i.d. data. IEEE Transactions on Neural Networks and Learning Systems , 31(9):3400–3413, 2020. Frank Seide, Hao Fu, Jasha Droppo, Gang Li, and Dong Yu. 1-bit stochastic gradient descent and its application to data-parallel distributed training of speech dnns. In Interspeech 2014 , pp. 1058– 1062, 2014. Wei Shen, Minhui Huang, Jiawei Zhang, and Cong Shen. Stochastic smoothed gradient descent ascent for federated minimax optimization. In Proceedings of The 27th International Conference on Artificial Intelligence and Statistics , pp. 3988–3996, 2024. Tasuku Soma, Khashayar Gatmiry, and Stefanie Jegelka. Optimal algorithms for group distribution-ally robust optimization and beyond. ArXiv e-prints , arXiv:2212.13669, 2022. Sebastian U. Stich, Jean-Baptiste Cordonnier, and Martin Jaggi. Sparsified sgd with memory. In 
+
+Advances in Neural Information Processing Systems 31 , pp. 4452–4463, 2018. Shay Vargaftik, Ran Ben Basat, Amit Portnoy, Gal Mendelson, Yaniv Ben Itzhak, and Michael Mitzenmacher. EDEN: Communication-efficient and robust distributed mean estimation for fed-erated learning. In Proceedings of the 39th International Conference on Machine Learning , pp. 21984–22014, 2022. Roman Vershynin. High-dimensional probability: An introduction with applications in data science .Cambridge university press, 2018. Yujia Wang, Lu Lin, and Jinghui Chen. Communication-efficient adaptive federated learning. In 
+
+Proceedings of the 39th International Conference on Machine Learning , pp. 22802–22838, 2022. Jianqiao Wangni, Jialei Wang, Ji Liu, and Tong Zhang. Gradient sparsification for communication-efficient distributed optimization. In Advances in Neural Information Processing Systems 31 , pp. 1306–1316, 2018. Han Xiao, Kashif Rasul, and Roland Vollgraf. Fashion-mnist: a novel image dataset for benchmark-ing machine learning algorithms. ArXiv e-prints , arXiv:1708.07747, 2017. Mang Ye, Xiuwen Fang, Bo Du, Pong C. Yuen, and Dacheng Tao. Heterogeneous federated learning: State-of-the-art and research challenges. ACM Comput. Surv. , 56(3), 2023. Yaodong Yu, Sai Praneeth Karimireddy, Yi Ma, and Michael I. Jordan. Scaff-pd: Communication efficient fair and robust federated learning. ArXiv e-prints , arXiv:2307.13381, 2023. Matteo Zecchin, Marios Kountouris, and David Gesbert. Communication-efficient distributionally robust decentralized learning. Transactions on Machine Learning Research , 2023. Lijun Zhang, Peng Zhao, Zhenhua Zhuang, Tianbao Yang, and Zhi-Hua Zhou. Stochastic approxi-mation approaches to group distributionally robust optimization. In Advances in Neural Informa-tion Processing Systems 36 , 2023. Lijun Zhang, Haomin Bai, Peng Zhao, and Zhi-Hua Zhou. Stochastic approximation approaches to group distributionally robust optimization and beyond. IEEE Transactions on Pattern Analysis and Machine Intelligence , pp. 1–12, 2026. Sihui Zheng, Cong Shen, and Xiang Chen. Design and analysis of uplink and downlink commu-nications for federated learning. IEEE Journal on Selected Areas in Communications , 39(7): 2150–2167, 2021. 13 Preprint 
+
+## A ADDITIONAL RELATED WORK 
+
+For convex AFL, Mohri et al. (2019) achieve an O(T −1/2) optimization-error rate. DRFA (Deng et al., 2020) uses local updates to reduce the number of synchronization rounds to O(T 3/4), but slows the optimization-error rate to O(T −3/8). Consequently, both methods require O(ε−2) syn-chronization rounds to reach an ε-accurate solution. Other convex variants incorporate worker-drift correction (Krouka et al., 2026), use local updates to improve empirical communication efficiency without convergence guarantees (Ro et al., 2021), or adopt alternative communication models based on pretrained predictor ensembles (Hamer et al., 2020). A complementary line of work studies con-strained, regularized, or decentralized variants of AFL and federated GDRO (Issaid et al., 2022; Yu et al., 2023; Guo & Yang, 2024; Zecchin et al., 2023). 
+
+## B ADDITIONAL DISCUSSIONS 
+
+B.1 EXAMPLES OF COMPRESSORS 
+
+We provide several representative compressors considered in this paper. More extensive collections of biased and unbiased compressors, together with their contraction or variance parameters, can be found in Safaryan et al. (2022); Beznosikov et al. (2023) and the references therein. We first give standard examples satisfying Definition 2. • Top-k sparsification (Stich et al., 2018) is defined by Ctop -k(x) = P  
+
+> j∈Sk(x)
+
+xj ej , where 
+
+Sk(x) indexes the k coordinates of x with the largest absolute values. Since the retained coordinates contain at least a k/d fraction of the squared Euclidean norm, ∥C top -k(x) −
+
+x∥22 ≤ (1 − k/d )∥x∥22. Hence, Definition 2 holds with δ = k/d . The support Sk(x)
+
+depends on the input, so Top-k is nonlinear and is not additive in general. • Scaled-sign compression (Karimireddy et al., 2019) is defined by Csign (x) = ∥x∥1 
+
+> d
+
+sign( x),
+
+with sign(0) = 0 . A direct calculation gives ∥C sign (x) − x∥22 ≤ ∥ x∥22 − ∥ x∥21/d ≤
+
+(1 − 1/d ) ∥x∥22, where the second inequality follows from ∥x∥1 ≥ ∥ x∥2. Thus, it is a 
+
+δ-approximate compressor with δ = 1 /d .The class CAI additionally requires additivity and idempotence for every fixed realization of the compressor randomness. Two useful examples are randomized projection operators. • Unscaled Rand-k sparsification (Stich et al., 2018). Let S ⊆ [d] be sampled uniformly from all subsets of cardinality k, and define C(S)rand -k(x) = PS x = P 
+
+> j∈S
+
+xj ej . For every fixed 
+
+S, PS is linear and satisfies P 2 
+
+> S
+
+= PS . Hence, the compressor is additive and idempotent pathwise. Moreover, ES [∥PS x − x∥22] = (1 − k/d )∥x∥22, so Definition 2 holds with 
+
+δ = k/d .We emphasize that this is the unscaled contractive version of Rand-k. The commonly used unbiased scaling (d/k )PS x is not idempotent unless k = d. Under SR, all workers and the server use the same subset S within a communication round, so the coordinate indices need not be transmitted. • Random rank-r orthogonal projection (Vershynin, 2018). Let U ∈ Rd×r have orthonormal columns spanning a uniformly random r-dimensional subspace, and define C(U )proj (x) = 
+
+U U ⊤x. For every fixed U , the matrix PU = U U ⊤ is linear and satisfies P 2 
+
+> U
+
+= PU .Therefore, the compressor is additive and idempotent. By rotational symmetry, EU [PU ] =  
+
+> rd
+
+Id, and consequently EU [∥U U ⊤x − x∥22] = (1 − r/d )∥x∥22. Thus, Definition 2 holds with δ = r/d . With SR, the subspace U can be reconstructed locally from the common random seed, so only the r coefficients U ⊤x need to be transmitted. The receiver can then reconstruct U U ⊤x locally. B.2 IMPLEMENTATION OF SHARED RANDOMNESS 
+
+Shared randomness (SR) requires the server and all workers to use the same compressor realization in each communication round. In practice, SR can be implemented without per-round coordination. Before training, the server and all workers synchronize a single random seed. Then, in each round, 14 Preprint they locally generate a common realization using a fixed deterministic rule (Acharya et al., 2020) or synchronized pseudorandom number generators (Vargaftik et al., 2022). Similar SR mechanisms have been used in communication-efficient distributed learning, for example, by Chen et al. (2026). Therefore, SR introduces no per-round coordination or additional per-round communication. The only overhead is the initial transmission of a scalar seed, which is negligible compared with trans-mitting high-dimensional model updates. 
+
+## C DETAILS FOR TABLE 1
+
+This section explains two technical details used in Table 1. C.1 SPECIALIZATION OF SGDA TO AFL The SGDA guarantee in (Lin et al., 2020, Theorem 4.9) applies to general nonconvex–concave minimax problems. We specialize this result to the centralized GDRO objective ϕ(w, q) =Pmi=1 qiRi(w) with q ∈ ∆m and make explicit the dependence hidden in its Euclidean joint smoothness and stochastic-oracle variance parameters. Unlike the DRFA analysis discussed in Ap-pendix C.2, this specialization does not require a uniform bound on ∥R(w)∥2. Its dependence on m
+
+instead arises from the Euclidean geometry of the m-dimensional dual weights. 
+
+Primal Lipschitzness and joint smoothness. Let Gϕ denote the uniform Lipschitz constant of 
+
+ϕ(·, q) and let Ljoint denote the Euclidean joint smoothness constant of ϕ, corresponding to the parameter denoted by ℓ in (Lin et al., 2020, Assumption 4.6). By Assumption 3, for every q ∈ ∆m,
+
+∥∇ wϕ(w, q)∥2 =
+
+> m
+
+X
+
+> i=1
+
+qi∇Ri(w)
+
+> 2
+
+≤
+
+> m
+
+X
+
+> i=1
+
+qi∥∇ Ri(w)∥2 ≤ G. 
+
+Thus, ϕ(·, q) is G-Lipschitz uniformly over q ∈ ∆m, and one may take Gϕ = G.Let R(w) = ( R1(w), . . . , R m(w)) ⊤. The joint gradient is 
+
+∇ϕ(w, q) = 
+
+P mi=1 qi∇Ri(w)
+
+R(w)
+
+
+
+. (6) Since ∥∇ Ri(w)∥2 ≤ G under Assumption 3, each Ri is G-Lipschitz. Therefore, 
+
+∥R(w) − R(w′)∥2 =
+
+> m
+
+X
+
+> i=1
+
+|Ri(w) − Ri(w′)|2
+
+!1/2
+
+≤ G√m ∥w − w′∥2.
+
+For the primal component of (6), Assumptions 1 and 3 imply 
+
+> m
+
+X
+
+> i=1
+
+qi∇Ri(w) −
+
+> m
+
+X
+
+> i=1
+
+q′
+
+> i
+
+∇Ri(w′)
+
+> 2
+
+≤
+
+> m
+
+X
+
+> i=1
+
+qi
+
+ ∇Ri(w) − ∇ Ri(w′)
+
+> 2
+
++
+
+> m
+
+X
+
+> i=1
+
+(qi − q′
+
+> i
+
+)∇Ri(w′)
+
+> 2
+
+≤ L∥w − w′∥2 + G∥q − q′∥1
+
+≤ L∥w − w′∥2 + G√m ∥q − q′∥2.
+
+Combining the two inequalities gives 
+
+∥∇ ϕ(w, q) − ∇ ϕ(w′, q′)∥22 ≤ 2 L2 + mG 2   ∥w − w′∥22 + ∥q − q′∥22
+
+ .
+
+Hence, one may take Ljoint = p2( L2 + mG 2) = O(√m).We next show that the √m dependence of Ljoint cannot generally be removed under the Euclidean geometry used by SGDA. Since ∇qϕ(w, q) = R(w), joint Ljoint -smoothness implies 
+
+∥R(w) − R(w′)∥2 = ∥∇ qϕ(w, q) − ∇ qϕ(w′, q)∥2
+
+≤∥∇ ϕ(w, q) − ∇ ϕ(w′, q)∥2 ≤ Ljoint ∥w − w′∥2,
+
+15 Preprint and therefore 
+
+Ljoint ≥ sup  
+
+> w̸=w′
+
+∥R(w) − R(w′)∥2
+
+∥w − w′∥2
+
+.
+
+To see that the right-hand side can be of order √m, let a ∈ Rd satisfy ∥a∥2 = 1 and define Ri(w) =  
+
+> 12
+
++ 12 tanh (2 G⟨a, w⟩) for i ∈ [m]. Then Ri(w) ∈ (0 , 1) , ∇Ri(w) = G sech 2 (2 G⟨a, w⟩) a, and therefore ∥∇ Ri(w)∥2 ≤ G. Moreover, ∥∇ 2Ri(w)∥2 ≤ 4G2, so the smoothness constant of each local objective is independent of m. Taking w′ = 0d and w = ha gives 
+
+∥R(ha) − R(0d)∥2
+
+∥ha∥2
+
+= √m | tanh(2 Gh )|
+
+2|h| −→ G√m as h → 0.
+
+Thus, Ljoint = Ω( √m) in the worst case. Together with the upper bound Ljoint = O(√m), this shows that Ljoint = Θ( √m) even when all local smoothness and gradient bounds are independent of m.
+
+Variance of the joint stochastic oracle. At a centralized SGDA iteration, consider the unbiased joint stochastic oracle 
+
+c∇ϕ(w, q; z) = 
+
+P mi=1 qi∇ℓ(w; z(i))
+
+bR(w; z)
+
+
+
+,
+
+where bR(w; z) = [ ℓ(w; z(1) ), . . . , ℓ (w; z(m))] ⊤. By convexity of the squared norm and Assump-tion 3, 
+
+Ez
+
+
+
+> m
+
+X
+
+> i=1
+
+qi
+
+ ∇ℓ(w; z(i)) − ∇ Ri(w) 22
+
+ ≤
+
+> m
+
+X
+
+> i=1
+
+qiEz(i)
+
+h
+
+∥∇ ℓ(w; z(i)) − ∇ Ri(w)∥22
+
+i
+
+≤ σ2
+
+> w
+
+.
+
+No independence across workers is required for this inequality. Moreover, Assumption 4 implies 
+
+Ez(i)∼P i [( ℓ(w; z(i)) − Ri(w)) 2] ≤ σ2 
+
+> q
+
+for every i ∈ [m]. Hence, 
+
+Ez
+
+bR(w; z) − R(w) 22
+
+
+
+=
+
+> m
+
+X
+
+> i=1
+
+Ez(i)∼P i
+
+h
+
+(ℓ(w; z(i)) − Ri(w)) 2i
+
+≤ mσ 2 
+
+> q
+
+.
+
+Consequently, the variance parameter σ2joint of SGDA can be chosen as σ2joint ≤ σ2 
+
+> w
+
++ mσ 2 
+
+> q
+
+.
+
+Centralized iteration complexity. Using the notation above, the stochastic joint-oracle complex-ity in (Lin et al., 2020, Theorem 4.9) can be written as 
+
+NSGDA (ε) = O L3joint (G2 
+
+> ϕ
+
++ σ2joint )D2∆ b∆Φ
+
+ε6 + L3joint D2∆ b∆0
+
+ε4
+
+!
+
+max 
+
+(
+
+1, σ2joint 
+
+ε2
+
+)! 
+
+, (7) where D∆ is the Euclidean diameter of ∆m, b∆Φ = Φ 1/(2 Ljoint )(w0) − inf w Φ1/(2 Ljoint )(w), and 
+
+b∆0 = Φ( w0) − ϕ(w0, q0) is the initial dual gap. Since D2∆ ≤ 2, L3joint = O(m3/2) and σ2joint =
+
+O(m), (7) therefore gives NSGDA (ε) = O  m7/2ε−8 .
+
+The above stationarity criterion is expressed using ∇Φ1/(2 Ljoint ), whereas the nonconvex results in this paper use ∇Φ1/(2 L). The following comparison shows that the SGDA stationarity guarantee implies our stationarity criterion up to an absolute constant. 
+
+Lemma 1. Let f : Rd → R be ρ-weakly convex. For any 0 < μ ≤ λ < 1/ρ , the gradients of its Moreau envelopes satisfy ∥∇ fλ(x)∥2 ≤ 1−ρμ  
+
+> 1−ρλ
+
+∥∇ fμ(x)∥2 for all x ∈ Rd.By Lemma 2, Φ is L-weakly convex. Since Ljoint = p2( L2 + mG 2) ≥ L, we may apply Lemma 1 with ρ = L, μ = 1 /(2 Ljoint ), and λ = 1 /(2 L). This gives 
+
+∇Φ1/(2 L)(w) 2 ≤ 1 − L/ (2 Ljoint )1 − L/ (2 L) ∇Φ1/(2 Ljoint )(w) 2
+
+=
+
+
+
+2 − LLjoint 
+
+
+
+∇Φ1/(2 Ljoint )(w) 2
+
+≤ 2 ∇Φ1/(2 Ljoint )(w) 2 .
+
+16 Preprint Therefore, running SGDA until E[∥∇ Φ1/(2 Ljoint )(wr )∥2] ≤ ε/ 2 is sufficient to guarantee 
+
+E[∥∇ Φ1/(2 L)(wr )∥2] ≤ ε. Replacing ε by ε/ 2 changes only an absolute constant. Equivalently, after T centralized SGDA iterations, E  ∇Φ1/(2 L)(wr ) 2
+
+ = O  m7/16 T −1/8 .
+
+When SGDA is implemented in the parameter-server setting, each iteration requires one communi-cation round to aggregate the m local primal gradients and construct the m-dimensional stochastic loss vector. Since each round communicates O(dm ) entries, the resulting communication com-plexity is O  dm 9/2ε−8 . The above rate and the communication complexity are the SGDA entries reported in Table 1. C.2 REFINED DRFA B OUNDS WITH PARTIAL PARTICIPATION 
+
+We make explicit the worker and participation dependence of the nonconvex DRFA analysis in Deng et al. (2020). Their notation uses N for the total number of workers and m for the sampling size. Here, m denotes the total number of workers, b the sampling size, and p = b/m . We additionally assume |Ri(w)| ≤ GR, with GR, σ q , L, G, and σw independent of m and p.
+
+Dual oracle under partial participation. Let R(w) = ( R1(w), . . . , R m(w)) ⊤ = ∇qϕ(w, q).At each dual update, DRFA uniformly samples Us ⊆ [m] with |Us| = b and constructs 
+
+bRp(w) = 1
+
+p
+
+X
+
+> i∈Us
+
+ℓ(w; zi)ei.
+
+Since Pr( i ∈ Us) = p, we obtain E[ bRp(w)] = R(w). Moreover, G2 
+
+> λ
+
+:= sup w ∥R(w)∥22 ≤ mG 2
+
+> R
+
+,and, writing ξi(w; zi) = ℓ(w; zi) − Ri(w),
+
+Vp = E∥ bRp(w) − R(w)∥22 =
+
+ 1
+
+p − 1
+
+
+
+∥R(w)∥22 + 1
+
+p
+
+> m
+
+X
+
+> i=1
+
+E[ξi(w; zi)2]
+
+≤ m
+
+" 1
+
+p − 1
+
+
+
+G2 
+
+> R
+
++ σ2
+
+> q
+
+p
+
+#
+
+.
+
+We then define Ap := G2 
+
+> λ
+
++ Vp = O (m/p ).Let w(t) be the virtual averaged model and sample t′ uniformly from {sτ +1 , . . . , (s+1) τ }. Condi-tioning on the local trajectories, E[τ bRp(w(t′))] = P(s+1) τt=sτ +1 R(w(t)), so the snapshot dual estima-tor remains unbiased. Applying the projection argument and the grouping argument of Lemmas 8–9 in Deng et al. (2020), the dual contribution is 
+
+O
+
+
+
+γτ A p + D2Λ
+
+γτ √S
+
+
+
+, S = Tτ .
+
+The remaining primal terms introduce no polynomial dependence on m or p. Indeed, for fixed 
+
+q, ∥∇ wϕ(w, q) − ∇ wϕ(w′, q)∥2 ≤ L∥w − w′∥2, the weighted gradient dissimilarity satisfies 
+
+Γ ≤ 4G2, and for ew ∈ arg min u{Φ( u) + L∥u − w∥22}, ∥ ew − w∥2 ≤ G/L. Thus, up to problem-dependent constants independent of m and p, the proof of Theorem 2 yields 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E∥∇ Φ1/(2 L)(w(t))∥22 = O
+
+ 1
+
+ηT + ητ √S + ητ + η + γτ A p + D2Λ
+
+γτ √S
+
+
+
+. (8) 
+
+Local updates. Set τ = T 1/4, S = T 3/4, and η = Θ( T −3/4). Balancing the two dual terms in (8) gives γ = Θ( A−1/2 
+
+> p
+
+T −7/16 ) and hence 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E∥∇ Φ1/(2 L)(w(t))∥22 = O
+
+
+
+T −1/8 + pAp T −3/16 
+
+.
+
+For r ∼ Unif[ T ], Jensen’s inequality and Ap = O(m/p ) give 
+
+E∥∇ Φ1/(2 L)(w(r))∥2 = O T −1/16 +
+
+ mp
+
+1/4
+
+T −3/32 
+
+!
+
+.
+
+17 Preprint Therefore, 
+
+T = O ε−16 +
+
+ mp
+
+8/3
+
+ε−32 /3
+
+!
+
+,
+
+Since each synchronization stage communicates O(db ) = O(dpm ) entries, achiev-ing an ε-stationary solution requires O  ε−12 + m2p−2ε−8 synchronization rounds and 
+
+O  dpmε −12 + dm 3p−1ε−8 total communication. 
+
+Synchronization at every step. For τ = 1 , we have S = T . Choosing η = Θ( T −3/4) and 
+
+γ = Θ( A−1/2 
+
+> p
+
+T −1/4) gives 
+
+E∥∇ Φ1/(2 L)(w(r))∥2 = O
+
+ mp
+
+1/4
+
+T −1/8
+
+!
+
+.
+
+Therefore, T = O  m2p−2ε−8 . Since every iteration is a synchronization stage and each stage communicates O(db ) = O(dpm ) entries, achieving an ε-stationary solution requires 
+
+O  m2p−2ε−8 synchronization rounds and O  dm 3p−1ε−8 total communication. In Table 1, we report the dependence on m and ε for a fixed sampling fraction p = Θ(1) indepen-dent of both quantities. Absorbing the resulting p-dependent constants yields O(ε−12 + m2ε−8)
+
+synchronization rounds and O(dmε −12 + dm 3ε−8) communication for local-update DRFA, and 
+
+O(m2ε−8) synchronization rounds and O(dm 3ε−8) communication for τ = 1 .
+
+## D EXPERIMENTAL DETAILS 
+
+D.1 SCALING WITH THE NUMBER OF WORKERS 
+
+In all experiments, we use a full-participation variant of DRFA (Deng et al., 2020) to compare optimization progress per synchronization stage under the same participation model as the other methods. We let every worker perform the local updates and use q(s) to aggregate both the end-of-block models and the randomly selected snapshot models: 
+
+¯w(s+1) =
+
+> m
+
+X
+
+> i=1
+
+q(s) 
+
+> i
+
+w(( s+1) τ ) 
+
+> i
+
+, w(t′) =
+
+> m
+
+X
+
+> i=1
+
+q(s) 
+
+> i
+
+w(t′) 
+
+> i
+
+.
+
+The weighted aggregation preserves the weighting represented by the adaptive-sampling expecta-tion. All methods are trained for T = 5000 model updates, and for AFL-BR we set the block length to B = ⌈√T ⌉ = 71 . The target worst-worker test accuracies for m = 20 , 50 , 100 , 500 , and 
+
+1000 are 0.72 , 0.71 , 0.70 , 0.48 , and 0.46 , respectively. D.2 COMMUNICATION EFFICIENCY WITH COMPRESSION 
+
+For Fashion-MNIST (Xiao et al., 2017) and CIFAR-10 (Krizhevsky & Hinton, 2009), we construct label-skewed local datasets as follows. For each class i ∈ [m], worker i receives 80% of the samples with label i, while the remaining 20% are distributed uniformly among the other m − 1 workers. Each worker’s local data are then split into training and test sets using an 80 /20 split. For the model architecture, we use a three-layer MLP with layer normalization and ReLU activations on Fashion-MNIST, and a two-block CNN followed by a linear classifier on CIFAR-10. Both models are trained using the cross-entropy loss. Update rounds count every model update, whereas synchronization rounds count worker–server synchronization blocks. F ED AVG and DRFA perform three local updates per synchronization, while AFL, AFL-BR, and both AFL-C OM variants perform one update. Communication cost follows the accounting in Section 5.2, and the communication accounting for DRFA includes the additional model exchanges required by snapshotting. Figure 3 reports the maximum test loss across workers, corresponding to the robust objective eval-uated on test data. Panels (a) and (d) show that AFL-BR generally achieves the lowest loss for a given number of updates, while both AFL-C OM variants remain close despite compression. 18 Preprint 0.0 0.8 1.6 2.4                    
+
+> Update rounds (×10 3)
+> 0.5 1.0 1.5 2.0 2.5 3.0
+> Maximum worker loss  (a)
+> 0.00 0.25 0.50 0.75
+> Synchronization rounds (×10 3)
+> (b)
+> 0123
+> Communication cost (×10 9)
+> (c)
+> 0.0 0.6 1.2 1.8
+> Update rounds (×10 4)
+> 1.2 1.4 1.6 1.8 2.0 2.2 2.4 2.6
+> Maximum worker loss  (d)
+> 0.0 1.5 3.0 4.5
+> Synchronization rounds (×10 3)
+> (e)
+> 0.0 0.8 1.6
+> Communication cost (×10 9)
+> (f)
+> FedAvg DRFA AFL AFL-BR AFL-Com(T) AFL-Com(R)
+
+Figure 3: Maximum worker test loss. The top and bottom rows correspond to Fashion-MNIST and CIFAR-10, respectively. From left to right, the columns report performance against update rounds, synchronization rounds, and cumulative communication cost. Panels (b) and (e) show that AFL-BR remains competitive with DRFA in synchronization efficiency while using only one update per synchronization. At comparable communication budgets, panels (c) and (f) show that AFL-C OM (R) achieves the lowest maximum loss on both datasets, while AFL-COM (T) also substantially outperforms the uncompressed AFL baselines. These results corroborate the accuracy-based communication-efficiency comparison in Section 5.2. 
+
+## E NONCONVEX ANALYSIS 
+
+E.1 COMMON LEMMAS FOR NONCONVEX ANALYSIS 
+
+The following lemmas are shared by the analyses of AFL-BR and AFL-C OM .
+
+Definition 4. A function f (·) is called L-weakly convex if f (·) + L 
+
+> 2
+
+∥ · ∥ 22 is convex. 
+
+Lemma 2. (Lin et al., 2020, Lemma 4.7) Under Assumption 1, for every fixed q ∈ ∆m, the function 
+
+ϕ(·, q) is L-weakly convex. Moreover, Φ( ·) is L-weakly convex. 
+
+Lemma 3. Suppose Φ : Rd → R is L-weakly convex and G-Lipschitz. Then Φ1/(2 L) is differen-tiable, and its gradient satisfies 
+
+∥∇ Φ1/(2 L)(x) − ∇ Φ1/(2 L)(x′)∥2 ≤ 2L∥x − x′∥2, ∥∇ Φ1/(2 L)(x)∥2 ≤ G, ∀ x, x′ ∈ Rd.
+
+Lemma 4 (Perturbed Moreau-envelope descent) . Suppose Assumptions 1 and 2 hold. Let ut, wt,and qt ∈ ∆m be Ft-measurable for every t ∈ [T + 1] , and suppose that, for some ηw > 0,
+
+ut+1 = ut − ηwgw,t , Et[gw,t ] = ∇wϕ(wt, qt), Et
+
+h
+
+∥gw,t − ∇ wϕ(wt, qt)∥22
+
+i
+
+≤ σ2
+
+> w
+
+. (9) Assume further that ∥∇ wϕ(w, q)∥2 ≤ G for every w ∈ Rd and q ∈ ∆m. Let J ⊆ [T ] be a deterministic index set and define S = [ T ] \ J . For every t ∈ [T ], let dt = ∥ut − wt∥2 and 
+
+εut = Φ( ut) − ϕ(ut, qt), and define ∆u = Φ 1/(2 L)(u1) − Φ∗ and Γ2 
+
+> w
+
+= G2 + σ2
+
+> w
+
+. Then 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(ut) 22
+
+i
+
+≤ 4∆ u
+
+ηwT + 8LT
+
+X
+
+> t∈J
+
+E[εut ] + 4LG T
+
+X
+
+> t∈J
+
+E[dt]+ 4 Lη wΓ2 
+
+> w
+
++ 5Γ 2
+
+> w
+
+|S| 
+
+T .
+
+(10) 19 Preprint 
+
+Lemma 5 (Blockwise dual-gap bound) . Let 1 ≤ B ≤ T and partition [T ] into N = ⌈T /B ⌉
+
+consecutive blocks {I c}Nc=1 , where Ic = {sc, . . . , e c} has length B for every c < N and length at most B for c = N . Define the block-start and non-start index sets as S = {s1, . . . , s N } and 
+
+J = [ T ] \ S . Suppose that qsc = m−11m for every c ∈ [N ]. For every t ∈ I c, define the pre-restart mirror-ascent iterate 
+
+¯qt+1 = arg max 
+
+> q∈∆m
+
+n
+
+ηq ⟨ bRt, q⟩ − DKL (q∥qt)
+
+o
+
+. (11) Assume that ¯qt+1 = qt+1 for every t < e c, while at the end of each nonfinal block the algorithm restarts and sets qec+1 = m−11m. Suppose Assumption 4 holds, the round-t oracle bRt is evaluated at wt, and every Ri is G-Lipschitz. Define εqt = Φ( wt) − ϕ(wt, qt). Then 
+
+1
+
+T
+
+X
+
+> t∈J
+
+E[εqt ] ≤ 2G(B + 2) 
+
+T 
+
+> T−1
+
+X
+
+> t=1
+
+E[∥wt+1 − wt∥2] + 2 ln mηq B + ηq σ2
+
+> q
+
+2 . (12) 
+
+Lemma 6. Under Assumption 3, consider Algorithm 2 and define et := Pmi=1 e(i) 
+
+> t
+
+, gw,t := 
+
+Pmi=1 qt,i g(i)
+
+> w,t
+
+, and b t := et + bet. For every t ≤ T + 1 , a general δ-approximate compressor satisfies 
+
+E [∥et∥2] ≤ 2 − δδ Γw, E [∥bet∥2] ≤ 8
+
+δ2 Γw.
+
+Moreover, since ∆w,t = gw,t + bt − bt+1 ,
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥bt∥2] ≤ 8 + 2 δ − δ2
+
+δ2 Γw, 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥∆w,t ∥2] ≤ 16 + 4 δ − δ2
+
+δ2 Γw. (13) If C ∈ C AI and Algorithm 2 uses SR, then bet = 0d pathwise for every t ≤ T +1 , and the bounds (13) improve to 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥bt∥2] ≤ 2Γ w
+
+δ , 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥∆w,t ∥2] ≤ 4Γ w
+
+δ .
+
+E.2 PROOF OF THEOREM 1Let S be the set of block-start indices and let J = [ T ] \ S . For Algorithm 1, set ut = wt. The aggregated stochastic gradient is gw,t = Pmi=1 qt,i g(i)
+
+> w,t
+
+. By Assumption 3, 
+
+Et[gw,t ] = 
+
+> m
+
+X
+
+> i=1
+
+qt,i ∇Ri(wt) = ∇wϕ(wt, qt). (14) Let ζt,i = g(i) 
+
+> w,t
+
+− ∇ Ri(wt). Since ∥ P 
+
+> i
+
+qt,i ζt,i ∥22 ≤ P 
+
+> i
+
+qt,i ∥ζt,i ∥22 pointwise, 
+
+Et
+
+h
+
+∥gw,t − ∇ wϕ(wt, qt)∥22
+
+i
+
+≤
+
+> m
+
+X
+
+> i=1
+
+qt,i Et[∥ζt,i ∥22] ≤ σ2
+
+> w
+
+. (15) Moreover, ∥∇ wϕ(wt, qt)∥2 ≤ P 
+
+> i
+
+qt,i ∥∇ Ri(wt)∥2 ≤ G. Hence, Et[∥gw,t ∥22] ≤ Γ2 
+
+> w
+
+and 
+
+Et[∥gw,t ∥2] ≤ Γw.Since ut = wt, we have dt = 0 , εut = εqt , and ∆u = ∆ Φ. Applying Lemma 4 gives 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(wt) 22
+
+i
+
+≤ 4∆ Φ
+
+ηwT + 8LT
+
+X
+
+> t∈J
+
+E[εqt ] + 4 Lη wΓ2 
+
+> w
+
++ 5Γ 2
+
+> w
+
+|S| 
+
+T . (16) The primal update satisfies wt+1 − wt = −ηwgw,t , and therefore  
+
+> T−1
+
+X
+
+> t=1
+
+E[∥wt+1 − wt∥2] ≤ ηwΓwT. (17) 20 Preprint Applying Lemma 5 with bRt = gq,t and then (17) gives 
+
+1
+
+T
+
+X
+
+> t∈J
+
+E[εqt ] ≤ 2GΓwηw(B + 2) + 2 ln mηq B + ηq σ2
+
+> q
+
+2 . (18) Substituting (18) into (16) and using |S| = N ≤ 2T /B yields 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(wt) 22
+
+i
+
+≤ 4∆ Φ
+
+ηwT + 16 LG Γwηw(B + 2) + 16 L ln mηq B + 4 Lη q σ2
+
+> q
+
++ 4 Lη wΓ2 
+
+> w
+
++ 10Γ 2
+
+> w
+
+B .
+
+(19) Because T ≥ 9 and B = ⌈√T ⌉, we have B ≥ √T and B + 2 ≤ 2√T . Substituting ηw =(8 LT 3/4)−1 gives 
+
+4∆ Φ
+
+ηwT = 32 L∆Φ
+
+T 1/4 , 16 LG Γwηw(B + 2) ≤ 4GΓw
+
+T 1/4 , 4Lη wΓ2 
+
+> w
+
+= Γ2
+
+> w
+
+2T 3/4 . (20) Substituting ηq = 2 √ln m/ (σq T 1/4) and using B ≥ √T gives 
+
+16 L ln mηq B + 4 Lη q σ2 
+
+> q
+
+≤ 8Lσ q
+
+√ln mT 1/4 + 8Lσ q
+
+√ln mT 1/4 = 16 Lσ q
+
+√ln mT 1/4 . (21) Finally, 10Γ 2
+
+> w
+
+/B ≤ 10Γ 2
+
+> w
+
+/T 1/2. Combining (19)–(21) yields 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(wt) 22
+
+i
+
+≤ 32 L∆Φ
+
+T 1/4 + 4GΓw
+
+T 1/4 + 16 Lσ q
+
+√ln mT 1/4 + 10Γ 2
+
+> w
+
+T 1/2 + Γ2
+
+> w
+
+2T 3/4 . (22) Since r is sampled uniformly and independently from [T ], the left-hand side of (22) equals 
+
+E[∥∇ Φ1/(2 L)(wr )∥22]. This completes the proof. E.3 PROOFS OF THEOREMS 2 AND 3We first derive a master inequality common to both compressor classes. Let S be the set of block-start indices and let J = [ T ]\S . Define the aggregated uplink residual et =
+
+Pmi=1 e(i) 
+
+> t
+
+and the total residual b t = et +bet. The uplink EF recursion gives bgw,t = gw,t +et −et+1 .Combining this identity with the downlink EF recursion yields 
+
+∆w,t = bgw,t + bet − bet+1 = gw,t + bt − bt+1 . (23) Introduce the virtual iterate ut = wt − ηwbt. Using wt+1 = wt − ηw∆w,t and (23), we obtain 
+
+ut+1 = wt+1 − ηwbt+1 = wt − ηw∆w,t − ηwbt+1 = ut − ηwgw,t . (24) The same argument as in (14)–(15) gives 
+
+Et[gw,t ] = ∇wϕ(wt, qt), Et
+
+h
+
+∥gw,t − ∇ wϕ(wt, qt)∥22
+
+i
+
+≤ σ2
+
+> w
+
+, Et[∥gw,t ∥2] ≤ Γw.
+
+All residuals are initialized at zero, so u1 = w1 and ∆u = ∆ Φ. Moreover, dt = ∥ut − wt∥2 =
+
+ηw∥bt∥2. Applying Lemma 4 to (24) gives 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(ut) 22
+
+i
+
+≤ 4∆ Φ
+
+ηwT + 8LT
+
+X
+
+> t∈J
+
+E[εut ] + 4LGη w
+
+T
+
+X
+
+> t∈J
+
+E[∥bt∥2]+ 4 Lη wΓ2 
+
+> w
+
++ 5Γ 2
+
+> w
+
+|S| 
+
+T .
+
+(25) Because Φ and ϕ(·, qt) are both G-Lipschitz, 
+
+εut = Φ( ut) − ϕ(ut, qt) ≤ Φ( wt) − ϕ(wt, qt) + 2 G∥ut − wt∥2 = εqt + 2 Gη w∥bt∥2. (26) 21 Preprint Substituting (26) into (25), enlarging the residual sum from J to [T ], and using |S| ≤ 2T /B yield 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(ut) 22
+
+i
+
+≤ 4∆ Φ
+
+ηwT + 8LT
+
+X
+
+> t∈J
+
+E[εqt ] + 20 LGη w
+
+T
+
+> T
+
+X
+
+> t=1
+
+E[∥bt∥2]+ 4 Lη wΓ2 
+
+> w
+
++ 10Γ 2
+
+> w
+
+B .
+
+(27) The actual update satisfies ∥wt+1 − wt∥2 = ηw∥∆w,t ∥2. Applying Lemma 5 gives 
+
+1
+
+T
+
+X
+
+> t∈J
+
+E[εqt ] ≤ 2Gη w(B + 2) 
+
+T
+
+> T
+
+X
+
+> t=1
+
+E[∥∆w,t ∥2] + 2 ln mηq B + ηq σ2
+
+> q
+
+2 . (28) Combining (27) and (28) yields 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(ut) 22
+
+i
+
+≤ 4∆ Φ
+
+ηwT + 16 LGη w(B + 2) 
+
+T
+
+> T
+
+X
+
+> t=1
+
+E[∥∆w,t ∥2] + 16 L ln mηq B
+
++ 4 Lη q σ2 
+
+> q
+
++ 20 LGη w
+
+T
+
+> T
+
+X
+
+> t=1
+
+E[∥bt∥2] + 4 Lη wΓ2 
+
+> w
+
++ 10Γ 2
+
+> w
+
+B .
+
+(29) Let Gwt = ∇Φ1/(2 L)(wt) and Gut = ∇Φ1/(2 L)(ut). Since ∇Φ1/(2 L) is 2L-Lipschitz and both gradients have norm at most G by Lemma 3, we have 
+
+∥G wt ∥22 − ∥G ut ∥22 ≤ ∥G wt − G ut ∥2(∥G wt ∥2 + ∥G ut ∥2) ≤ 4LG ∥wt − ut∥2 = 4 LGη w∥bt∥2. (30) Taking expectations, averaging (30), and applying (29) give 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(wt) 22
+
+i
+
+≤ 4∆ Φ
+
+ηwT + 16 LGη w(B + 2) 
+
+T
+
+> T
+
+X
+
+> t=1
+
+E[∥∆w,t ∥2] + 16 L ln mηq B
+
++ 4 Lη q σ2 
+
+> q
+
++ 24 LGη w
+
+T
+
+> T
+
+X
+
+> t=1
+
+E[∥bt∥2] + 4 Lη wΓ2 
+
+> w
+
++ 10Γ 2
+
+> w
+
+B .
+
+(31) Since r is sampled uniformly from [T ] independently of the algorithmic randomness, 
+
+E
+
+h
+
+∇Φ1/(2 L)(wr ) 22
+
+i
+
+= 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(wt) 22
+
+i
+
+. (32) 
+
+Proof of Theorem 2. For a general δ-approximate compressor, Lemma 6 gives 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥bt∥2] ≤ 8 + 2 δ − δ2
+
+δ2 Γw, 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥∆w,t ∥2] ≤ 16 + 4 δ − δ2
+
+δ2 Γw.
+
+Substituting these bounds into (31) yields 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(wt) 22
+
+i
+
+≤ 4∆ Φ
+
+ηwT + 16 LG Γwηw(B + 2)(16 + 4 δ − δ2)
+
+δ2 + 16 L ln mηq B
+
++ 4 Lη q σ2 
+
+> q
+
++ 24 LG Γwηw(8 + 2 δ − δ2)
+
+δ2 + 4 Lη wΓ2 
+
+> w
+
++ 10Γ 2
+
+> w
+
+B .
+
+Using B = ⌈√T ⌉, B ≥ √T , B + 2 ≤ 2√T , ηw = (8 LT 3/4)−1, and ηq = 2 √ln m/ (σq T 1/4) gives 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(wt) 22
+
+i
+
+≤ 32 L∆Φ
+
+T 1/4 + 4GΓw(16 + 4 δ − δ2)
+
+δ2T 1/4 + 16 Lσ q
+
+√ln mT 1/4 + 10Γ 2
+
+> w
+
+T 1/2
+
++ 3GΓw(8 + 2 δ − δ2)
+
+δ2T 3/4 + Γ2
+
+> w
+
+2T 3/4 .
+
+(33) Combining (32) and (33) proves (5). 22 Preprint 
+
+Proof of Theorem 3. If C ∈ C AI and SR is used, Lemma 6 gives 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥bt∥2] ≤ 2Γ w
+
+δ , 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥∆w,t ∥2] ≤ 4Γ w
+
+δ .
+
+Substituting these bounds into (31) gives 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(wt) 22
+
+i
+
+≤ 4∆ Φ
+
+ηwT + 64 LG Γwηw(B + 2) 
+
+δ + 16 L ln mηq B + 4 Lη q σ2
+
+> q
+
++ 48 LG Γwηw
+
+δ + 4 Lη wΓ2 
+
+> w
+
++ 10Γ 2
+
+> w
+
+B .
+
+Using the same parameter choices yields 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+∇Φ1/(2 L)(wt) 22
+
+i
+
+≤ 32 L∆Φ
+
+T 1/4 + 16 GΓw
+
+δT 1/4 + 16 Lσ q
+
+√ln mT 1/4 + 10Γ 2
+
+> w
+
+T 1/2
+
++ 6GΓw
+
+δT 3/4 + Γ2
+
+> w
+
+2T 3/4 .
+
+(34) Combining (32) and (34) proves Theorem 3. 
+
+## F PROOF OF LEMMAS 
+
+F.1 PROOF OF LEMMA 1Because f is ρ-weakly convex, the function h(y) := f (y) + ρ 
+
+> 2
+
+∥y∥22 is convex. For any λ < 1/ρ ,the proximal objective can be written as 
+
+f (y) + 12λ ∥y − x∥22 = h(y) + 12
+
+ 1
+
+λ − ρ
+
+
+
+∥y∥22 − 1
+
+λ ⟨x, y⟩ + 12λ ∥x∥22.
+
+Since 1/λ −ρ > 0, this objective is (1 /λ −ρ)-strongly convex and therefore has a unique minimizer. The same argument applies to μ < 1/ρ . Define 
+
+yλ = arg min 
+
+> y∈Rd
+
+
+
+f (y) + 12λ ∥y − x∥22
+
+
+
+, yμ = arg min 
+
+> y∈Rd
+
+
+
+f (y) + 12μ ∥y − x∥22
+
+
+
+.
+
+The uniqueness of these minimizers and Danskin’s theorem imply that the corresponding Moreau envelopes are differentiable at x, with 
+
+gλ := ∇fλ(x) = x − yλ
+
+λ , gμ := ∇fμ(x) = x − yμ
+
+μ .
+
+The first-order optimality conditions for the proximal subproblems give 
+
+0 ∈ ∂f (yλ) + 1
+
+λ (yλ − x), 0 ∈ ∂f (yμ) + 1
+
+μ (yμ − x).
+
+Hence, gλ ∈ ∂f (yλ), and gμ ∈ ∂f (yμ). Since f is ρ-weakly convex, its subdifferential is ρ-hypomonotone. Therefore, 
+
+⟨gλ − gμ, yλ − yμ⟩ ≥ − ρ∥yλ − yμ∥22.
+
+Substituting yλ = x − λgλ and yμ = x − μgμ into the hypomonotonicity inequality, its left-hand side becomes 
+
+⟨gλ − gμ, −λgλ + μgμ⟩ = −λ∥gλ∥22 − μ∥gμ∥22 + ( λ + μ)⟨gλ, gμ⟩,
+
+whereas the squared norm on the right-hand side satisfies 
+
+∥ − λgλ + μgμ∥22 = λ2∥gλ∥22 + μ2∥gμ∥22 − 2λμ ⟨gλ, gμ⟩.
+
+23 Preprint Combining these two expansions and rearranging gives 
+
+λ(1 −ρλ )∥gλ∥22 +μ(1 −ρμ )∥gμ∥22 ≤ (λ+μ−2ρλμ )⟨gλ, gμ⟩ ≤ (λ+μ−2ρλμ )∥gλ∥2∥gμ∥2. (35) We first consider the case gμ = 0. The preceding inequality (35) then reduces to 
+
+λ(1 − ρλ )∥gλ∥22 ≤ 0.
+
+Since λ > 0 and 1 − ρλ > 0, it follows that gλ = 0, and the desired inequality holds. Now suppose that gμ̸ = 0, and define r := ∥gλ∥2/∥gμ∥2. Dividing both sides of (35) by ∥gμ∥22
+
+yields 
+
+λ(1 − ρλ )r2 − (λ + μ − 2ρλμ )r + μ(1 − ρμ ) ≤ 0.
+
+The quadratic polynomial on the left factors as 
+
+λ(1 − ρλ )
+
+
+
+r − μλ
+
+ 
+
+r − 1 − ρμ 
+
+1 − ρλ 
+
+
+
+.
+
+Because λ < 1/ρ , its leading coefficient λ(1 − ρλ ) is positive. Moreover, μ ≤ λ implies 
+
+1 − ρμ 
+
+1 − ρλ − μλ = λ − μλ(1 − ρλ ) ≥ 0,
+
+so (1 − ρμ )/(1 − ρλ ) is the larger of the two roots. Since the quadratic is nonpositive, r lies between its two roots, and in particular, 
+
+r ≤ 1 − ρμ 
+
+1 − ρλ .
+
+Recalling the definition of r, we conclude that 
+
+∥∇ fλ(x)∥2 = ∥gλ∥2 ≤ 1 − ρμ 
+
+1 − ρλ ∥gμ∥2 = 1 − ρμ 
+
+1 − ρλ ∥∇ fμ(x)∥2.
+
+F.2 PROOF OF LEMMA 2By Assumption 1, each Ri is L-smooth. Hence, for any x, y ∈ Rd,
+
+Ri(y) ≥ Ri(x) + ⟨∇ Ri(x), y − x⟩ − L
+
+2 ∥y − x∥22.
+
+Define fi(x) = Ri(x) + L 
+
+> 2
+
+∥x∥22. Then ∇fi(x) = ∇Ri(x) + Lx. Using the above lower bound, we have 
+
+fi(y) = Ri(y) + L
+
+2 ∥y∥22
+
+≥ Ri(x) + ⟨∇ Ri(x), y − x⟩ − L
+
+2 ∥y − x∥22 + L
+
+2 ∥y∥22
+
+= Ri(x) + L
+
+2 ∥x∥22 + ⟨∇ Ri(x) + Lx, y − x⟩
+
+= fi(x) + ⟨∇ fi(x), y − x⟩.
+
+Therefore fi is convex, and hence Ri is L-weakly convex. For any fixed q ∈ ∆m, since qi ≥ 0 and Pmi=1 qi = 1 , we have 
+
+ϕ(·, q) + L
+
+2 ∥ · ∥ 22 =
+
+> m
+
+X
+
+> i=1
+
+qiRi(·) + L
+
+2 ∥ · ∥ 22 =
+
+> m
+
+X
+
+> i=1
+
+qi
+
+
+
+Ri(·) + L
+
+2 ∥ · ∥ 22
+
+
+
+.
+
+The right-hand side is a convex combination of convex functions, and is therefore convex. Hence 
+
+ϕ(·, q) is L-weakly convex for every q ∈ ∆m.Moreover, 
+
+Φ( ·) + L
+
+2 ∥ · ∥ 22 = max 
+
+> q∈∆m
+
+ϕ(·, q) + L
+
+2 ∥ · ∥ 22 = max 
+
+> q∈∆m
+
+
+
+ϕ(·, q) + L
+
+2 ∥ · ∥ 22
+
+
+
+.
+
+Since the pointwise maximum of convex functions is convex, Φ( ·) + L 
+
+> 2
+
+∥ · ∥ 22 is convex. Therefore, 
+
+Φ is L-weakly convex. 24 Preprint F.3 PROOF OF LEMMA 3For any x ∈ Rd, define 
+
+y(x) = arg min 
+
+> y∈Rd
+
+Φ( y) + L∥y − x∥22 . (36) Since Φ is L-weakly convex, the function y 7 → Φ( y) + L 
+
+> 2
+
+∥y∥22 is convex. Hence, for every fixed x,the objective in (36) is strongly convex, and y(x) is uniquely defined. The first-order optimality condition for (36) gives 0 ∈ ∂Φ( y(x)) + 2 L(y(x) − x). Then, we define 
+
+G(x) = 2 L(x − y(x)) ∈ ∂Φ( y(x)) . Since the minimizer in (36) is unique, Danskin’s theorem implies that the Moreau envelope is differentiable and 
+
+∇Φ1/(2 L)(x) = 2 L(x − y(x)) = G(x). (37) We first establish the uniform bound on the Moreau-envelope gradient. Since Φ is G-Lipschitz, every subgradient v ∈ ∂Φ( y) satisfies ∥v∥2 ≤ G. Combining this property with G(x) ∈ ∂Φ( y(x)) 
+
+and (37) yields 
+
+∥∇ Φ1/(2 L)(x)∥2 = ∥G(x)∥2 ≤ G. (38) It remains to prove that G(·) is 2L-Lipschitz. For any x, x′ ∈ Rd, the optimality condition gives 
+
+G(x) ∈ ∂Φ( y(x)) and G(x′) ∈ ∂Φ( y(x′)) . Since Φ is L-weakly convex, its subdifferential is 
+
+L-hypomonotone. Therefore, 
+
+⟨G(x) − G(x′), y(x) − y(x′)⟩ ≥ − L∥y(x) − y(x′)∥22. (39) By the definition of G,
+
+G(x) − G(x′) = 2 L  x − x′ −  y(x) − y(x′) . (40) Substituting (40) into (39) and rearranging gives 2 ⟨x − x′, y(x) − y(x′)⟩ ≥ ∥ y(x) − y(x′)∥22.
+
+Consequently, 
+
+x − x′ −  y(x) − y(x′) 22 = ∥x − x′∥22 − 2 ⟨x − x′, y(x) − y(x′)⟩ + ∥y(x) − y(x′)∥22
+
+≤ ∥ x − x′∥22. (41) Using (40) and (41), we obtain 
+
+∥G(x) − G(x′)∥2 = 2 L x − x′ −  y(x) − y(x′) 
+
+> 2
+
+≤ 2L∥x − x′∥2. (42) Combining (37), (38), and (42) proves the result. F.4 PROOF OF LEMMA 4Since ∥∇ wϕ(w, q)∥2 ≤ G, the function ϕ(·, q) is G-Lipschitz for every q ∈ ∆m. As the pointwise maximum of G-Lipschitz functions, Φ is also G-Lipschitz. Moreover, Lemma 2 shows that Φ is 
+
+L-weakly convex. Hence, Lemma 3 applies. For every t ∈ [T ], define the proximal point 
+
+yt = arg min 
+
+> y∈Rd
+
+Φ( y) + L∥y − ut∥22 , GΦ 
+
+> t
+
+:= ∇Φ1/(2 L)(ut) = 2 L(ut − yt). (43) By the L-smoothness of ϕ(·, qt),
+
+⟨∇ wϕ(ut, qt), ut − yt⟩ ≥ ϕ(ut, qt) − ϕ(yt, qt) − L
+
+2 ∥ut − yt∥22. (44) By definition, ϕ(ut, qt) = Φ( ut) − εut , while ϕ(yt, qt) ≤ Φ( yt). In addition, the optimality of yt
+
+in (43) gives Φ( yt) + L∥yt − ut∥22 ≤ Φ( ut), and consequently Φ( ut) − Φ( yt) ≥ L∥ut − yt∥22.
+
+25 Preprint Multiplying (44) by 2L and using these relations yields 
+
+⟨∇ wϕ(ut, qt), GΦ 
+
+> t
+
+⟩ = 2 L⟨∇ wϕ(ut, qt), ut − yt⟩≥ 2Lϕ (ut, qt) − 2Lϕ (yt, qt) − L2∥ut − yt∥22
+
+≥ 2Lϕ (ut, qt) − 2LΦ( yt) − L2∥ut − yt∥22
+
+= 2 LΦ( ut) − 2Lε ut − 2LΦ( yt) − L2∥ut − yt∥22
+
+= 2 L Φ( ut) − Φ( yt) − L2∥ut − yt∥22 − 2Lε ut
+
+≥ 2L2∥ut − yt∥22 − L2∥ut − yt∥22 − 2Lε ut
+
+= L2∥ut − yt∥22 − 2Lε ut
+
+= 14 ∥G Φ 
+
+> t
+
+∥22 − 2Lε ut ,
+
+(45) The L-smoothness of ϕ(·, qt) also gives 
+
+∥∇ wϕ(wt, qt) − ∇ wϕ(ut, qt)∥2 ≤ L∥wt − ut∥2 = Ld t.
+
+Combining this inequality with (45) and the bound ∥G Φ 
+
+> t
+
+∥2 ≤ G from Lemma 3, we obtain 
+
+∇wϕ(wt, qt), GΦ 
+
+> t
+
+= ∇wϕ(ut, qt), GΦ 
+
+> t
+
++ ∇wϕ(wt, qt) − ∇ wϕ(ut, qt), GΦ
+
+> t
+
+≥ 14 ∥G Φ 
+
+> t
+
+∥22 − 2Lε ut − Ld t∥G Φ 
+
+> t
+
+∥2
+
+≥ 14 ∥G Φ 
+
+> t
+
+∥22 − 2Lε ut − LGd t.
+
+(46) Using the definition of the Moreau envelope and the update in (9), we have 
+
+Φ1/(2 L)(ut+1 ) = min 
+
+> y∈Rd
+
+{Φ( y) + L∥y − ut+1 ∥22}≤ Φ( yt) + L∥yt − ut+1 ∥22
+
+= Φ( yt) + L∥yt − ut + ηwgw,t ∥22
+
+= Φ( yt) + L∥yt − ut∥22 + 2 Lη w⟨yt − ut, gw,t ⟩ + Lη 2
+
+> w
+
+∥gw,t ∥22
+
+= Φ 1/(2 L)(ut) − ηw⟨gw,t , GΦ 
+
+> t
+
+⟩ + Lη 2
+
+> w
+
+∥gw,t ∥22.
+
+(47) Using Et[gw,t ] = ∇wϕ(wt, qt) and Et[∥gw,t ∥22] ≤ Γ2
+
+> w
+
+, taking the conditional expectation of (47) yields 
+
+Et[Φ 1/(2 L)(ut+1 )] ≤ Φ1/(2 L)(ut) − ηw ∇wϕ(wt, qt), GΦ 
+
+> t
+
++ Lη 2
+
+> w
+
+Et[∥gw,t ∥22]
+
+≤ Φ1/(2 L)(ut) − ηw ∇wϕ(wt, qt), GΦ 
+
+> t
+
++ Lη 2
+
+> w
+
+Γ2
+
+> w
+> (46)
+
+≤ Φ1/(2 L)(ut) − ηw
+
+4 ∥G Φ 
+
+> t
+
+∥22 + 2 Lη wεut + LGη wdt + Lη 2
+
+> w
+
+Γ2
+
+> w
+
+,
+
+(48) where we use 
+
+Et[∥gw,t ∥22] = ∥∇ wϕ(wt, qt)∥22 + Et
+
+h
+
+∥gw,t − ∇ wϕ(wt, qt)∥22
+
+i
+
+≤ G2 + σ2 
+
+> w
+
+= Γ 2
+
+> w
+
+.
+
+Taking the total expectation on both sides of (48) and rearranging the stationarity term gives 
+
+ηw
+
+4 E[∥G Φ 
+
+> t
+
+∥22] ≤ E[Φ 1/(2 L)(ut)] − E[Φ 1/(2 L)(ut+1 )] + 2 Lη wE[εut ] + LGη wE[dt] + Lη 2
+
+> w
+
+Γ2
+
+> w
+
+. (49) We next sum (49) only over t ∈ J . Let Ft = Φ 1/(2 L)(ut). By Lemma 3, ∥∇ Φ1/(2 L)(x)∥2 ≤ G,and hence Φ1/(2 L) is G-Lipschitz. Therefore, for every t ∈ S ,
+
+E[Ft+1 − Ft] ≤ GE[∥ut+1 − ut∥2] = Gη wE[∥gw,t ∥2] ≤ Gη w
+
+q
+
+E[∥gw,t ∥22] ≤ Gη wΓw. (50) Since P 
+
+> t∈J
+
+(Ft − Ft+1 ) = F1 − FT +1 + P 
+
+> t∈S
+
+(Ft+1 − Ft) and FT +1 ≥ Φ∗, it follows from (50) that X
+
+> t∈J
+
+(E[Ft] − E[Ft+1 ]) ≤ ∆u + Gη wΓw|S| . (51) 26 Preprint Summing (49) over t ∈ J , applying (51), and using |J | ≤ T yields 
+
+1
+
+T
+
+X
+
+> t∈J
+
+E[∥G Φ 
+
+> t
+
+∥22] ≤ 4∆ u
+
+ηwT + 8LT
+
+X
+
+> t∈J
+
+E[εut ] + 4LG T
+
+X
+
+> t∈J
+
+E[dt] + 4 Lη wΓ2 
+
+> w
+
++ 4GΓw|S| 
+
+T . (52) Finally, Lemma 3 and G ≤ Γw imply P 
+
+> t∈S
+
+E[∥G Φ 
+
+> t
+
+∥22] ≤ G2|S| ≤ Γ2
+
+> w
+
+|S| . Adding this bound to (52) and using 4GΓw + Γ 2 
+
+> w
+
+≤ 5Γ 2 
+
+> w
+
+proves (10). F.5 PROOF OF LEMMA 5Let qunif = m−11m. For every block Ic, choose an anchor q∗ 
+
+> sc
+
+∈ arg max q∈∆m ϕ(wsc , q). For every t ∈ I c, decompose the instantaneous dual gap as 
+
+εqt = Φ( wt) − ϕ(wt, q∗ 
+
+> sc
+
+)
+
+| {z }
+
+> At
+
++ ϕ(wt, q∗ 
+
+> sc
+
+) − ϕ(wt, qt)
+
+| {z }
+
+> Bt
+
+. (53) We first control the error induced by fixing the anchor within each block. Let q∗ 
+
+> t
+
+∈
+
+arg max q∈∆m ϕ(wt, q). By the optimality of q∗ 
+
+> sc
+
+at wsc , we obtain ϕ(wsc , q∗ 
+
+> t
+
+) ≤ ϕ(wsc , q∗ 
+
+> sc
+
+).
+
+Since every Ri is G-Lipschitz, ϕ(·, q) is G-Lipschitz uniformly over q ∈ ∆m. Hence, 
+
+At = ϕ(wt, q∗ 
+
+> t
+
+) − ϕ(wt, q∗ 
+
+> sc
+
+)= ϕ(wt, q∗ 
+
+> t
+
+) − ϕ(wsc , q∗ 
+
+> t
+
+) + ϕ(wsc , q∗ 
+
+> t
+
+) − ϕ(wsc , q∗ 
+
+> sc
+
+) + ϕ(wsc , q∗ 
+
+> sc
+
+) − ϕ(wt, q∗ 
+
+> sc
+
+)
+
+≤ ϕ(wt, q∗ 
+
+> t
+
+) − ϕ(wsc , q∗ 
+
+> t
+
+) + ϕ(wsc , q∗ 
+
+> sc
+
+) − ϕ(wt, q∗ 
+
+> sc
+
+)
+
+≤ 2G∥wt − wsc ∥2.
+
+For t ∈ I c, the triangle inequality gives ∥wt − wsc ∥2 ≤ Pt−1  
+
+> τ=sc
+
+∥wτ +1 − wτ ∥2. Since |I c| ≤ B,summing over each block yields 
+
+> N
+
+X
+
+> c=1
+
+X
+
+> t∈I c
+
+E[At] ≤ 2GB 
+
+> N
+
+X
+
+> c=1
+> ec−1
+
+X 
+
+> τ=sc
+
+E[∥wτ +1 − wτ ∥2] ≤ 2GB  
+
+> T−1
+
+X
+
+> t=1
+
+E[∥wt+1 − wt∥2]. (54) We next control Bt using KL-based online mirror ascent. Let ξt = bRt − R(wt), where ξt,i =
+
+ℓ(wt; z(i) 
+
+> t
+
+) − Ri(wt). Since wt is Ft-measurable, Assumption 4 implies 
+
+Et[ξt,i ] = 0 , Et [exp( λξ t,i )] ≤ exp λ2σ2
+
+> q
+
+2
+
+!
+
+, ∀i ∈ [m], λ ∈ R. (55) The first-order optimality condition for (11), together with the Bregman three-point identity, implies that for every q ∈ ∆m,
+
+ηq ⟨ bRt, q − ¯qt+1 ⟩ ≤ DKL (q∥qt) − DKL (q∥¯qt+1 ) − DKL (¯ qt+1 ∥qt). (56) Since ϕ is linear in q, and both q∗ 
+
+> sc
+
+and qt are Ft-measurable, the inequality (56) with q = q∗
+
+> sc
+
+yields 
+
+Bt = R(wt), q∗ 
+
+> sc
+
+− qt
+
+= Et
+
+hD bRt, q∗ 
+
+> sc
+
+− ¯qt+1 
+
+E
+
++
+
+D bRt, ¯qt+1 − qt
+
+Ei 
+
+≤ DKL (q∗ 
+
+> sc
+
+∥qt) − Et[DKL (q∗ 
+
+> sc
+
+∥¯qt+1 )] 
+
+ηq
+
+− 1
+
+ηq
+
+Et[DKL (¯ qt+1 ∥qt)] + Et [⟨R(wt), ¯qt+1 − qt⟩ + ⟨ξt, ¯qt+1 − qt⟩]= DKL (q∗ 
+
+> sc
+
+∥qt) − Et[DKL (q∗ 
+
+> sc
+
+∥¯qt+1 )] 
+
+ηq
+
++ Et [ϕ(wt, ¯qt+1 ) − ϕ(wt, qt)] + Et
+
+
+
+⟨ξt, ¯qt+1 − qt⟩ − 1
+
+ηq
+
+DKL (¯ qt+1 ∥qt)
+
+
+
+.
+
+(57) 27 Preprint We next control the final term in (57) through the conjugacy between negative entropy and log-sum-exp. Since the mirror-ascent iterates remain in the relative interior of ∆m, for every ξ ∈ Rm,
+
+sup 
+
+> q∈∆m
+
+
+
+⟨ξ, q − qt⟩ − 1
+
+ηq
+
+DKL (q∥qt)
+
+
+
+= 1
+
+ηq
+
+ln 
+
+> m
+
+X
+
+> i=1
+
+qt,i exp( ηq ξi)
+
+!
+
+− ⟨ ξ, qt⟩. (58) Since ¯qt+1 ∈ ∆m, applying (58) with ξ = ξt and taking the conditional expectation gives 
+
+Et
+
+
+
+⟨ξt, ¯qt+1 − qt⟩ − 1
+
+ηq
+
+DKL (¯ qt+1 ∥qt)
+
+
+
+≤ 1
+
+ηq
+
+Et
+
+"
+
+ln 
+
+> m
+
+X
+
+> i=1
+
+qt,i exp( ηq ξt,i )
+
+!# 
+
+− Et[⟨ξt, qt⟩]
+
+≤ 1
+
+ηq
+
+ln 
+
+> m
+
+X
+
+> i=1
+
+qt,i Et[exp( ηq ξt,i )] 
+
+!
+
+≤ ηq σ2
+
+> q
+
+2 .
+
+(59) The second inequality uses conditional Jensen’s inequality, the Ft-measurability of qt, and Et[ξt] = 
+
+0m. The last inequality follows from (55) and Pmi=1 qt,i = 1 . Combining (57) and (59) gives 
+
+Bt ≤ DKL (q∗ 
+
+> sc
+
+∥qt) − Et[DKL (q∗ 
+
+> sc
+
+∥¯qt+1 )] 
+
+ηq
+
++ Et [ϕ(wt, ¯qt+1 ) − ϕ(wt, qt)] + ηq σ2
+
+> q
+
+2 . (60) Taking the total expectation and summing (60) over t ∈ I c, the KL-divergence terms telescope because ¯qt+1 = qt+1 for every t < e c. Dropping the final nonnegative divergence gives 
+
+X
+
+> t∈I c
+
+E[Bt] ≤ E[DKL (q∗ 
+
+> sc
+
+∥qsc )] 
+
+ηq
+
++ E[Jc] + ηq σ2
+
+> q
+
+2 |I c|, (61) where Jc := Pec 
+
+> t=sc
+
+(ϕ(wt, ¯qt+1 ) − ϕ(wt, qt)) . Since qsc = m−11m, we obtain 
+
+DKL (q∗ 
+
+> sc
+
+∥qsc ) = 
+
+> m
+
+X
+
+> i=1
+
+q∗ 
+
+> sc,i
+
+ln( mq ∗
+
+> sc,i
+
+) = ln m +
+
+> m
+
+X
+
+> i=1
+
+q∗ 
+
+> sc,i
+
+ln q∗ 
+
+> sc,i
+
+≤ ln m. 
+
+It remains to control the increments Jc. Since ¯qt+1 = qt+1 for every t < e c and qsc = qunif ,rearranging the sum gives 
+
+Jc = ϕ(wec , ¯qec+1 ) − ϕ(wsc , qunif ) + 
+
+> ec−1
+
+X
+
+> t=sc
+
+(ϕ(wt, qt+1 ) − ϕ(wt+1 , qt+1 )) . (62) For every nonfinal block c < N , we have sc+1 = ec + 1 and qsc+1 = qunif . Since ϕ(wec , ¯qec+1 ) ≤
+
+Φ( wec ) and both Φ and ϕ(·, q) are G-Lipschitz, 
+
+Jc ≤ Φ( wec ) − ϕ(wsc , qunif ) + G
+
+> ec−1
+
+X
+
+> t=sc
+
+∥wt+1 − wt∥2
+
+≤ Φ( wec+1 ) − ϕ(wec+1 , qunif ) + G∥wec+1 − wec ∥2 + G∥wec+1 − wsc ∥2
+
++ G
+
+> ec−1
+
+X
+
+> t=sc
+
+∥wt+1 − wt∥2
+
+≤ εqsc+1 + 2 G
+
+> ec
+
+X
+
+> t=sc
+
+∥wt+1 − wt∥2.
+
+(63) 28 Preprint For the final block, eN = T . Applying (62), ϕ(wT , ¯qT +1 ) ≤ Φ( wT ), and the same Lipschitz bounds gives 
+
+JN ≤ Φ( wT ) − ϕ(wsN , qunif ) + G 
+
+> T−1
+
+X
+
+> t=sN
+
+∥wt+1 − wt∥2
+
+≤ Φ( w1) − ϕ(w1, qunif ) + G∥wT − w1∥2 + G∥wsN − w1∥2 + G 
+
+> T−1
+
+X
+
+> t=sN
+
+∥wt+1 − wt∥2
+
+≤ εq 
+
+> 1
+
++ 2 G 
+
+> T−1
+
+X
+
+> t=1
+
+∥wt+1 − wt∥2.
+
+(64) Summing (63) over c < N , adding (64), and taking expectations yields 
+
+> N
+
+X
+
+> c=1
+
+E[Jc] ≤ X
+
+> t∈S
+
+E[εqt ] + 4 G 
+
+> T−1
+
+X
+
+> t=1
+
+E[∥wt+1 − wt∥2]. (65) Combining (53), (54), (61), and (65), and using PNc=1 |I c| = T , gives 
+
+> T
+
+X
+
+> t=1
+
+E[εqt ] ≤ 2G(B + 2)  
+
+> T−1
+
+X
+
+> t=1
+
+E[∥wt+1 − wt∥2] + N ln mηq
+
++ ηq σ2 
+
+> q
+
+T
+
+2 + X
+
+> t∈S
+
+E[εqt ].
+
+Subtracting the block-start gaps from both sides gives 
+
+X
+
+> t∈J
+
+E[εqt ] ≤ 2G(B + 2)  
+
+> T−1
+
+X
+
+> t=1
+
+E[∥wt+1 − wt∥2] + N ln mηq
+
++ ηq σ2 
+
+> q
+
+T
+
+2 .
+
+Finally, N = ⌈T /B ⌉ ≤ T /B + 1 ≤ 2T /B because B ≤ T . Dividing the preceding inequality by 
+
+T proves (12). F.6 PROOF OF LEMMA 6Let ρ = √1 − δ ∈ [0 , 1) . By the definition of a δ-approximate compressor, for every deterministic 
+
+x ∈ Rd,
+
+EC [∥C (x) − x∥2] ≤
+
+q
+
+EC [∥C (x) − x∥22] ≤ ρ∥x∥2. (66) Moreover, the same inequality holds conditionally for any random input independent of the fresh compressor realization. 
+
+General compressors. We first control the aggregated uplink residual. Define St =
+
+Pmi=1 E[∥e(i) 
+
+> t
+
+∥2]. The uplink error-feedback recursion in Algorithm 2 and (66) give 
+
+E
+
+h
+
+∥e(i)
+
+> t+1
+
+∥2
+
+i
+
+= E
+
+h
+
+e(i) 
+
+> t
+
++ qt,i g(i) 
+
+> w,t
+
+− C 
+
+
+
+e(i) 
+
+> t
+
++ qt,i g(i)
+
+> w,t
+
+
+
+> 2
+
+i
+
+≤ ρE
+
+h
+
+e(i) 
+
+> t
+
++ qt,i g(i) 
+
+> w,t 2
+
+i
+
+≤ ρE
+
+h
+
+∥e(i) 
+
+> t
+
+∥2
+
+i
+
++ ρE
+
+h
+
+qt,i ∥g(i)
+
+> w,t
+
+∥2
+
+i
+
+.
+
+(67) Assumption 3 and conditional Jensen’s inequality imply Et[∥g(i)
+
+> w,t
+
+∥2] ≤ Γw. Summing (67) over 
+
+i ∈ [m] and applying Pmi=1 E[qt,i ∥g(i)
+
+> w,t
+
+∥2] ≤ Γw yields 
+
+St+1 ≤ ρS t + ρΓw. (68) Because e(i)1 = 0d for all i ∈ [m], iterating (68) gives 
+
+St+1 ≤
+
+> t
+
+X
+
+> k=1
+
+ρkΓw ≤ ρ
+
+1 − ρ Γw, t ≤ T. 
+
+29 Preprint Recall that et = Pmi=1 e(i) 
+
+> t
+
+. By the triangle inequality, 
+
+E [∥et∥2] ≤ St ≤ ρ
+
+1 − ρ Γw ≤ 2 − δδ Γw, t ≤ T + 1 , (69) where the last inequality follows from 
+
+ρ
+
+1 − ρ = ρ(1 + ρ)
+
+δ =
+
+√1 − δ + 1 − δδ ≤ 2 − δδ .
+
+We next control the downlink residual. Define the uncompressed weighted stochastic gradient 
+
+gw,t = Pmi=1 qt,i g(i)
+
+> w,t
+
+. Summing the uplink error-feedback recursions over the workers gives 
+
+bgw,t =
+
+> m
+
+X
+
+> i=1
+
+∆(i) 
+
+> w,t
+
+= gw,t + et − et+1 .
+
+Combining E[∥gw,t ∥2] ≤ Γw with (69) yields 
+
+E [∥bgw,t ∥2] ≤ E [∥gw,t ∥2] + E [∥et∥2] + E [∥et+1 ∥2]
+
+≤
+
+
+
+1 + 2ρ
+
+1 − ρ
+
+
+
+Γw = 1 + ρ
+
+1 − ρ Γw. (70) The downlink error-feedback recursion and (66) imply 
+
+E [∥bet+1 ∥2] = E ∥bet + bgw,t − C (bet + bgw,t )∥2
+
+
+
+≤ ρE [∥bet + bgw,t ∥2]
+
+≤ ρE [∥bet∥2] + ρE [∥bgw,t ∥2] .
+
+(71) Using be1 = 0d, substituting (70), and iterating (71), we obtain 
+
+E [∥bet∥2] ≤ ρ
+
+1 − ρ
+
+1 + ρ
+
+1 − ρ Γw = ρ(1 + ρ)(1 − ρ)2 Γw = ρ(1 + ρ)3
+
+δ2 Γw ≤ 8
+
+δ2 Γw, t ≤ T + 1 .
+
+Since b t = et + bet, the two uniform residual bounds imply 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥bt∥2] ≤ 2 − δδ Γw + 8
+
+δ2 Γw = 8 + 2 δ − δ2
+
+δ2 Γw.
+
+Moreover, the error-feedback identity ∆w,t = gw,t + bt − bt+1 and E[∥gw,t ∥2] ≤ Γw give 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥∆w,t ∥2] ≤ Γw + 2 
+
+ 2 − δδ + 8
+
+δ2
+
+
+
+Γw = 16 + 4 δ − δ2
+
+δ2 Γw.
+
+Additive-and-idempotent compressors with shared randomness. Suppose that C ∈ C AI and that the server and workers use the same compressor realization at round t. Denote this realization by C(ξt). By additivity, 
+
+bgw,t =
+
+> m
+
+X
+
+> i=1
+
+C(ξt) 
+
+e(i) 
+
+> t
+
++ qt,i g(i)
+
+> w,t
+
+
+
+= C(ξt)
+
+> m
+
+X
+
+> i=1
+
+e(i) 
+
+> t
+
++
+
+> m
+
+X
+
+> i=1
+
+qt,i g(i)
+
+> w,t
+
+!
+
+. (72) Applying idempotence to (72) gives the pathwise identity 
+
+C(ξt) (bgw,t ) = bgw,t . (73) We now prove by induction that bet = 0d for every t ≤ T + 1 . The claim holds at t = 1 by initialization. Suppose that bet = 0d. Using (73), 
+
+∆w,t = C(ξt) (bet + bgw,t ) = C(ξt) (bgw,t ) = bgw,t .
+
+Consequently, bet+1 = bet + bgw,t − ∆w,t = 0d. Thus, we obtain bet = 0d for all t ≤ T + 1 .Since bet = 0d pathwise, we have b t = et and ∆w,t = gw,t + et − et+1 . Therefore, 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥bt∥2] ≤ 2 − δδ Γw ≤ 2Γ w
+
+δ ,
+
+and 
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E [∥∆w,t ∥2] ≤ Γw + 2(2 − δ)
+
+δ Γw = 4 − δδ Γw ≤ 4Γ w
+
+δ . (74) 30

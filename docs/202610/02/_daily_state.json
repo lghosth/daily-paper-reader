@@ -1,0 +1,153 @@
+{
+  "date": "20261002",
+  "date_label": "2026-10-03",
+  "generated_at": "2026-10-03 06:44:02 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.36610v1",
+      "route": "202610/02/2609.36610v1-communication-efficient-agnostic-federated-learning-via-faster-convergence-and-compression",
+      "title": "Communication-Efficient Agnostic Federated Learning via Faster Convergence and Compression",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通过压缩与更快收敛实现通信高效训练",
+      "first_seen_at": "2026-10-03 06:44:02 北京时间",
+      "updated_at": "2026-10-03 06:44:02 北京时间"
+    },
+    {
+      "paper_id": "2609.36662v1",
+      "route": "202610/02/2609.36662v1-autoloco-communication-efficient-distributed-llm-training-via-adaptive-synchronization",
+      "title": "AutoLoCo: Communication Efficient Distributed LLM Training via Adaptive Synchronization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通过自适应同步实现通信高效分布式训练",
+      "first_seen_at": "2026-10-03 06:44:02 北京时间",
+      "updated_at": "2026-10-03 06:44:02 北京时间"
+    },
+    {
+      "paper_id": "2609.39646v1",
+      "route": "202610/02/2609.39646v1-beyond-uniform-compression-budgeted-transmission-allocation-for-extreme-federated-learning",
+      "title": "Beyond Uniform Compression: Budgeted Transmission Allocation for Extreme Federated Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通过分层预算传输实现通信高效的联邦训练",
+      "first_seen_at": "2026-10-03 06:44:02 北京时间",
+      "updated_at": "2026-10-03 06:44:02 北京时间"
+    },
+    {
+      "paper_id": "2610.01620v1",
+      "route": "202610/02/2610.01620v1-fedlore-communication-and-memory-efficient-federated-learning-via-shared-gradient-low-rank-projection",
+      "title": "FedLore: Communication and Memory Efficient Federated Learning via Shared Gradient Low-Rank Projection",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通过低秩梯度投影实现通信高效的联邦训练",
+      "first_seen_at": "2026-10-03 06:44:02 北京时间",
+      "updated_at": "2026-10-03 06:44:02 北京时间"
+    },
+    {
+      "paper_id": "2609.30413v1",
+      "route": "202610/02/2609.30413v1-communication-aware-model-distributed-inference-via-latent-representation-compression",
+      "title": "Communication-Aware Model Distributed Inference via Latent Representation Compression",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通信感知的分布式推理与潜在表示压缩",
+      "first_seen_at": "2026-10-03 06:44:02 北京时间",
+      "updated_at": "2026-10-03 06:44:02 北京时间"
+    },
+    {
+      "paper_id": "2609.31466v1",
+      "route": "202610/02/2609.31466v1-scaffold-support-graph-theory-based-sparsification-for-graph-neural-networks",
+      "title": "Scaffold: Support Graph Theory Based Sparsification for Graph Neural Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "图稀疏化降低GNN计算与通信开销",
+      "first_seen_at": "2026-10-03 06:44:02 北京时间",
+      "updated_at": "2026-10-03 06:44:02 北京时间"
+    },
+    {
+      "paper_id": "2609.35297v1",
+      "route": "202610/02/2609.35297v1-lionmuon-alternating-spectral-and-sign-descent-for-efficient-training",
+      "title": "LionMuon: Alternating Spectral and Sign Descent for Efficient Training",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过交替更新降低分布式训练通信的优化器",
+      "first_seen_at": "2026-10-03 06:44:02 北京时间",
+      "updated_at": "2026-10-03 06:44:02 北京时间"
+    },
+    {
+      "paper_id": "2609.39350v1",
+      "route": "202610/02/2609.39350v1-hapmoe-heterogeneity-aware-automatic-parallelism-planning-for-mixture-of-experts-models-training",
+      "title": "HAPMoE: Heterogeneity-Aware Automatic Parallelism Planning for Mixture-of-Experts Models Training",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "作为分布式训练划分策略的自动并行规划",
+      "first_seen_at": "2026-10-03 06:44:02 北京时间",
+      "updated_at": "2026-10-03 06:44:02 北京时间"
+    },
+    {
+      "paper_id": "2610.01126v1",
+      "route": "202610/02/2610.01126v1-latent-information-sharing-for-accelerating-federated-learning",
+      "title": "Latent Information Sharing for Accelerating Federated Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "缓解客户端漂移的通信高效联邦学习",
+      "first_seen_at": "2026-10-03 06:44:02 北京时间",
+      "updated_at": "2026-10-03 06:44:02 北京时间"
+    }
+  ]
+}

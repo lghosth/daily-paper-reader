@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-02</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-03</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 0 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 9 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>0</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>9</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-02 06:50:32 北京时间<br>状态：成功<br>下次更新：约 2026-10-03 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-03 06:44:02 北京时间<br>状态：成功<br>下次更新：约 2026-10-04 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日无新推荐，系统未产出可展示论文。</p>
+<p>今日速读 9 篇、精读 0 篇，清一色集中在通信高效的联邦学习与分布式 LLM 训练方向。</p>
+<p>三篇 7.0 分作品各有看点：Agnostic FL 靠更快收敛加压缩、AutoLoCo 用自适应同步、Budgeted Transmission Allocation 主张按预算分配传输而非一刀切压缩。</p>
+<p>普通读者若只挑一篇，关注大模型训练就看 AutoLoCo 的自适应同步思路，关注联邦学习就看&quot;预算分配&quot;那篇。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -91,12 +93,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">0 篇</strong>
+    <strong class="dpr-home-dashboard-count">9 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Communication-Efficient Agnostic Federated Learning via Faster Convergence and Compression">Communication-Efficient Agnostic Federated Learning via Faster Convergence and Compression</span></li><li><span class="dpr-home-dashboard-paper-title" title="AutoLoCo: Communication Efficient Distributed LLM Training via Adaptive Synchronization">AutoLoCo: Communication Efficient Distributed LLM Training via Adaptive Synchronization</span></li><li><span class="dpr-home-dashboard-paper-title" title="Beyond Uniform Compression: Budgeted Transmission Allocation for Extreme Federated Learning">Beyond Uniform Compression: Budgeted Transmission Allocation for Extreme Federated Learning</span></li></ul>
   </div>
-
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>9</strong></span></div>
 </section>
 </div>
 

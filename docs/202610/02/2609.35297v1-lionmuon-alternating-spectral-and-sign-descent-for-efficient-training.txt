@@ -1,0 +1,3314 @@
+Title: LionMuon: Alternating Spectral and Sign Descent for Efficient Training
+
+URL Source: https://arxiv.org/pdf/2609.35297v1
+
+Published Time: Tue, 29 Sep 2026 04:33:38 GMT
+
+Number of Pages: 37
+
+Markdown Content:
+# BRAIn Lab 
+
+# LionMuon: Alternating Spectral and Sign Descent for Efficient Training 
+
+Arman Bolatov †,1 , Artem Riabinin †,2 , Nikita Kornilov †, 2, 3 , Andrey Veprikov †, 2 , Samuel Horv´ ath 1, Martin Tak´ aˇ c1, Aleksandr Beznosikov 2, 4 
+
+> 1
+
+Mohamed bin Zayed University of Artificial Intelligence (MBZUAI) 
+
+> 2
+
+Basic Research of Artificial Intelligence Laboratory (BRAIn Lab) 
+
+> 3
+
+Applied Artificial Intelligence Institute 
+
+> 4
+
+Innopolis University 
+
+> †
+
+Equal contribution Pretraining a language model takes enormous compute, and the right optimizer can save a good part of it. Muon ’s spectral step gives a stronger direction than a sign step, but it is expensive. Every step runs Newton–Schulz iterations on the full matrix and, in distributed training, an extra all-reduce. Sign steps, as in 
+
+Lion and Signum , are cheap and stay local to each device. We propose LionMuon , which takes one Muon step every P iterations and Lion steps in between, with a single dual-EMA momentum buffer shared by both. 
+
+Muon ’s compute and communication are paid once per P steps, and the optimizer state is half of AdamW ’s. A single-EMA variant, SignMuon , already improves on Muon . We prove complexity bounds under heavy-tailed noise in which the period sets an interpolation between Muon ’s and Lion ’s smoothness and noise constants, and which say when LionMuon is faster than both. On 124M and 355M models trained on FineWeb, LionMuon 
+
+with P =2 and P =5 reaches a lower loss than Muon , AdamW , Lion and Signum at the same number of tokens. Under 4-GPU data-parallel training it reaches Muon ’s final loss with a third less wall-clock on PCIe, and it beats the communication-efficient Muon variants Dion and MuonBP on loss at no more exposed communication, while keeping the exact gradient. Code: https://github.com/brain-lab-research/lion-muon .
+
+1 Introduction        
+
+> Sign-based steps
+> (Lion / Signum)
+> Muon
+> Optimizer
+> •Weaker update quality
+> •Low compute cost (cheap sign updates)
+> •Stronger update quality
+> •Extra compute and communication cost
+> Our Methods
+> •Strong empirical results
+> •Lower cost than Muon
+> •Recover sign and Muon limiting cases
+
+Figure 1: Sign steps are cheap, 
+
+Muon steps are strong but expen-sive, and our methods alternate be-tween the two. Training Large Language Models (LLMs) is a billion-parameter, million-step optimization problem in which per-step cost determines the final compute bill [Hoffmann et al., 2022; Kimi Team et al., 2025]. Finding update rules that are both FLOP-cheap per step and fast to converge is therefore a central question for modern deep learning [Dahl et al., 2023; Kasimbeg et al., 2025]. A useful way to organize this design space is the Linear Minimization Oracle (LMO) viewpoint, which originates from Frank-Wolfe optimization [Jaggi, 2013]. Recent work reinterprets a wide family of first-order optimizers as norm-constrained linear oracles [Chen et al., 2024; Veprikov et al., 2025]. In particular, the parameter update at step t takes the form: 
+
+Wt+1 = Wt + ηt LMO ∥·∥ ( ˆGt), LMO ∥·∥ (G) := arg min ∥S∥≤ 1⟨G, S ⟩, (1) where ˆGt is a momentum-smoothed gradient, ∥ · ∥ is a chosen norm and ηt > 0
+
+is the learning rate, usually with warm-up and decay [Goyal et al., 2017; Loshchilov and Hutter, 2017; Riabinin 1arXiv:2609.35297v1 [cs.LG] 28 Sep 2026 et al., 2026]. The choice of norm picks the optimizer: Frobenius norm ∥ · ∥ F gives normalized SGD [Hazan et al., 2015]; ∥ · ∥ ∞ gives signSGD with its momentum variants, Signum [Bernstein et al., 2018] and Lion [Chen et al., 2023]; and the spectral norm ∥ · ∥ 2 gives Muon [Jordan et al., 2024]. These methods now drive production LLM training, with Muon and its variants powering Moonlight [Liu et al., 2025], Kimi K2 [Kimi Team et al., 2025], and DeepSeek V4 [DeepSeek-AI, 2026]. Within this family, sign-based methods sit at the cheap end: Signum updates with the sign of a single momentum buffer, while Lion uses two EMA timescales but keeps the same coordinate-wise sign step. Muon sits at the opposite end, computing the matrix sign msign( X) = U V ⊤ via Newton–Schulz iterations [Bernstein and Newhouse, 2024]. The resulting spectral direction is often much stronger than a coordinate-wise sign step [Chen et al., 2026a], but it is also much more expensive: each Muon step runs several Newton–Schulz iterations of matrix multiplications and, in distributed training, needs extra communication [Essential AI, 2025; Chen et al., 2026b]. Distributed training infrastructure is built around element-wise optimizers. Every device holds a copy or a shard of each matrix and updates it with a local rule, so the optimizer step never needs the whole matrix and never communicates. Muon breaks this. Its update couples the entire matrix, so a sharded matrix has to be gathered before Newton–Schulz [Khaled et al., 2026; Essential AI, 2025], and under data parallelism the Newton–Schulz work is either repeated on every device or dealt out across them and exchanged afterwards [Liu et al., 2025; Chen et al., 2026b]. Either way the optimizer adds a synchronization that cannot hide behind the backward pass, on top of the Newton–Schulz iterations themselves. The reported price ranges from a 5 to 10% throughput loss under tensor parallelism [Khaled et al., 2026] to more than twice the cost of forward and backward in a naive implementation [Chen et al., 2026b]. Careful implementations shrink this price but pay it on every step. A sign step needs none of it: it is element-wise, exactly what the infrastructure assumes (Figure 1). This raises a natural question: 
+
+Can we keep the update quality of Muon while paying its compute and communication cost only once every P steps? 
+
+We answer this question positively. Starting from Signum , inserting one Muon step every P iterations gives SignMuon .Replacing its momentum with Lion ’s dual-EMA rule then yields LionMuon , the main method we study. The contributions below separate these two steps. 
+
+Contributions. 
+
+• SignMuon and LionMuon (Section 3): one Muon step every P iterations and sign steps in between, with Signum ’s single EMA or Lion ’s dual EMA. Both add one integer P to Lion , and Muon , Lion and Signum are special cases. The Newton–Schulz compute and the communication of Muon are paid once per P steps, the sign steps are local, and the state is one buffer (Appendix D.1). • Complexity bounds under heavy-tailed noise, with and without weight decay (Section 4.2, Appendix B). The period sets an interpolation between Muon ’s and Lion ’s smoothness and noise constants, and the bound says when LionMuon is faster than both (Section 4.3). • Experiments at 124M on FineWeb [Penedo et al., 2024] and WikiText-103 [Merity et al., 2017], tuned per method with three seeds, and at 355M on FineWeb with transferred hyperparameters (Section 5). LionMuon 
+
+with P ∈{ 2, 5} beats Muon , AdamW , Lion and Signum at both sizes. Under 4-GPU data-parallel training we count the bytes each step sends, time the step on PCIe and NVLink, and compare with Dion [Ahn et al., 2025] and MuonBP [Khaled et al., 2026]. 
+
+2 Related work 
+
+Sign-based methods. Sign-based methods first appeared as a communication-efficient solution for distributed optimization [Bernstein et al., 2019]. The element-wise sign update Wt+1 = Wt − ηt sign( ˆGt) is cheap to compute, to 2parallelize and to transmit. Sign methods are also valued in LLM training for their memory efficiency, for zeroth-order fine-tuning [Petrov et al., 2025], and for their robustness to heavy noise [Kornilov et al., 2025; Yu et al., 2026] and to complex models [Crawshaw et al., 2022]. Signum [Bernstein et al., 2018] is the simplest first-moment-only sign optimizer, and Lion [Chen et al., 2023] extends it with a separate interpolation EMA before the sign step. Our path from SignMuon to LionMuon mirrors this progression. 
+
+Spectral methods. Muon [Jordan et al., 2024] moves from element-wise sign to its matrix analogue computed by Newton–Schulz (NS) iterations: Wt+1 = Wt − ηt NS K ( ˆGt). This update yields a much stronger spectral direction, but each step is also significantly more expensive. The MuonClip variant powers Kimi K2 [Kimi Team et al., 2025]. Other works refine Muon itself, e.g., Gluon [Riabinin et al., 2025] and HTMuon [Pang et al., 2026]. A second line makes it cheaper to run at scale. Dion [Ahn et al., 2025] replaces Newton–Schulz by a power iteration that keeps a low-rank factorization of the momentum with error feedback, and synchronizes the two factors instead of the gradient, so what is sent grows with the rank rather than with the matrix. MuonBP [Khaled et al., 2026] orthogonalizes each tensor-parallel shard on its own device and gathers the full matrix only every P -th step, which removes the all-gather from most steps at the price of a block-wise update in between. Layer sharding [Essential AI, 2025] keeps whole matrices on one device so that Newton–Schulz needs no gather. DMuon [Chen et al., 2026b] keeps the update exactly and removes the redundant work of naive distributed implementations: each matrix is assigned to one owner rank and Newton–Schulz runs in its Gram form, which brings Muon ’s step time to within a few percent of AdamW ’s on 8 to 256 GPUs. Two concurrent methods target Muon ’s per-step cost directly. LiMuon [Huang et al., 2025] replaces Newton–Schulz with a low-rank randomized SVD of the momentum, and OLion [Wang et al., 2026] composes orthogonalization with an element-wise sign inside every step. We work along a different axis, the iteration axis. The spectral oracle stays a black box and is called only every P iterations, so either of them, or a faster polynomial iteration for the matrix sign [Bernstein and Newhouse, 2024; Amsel et al., 2025; Grishina et al., 2025], can be dropped in and the savings compound. The same holds for implementations such as DMuon : they make each Muon step cheaper, we make them rarer. 
+
+Lion -K framework. Chen et al. [2024] view Lion and signSGD as solving a constrained problem with K = ∥ · ∥ 1
+
+through a Lyapunov analysis, and the same machinery covers Muon with K = ∥ · ∥ nuc [Chen et al., 2026a]. The stochastic Frank-Wolfe view [Sfyraki and Wang, 2025] recovers the rates of both families in one language. Our analysis builds on this common basis. 
+
+Optimizer switching. Combining different optimizers within a single run is an established idea: SWATS [Keskar and Socher, 2017] switches from Adam to SGD , AdaBound [Luo et al., 2019] interpolates between them through learning-rate clipping, and AGD [Yue et al., 2023] gates between the two adaptively. To our knowledge, no prior work studies the periodic switching between Muon and Lion -style steps that we propose here. 
+
+3 Algorithm 3.1 Notation 
+
+We work in the matrix parameter space Rm×n and denote the parameter matrix at iteration t by Wt ∈ Rm×n
+
+and its stochastic gradient by Gt ∈ Rm×n. This space is equipped with the Frobenius inner product ⟨X, Y ⟩ := tr( X⊤Y ), ∥X∥2 
+
+> F
+
+= ⟨X, X ⟩ and with the following matrix norms: 
+
+∥X∥2 := σ1, ∥X∥∞ := max  
+
+> ij
+
+|Xij |, ∥X∥nuc := X
+
+> k
+
+σk, ∥X∥1 := X
+
+> ij
+
+|Xij |,
+
+where σ1 ≥ · · · ≥ σmin( m,n ) are the sorted singular values of matrix X ∈ Rm×n. The dual norm ∥X∥⋆ := sup ∥S∥≤ 1⟨X, S ⟩ gives dual pairs ∥ · ∥ 2,⋆ = ∥ · ∥ nuc and ∥ · ∥ ∞,⋆ = ∥ · ∥ 1. For all matrices X ∈ Rm×n, the considered norms satisfy the following inequalities: 
+
+∥X∥∞ ≤ ∥ X∥2 ≤ ∥ X∥F ≤ √mn ∥X∥∞ and 1√mn ∥X∥1 ≤ ∥ X∥F ≤ ∥ X∥nuc ≤ ∥ X∥1. (2) 3We use the spectral norm LMO to calculate the matrix-sign operation LMO ∥·∥ 2 (G) = −msign( G) and the infinity norm LMO to calculate the element-wise sign LMO ∥·∥ ∞ (G) = −sign( G).
+
+3.2 LionMuon 
+
+Algorithm 1 keeps a single momentum buffer Mt, updated at every step. Each iteration forms the direction ˆGt as 
+
+Lion does, by interpolating between Mt−1 and the current gradient Gt. Every P -th iteration takes a Muon step, which orthogonalizes ˆGt with Newton–Schulz, and every other iteration takes an element-wise sign step. Both use decoupled weight decay λ.
+
+Algorithm 1: LionMuon and SignMuon for a single 2D parameter W ∈ Rm×n 
+
+> 1:
+
+Require: Horizon T , period P ∈ { 1, 2, . . . } ∪ {∞} (P =∞ means the Muon branch is never taken), learning rates ηM (Muon ) and ηL (Lion ), betas β1, β 2 ∈ [0 , 1) , weight decay λ ≥ 0, NS steps KNS , initial parameters 
+
+W0 and momentum M−1 = 0 , and c(A) := 0 .2pmax( rows (A), cols (A)) . 
+
+> 2:
+
+for t = 0 , 1, . . . , T − 1 do  
+
+> 3:
+
+Gt = ∇W Lt ▷ Stochastic gradient  
+
+> 4:
+
+ˆGt = β1Mt−1 + (1 − β1)Gt ▷ Lion interpolation (direction)  
+
+> 5:
+
+if t mod P = 0 then  
+
+> 6:
+
+Wt+1 = Wt − ηM
+
+ c( ˆGt) NS KNS ( ˆGt) + λW t
+
+ ▷ Muon step  
+
+> 7:
+
+else  
+
+> 8:
+
+Wt+1 = Wt − ηL
+
+ sign( ˆGt) + λW t
+
+ ▷ Lion step  
+
+> 9:
+
+end if  
+
+> 10:
+
+Mt = β2Mt−1 + (1 − β2)Gt ▷ Momentum update (every step)  
+
+> 11:
+
+end for Implementation notes. LionMuon keeps one buffer Mt per matrix, since ˆGt is computed in place, so its state matches Lion and Muon and is half of AdamW ’s. All 2D matrices of a transformer, embeddings included, take the 
+
+LionMuon update. The 1D parameters (biases and norm gains) use AdamW at a fixed 10 −3, the usual Muon convention [Jordan et al., 2024]. Giving them the Lion step instead is clearly worse (Appendix E.2). Table 3 lists the special cases. 
+
+4 Convergence analysis 
+
+This section analyzes LionMuon (Algorithm 1): the assumptions (Section 4.1), the convergence bound (Section 4.2), and what it says about the ratio of the two learning rates and the period P (Section 4.3). The main text treats the case without weight decay ( λ = 0 ). Appendix B covers weight decay, with more technical work and the same conclusions. 
+
+4.1 Assumptions 
+
+We use standard assumptions on the objective and on the noise. 
+
+Assumption 1 ( Smoothness and lower boundness )
+
+The objective function f : Rm×n → R is lower bounded by f⋆ and L-smooth with respect to a primal norm 
+
+∥ · ∥ :
+
+∥∇ f (W ) − ∇ f (W ′)∥⋆ ≤ L ∥W − W ′∥, for all W, W ′ ∈ Rm×n.
+
+We use smoothness constants L2 and L∞ for norms ∥ · ∥ 2 and ∥ · ∥ ∞, respectively. 4From the norm inequalities (2), we can bound the smoothness ratio 1 ≤ L∞/L 2 ≤ mn . Following Sadiev et al. [2023], H¨ ubler et al. [2025] and Chezhegov et al. [2026], we allow heavy-tailed noise, which is what LLM training shows [G¨ urb¨ uzbalaban et al., 2021]. 
+
+Assumption 2 ( Bounded κ-th moment )
+
+Stochastic gradients Gt are unbiased estimates of the true gradient ∇f (Wt), and have bounded κ-th moment for some κ ∈ (1 , 2] and σ ≥ 0:
+
+E[Gt] = ∇f (Wt), E∥Gt − ∇ f (Wt)∥κF
+
+ ≤ σκ.
+
+We measure this exponent rather than assume it. A Hill estimator on the norms of the gradient noise, over checkpoints of a 124M LionMuon P =2 run on WikiText-103, gives tail indices with medians of 46 at batch 32 , 22 at batch 8 and 12 at batch 2, and the smallest value we saw was 10 .6. All of them are above 2, so Assumption 2 holds with κ = 2 , and the tails thicken as the batch shrinks, which is the direction the bound predicts. The noise level also depends on the dual norm. This norm equivalence in expectation follows Kornilov et al. [2023] and H¨ ubler et al. [2025]. 
+
+Assumption 3 ( Noise norm equivalence )
+
+For any linear combination P 
+
+> τ
+
+aτ ϵτ of independent gradient noise terms ϵτ := Gτ − ∇ f (Wτ ), we have: 
+
+E∥P 
+
+> τ
+
+aτ ϵτ ∥⋆
+
+ ≤ ρ⋆ · E∥P 
+
+> τ
+
+aτ ϵτ ∥F
+
+ for some level ρ⋆ > 0.
+
+We use noise levels ρnuc and ρ1 for dual norms ∥ · ∥ nuc and ∥ · ∥ 1, respectively. The norm inequalities (2) give ρnuc ≤ pmin {m, n } and ρ1 ≤ √mn , but the actual levels depend on the noise distribution and can be far smaller (Table 2). Both bounds are per matrix. The measured ρnuc is about half of its bound and the measured ρ1 sits well inside its range, so neither is near the worst case the proof has to allow for. 
+
+4.2 Convergence bound 
+
+With these assumptions in place, we present our main convergence Theorem 1 and optimal parameters Corollary 1 for our LionMuon (Algorithm 1). We provide all proofs in Appendix A. 5Theorem 1 ( Convergence bound of LionMuon )
+
+Let the objective function f satisfy Assumption 1 with respect to ∥ · ∥ 2 with constant L2, and with respect to 
+
+∥ · ∥ ∞ with constant L∞. Let noise Assumptions 2 and 3 hold with noise constants σ, ρnuc and ρ1. Fix a horizon T , period P ∈ [1 , ∞], momentum parameters β1, β 2 ∈ [0 , 1) and learning rates ηM and ηL.Define the period-averaged learning rate, noise level and smoothness: 
+
+¯η := ηM 
+
+> P
+
++ (P −1) ηL 
+
+> P
+
+, ¯ρ := ηM  
+
+> P¯η
+
+ρnuc + (P −1) ηL  
+
+> P¯η
+
+ρ1, ¯L := ηM ˜ηmax   
+
+> P¯η2
+
+L2 + (P −1) ηLηmax   
+
+> P¯η2
+
+L∞, (3) where ˜ηmax = max {ηM , √mn η L} and ηmax = max {ηM , η L} for intermediate P ∈ (1 , ∞), with the boundary cases ˜ηmax = ηmax = ηM at P = 1 and ˜ηmax = ηmax = ηL at P = ∞.Then, our LionMuon algorithm starting with ∆0 := f (W0) − f⋆, E 0 = ∇f (W0) − M0 guarantees the following bound on the period-averaged gradient dual norm: 
+
+min  
+
+> i< TP
+
+{E[∥∇ f (Wi·P )∥]} ≤ ∆0
+
+¯ηT + 4 ¯L¯η
+
+(1 − β2) + 2β1
+
+β2
+
+¯ρσ (1 − β2) κ−1 
+
+> κ
+
++ 2 1 − β1
+
+β2
+
+¯ρσ + 2β1
+
+β2
+
+ηmax ∥E0∥1
+
+¯ηT (1 − β2) ,
+
+where E[∥∇ f (Wi·P )∥] := 
+
+
+
+ηM · E[∥∇ f (Wi·P )∥nuc ] + PP −1 
+
+> j=1
+
+[ηL · E[∥∇ f (Wi·P +j )∥1]] 
+
+
+
+ηM + ( P − 1) ηL
+
+. (4) Prior analyses treat Muon or Lion on their own [Li and Hong, 2025; Shen et al., 2025; An et al., 2025; Riabinin et al., 2025]. Our bound covers both steps, with their different norms and constants, under heavy-tailed noise, and it depends on the schedule only through the period-averaged learning rate, noise and smoothness, which interpolate between the pure-Muon and pure-Lion regimes. With these constants the bound has the optimal form for momentum-based norm-constrained methods under heavy-tailed noise [Liu and Zhou, 2025; Kornilov et al., 2025], and its boundary cases recover the known bounds for Muon and Lion [Yu et al., 2026; Nagashima and Iiduka, 2026; Iiduka, 2026]. 
+
+Corollary 1 ( Optimal Parameters for LionMuon )
+
+Let the objective function f and the noise satisfy Assumptions 1, 2 and 3 with the period-averaged constants 
+
+¯L, σ and ¯ρ defined in (3). • Fix a period P ∈ (1 , ∞) and the learning-rate ratio α = ηM /η L.To achieve accuracy min i{E[∥∇ f (Wi·P )∥]} ≤ ε, our LionMuon requires T iterations: 
+
+T = O ¯L∆0 · max 
+
+(
+
+(¯ ρσ ) κκ−1
+
+ε 3κ−2
+
+> κ−1
+
+, 1
+
+ε2
+
+)! 
+
+, (5) with the optimal parameters: 
+
+1 − β2 = min 
+
+( ε
+
+16¯ ρσ 
+
+ κκ−1
+
+, 1
+
+)
+
+, β 1 ∈ β2
+
+
+
+max 
+
+
+
+1 − ε
+
+16¯ ρσ , 0
+
+
+
+, 1
+
+
+
+, η L = ε(1 − β2)32   αP + P −1
+
+> P
+
+ · ¯L .
+
+• Pure Muon (P = 1 ) and Lion (P = ∞) keep the same momentums β1, β 2, number of iterations T and only single learning rate ηM = ε(1 −β2)32 ·L2 or ηL = ε(1 −β2)32 ·L∞ .• We can set single-EMA β1 = β2 to get optimal parameters for our SignMuon .Our complexity (5) has the optimal dependence on the accuracy ε and on the constants ¯L, ¯ρ: with the Frobenius smoothness LF and noise ρF in their place it is the known optimal rate [Zhang et al., 2020]. 6Tightening up the constants. In the analysis of our LionMuon , we mix Lion and Muon steps and handle different norms within them, applying the worst-case norm inequalities (2) which cover all possible matrices. For this reason, the interpolated smoothness ¯L from (3) has extra conservative factors such as ηmax or √mn which disappear in pure regimes. In practice, gradients and updates in deep networks tend to be dense [Bernstein et al., 2018], and ours are too (Table 2). For these dense matrices, the norm inequalities usually yield the approximate equalities: 
+
+∥∇ f (Wt)∥nuc ≈ α · ∥∇ f (Wt)∥1 for some large constant α ≲ √mn, (6) and we can obtain a more natural interpolation ¯L = η2  
+
+> M
+> P¯η2
+
+L2 + (P −1) η2  
+
+> L
+> P¯η2
+
+L∞ (see Appendix A.4). 
+
+4.3 Discussion 
+
+Choice of the learning-rate ratio. The scale ηM 
+
+> ηL
+
+determines the interpolation between the smoothness constants, noise levels and gradient norms of Muon and Lion . By the norm relations (2), the gradient norm ∥ · ∥ 1 of Lion is always larger than ∥ · ∥ nuc of Muon , especially for dense matrices, so without scaling the Lion updates dominate the metric (4) simply because they are large and frequent. We therefore choose a large scale ηM /η L = α that brings the gradient norms (6) to the same order of magnitude: min i< TP
+
+{E[∥∇ f (Wi·P )∥]} ≈ αP ·min t{E[∥∇ f (Wt)∥nuc ]}  
+
+> α+( P−1)
+
+. The grid search over (ηM , η L) in Appendix E confirms that a large ratio is best, and that the tuned ratio grows with P
+
+(Section 5). The theory cannot fix its value, so we tune the ratio and ηM .
+
+Choice of period P . The reason to take an intermediate P is cost. A Muon step costs about KNS times a Lion 
+
+step in FLOPs, and it is the step that communicates. The bound also says that an intermediate P can reach a given accuracy in fewer operations than pure Muon . Our complexity (5) interpolates between the pure-Muon (P =1 ,
+
+¯L = L2, ¯ρ = ρnuc ) and pure-Lion (P =∞, ¯L = L∞, ¯ρ = ρ1) regimes via the period-averaged smoothness ¯L and noise 
+
+¯ρ. For typical dense gradients (6), we set the ratio ηM /η L = α to equalize the ∥ · ∥ 1 and ∥ · ∥ nuc gradient norms in the minimal metric (4). Then, the averaged learning rate ¯η can be estimated by ¯η ≈ ηM /P , and the refined averaged smoothness and noise become ¯L ≈ P 2 L2 
+
+> P
+
++ P 2 ( P −1)  
+
+> PL∞
+> α2
+
+and ¯ρ ≈ P ρnuc  
+
+> P
+
++ P (P −1)  
+
+> Pρ1
+> α
+
+. We can now compare the number of operations N that pure Muon and LionMuon need for the same accuracy min t{E[∥∇ f (Wt)∥nuc ]} ≤ ε.
+
+LionMuon does KNS +( P −1)  
+
+> P
+
+operations per iteration and only needs the weaker accuracy P · ε in (5): 
+
+N = O
+
+ 1
+
+P
+
+ 3κ−2
+
+> κ−1
+
+( 1
+
+P + 1
+
+KNS 
+
+)
+
+
+
+P + P (P − 1) L∞
+
+α2L2
+
+
+
+·
+
+
+
+1 + ( P − 1) ρ1
+
+αρ nuc 
+
+ κκ−1
+
+| {z }    
+
+> =: ϕ(P, L∞
+> α2L2,ρ1
+> αρ nuc )
+
+· KNS · L2∆0 · (ρnuc σ) κκ−1
+
+ε 3κ−2
+
+> κ−1
+
+| {z }
+
+> =NMuon
+
+
+
+.
+
+The trade-off factor ϕ(P, L∞ 
+
+> α2L2
+
+, ρ1 
+
+> αρ nuc
+
+) ≈
+
+ 1 
+
+> P
+
++ (1 − 1 
+
+> P
+
+) L∞
+
+> α2L2
+
+
+
+·
+
+ 1 
+
+> P
+
++ (1 − 1 
+
+> P
+
+) ρ1
+
+> αρ nuc
+
+ κκ−1
+
+is a polynomial in 1/P defined by the scaled smoothness and noise ratios L∞ 
+
+> α2L2
+
+and ρ1 
+
+> αρ nuc
+
+. For P ∈ (1 , +∞) satisfying ϕ(P, L∞ 
+
+> α2L2
+
+, ρ1 
+
+> αρ nuc
+
+) < 1, our 
+
+LionMuon outruns Muon . The optimal regime P ∗ ∈ [1 , ∞] minimizes the trade-off factor and can be approximately determined from the trade-off ratios: 1. If L∞ 
+
+> α2L2
+
+, ρ1 
+
+> αρ nuc
+
+≳ 1 , the costly Muon is more preferable ( ϕ ↑ when P ↑); 2. If L∞ 
+
+> α2L2
+
+, ρ1 
+
+> αρ nuc
+
+< 1, intermediate values P (possibly up to Lion ) are the fastest ( ϕ ↓ when P ↑); 3. If L∞ 
+
+> α2L2
+
+, αρ nuc  
+
+> ρ1
+
+< 1 (or > 1), some intermediate P ∗ (can be Muon ) is the best ( ϕ ↓ then ϕ ↑). Section 5 finds the third case: the loss against FLOPs is lowest at small intermediate periods, P ∗ ∈ { 2, 5}.
+
+Match of theory and practice. We measure the constants of the bound during 124M training (Appendix C, Table 2 and Figure 5). The gradient ratio α comes out close to the tuned ratio ηM /η L on both datasets. The trade-off ratios on FineWeb put us in the regime with an interior optimal period, and that is what Section 5 finds. 7Figure 2: Loss against training FLOPs at 124M on FineWeb (left) and WikiText-103 (right). Every optimizer is tuned, and the error bars are over three seeds. LionMuon with P ∈{ 2, 5} is lowest on both datasets and uses fewer FLOPs than Muon .
+
+5 Experiments 5.1 Setup 
+
+All runs use GPT-2-style decoders from the llm-baselines benchmark of Semenov et al. [2025], a cosine schedule, weight decay 0.1 and AdamW for 1D parameters (Section 3). 
+
+Single GPU. At 124M (12 layers, width 768, batch 32 × 512 tokens, 64 ,000 steps, 1.05 B tokens) we train on FineWeb [Penedo et al., 2024] and WikiText-103 [Merity et al., 2017] and compare AdamW [Loshchilov and Hutter, 2019], Signum [Bernstein et al., 2018], Lion [Chen et al., 2023], Muon [Jordan et al., 2024], and SignMuon and 
+
+LionMuon with P ∈ { 1, 2, 5, 20 }. Learning rates are tuned on full-length runs: ηM over 10 −4 to 10 −1 and, for the alternating methods, the ratio ηM /η L over 1 to 3000 (Appendix E). Momentum was tuned as well (Appendix E.1), and the best values are (0 .9, 0.99) for Lion and LionMuon , 0.9 for Muon and SignMuon , and (0 .8, 0.999) for AdamW .Each tuned setting is rerun with three seeds. At 355M (24 layers, width 1024, sequence 1024, batch 512, 15 ,650 steps, 
+
+8.2B tokens, above the Chinchilla budget [Hoffmann et al., 2022]) we train on FineWeb with every hyperparameter copied from the 124M optimum, so this setting also tests how the tuned values transfer. 
+
+Four GPUs. The 124M model is trained end to end with PyTorch DDP on four H200 GPUs, 8 sequences per GPU, for 150 ,000 steps ( 2.46 B tokens, the Chinchilla budget). Every hyperparameter comes from the 124M tuning, and the rates of Muon , Lion and Dion were rechecked at this horizon (Table 4). Every GPU holds a full copy of the model, and the framework averages the gradients bucket by bucket while the backward pass is still running. 
+
+Muon then orthogonalizes each matrix on one GPU and all-reduces the updates, as in Moonlight [Liu et al., 2025]. 
+
+Dion [Ahn et al., 2025] and MuonBP [Khaled et al., 2026] use the settings of their papers and the learning rate of 
+
+Muon . Both were designed for sharded models. MuonBP is a tensor-parallel and FSDP method, not a data-parallel one, so we emulate its layout with four column blocks per matrix, as a four-way tensor-parallel split would give. Its block step is then local and its full step is Muon ’s, so it differs from LionMuon only in what it does between full steps. Dion ’s low-rank gradient sync is the data-parallel mode its paper proposes. Appendix D gives the details and pseudocode. Step times are measured on this node and on four A100 GPUs over PCIe, where communication is more expensive. 
+
+5.2 Single-GPU training: 124M tuned, 355M transferred 
+
+Figure 2 shows the tuned 124M runs. LionMuon P =2 and P =5 reach the lowest loss on both datasets, below Muon ,
+
+AdamW , Lion and Signum , and the gaps to Muon are more than ten times the seed spread. Appendix E lists every 8Figure 3: Loss against training FLOPs at 355M on FineWeb, with every hyperparameter copied from 124M. One seed per method, values in Table 6. 
+
+Figure 4: Loss against the bytes one step sends, for 124M trained on four GPUs with data parallelism. The bytes are counted from every collective the run issues. Baselines that had a rate sweep are shown at their best rate. Values in Table 4. value. Figure 3 repeats the FineWeb comparison at 355M with every hyperparameter copied from 124M, so it also tests how the tuned values transfer. Every alternating setting except SignMuon P =5 beats Muon , which beats AdamW , at fewer FLOPs. Lion lands between Muon and AdamW and Signum ends last, so at this size too alternating beats both of its endpoints (Table 6). 
+
+Discussion. Alternation does most of the work and the dual EMA adds a little. Going from Muon to SignMuon 
+
+P =2 closes about two thirds of the gap to the best run, and the dual EMA of LionMuon closes the rest, at P =5 and on WikiText-103 as well. The loss is flat between P =2 and P =5 on both datasets and rises slightly at P =20 , which still beats Muon on FineWeb, so P =5 gives the cheapest step at no cost in loss. The tuned ratio ηM /η L grows with 
+
+P (Appendix E), so a practitioner who changes P should retune this ratio and can leave ηM near its Muon value. The period does not have to be fixed either: a Muon step drawn with probability 1/P at every iteration gives the same loss (Appendix E.2). When hyperparameters are transferred rather than retuned, the dual-EMA variant is the safer one. LionMuon P =5 transfers to 355M unchanged, while SignMuon P =5 , with its larger spectral rate, does not. Finally, the constants measured in Section 4.3 predict an interior optimal period on FineWeb, which is what we see. 
+
+5.3 Data-parallel training on four GPUs 
+
+Figure 4 compares all methods under data parallelism. LionMuon P =2 and P =5 reach the lowest loss. Both endpoints of the family, pure Muon and the pure sign methods, end higher, and so do AdamW and the two Muon 
+
+variants. The order is the same as in the single-GPU runs. Lion needs a rate three times below its 64 k optimum to stay stable over 150 ,000 steps, and at that rate it ends just below Muon . Alternating beats both by a clear margin (Table 4). Table 1 gives what each step costs. LionMuon P =5 sends a fifth less than Muon . MuonBP P =5 sends exactly the same amount and ends level with Muon , because it still runs Newton–Schulz on every step. Dion at rank min( m, n )/4
+
+sends the least and ends highest. At rank min( m, n )/2 it sends more, still less than AdamW , and ends level with 
+
+Muon and MuonBP , so its rank trades bytes for loss, and at neither rank does it come near LionMuon . AdamW sends slightly less than LionMuon P =5 and ends higher, so against AdamW our claim is the loss, not the cost. Step times depend on the interconnect (Table 1). On PCIe, where the all-reduce is expensive, Dion and MuonBP 
+
+9Table 1: What one step costs on top of forward and backward, at 124M on four GPUs. Exposed communication is the optimizer’s own all-reduce, which cannot start before the backward pass ends. Step times are relative to Muon , measured by running all methods back to back in a random order within each round and taking the ratio inside the round, so that any background load on the node falls on every method alike (30 rounds on PCIe, 40 on NVLink, 95% intervals within                                                                       
+
+> ±0.01 and ±0.08 ). Muon ’s median step took 1.56 s on PCIe and 0.24 s on NVLink. Dion ’s bytes replace the gradient all-reduce. State is per 2D parameter W.Exposed Step time / Muon
+> Optimizer Newton–Schulz MB/step State PCIe NVLink
+> AdamW no 02|W|0.75 0.85
+> Lion /Signum no 0|W|––
+> Muon every step 170 |W|1.00 1.00
+> LionMuon P=2 every 2nd step 85 |W|0.88 0.92
+> LionMuon P=5 every 5th step 34 |W|0.81 0.89
+> MuonBP P=5 blocks each, full every 5th 34 |W|0.94 1.25
+> Dion , rank min( m, n )/4no, QR on factors 269 |W|+nr 0.76 1.50
+
+are also cheaper per step than Muon . On NVLink they become slower than Muon , since both trade bytes for extra arithmetic, while LionMuon still saves. Replicating the orthogonalization on every device would remove Muon ’s all-reduce at the price of about a third more arithmetic (Appendix D.1). LionMuon divides both costs by P , so it is cheaper either way. Table 5 in Appendix D puts the two axes together and gives what each method needs to reach Muon ’s own final loss, relative to Muon . LionMuon P =5 gets there with the fewest FLOPs and the least time on either interconnect, and 
+
+P =2 is close behind. On bytes alone Dion at rank 1/2 is cheapest, but it stops level with Muon , and AdamW is about as cheap as LionMuon P =5 but stops higher. Each distributed run has one seed, and the seed spread at 124M is an order of magnitude below the gaps here. Muon 
+
+was also run at rates three times lower and three times higher than its transferred one, and neither improves on it (Table 4). 
+
+6 Conclusion 
+
+We present LionMuon , an optimizer that takes one Muon step per P iterations and Lion steps in between, sharing a single dual-EMA momentum buffer and adding only the integer P . The step cost follows directly: Newton–Schulz compute and the optimizer all-reduce of Muon are divided by P , the sign steps are local, and the state is half of 
+
+AdamW ’s. A complexity bound (5) shows that the compute-optimal period is set by the ratios L∞ 
+
+> L2
+
+and ρ1 
+
+> ρnuc
+
+and says when LionMuon beats both Muon and Lion . Empirically, LionMuon with P ∈{ 2, 5} reaches a lower loss than Muon ,
+
+AdamW , Lion and Signum at 124M and 355M, and under 4-GPU data-parallel training at 1× Chinchilla it reaches 
+
+Muon ’s final loss with a third less wall-clock on PCIe and ends below every baseline. Larger models, multi-node training, an adaptive period and an analysis that accounts for the Newton–Schulz error are the natural next steps. 
+
+Reproducibility statement 
+
+Algorithm 1 is the complete update rule; Appendix D lists every architecture, schedule and hyperparameter, Appendix E the tuning grids and selected values. The code with the training scripts, the round-robin distributed protocol and the plotting scripts is at https://github.com/brain-lab-research/lion-muon . All proofs are in Appendices A and B. 10 References 
+
+Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor Cai, Eliza Rutherford, Diego de Las Casas, Lisa Anne Hendricks, Johannes Welbl, Aidan Clark, Tom Hennigan, Eric Noland, Katie Millican, George van den Driessche, Bogdan Damoc, Aurelia Guy, Simon Osindero, Karen Simonyan, Erich Elsen, Jack W. Rae, Oriol Vinyals, and Laurent Sifre. Training compute-optimal large language models, 2022. URL 
+
+https://arxiv.org/abs/2203.15556 .Kimi Team et al. Kimi K2: Open agentic intelligence, 2025. URL https://arxiv.org/abs/2507.20534 .George E. Dahl, Frank Schneider, Zachary Nado, Naman Agarwal, Chandramouli Shama Sastry, Philipp Hennig, Sourabh Medapati, Runa Eschenhagen, Priya Kasimbeg, Daniel Suo, Juhan Bae, Justin Gilmer, Abel L. Peirson, Bilal Khan, Rohan Anil, Mike Rabbat, Shankar Krishnan, Daniel Snider, Ehsan Amid, Kongtao Chen, Chris J. Maddison, Rakshith Vasudev, Michal Badura, Ankush Garg, and Peter Mattson. Benchmarking neural network training algorithms, 2023. URL https://arxiv.org/abs/2306.07179 .Priya Kasimbeg, Frank Schneider, Runa Eschenhagen, Juhan Bae, Chandramouli Shama Sastry, Mark Saroufim, Boyuan Feng, Less Wright, Edward Z. Yang, Zachary Nado, Sourabh Medapati, Philipp Hennig, Michael Rabbat, and George E. Dahl. Accelerating neural network training: An analysis of the AlgoPerf competition. In The Thirteenth International Conference on Learning Representations, ICLR 2025, Singapore, April 24-28, 2025 , 2025. URL https://openreview.net/forum?id=CtM5xjRSfm .Martin Jaggi. Revisiting Frank-Wolfe: Projection-free sparse convex optimization. In Proceedings of the 30th International Conference on Machine Learning, ICML 2013, Atlanta, GA, USA, 16-21 June 2013 , volume 28 of 
+
+JMLR Workshop and Conference Proceedings , pages 427–435. JMLR.org, 2013. URL http://proceedings.mlr. press/v28/jaggi13.html .Lizhang Chen, Bo Liu, Kaizhao Liang, and Qiang Liu. Lion secretly solves a constrained optimization: As Lyapunov predicts. In The Twelfth International Conference on Learning Representations, ICLR 2024, Vienna, Austria, May 7-11, 2024 , 2024. URL https://openreview.net/forum?id=e4xS9ZarDr .Andrey Veprikov, Arman Bolatov, Aleksandr Bogdanov, Samuel Horv´ ath, Aleksandr Beznosikov, Martin Tak´ aˇ c, and Slavomir Hanzely. Preconditioned norms: A unified framework for steepest descent, Quasi-Newton and adaptive methods, 2025. URL https://arxiv.org/abs/2510.10777 .Priya Goyal, Piotr Doll´ ar, Ross Girshick, Pieter Noordhuis, Lukasz Wesolowski, Aapo Kyrola, Andrew Tulloch, Yangqing Jia, and Kaiming He. Accurate, large minibatch SGD: Training ImageNet in 1 hour, 2017. URL 
+
+https://arxiv.org/abs/1706.02677 .Ilya Loshchilov and Frank Hutter. SGDR: stochastic gradient descent with warm restarts. In 5th International Conference on Learning Representations, ICLR 2017, Toulon, France, April 24-26, 2017, Conference Track Proceedings , 2017. URL https://openreview.net/forum?id=Skq89Scxx .Artem Riabinin, Andrey Veprikov, Arman Bolatov, Martin Tak´ aˇ c, and Aleksandr Beznosikov. Where does warm-up come from? adaptive scheduling for norm-constrained optimizers, 2026. URL https://arxiv.org/abs/2602. 05813 .Elad Hazan, Kfir Y. Levy, and Shai Shalev-Shwartz. Beyond convexity: Stochastic quasi-convex optimization. In Corinna Cortes, Neil D. Lawrence, Daniel D. Lee, Masashi Sugiyama, and Roman Garnett, editors, Advances in Neural Information Processing Systems 28: Annual Conference on Neural Information Processing Systems 2015, December 7-12, 2015, Montreal, Quebec, Canada , pages 1594–1602, 2015. URL https://proceedings.neurips. cc/paper/2015/hash/934815ad542a4a7c5e8a2dfa04fea9f5-Abstract.html .11 Jeremy Bernstein, Yu-Xiang Wang, Kamyar Azizzadenesheli, and Animashree Anandkumar. signSGD: Compressed optimisation for non-convex problems. In Jennifer G. Dy and Andreas Krause, editors, Proceedings of the 35th International Conference on Machine Learning, ICML 2018, Stockholmsm¨ assan, Stockholm, Sweden, July 10-15, 2018 , volume 80 of Proceedings of Machine Learning Research , pages 560–569. PMLR, 2018. URL 
+
+http://proceedings.mlr.press/v80/bernstein18a.html .Xiangning Chen, Chen Liang, Da Huang, Esteban Real, Kaiyuan Wang, Hieu Pham, Xuanyi Dong, Thang Luong, Cho-Jui Hsieh, Yifeng Lu, and Quoc V Le. Symbolic discovery of optimization algorithms. In Advances in Neural Information Processing Systems 36 , pages 49205–49233. Neural Information Processing Systems Foundation, Inc. (NeurIPS), 2023. doi: 10.52202/075280-2140. URL https://doi.org/10.52202/075280-2140 .Keller Jordan, Yuchen Jin, Vlado Boza, Jiacheng You, Franz Cesista, Laker Newhouse, and Jeremy Bernstein. Muon: An optimizer for hidden layers in neural networks. https://kellerjordan.github.io/posts/muon/ , 2024. Jingyuan Liu, Jianlin Su, Xingcheng Yao, Zhejun Jiang, Guokun Lai, Yulun Du, Yidao Qin, Weixin Xu, Enzhe Lu, Junjie Yan, Yanru Chen, Huabin Zheng, Yibo Liu, Shaowei Liu, Bohong Yin, Weiran He, Han Zhu, Yuzhi Wang, Jianzhou Wang, Mengnan Dong, Zheng Zhang, Yongsheng Kang, Hao Zhang, Xinran Xu, Yutao Zhang, Yuxin Wu, Xinyu Zhou, and Zhilin Yang. Muon is scalable for LLM training, 2025. URL https: //arxiv.org/abs/2502.16982 .DeepSeek-AI. DeepSeek-V4: Towards highly efficient million-token context intelligence, 2026. URL https: //arxiv.org/abs/2606.19348 .Jeremy Bernstein and Laker Newhouse. Old optimizer, new norm: An anthology, 2024. URL https://arxiv.org/ abs/2409.20325 .Lizhang Chen, Jonathan Li, and Qiang Liu. Muon optimizes under spectral norm constraints. Transactions on Machine Learning Research , 2026, 2026a. URL https://openreview.net/forum?id=Blz4hjxLwU .Essential AI. Layer sharding for large-scale training with Muon. Essential AI Blog, may 2025. URL https: //www.essential.ai/blog/infra .Vincent Chen, Starrick Liu, Regis Cheng, Dance Yang, Shalfun Li, Ryan Yu, Lucy Liang, Hang Su, Roy Gan, Hao Wang, and Qian Wang. DMuon: Efficient distributed Muon training with Near-Adam overhead, 2026b. URL 
+
+https://arxiv.org/abs/2606.27153 .Ahmed Khaled, Kaan Ozkara, Tao Yu, Mingyi Hong, and Youngsuk Park. MuonBP: Faster Muon via block-periodic orthogonalization. In The Fourteenth International Conference on Learning Representations , 2026. URL 
+
+https://openreview.net/forum?id=mHouLSUQP5 .Guilherme Penedo, Hynek Kydl´ ıcek, Loubna Ben Allal, Anton Lozhkov, Margaret Mitchell, Colin A. Raffel, Leandro von Werra, and Thomas Wolf. The FineWeb datasets: Decanting the web for the finest text data at scale. In Amir Globersons, Lester Mackey, Danielle Belgrave, Angela Fan, Ulrich Paquet, Jakub M. Tom-czak, and Cheng Zhang, editors, Advances in Neural Information Processing Systems 37: Annual Confer-ence on Neural Information Processing Systems 2024, NeurIPS 2024, Vancouver, BC, Canada, December 10 - 15, 2024 , 2024. doi: 10.52202/079017-0970. URL http://papers.nips.cc/paper_files/paper/2024/hash/ 370df50ccfdf8bde18f8f9c2d9151bda-Abstract-Datasets_and_Benchmarks_Track.html .Stephen Merity, Caiming Xiong, James Bradbury, and Richard Socher. Pointer sentinel mixture models. In 5th International Conference on Learning Representations, ICLR 2017, Toulon, France, April 24-26, 2017, Conference Track Proceedings , 2017. URL https://openreview.net/forum?id=Byj72udxe .Kwangjun Ahn, Byron Xu, Natalie Abreu, Ying Fan, Gagik Magakyan, Pratyusha Sharma, Zheng Zhan, and John Langford. Dion: Distributed orthonormalized updates, 2025. URL https://arxiv.org/abs/2504.05295 .12 Jeremy Bernstein, Jiawei Zhao, Kamyar Azizzadenesheli, and Anima Anandkumar. signSGD with majority vote is communication efficient and fault tolerant. In 7th International Conference on Learning Representations, ICLR 2019, New Orleans, LA, USA, May 6-9, 2019 , 2019. URL https://openreview.net/forum?id=BJxhijAcY7 .Egor Petrov, Grigoriy Evseev, Aleksey Antonov, Andrey Veprikov, Nikolay Bushkov, Stanislav Moiseev, and Aleksandr Beznosikov. Leveraging coordinate momentum in SignSGD and Muon: Memory-optimized zero-order, 2025. URL https://arxiv.org/abs/2506.04430 .Nikita Kornilov, Philip Zmushko, Andrei Semenov, Mark Ikonnikov, Alexander Gasnikov, and Alexander Beznosikov. Sign operator for coping with heavy-tailed noise in non-convex optimization: High probability bounds under 
+
+(l0, l 1)-smoothness, 2025. URL https://arxiv.org/abs/2502.07923 .Dingzhi Yu, Hongyi Tao, Yuanyu Wan, Luo Luo, and Lijun Zhang. Sign-based optimizers are effective under heavy-tailed noise, 2026. URL https://arxiv.org/abs/2602.07425 .Michael Crawshaw, Mingrui Liu, Francesco Orabona, Wei Zhang, and Zhenxun Zhuang. Robustness to unbounded smoothness of generalized SignSGD. In Advances in Neural Information Processing Systems 35 , pages 9955–9968. Neural Information Processing Systems Foundation, Inc. (NeurIPS), 2022. doi: 10.52202/068431-0723. URL 
+
+https://doi.org/10.52202/068431-0723 .Artem Riabinin, Egor Shulgin, Kaja Gruntkowska, and Peter Richt´ arik. Gluon: Making Muon & Scion great again! (bridging theory and practice of LMO-based optimizers for LLMs), 2025. URL https://arxiv.org/abs/2505. 13416 .Tianyu Pang, Yujie Fang, Zihang Liu, Shenyang Deng, Lei Hsiung, Shuhua Yu, and Yaoqing Yang. HT-Muon: Improving Muon via heavy-tailed spectral correction. In Findings of the Association for Compu-tational Linguistics: ACL 2026 , pages 36504–36535. Association for Computational Linguistics, 2026. doi: 10.18653/v1/2026.findings-acl.1819. URL https://doi.org/10.18653/v1/2026.findings-acl.1819 .Feihu Huang, Yuning Luo, and Songcan Chen. LiMuon: Light and fast Muon optimizer for large models, 2025. URL https://arxiv.org/abs/2509.14562 .Zixiao Wang, Yifei Shen, and Huishuai Zhang. OLion: Approaching the Hadamard ideal by intersecting spectral and ℓ∞ implicit biases, 2026. URL https://arxiv.org/abs/2602.01105 .Noah Amsel, David Persson, Christopher Musco, and Robert M. Gower. The Polar Express: Optimal matrix sign methods and their application to the Muon algorithm, 2025. URL https://arxiv.org/abs/2505.16932 .Ekaterina Grishina, Matvey Smirnov, and Maxim Rakhuba. Accelerating Newton-Schulz iteration for orthogonaliza-tion via Chebyshev-type polynomials, 2025. URL https://arxiv.org/abs/2506.10935 .Maria-Eleni Sfyraki and Jun-Kun Wang. Lions and Muons: Optimization via stochastic Frank-Wolfe under heavy-tailed noise, 2025. URL https://arxiv.org/abs/2506.04192 .Nitish Shirish Keskar and Richard Socher. Improving generalization performance by switching from Adam to SGD, 2017. URL https://arxiv.org/abs/1712.07628 .Liangchen Luo, Yuanhao Xiong, Yan Liu, and Xu Sun. Adaptive gradient methods with dynamic bound of learning rate. In 7th International Conference on Learning Representations, ICLR 2019, New Orleans, LA, USA, May 6-9, 2019 , 2019. URL https://openreview.net/forum?id=Bkg3g2R9FX .Yun Yue, Zhiling Ye, Jiadi Jiang, Yongchao Liu, and Ke Zhang. AGD: an auto-switchable optimizer using stepwise gradient difference for preconditioning matrix. In Advances in Neural Information Processing Systems 36 , pages 45812–45832. Neural Information Processing Systems Foundation, Inc. (NeurIPS), 2023. doi: 10.52202/075280-1985. URL https://doi.org/10.52202/075280-1985 .13 Abdurakhmon Sadiev, Marina Danilova, Eduard Gorbunov, Samuel Horv´ ath, Gauthier Gidel, Pavel E. Dvurechensky, Alexander V. Gasnikov, and Peter Richt´ arik. High-probability bounds for stochastic optimization and variational inequalities: the case of unbounded variance. In Andreas Krause, Emma Brunskill, Kyunghyun Cho, Barbara Engelhardt, Sivan Sabato, and Jonathan Scarlett, editors, International Conference on Machine Learning, ICML 2023, 23-29 July 2023, Honolulu, Hawaii, USA , volume 202 of Proceedings of Machine Learning Research , pages 29563–29648. PMLR, 2023. URL https://proceedings.mlr.press/v202/sadiev23a.html .Florian H¨ ubler, Ilyas Fatkhullin, and Niao He. From gradient clipping to normalization for heavy tailed SGD. In Yingzhen Li, Stephan Mandt, Shipra Agrawal, and Mohammad Emtiyaz Khan, editors, International Conference on Artificial Intelligence and Statistics, AISTATS 2025, Mai Khao, Thailand, 3-5 May 2025 , volume 258 of 
+
+Proceedings of Machine Learning Research , pages 2413–2421. PMLR, 2025. URL https://proceedings.mlr. press/v258/hubler25a.html .Savelii Chezhegov, Daniela Angela Parletta, Andrea Paudice, and Eduard Gorbunov. High-probability bounds for the last iterate of clipped SGD. In The Fourteenth International Conference on Learning Representations , 2026. URL https://openreview.net/forum?id=4sGEvpwyxN .Mert G¨ urb¨ uzbalaban, Umut Simsekli, and Lingjiong Zhu. The heavy-tail phenomenon in SGD. In Marina Meila and Tong Zhang, editors, Proceedings of the 38th International Conference on Machine Learning, ICML 2021, 18-24 July 2021, Virtual Event , volume 139 of Proceedings of Machine Learning Research , pages 3964–3975. PMLR, 2021. URL http://proceedings.mlr.press/v139/gurbuzbalaban21a.html .Nikita Kornilov, Ohad Shamir, Aleksandr Lobanov, Darina Dvinskikh, Alexander Gasnikov, Innokentiy Shibaev, Eduard Gorbunov, and Samuel Horv´ ath. Accelerated zeroth-order method for non-smooth stochastic convex optimization problem with infinite variance, 2023. URL https://arxiv.org/abs/2310.18763 .Jiaxiang Li and Mingyi Hong. A note on the convergence of Muon, 2025. URL https://arxiv.org/abs/2502.02900 .Wei Shen, Ruichuan Huang, Minhui Huang, Cong Shen, and Jiawei Zhang. On the convergence analysis of Muon, 2025. URL https://arxiv.org/abs/2505.23737 .Kang An, Yuxing Liu, Rui Pan, Yi Ren, Shiqian Ma, Donald Goldfarb, and Tong Zhang. ASGO: Adaptive structured gradient optimization. In Advances in Neural Information Processing Systems 38 , pages 140553–140592. Neural Information Processing Systems Foundation, Inc. (NeurIPS), 2025. doi: 10.52202/085713-4229. URL 
+
+https://doi.org/10.52202/085713-4229 .Zijian Liu and Zhengyuan Zhou. Nonconvex stochastic optimization under heavy-tailed noises: Optimal convergence without gradient clipping. In The Thirteenth International Conference on Learning Representations, ICLR 2025, Singapore, April 24-28, 2025 , 2025. URL https://openreview.net/forum?id=NKotdPUc3L .Shuntaro Nagashima and Hideaki Iiduka. Improved convergence rates of Muon optimizer for nonconvex optimization, 2026. URL https://arxiv.org/abs/2601.19400 .Hideaki Iiduka. Muon converges under heavy-tailed noise: Nonconvex H¨ older-smooth empirical risk minimization, 2026. URL https://arxiv.org/abs/2603.15059 .Jingzhao Zhang, Sai Praneeth Karimireddy, Andreas Veit, Seungyeon Kim, Sashank J. Reddi, Sanjiv Ku-mar, and Suvrit Sra. Why are adaptive methods good for attention models? In Hugo Larochelle, Marc’Aurelio Ranzato, Raia Hadsell, Maria-Florina Balcan, and Hsuan-Tien Lin, editors, Advances in Neu-ral Information Processing Systems 33: Annual Conference on Neural Information Processing Systems 2020, NeurIPS 2020, December 6-12, 2020, virtual , 2020. URL https://proceedings.neurips.cc/paper/2020/hash/ b05b57f6add810d3b7490866d74c0053-Abstract.html .Andrei Semenov, Matteo Pagliardini, and Martin Jaggi. Benchmarking optimizers for large language model pretraining, 2025. URL https://arxiv.org/abs/2509.01440 .14 Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In 7th International Conference on Learning Representations, ICLR 2019, New Orleans, LA, USA, May 6-9, 2019 , 2019. URL https://openreview. net/forum?id=Bkg6RiCqY7 .15 Appendix 
+
+Supplementary Materials for LionMuon: Alternating Spectral and Sign Descent for Efficient Training 
+
+A Missing proofs 
+
+This appendix collects the missing proofs of Theorem 1 and Corollary 1. We first state and prove two technical lemmas (the descent Lemma 1 and the momentum error bound Lemma 2) that are the building blocks of our analysis. Then, we assemble these lemmas into the main proof. 
+
+A.1 Building-block lemmas 
+
+Lemma 1 ( LionMuon Descent Lemma )
+
+Let the objective function f satisfy Assumption 1 with respect to a norm ∥ · ∥ , and let ∥ · ∥ ⋆ be its dual norm. Then, for update Wt+1 = Wt + ηtUt with Ut = LMO ∥·∥ ( ˆGt), momentums Mt = β2Mt−1 + (1 − β2)Gt and 
+
+ˆGt = β1Mt−1 + (1 − β1)Gt, the following bound holds: 
+
+f (Wt+1 ) ≤ f (Wt) − ηt · ∥∇ f (Wt)∥⋆ + 2ηtβ1
+
+β2
+
+∥∇ f (Wt) − Mt∥⋆ + 2 ηt 1 − β1
+
+β2
+
+∥∇ f (Wt) − Gt∥⋆ + Lη 2
+
+> t
+
+2 .
+
+Proof. We begin our proof with bounding the value f (Wt+1 ) after the update using the smoothness Assumption 1: 
+
+f (Wt+1 ) = f (Wt + ηtUt)
+
+≤ f (Wt) + ηt⟨∇ f (Wt), U t⟩ + Lη 2
+
+> t
+
+2 ∥Ut∥2
+
+≤ f (Wt) + ηt⟨∇ f (Wt), U t⟩ + Lη 2
+
+> t
+
+2= f (Wt) + ηt⟨ ˆGt, U t⟩ + ηt⟨∇ f (Wt) − ˆGt, U t⟩ + Lη 2
+
+> t
+
+2 .
+
+Then, we define the optimal matrix ˆVt := arg max ∥V ∥≤ 1⟨V, −∇ f (Wt)⟩ and continue bounding: 
+
+f (Wt+1 ) = f (Wt) + ηt⟨ ˆGt, U t⟩ + ηt⟨∇ f (Wt) − ˆGt, U t⟩ + Lη 2
+
+> t
+
+2
+
+≤ f (Wt) + ηt⟨ ˆGt, ˆVt⟩ + ηt⟨∇ f (Wt) − ˆGt, U t⟩ + Lη 2
+
+> t
+
+2= f (Wt) + ηt⟨ ˆGt, ˆVt − Ut⟩ + ηt⟨∇ f (Wt), U t⟩ + Lη 2
+
+> t
+
+2= f (Wt) + ηt⟨∇ f (Wt), ˆVt⟩ + ηt⟨∇ f (Wt) − ˆGt, U t − ˆVt⟩ + Lη 2
+
+> t
+
+2
+
+≤ f (Wt) − ηt∥∇ f (Wt)∥⋆ + ηt∥∇ f (Wt) − ˆGt∥⋆∥Ut − ˆVt∥ + Lη 2
+
+> t
+
+2
+
+≤ f (Wt) − ηt∥∇ f (Wt)∥⋆ + ∥∇ f (Wt) − ˆGt∥⋆2ηt + Lη 2
+
+> t
+
+2 .
+
+16 Furthermore, we can switch to the bound with the main momentum Mt:
+
+∥∇ f (Wt) − ˆGt∥⋆ = ∥∇ f (Wt) − Mt + Mt − ˆGt∥⋆
+
+= ∇f (Wt) − Mt +
+
+
+
+1 − β1
+
+β2
+
+
+
+(Mt − Gt) ⋆
+
+= β1
+
+β2
+
+(∇f (Wt) − Mt) + 
+
+
+
+1 − β1
+
+β2
+
+
+
+(∇f (Wt) − Gt) ⋆
+
+≤ β1
+
+β2
+
+∥∇ f (Wt) − Mt∥⋆ + 1 − β1
+
+β2
+
+∥∇ f (Wt) − Gt∥⋆.
+
+Thus, the final bound is 
+
+f (Wt+1 ) ≤ f (Wt) − ηt · ∥∇ f (Wt)∥⋆ + 2ηtβ1
+
+β2
+
+∥∇ f (Wt) − Mt∥⋆ + 2 ηt 1 − β1
+
+β2
+
+∥∇ f (Wt) − Gt∥⋆ + Lη 2
+
+> t
+
+2 .
+
+Lemma 2 ( LionMuon Momentum Error Bound )
+
+Let the objective function f and corrupting noise satisfy Assumptions 1, 2, 3 with a norm ∥ · ∥ and let momentum Mτ be defined as: Mτ = β2Mτ −1 + (1 − β2)Gτ . Then, for updates Wτ +1 = Wτ + ητ Uτ , the following bound holds 
+
+E[∥Et∥⋆] ≤ βt
+
+> 2
+
+∥E0∥⋆ + LAβ 2
+
+1 − β2
+
++ ρ⋆σ(1 − β2) κ−1 
+
+> κ
+
+.
+
+where Et := ∇f (Wt) − Mt and max τ ≤t{ητ · ∥ Uτ ∥} ≤ A.
+
+Proof. Using the momentum definition, we write down the recursive step: 
+
+Et = ∇f (Wt) − Mt = ∇f (Wt) −  β2Mt−1 + (1 − β2)Gt
+
+
+
+= β2∇f (Wt) + (1 − β2)∇f (Wt) − β2Mt−1 − (1 − β2)Gt
+
+= β2
+
+ ∇f (Wt) − Mt−1
+
+ + (1 − β2) ∇f (Wt) − Gt
+
+
+
+= β2
+
+ ∇f (Wt) − ∇ f (Wt−1) + ∇f (Wt−1) − Mt−1
+
+ + (1 − β2) ∇f (Wt) − Gt
+
+
+
+= β2
+
+ ∇f (Wt) − ∇ f (Wt−1) + β2
+
+ ∇f (Wt−1) − Mt−1
+
+ + (1 − β2) ∇f (Wt) − Gt
+
+.
+
+Further, we use the notations St = ∇f (Wt) − Gt and Rt = ∇f (Wt) − ∇ f (Wt−1) to unroll the recursion: 
+
+Et = β2Et−1 + (1 − β2)St + β2Rt = βt
+
+> 2
+
+E0 +
+
+> t−1
+
+X
+
+> j=0
+
+βj
+
+> 2
+
+(1 − β2)St−j + β2Rt−j
+
+.
+
+Now, we observe that 
+
+∥Rt−j ∥⋆ = ∥∇ f (Wt−j ) − ∇ f (Wt−j−1)∥⋆ ≤ L∥Wt−j − Wt−j−1∥ = Lη t−1∥Ut−j−1∥ ≤ LA. 
+
+17 Therefore, we estimate using the norm equivalence Assumption 3: 
+
+E[∥Et∥⋆] ≤ βt 
+
+> 2
+
+· ∥ E0∥⋆ + E
+
+" t−1X
+
+> j=0
+
+βj
+
+> 2
+
+(1 − β2)St−j + β2Rt−j
+
+
+
+> ⋆
+
+#
+
+≤ βt 
+
+> 2
+
+· ∥ E0∥⋆ +
+
+> t−1
+
+X
+
+> j=0
+
+βj+1 2 E[∥Rt−j ∥⋆] + E
+
+" t−1X
+
+> j=0
+
+βj
+
+> 2
+
+(1 − β2)St−j
+
+> ⋆
+
+#
+
+≤ βt 
+
+> 2
+
+· ∥ E0∥⋆ + LAβ 2
+
+1 − β2
+
++ ρ
+
+E
+
+" t−1X
+
+> j=0
+
+βj
+
+> 2
+
+(1 − β2)St−j
+
+> κF
+
+#
+
+> 1
+> κ
+
+.
+
+For the linear combination of corrupting noises, we apply a batching lemma on the reduction of the κ-th moment, proposed and developed in works [Kornilov et al., 2023; H¨ ubler et al., 2025]: 
+
+Lemma 3 
+
+Let X1, . . . , X B be a matrix martingale difference sequence (i.e. E[Xj |Xj−1, . . . , X 1] = 0 for 1 < j ≤ B) such that E[∥Xj ∥κF |Xj−1, . . . , X 1] ≤ σκj for 1 < κ ≤ 2. Then, we have 
+
+E
+
+
+
+> B
+
+X
+
+> j=1
+
+Xi
+
+> κF
+
+ ≤
+
+> B
+
+X
+
+> j=1
+
+σκi .
+
+Namely, we treat the sequence {βj
+
+> 2
+
+(1 − β2) · St−j }t−1 
+
+> j=0
+
+as the required martingale difference sequence with σj =
+
+βj
+
+> 2
+
+(1 − β2)σ and apply Lemma 3: 
+
+E
+
+" t−1X
+
+> j=0
+
+βj
+
+> 2
+
+(1 − β2)St−j
+
+> κF
+
+#
+
+≤
+
+> t−1
+
+X
+
+> j=0
+
+βκj  
+
+> 2
+
+(1 − β2)κσκ
+
+≤ σκ(1 − β2)κt−1X
+
+> j=0
+
+βκj 
+
+> 2
+
+≤ σκ(1 − β2)κ
+
+1 − βκ
+
+> 2
+
+.
+
+Hence, we get 
+
+E[∥Et∥⋆] ≤ βt 
+
+> 2
+
+· ∥ E0∥⋆ + LAβ 2
+
+1 − β2
+
++ ρσ 1 − β2
+
+(1 − βκ 
+
+> 2
+
+) 1
+
+> κ
+
+.
+
+Since 0 < 1 − β2 ≤ 1 − βκ 
+
+> 2
+
+, we further simplify the bound to: 
+
+E[∥Et∥⋆] ≤ βt 
+
+> 2
+
+· ∥ E0∥⋆ + LAβ 2
+
+1 − β2
+
++ ρσ (1 − β2) κ−1 
+
+> κ
+
+.
+
+A.2 Proof of LionMuon Convergence Theorem 1 
+
+Proof. We divide the iteration indices t ∈ { 0, . . . , T −1} into two disjoint sets: the set of Muon steps Smuon = {t | t ≡ 0(mod P )} and the set of block Lion steps Slion = {t | t̸ ≡ 0 (mod P )}.18 Step 1: Analysis of the Muon Steps ( t ∈ Smuon ). For t ∈ Smuon , the update utilizes the spectral norm ∥ · ∥ 2.To use Lemmas 1 and 2, we find the uniform upper bound constant A2 such that max τ ≤t{ητ ∥Uτ ∥2} ≤ A2 for all previous steps τ ≤ t:• If τ ∈ Smuon , then all updates Uτ = LMO ∥·∥ 2 ( ˆGτ ) are bounded by ∥Uτ ∥2 = 1 , and the stepsize is ητ = ηM .• If τ ∈ Slion , then the updates Uτ = LMO ∥·∥ ∞ ( ˆGτ ) utilize the infinity norm LMO, yielding ∥Uτ ∥∞ = 1 . Using the norm equivalence ( ∥W ∥2 ≤ √mn ∥W ∥∞), we have ∥Uτ ∥2 ≤ √mn and stepsize ητ = ηL.Taking the maximum over these two cases for P ∈ (1 , ∞), we get A2 = max {ηM , √mn · ηL}. When P = 1 , all τ
+
+steps belong only to Smuon and A2 = ηM .
+
+Thus, combining Lemmas 1 and 2 with A2 and dual variance factor ρnuc , we bound the gradient dual norm: 
+
+ηM · E[∥∇ f (Wt)∥nuc ] ≤ E[f (Wt)] − E[f (Wt+1 )] + 2ηM β1
+
+β2
+
+E[∥∇ f (Wt) − Mt∥nuc ]+ 2 ηM 1 − β1
+
+β2
+
+E[∥∇ f (Wt) − Gt∥nuc ] + L2η2
+
+> M
+
+2
+
+≤ E[f (Wt)] − E[f (Wt+1 )] + 2ηM β1
+
+β2
+
+
+
+βt
+
+> 2
+
+∥E0∥nuc + L2A2β2
+
+1 − β2
+
++ ρnuc σ(1 − β2) κ−1
+
+> κ
+
+
+
++ 2 ηM 1 − β1
+
+β2
+
+ρnuc σ + L2η2
+
+> M
+
+2 =: E[f (Wt)] − E[f (Wt+1 )] + Error muon  
+
+> t
+
+. (7) 
+
+Step 2: Analysis of the Lion Steps ( t ∈ Slion ). For t ∈ Slion , the update utilizes the infinite norm ∥ · ∥ ∞. To use Lemmas 1 and 2, we find the uniform upper bound constant A∞ such that max τ ≤t{ητ ∥Uτ ∥∞} ≤ A∞ for all past steps τ ≤ t:• If τ ∈ Smuon , then all updates Uτ = LMO ∥·∥ 2 ( ˆGτ ) are bounded by ∥Uτ ∥∞ ≤ ∥ Uτ ∥2 = 1 and the stepsize is 
+
+ητ = ηM .• If τ ∈ Slion , then the updates Uτ = LMO ∥·∥ ∞ ( ˆGτ ) utilize the infinity norm LMO, yielding ∥Uτ ∥∞ = 1 and stepsize ητ = ηL.Taking the maximum over these two cases for P ∈ (1 , ∞), we get A∞ = max( ηM , η L). When P = ∞, all τ steps belong only to Slion and A∞ = ηL.
+
+Similarly combining Lemmas 1 and 2 with A∞ and dual variance factor ρ1, we bound the gradient dual norm: 
+
+ηL · E[∥∇ f (Wt)∥1] ≤ E[f (Wt)] − E[f (Wt+1 )] + ηLβ1
+
+β2
+
+
+
+βt
+
+> 2
+
+∥E0∥1 + L∞A∞β2
+
+1 − β2
+
++ ρ1σ(1 − β2) κ−1
+
+> κ
+
+
+
++ 2 ηL 1 − β1
+
+β2
+
+ρ1σ + L∞η2
+
+> L
+
+2 =: E[f (Wt)] − E[f (Wt+1 )] + Error lion  
+
+> t
+
+. (8) 
+
+Step 3: Telescoping Sum. We sum the bounds for Muon (7) and Lion (8) steps over t = 0 to T − 1. Note that we group the terms over TP periods of length P , and the total numbers of each step type are |Smuon | = TP and 19 |Slion | = T (P −1)  
+
+> P
+
+: 
+
+> TP−1
+
+X
+
+> i=0
+
+ηM · E[∥∇ f (Wi·P )∥nuc ] +  
+
+> P−1
+
+X
+
+> j=1
+
+[ηL · E[∥∇ f (Wi·P +j )∥1]] 
+
+ ≤ f (W0) − f⋆ + X
+
+> t∈Smuon
+
+Error muon 
+
+> t
+
++ X
+
+> t∈Slion
+
+Error lion  
+
+> t
+
+.
+
+For the left-hand side, we consider the minimal period-averaged gradient dual norm:  
+
+> TP−1
+
+X
+
+> i=0
+
+ηM · E[∥∇ f (Wi·P )∥nuc ] +  
+
+> P−1
+
+X
+
+> j=1
+
+[ηL · E[∥∇ f (Wi·P +j )∥1]] 
+
+
+
+= 
+
+> TP−1
+
+X
+
+> i=0
+
+(ηM + ηL(P − 1)) ·
+
+
+
+ηM · E[∥∇ f (Wi·P )∥nuc ] + PP −1 
+
+> j=1
+
+[ηL · E[∥∇ f (Wi·P +j )∥1]] 
+
+
+
+ηM + ηL(P − 1) 
+
+| {z }  
+
+> := E[∥∇ f(Wi·P)∥]
+
+≥ 
+
+> TP−1
+
+X
+
+> i=0
+
+(ηM + ηL(P − 1)) · min  
+
+> i
+
+{E[∥∇ f (Wi·P )∥]}
+
+= TP (ηM + ηL(P − 1)) · min  
+
+> i
+
+{E[∥∇ f (Wi·P )∥]} = T · ¯η · min  
+
+> i
+
+{E[∥∇ f (Wi·P )∥]},
+
+where the period-averaged stepsize is ¯η := ηM 
+
+> P
+
++ ηL(P −1)  
+
+> P
+
+.
+
+Note that when P = 1 or P = ∞ the minimal averaged norm becomes the minimal nuclear dual norm over all inter-mediate points min i{E[∥∇ f (Wi·P )∥]} = min i{E[∥∇ f (Wi)∥nuc ]} or min i{E[∥∇ f (Wi·P )∥]} = min i{E[∥∇ f (Wi)∥1]}.For the right-hand side, we apply the geometric series upper bound PT −1 
+
+> t=0
+
+βt 
+
+> 2
+
+≤ 11−β2 for the intermediate momentum errors. Grouping the constant terms matching the lengths of sets Smuon and Slion and dividing the entire inequality by T ¯η, we obtain the overall bound: 
+
+min  
+
+> i
+
+{E[∥∇ f (Wi·P )∥]} ≤ ∆0
+
+¯ηT + 2ηM β1
+
+β2
+
+∥E0∥nuc 
+
+T ¯η(1 − β2) + 1
+
+P
+
+2ηM β1
+
+β2
+
+L2A2β2
+
+(1 − β2)¯ η
+
++ 1
+
+P
+
+2ηM β1
+
+β2 ¯η ρnuc σ(1 − β2) κ−1 
+
+> κ
+
++ 1
+
+P
+
+2ηM
+
+¯η 1 − β1
+
+β2
+
+ρnuc σ + 1
+
+PL2η2
+
+> M
+
+2¯ η
+
++ 2ηLβ1
+
+β2
+
+∥E0∥1
+
+T ¯η(1 − β2) + 2ηLβ1
+
+β2
+
+P − 1
+
+PL∞A∞β2
+
+(1 − β2)¯ η
+
++ P − 1
+
+P
+
+2ηLβ1
+
+β2 ¯η ρ1σ(1 − β2) κ−1 
+
+> κ
+
++ 2 P − 1
+
+PηL
+
+¯η 1 − β1
+
+β2
+
+ρ1σ + P − 1
+
+PL∞η2
+
+> L
+
+2¯ η .
+
+We can combine the momentum β2 terms: 
+
+1
+
+PL2η2
+
+> M
+
+2¯ η ≤ 1
+
+PL2A2ηM
+
+2(1 − β2)¯ η ≤ 1
+
+PL2A2ηM
+
+2(1 − β2)¯ η2 ¯η
+
+and P − 1
+
+PL∞η2
+
+> L
+
+2¯ η ≤ P − 1
+
+PL∞ηLA∞
+
+2(1 − β2)¯ η ≤ P − 1
+
+PL∞ηLA∞
+
+2(1 − β2)¯ η2 ¯η. 
+
+Then, we can bound the initial norm term: 
+
+2ηM β1
+
+β2
+
+∥E0∥nuc 
+
+T ¯η(1 − β2) + 2ηLβ1
+
+β2
+
+∥E0∥1
+
+T ¯η(1 − β2) ≤ 2β1
+
+β2
+
+max {ηL, η M }∥ E0∥1
+
+T ¯η(1 − β2) .
+
+20 When P = 1 or P = ∞, only one of the terms appears, and the bound still holds true. Next, we define the period-averaged noise and smoothness constants: 
+
+¯ρ := ηM
+
+P ¯η ρnuc + (P − 1) ηL
+
+P ¯η ρ1,
+
+¯L := ηM A2
+
+P ¯η2 L2 + (P − 1) ηLA∞
+
+P ¯η2 L∞. (9) Employing the averaged constants, we further simplify the bound: 
+
+min  
+
+> i
+
+{E[∥∇ f (Wi·P )∥]} ≤ ∆0
+
+¯ηT + 2β1
+
+β2
+
+ηmax ∥E0∥1
+
+¯ηT (1 − β2) + 4 ¯L¯η
+
+(1 − β2) + 2β1
+
+β2
+
+¯ρσ (1 − β2) κ−1 
+
+> κ
+
++ 2 1 − β1
+
+β2
+
+¯ρσ. 
+
+A.3 Proof of Optimal Parameters Corollary 1 
+
+Proof. In Theorem 1, we obtained the convergence bound of LionMuon algorithm under arbitrary parameters: 
+
+min  
+
+> i
+
+{E[∥∇ f (Wi·P )∥]} ≤ ∆0
+
+¯ηT + 2β1
+
+β2
+
+ηmax ∥E0∥1
+
+¯ηT (1 − β2) + 4 ¯L¯η
+
+(1 − β2) + 2β1
+
+β2
+
+¯ρσ (1 − β2) κ−1 
+
+> κ
+
++ 2 1 − β1
+
+β2
+
+¯ρσ, (10) 
+
+E[∥∇ f (Wi·P )∥] := 
+
+
+
+ηM · E[∥∇ f (Wi·P )∥nuc ] + PP −1 
+
+> j=1
+
+[ηL · E[∥∇ f (Wi·P +j )∥1]] 
+
+
+
+ηM + ( P − 1) ηL
+
+≥ min  
+
+> j
+
+E[∥∇ f (Wi·P +j )∥nuc ].
+
+Fixed period P ∈ (1 , ∞). To achieve accuracy ε, we choose the optimal horizon T , momentums β1, β 2, stepsizes 
+
+ηL and ηM = αη L, whereas period P and stepsizes scale α are treated as hyperparameters. First, we pick the smaller momentum β1 ≤ β2 close to β2 to limit the last term in (10): 
+
+2 1 − β1
+
+β2
+
+¯ρσ ≤ ε
+
+8 =⇒ β1 = β2 · [max {1 − ε
+
+16¯ ρσ , 0}, 1] .
+
+Now, all ratios β1 
+
+> β2
+
+can be upper-bounded by 1. We continue with the noise term: 
+
+2β1
+
+β2
+
+¯ρσ (1 − β2) κ−1 
+
+> κ
+
+≤ 2¯ ρσ (1 − β2) κ−1 
+
+> κ
+
+≤ ε
+
+8 =⇒ 1 − β2 =
+
+ ε
+
+16¯ ρσ 
+
+ κκ−1
+
+.
+
+To simplify the following smoothness term, we also satisfy the condition 1−β2 ≤ 1, i.e., 1−β2 = min {
+
+ ε
+
+> 16¯ ρσ
+
+ κκ−1
+
+, 1}.
+
+Next, we upper-bound the third term: 
+
+4 ¯L¯η
+
+(1 − β2) = 4 ¯L( αP + P −1 
+
+> P
+
+)ηL
+
+(1 − β2) ≤ ε
+
+8 =⇒ ηL = ε(1 − β2)32( αP + P −1 
+
+> P
+
+) ¯L , η M = αη L.
+
+To proceed to the second term, we note that the period-averaged stepsize ¯η := ηM 
+
+> P
+
++ ηL(P −1)  
+
+> P
+
+can be lower-bounded by ¯η ≥ 1 
+
+> P
+
+max {ηM , η L} = ηL 
+
+> P
+
+max {1, α } as a convex combination: 
+
+2β1
+
+β2
+
+ηmax ∥E0∥1
+
+¯ηT (1 − β2) ≤ 2P β 1
+
+β2
+
+ηmax ∥E0∥1
+
+ηmax T (1 − β2) ≤ 2P ∥E0∥1
+
+¯ηT (1 − β2) ≤ ε
+
+8 =⇒
+
+21 T ≥ 16 P ∥E0∥1
+
+(1 − β2)ε = P · max 
+
+(
+
+(32¯ ρσ ) κκ−1 ∥E0∥1
+
+ε 2κ−1
+
+> κ−1
+
+, 16 ∥E0∥1
+
+ε
+
+)
+
+.
+
+Finally, we bound the first term: 
+
+∆0
+
+¯ηT ≤ ε
+
+8 =⇒ T ≥ 8∆ 0
+
+ε¯η = 2 9 · ¯L∆0 · max 
+
+(
+
+(16¯ ρσ ) κκ−1
+
+ε 3κ−2
+
+> κ−1
+
+, 1
+
+ε2
+
+)
+
+.
+
+The bound obtained in the previous term is an order of magnitude smaller than this bound due to the larger power of ε factor. Hence, we keep only the last bound: 
+
+T = O ¯L∆0 · max 
+
+(
+
+(¯ ρσ ) κκ−1
+
+ε 3κ−2
+
+> κ−1
+
+, 1
+
+ε2
+
+)! 
+
+.
+
+Cases P = 1 and P = ∞. In these cases, the proof is identical with constants ¯L = L2, ¯ρ = ρnuc , A max = ηM or 
+
+¯L = L∞, ¯ρ = ρ1, A max = ηL until the stepsize pick. The considered stepsizes become ¯η = ηM or ¯η = ηL.
+
+A.4 Remark about the constants for dense matrices 
+
+In our proofs, we use the worst-case norm inequalities (2) which cause extra conservative factors in the obtained bound from Theorem 1. Fortunately, the gradients and update matrices during LLM training tend to have a dense structure, as we also observe in our experiments (Table 2). Thus, this case is worth a separate analysis. We call an update matrix Ut = LMO ∥·∥ ( ˆGτ ) dense , if we have an approximate equivalence: 
+
+∥Ut∥2 ≈ α∥Ut∥∞ for some constant α ≲ √mn . (11) Now, we can estimate the refined constants A2 and A∞ in the proof of Theorem 1 at Steps 1 and 2.
+
+Step 1: Refined analysis of the Muon Steps ( t ∈ Smuon ). For t ∈ Smuon , the update utilizes the spectral norm 
+
+∥ · ∥ 2. To use Lemmas 1 and 2, we estimate the uniform upper bound constant A2 such that max τ ≤t{ητ ∥Uτ ∥2} ≤ A2
+
+for all previous steps τ ≤ t:• If τ ∈ Smuon , then all updates Uτ = LMO ∥·∥ 2 ( ˆGτ ) are bounded by ∥Uτ ∥2 = 1 , and the stepsize is ητ = ηM .• If τ ∈ Slion , then the updates Uτ = LMO ∥·∥ ∞ ( ˆGτ ) utilize the infinity norm LMO, yielding ∥Uτ ∥∞ = 1 . Using the norm equality (11), we have ∥Uτ ∥2 ≈ α and stepsize ητ = ηL.Taking the maximum over these two cases for P ∈ (1 , ∞), we get A2 = max {ηM , α · ηL}. When P = 1 , all τ steps belong only to Smuon and A2 = ηM .
+
+Step 2: Refined analysis of the Lion Steps ( t ∈ Slion ). For t ∈ Slion , the update utilizes the infinite norm ∥ · ∥ ∞.To use Lemmas 1 and 2, we estimate the uniform upper bound constant A∞ such that max τ ≤t{ητ ∥Uτ ∥∞} ≤ A∞
+
+for all past steps τ ≤ t:• If τ ∈ Smuon , then all updates Uτ = LMO ∥·∥ 2 ( ˆGτ ) are bounded by ∥Uτ ∥∞ ≈ 1 
+
+> α
+
+∥Uτ ∥2 = 1 
+
+> α
+
+and the stepsize is 
+
+ητ = ηM .• If τ ∈ Slion , then the updates Uτ = LMO ∥·∥ ∞ ( ˆGτ ) utilize the infinity norm LMO, yielding ∥Uτ ∥∞ = 1 and stepsize ητ = ηL.Taking the maximum over these two cases for P ∈ (1 , ∞), we get A∞ = max( 1 
+
+> α
+
+ηM , η L). When P = ∞, all τ steps belong only to Slion and A∞ = ηL.
+
+22 Refined interpolated smoothness. With new refined uniform constants A2 and A∞, we can similarly derive new interpolated smoothness from (9): 
+
+¯L = ηM A2
+
+P ¯η2 L2 + (P − 1) ηLA∞
+
+P ¯η2 L∞ = ηM max {ηM , α · ηL}
+
+P ¯η2 L2 + (P − 1) ηL max( 1 
+
+> α
+
+ηM , η L)
+
+P ¯η2 L∞.
+
+Next, we apply the scale ηM /η L = α to equalize the different norms and get new smoothness: 
+
+¯L = ηM max {ηM , α · ηL}
+
+P ¯η2 L2 + (P − 1) ηL max( 1 
+
+> a
+
+ηM , η L)
+
+P ¯η2 L∞
+
+= ηM max {ηM , αα ηM }
+
+P ¯η2 L2 + (P − 1) ηL max( αα ηL, η L)
+
+P ¯η2 L∞
+
+≈ η2
+
+> M
+
+P ¯η2 L2 + (P − 1) η2
+
+> L
+
+P ¯η2 L∞. (12) The refined smoothness (12) more naturally and smoothly interpolates between pure Muon L2 and pure Lion L∞
+
+when going from P = 1 to P = ∞.
+
+B Weight Decay Analysis 
+
+Notations. We denote the closed ∥ · ∥ -norm ball of radius r by B∥·∥ (r) := {S ∈ Rm×n : ∥S∥ ≤ r} and rewrite LMO as LMO B∥·∥ (r)(G) = arg min S∈B∥·∥ (r)⟨G, S ⟩. We use the spectral norm LMO to calculate the matrix-sign operation LMO B∥·∥ 2 (r)(G) = −r · msign( G) and the infinity norm LMO to calculate the element-wise sign 
+
+LMO B∥·∥∞ (r)(G) = −r · sign( G).
+
+Constrained optimization view. With these new notations, LMO update (1) with a weight decay λ > 0 can be restated as a Frank-Wolfe step: 
+
+Wt+1 = Wt + ηt LMO B∥·∥ (1) ( ˆGt) − ηtλW t ⇔ Wt+1 = (1 − ηtλ)Wt + ηtλ LMO B∥·∥ (1 /λ )( ˆGt).
+
+This Frank-Wolfe algorithm solves the constrained optimization problem [Chen et al., 2024, 2026a; Sfyraki and Wang, 2025]: 
+
+min    
+
+> W∈B∥·∥ (1
+> λ)
+
+f (W ).
+
+As a convergence criterion, we use the Frank-Wolfe gap for a set C ⊆ Rm×n:
+
+GC (W ) := max V ∈C ⟨V − W, −∇ f (W )⟩
+
+which equals exactly zero at the KKT points of C.
+
+Our LionMuon iterates between working within the B∥·∥ 2 (1 /λ ) ball at Muon iterations and within the larger B∥·∥ ∞ (1 /λ )
+
+ball at Lion ones. Hence, our method preserves fast convergence to Muon inner KKT points, while also being able to reach Lion KKT points away from the Muon ball. 
+
+We generalize Theorem 1 to bound the minimal smaller Frank-Wolfe gap GB∥·∥ 2 (1 /λ )(W ) on a smaller set and obtain almost identical convergence bound (the differences are highlighted): 
+
+min  
+
+> t
+
+{λ · E[GB∥·∥ 2 ( 1 
+
+> λ)
+
+(Wt)] } ≤ ∆0
+
+¯ηT + 8 ¯L¯η
+
+min {(1 − β2), 1/√mn } + 2β1
+
+β2
+
+¯ρσ (1 − β2) κ−1
+
+> κ
+
++ 2 1 − β1
+
+β2
+
+¯ρσ + 2β1
+
+β2
+
+ηmax ∥E0∥1
+
+¯ηT (1 − β2) ,
+
+23 where the new smoothness ¯L := ηM  
+
+> √mn ·ηmax
+> P¯η2
+
+L2 + (P −1) ηLηmax   
+
+> P¯η2
+
+L∞ is applied. The full Theorem 2 with Corollary 2 about the optimal parameters are located below. We extend the prior work [Sfyraki and Wang, 2025] which provides analysis of simple momentums-equipped LMO updates with weight decay and heavy-tailed noise. We consider a wider class of switching LMO updates and obtain better noise dependence for pure Muon and Lion in Corollary 2. 
+
+Key differences from the non-weight-decay case: 
+
+• New gap metric. First, we cannot apply all norm inequalities to the gaps in different sets. We can only guarantee that gap on a smaller ∥ · ∥ 2-ball is lower than gap on a ∥ · ∥ ∞-ball. Thus, we do not bound the weighted gap in the bounds, but we still use learning rates scale to equalize the smoothness and noise constants. Second, due to switching between the balls, some matrices Wt can go out of the Muon ball, and the gap can become negative. Nevertheless, it is still an informative metric as both zero and negative gaps indicate that no direction towards the Muon ball will yield improvement. • New interpolation. When matrix Wt goes out of the Muon ball during Lion steps, it may slow the convergence for next Muon steps. For this reason, a bit worse factors √mn appear in the new weight decay bound and smoothness. 
+
+All other discussions about optimal parameters, learning rates scale and period remain the same. 
+
+B.1 Building-block lemmas 
+
+First, we prove the modified version of building-blocks lemmas. 
+
+Lemma 4 ( LionMuon Descent Lemma with Weight Decay )
+
+Let the objective function f satisfy Assumption 1 with respect to a norm ∥ · ∥ , and let ∥ · ∥ ⋆ be its dual norm. Then, for the update Wt+1 = (1 − λη t)Wt + λη tUt with Ut = LMO B∥·∥ (1 /λ )( ˆGt), momentums 
+
+Mt = β2Mt−1 + (1 − β2)Gt and ˆGt = β1Mt−1 + (1 − β1)Gt, the following bound holds: 
+
+f (Wt+1 ) ≤ f (Wt) − λη t · G B∥·∥ (1 /λ )(Wt) + 2ηtβ1
+
+β2
+
+∥∇ f (Wt) − Mt∥⋆
+
++ 2 ηt 1 − β1
+
+β2
+
+∥∇ f (Wt) − Gt∥⋆ + 2 LC 2η2 
+
+> t
+
+,
+
+where the Frank-Wolfe gap is GB∥·∥ (1 /λ )(Wt) := max V ∈B∥·∥ (1 /λ )⟨V − Wt, −∇ f (Wt)⟩, and update and interme-diate matrices are confined to max {∥ Wt∥, ∥Ut∥} ≤ C/λ .
+
+Proof. We begin by bounding f (Wt+1 ) using the smoothness Assumption 1: 
+
+f (Wt+1 ) = f (Wt + λη t(Ut − Wt)) 
+
+≤ f (Wt) + λη t⟨∇ f (Wt), U t − Wt⟩ + Lλ 2η2
+
+> t
+
+2 ∥Ut − Wt∥2
+
+≤ f (Wt) + λη t⟨∇ f (Wt), U t − Wt⟩ + L
+
+2 λ2C2η2 
+
+> t
+
+· 4
+
+λ2
+
+= f (Wt) + λη t⟨ ˆGt, U t − Wt⟩ + λη t⟨∇ f (Wt) − ˆGt, U t − Wt⟩ + 2 LC 2η2 
+
+> t
+
+.
+
+24 We define ˆVt := arg max V ∈B∥·∥ (1 /λ )⟨V − Wt, −∇ f (Wt)⟩ and continue: 
+
+f (Wt+1 ) = f (Wt) + λη t⟨ ˆGt, U t − Wt⟩ + λη t⟨∇ f (Wt) − ˆGt, U t − Wt⟩ + 2 LC 2η2
+
+> t
+
+≤ f (Wt) + λη t⟨ ˆGt, ˆVt − Wt⟩ + λη t⟨∇ f (Wt) − ˆGt, U t − Wt⟩ + 2 LC 2η2
+
+> t
+
+= f (Wt) + λη t⟨ ˆGt, ˆVt − Ut⟩ + λη t⟨∇ f (Wt), U t − Wt⟩ + 2 LC 2η2
+
+> t
+
+= f (Wt) + λη t⟨∇ f (Wt), ˆVt − Wt⟩ + λη t⟨∇ f (Wt) − ˆGt, U t − ˆVt⟩ + 2 LC 2η2
+
+> t
+
+≤ f (Wt) − λη tGB∥·∥ (1 /λ )(Wt) + λη t∥∇ f (Wt) − ˆGt∥⋆∥Ut − ˆVt∥ + 2 LC 2η2
+
+> t
+
+≤ f (Wt) − λη tGB∥·∥ (1 /λ )(Wt) + λ∥∇ f (Wt) − ˆGt∥⋆ · 2ηt
+
+λ + 2 LC 2η2 
+
+> t
+
+.
+
+We can switch to a bound using the main momentum Mt:
+
+∥∇ f (Wt) − ˆGt∥⋆ = ∥∇ f (Wt) − Mt + Mt − ˆGt∥⋆
+
+= ∇f (Wt) − Mt +
+
+
+
+1 − β1
+
+β2
+
+
+
+(Mt − Gt) ⋆
+
+= β1
+
+β2
+
+(∇f (Wt) − Mt) + 
+
+
+
+1 − β1
+
+β2
+
+
+
+(∇f (Wt) − Gt) ⋆
+
+≤ β1
+
+β2
+
+∥∇ f (Wt) − Mt∥⋆ + 1 − β1
+
+β2
+
+∥∇ f (Wt) − Gt∥⋆.
+
+Finally, we yield the required bound: 
+
+f (Wt+1 ) ≤ f (Wt) − λη t · G B∥·∥ (1 /λ )(Wt) + 2ηtβ1
+
+β2
+
+∥∇ f (Wt) − Mt∥⋆
+
++ 2 ηt 1 − β1
+
+β2
+
+∥∇ f (Wt) − Gt∥⋆ + 2 LC 2η2 
+
+> t
+
+.
+
+Lemma 5 ( LionMuon Momentum Error Bound with Weight Decay )
+
+Let the objective function f and corrupting noise satisfy Assumptions 1, 2, 3 with norm ∥ · ∥ and let momentum Mτ be defined as Mτ = β2Mτ −1 + (1 − β2)Gτ . Then, for updates Wτ +1 = (1 − λη τ )Wτ + λη τ Uτ
+
+with Uτ = LMO B∥·∥ (1 /λ )( ˆGτ ), the following bound holds: 
+
+E[∥Et∥⋆] ≤ βt
+
+> 2
+
+∥E0∥⋆ + 2LAβ 2
+
+1 − β2
+
++ ρ⋆σ(1 − β2) κ−1 
+
+> κ
+
+,
+
+where Et := ∇f (Wt) − Mt and max τ ≤t{ητ ∥Wτ ∥, η τ ∥Uτ ∥} ≤ A/λ .
+
+Proof. Using the momentum definition, we write down the recursive step: 
+
+Et = ∇f (Wt) − Mt = ∇f (Wt) −  β2Mt−1 + (1 − β2)Gt
+
+
+
+= β2∇f (Wt) + (1 − β2)∇f (Wt) − β2Mt−1 − (1 − β2)Gt
+
+= β2
+
+ ∇f (Wt) − Mt−1
+
+ + (1 − β2) ∇f (Wt) − Gt
+
+
+
+= β2
+
+ ∇f (Wt) − ∇ f (Wt−1) + ∇f (Wt−1) − Mt−1
+
+ + (1 − β2) ∇f (Wt) − Gt
+
+
+
+= β2
+
+ ∇f (Wt) − ∇ f (Wt−1) + β2
+
+ ∇f (Wt−1) − Mt−1
+
+ + (1 − β2) ∇f (Wt) − Gt
+
+.
+
+25 Using the notations St = ∇f (Wt) − Gt and Rt = ∇f (Wt) − ∇ f (Wt−1), we unroll the recursion: 
+
+Et = β2Et−1 + (1 − β2)St + β2Rt = βt
+
+> 2
+
+E0 +
+
+> t−1
+
+X
+
+> j=0
+
+βj
+
+> 2
+
+(1 − β2)St−j + β2Rt−j
+
+.
+
+By smoothness, we have: 
+
+∥Rt−j ∥⋆ = ∥∇ f (Wt−j ) − ∇ f (Wt−j−1)∥⋆
+
+≤ L∥Wt−j − Wt−j−1∥ = Lλη t−j−1∥Ut−j−1 − Wt−j−1∥ ≤ 2LA. 
+
+We continue with the norm-equivalence Assumption 3 and Jensen’s inequality for math expectation: 
+
+E[∥Et∥⋆] ≤ βt 
+
+> 2
+
+· ∥ E0∥⋆ + E
+
+
+
+> t−1
+
+X
+
+> j=0
+
+βj
+
+> 2
+
+(1 − β2)St−j + β2Rt−j
+
+
+
+> ⋆
+
+
+
+≤ βt 
+
+> 2
+
+· ∥ E0∥⋆ +
+
+> t−1
+
+X
+
+> j=0
+
+βj+1 2 E[∥Rt−j ∥⋆] + E
+
+
+
+> t−1
+
+X
+
+> j=0
+
+βj
+
+> 2
+
+(1 − β2)St−j
+
+> ⋆
+
+
+
+≤ βt 
+
+> 2
+
+· ∥ E0∥⋆ + 2LAβ 2
+
+1 − β2
+
++ ρ⋆
+
+E
+
+
+
+> t−1
+
+X
+
+> j=0
+
+βj
+
+> 2
+
+(1 − β2)St−j
+
+> κF
+
+
+
+> 1/κ
+
+.
+
+We treat the sequence {βj
+
+> 2
+
+(1 − β2) · St−j }t−1 
+
+> j=0
+
+as a martingale difference sequence with σj = βj
+
+> 2
+
+(1 − β2)σ and apply the batching lemma 3 : 
+
+E
+
+
+
+> t−1
+
+X
+
+> j=0
+
+βj
+
+> 2
+
+(1 − β2)St−j
+
+> κF
+
+ =
+
+> t−1
+
+X
+
+> j=0
+
+βκj  
+
+> 2
+
+(1 − β2)κσκ
+
+≤ σκ(1 − β2)κt−1X
+
+> j=0
+
+βκj 
+
+> 2
+
+≤ σκ(1 − β2)κ
+
+1 − βκ
+
+> 2
+
+.
+
+Hence, we have the required bound: 
+
+E[∥Et∥⋆] ≤ βt 
+
+> 2
+
+· ∥ E0∥⋆ + 2LAβ 2
+
+1 − β2
+
++ ρ⋆σ · 1 − β2
+
+(1 − βκ 
+
+> 2
+
+)1/κ .
+
+Since 0 < 1 − β2 ≤ 1 − βκ 
+
+> 2
+
+, we further simplify: 
+
+E[∥Et∥⋆] ≤ βt 
+
+> 2
+
+· ∥ E0∥⋆ + 2LAβ 2
+
+1 − β2
+
++ ρ⋆σ(1 − β2) κ−1 
+
+> κ
+
+.
+
+26 B.2 LionMuon Convergence Theorem with weight decay 
+
+Theorem 2 ( Convergence of LionMuon , λ > 0)
+
+Let the objective function f satisfy Assumption 1 with respect to ∥ · ∥ 2 with constant L2 and with respect to 
+
+∥ · ∥ ∞ with constant L∞. Let noise Assumptions 2 and 3 hold with noise constants σ, ρnuc and ρ1. Fix a horizon T , period P ∈ [1 , ∞], weight decay λ, momentum parameters β1, β 2 ∈ [0 , 1) and learning rates ηM
+
+and ηL.Define the period-averaged learning rate, noise level and smoothness: 
+
+¯η := ηM 
+
+> P
+
++ (P −1) ηL 
+
+> P
+
+, ¯ρ := ηM  
+
+> P¯η
+
+ρnuc + (P −1) ηL  
+
+> P¯η
+
+ρ1, ¯L := ηM ηmax C2  
+
+> P¯η2
+
+L2 + (P −1) ηLηmax   
+
+> P¯η2
+
+L∞, (13) where ηmax = max {ηM , η L} and C2 = √mn for intermediate P ∈ (1 , ∞) with the boundary cases ηmax =
+
+ηM , C 2 = 1 at P = 1 and ηmax = ηL, C 2 = 1 at P = ∞.Then, our LionMuon algorithm starting with ∆0 := f (W0) − f⋆, E 0 = ∇f (W0) − M0 guarantees the following bound on the period-averaged Frank-Wolfe gap norm: 
+
+min  
+
+> t
+
+Eλ · G B∥·∥ 2 (1 /λ )(Wt) ≤ ∆0
+
+¯ηT + 8 ¯L¯η
+
+min {1 − β2, 1/C 2} + 2β1
+
+β2
+
+¯ρσ (1 − β2) κ−1
+
+> κ
+
++ 2 1 − β1
+
+β2
+
+¯ρσ + 2β1
+
+β2
+
+ηmax ∥E0∥1
+
+¯ηT (1 − β2) ,
+
+For P = ∞ (pure Lion ), the same bound holds with the larger Frank-Wolfe gap GB∥·∥∞ (1 /λ )(Wt).
+
+Proof. We divide the iteration indices t ∈ { 0, . . . , T −1} into two disjoint sets: the set of Muon steps Smuon = {t | t ≡ 0(mod P )} and the set of Lion steps Slion = {t | t̸ ≡ 0 (mod P )}.
+
+Step 1: Analysis of the Muon steps ( t ∈ Smuon ). For t ∈ Smuon , the update uses the spectral norm ∥ · ∥ 2. To apply Lemmas 4 and 5, we need the bound C2 such that max {∥ Wt∥2, ∥Ut∥2} ≤ C2/λ , and the uniform bound A2
+
+such that max τ ≤t{ητ ∥Wτ ∥2, η τ ∥Uτ ∥2} ≤ A2/λ for all past steps τ ≤ t:• If τ ∈ Smuon , all updates Uτ = LMO B∥·∥ 2 (1 /λ )( ˆGτ ) are bounded by ∥Uτ ∥2 = 1 /λ with stepsize ητ = ηM .• If τ ∈ Slion , the updates Uτ = LMO B∥·∥∞ (1 /λ )( ˆGτ ) use the infinity-norm LMO, yielding ∥Uτ ∥∞ = 1 /λ . By norm equivalence, we have ∥Uτ ∥2 ≤ √mn/λ with stepsize ητ = ηL.• When P ∈ (1 , ∞), all Wτ lie in the Lion ball B∥·∥ ∞ (1 /λ ), so we have ∥Wτ ∥2 ≤ √mn ∥Wτ ∥∞ ≤ √mn/λ with alternating stepsizes ητ ≤ max {ηM , η L}.• When P = 1 , all Wτ lie in the Muon ball B∥·∥ 2 (1 /λ ), so we have ∥Wτ ∥2 ≤ 1/λ with single stepsize ητ = ηM .Taking the maximum over these cases, we have ηmax = max {ηM , η L}, C 2 = √mn, A 2 = C2 · ηmax if P ∈ (1 , ∞) and 
+
+ηmax = ηM , C 2 = A2 = 1 if P = 1 (no Lion steps). 27 Combining Lemmas 4 and 5 with C2, A 2 and dual variance factor ρnuc , we bound the gap: 
+
+λη M · E[GB∥·∥ 2 (1 /λ )(Wt)] ≤ E[f (Wt)] − E[f (Wt+1 )] + 2ηM β1
+
+β2
+
+E[∥∇ f (Wt) − Mt∥nuc ]+ 2 ηM 1 − β1
+
+β2
+
+E[∥∇ f (Wt) − Gt∥nuc ] + 2 L2C22 η2
+
+> M
+
+≤ E[f (Wt)] − E[f (Wt+1 )] + 2ηM β1
+
+β2
+
+
+
+βt
+
+> 2
+
+∥E0∥nuc + 2L2C2ηmax β2
+
+1 − β2
+
++ ρnuc σ(1 − β2) κ−1
+
+> κ
+
+
+
++ 2 ηM 1 − β1
+
+β2
+
+ρnuc σ + 2 L2C22 η2
+
+> M
+
+=: E[f (Wt)] − E[f (Wt+1 )] + Error muon  
+
+> t
+
+. (14) 
+
+Step 2: Analysis of the Lion steps ( t ∈ Slion ). For t ∈ Slion , the update uses the infinity norm ∥ · ∥ ∞. To apply Lemmas 4 and 5, we need the bound C∞ such that max {∥ Wt∥∞, ∥Ut∥∞} ≤ C∞/λ , and the uniform bound A∞
+
+such that max τ ≤t{ητ ∥Wτ ∥∞, η τ ∥Uτ ∥∞} ≤ A∞/λ for all past steps τ ≤ t:• If τ ∈ Smuon , all updates Uτ = LMO B∥·∥ 2 (1 /λ )( ˆGτ ) satisfy ∥Uτ ∥∞ ≤ ∥ Uτ ∥2 = 1 /λ with stepsize ητ = ηM .• If τ ∈ Slion , the updates Uτ = LMO B∥·∥∞ (1 /λ )( ˆGτ ) use the infinity-norm LMO, yielding ∥Uτ ∥∞ = 1 /λ with stepsize ητ = ηL.• All steps Wτ lie in the ball B∥·∥ ∞ (1 /λ ), so we have ∥Wτ ∥∞ ≤ 1/λ with alternating stepsizes ητ ≤ max {ηM , η L}
+
+if P ∈ (1 , ∞) or single stepsize ητ = ηL if P = ∞.Taking the maximum, we get ηmax = max( ηM , η L), C ∞ = 1 , A ∞ = ηmax if P ∈ (1 , ∞) and ηmax = ηL, C ∞ = A∞ = 1 
+
+if P = ∞ (no Muon steps). Similarly combining Lemmas 4 and 5 with C∞, A ∞ and dual variance factor ρ1, we bound the Frank-Wolfe gap: 
+
+λη L · E[GB∥·∥∞ (1 /λ )(Wt)] ≤ E[f (Wt)] − E[f (Wt+1 )] + 2ηLβ1
+
+β2
+
+
+
+βt
+
+> 2
+
+∥E0∥1 + 2L∞ηmax β2
+
+1 − β2
+
++ ρ1σ(1 − β2) κ−1
+
+> κ
+
+
+
++ 2 ηL 1 − β1
+
+β2
+
+ρ1σ + 2 L∞η2
+
+> L
+
+.
+
+Since ∥X∥∞ ≤ ∥ X∥2 (2), we have an inclusion B∥·∥ 2 (1 /λ ) ⊆ B∥·∥ ∞ (1 /λ ). Hence, the maximum defining the Frank-Wolfe gap GB∥·∥∞ (1 /λ )(Wt) over the ∥ · ∥ ∞-ball is taken over a larger set and we can safely lower-bound 
+
+GB∥·∥ 2 (1 /λ )(Wt) ≤ G B∥·∥∞ (1 /λ )(Wt). The final bound is 
+
+λη L · E[GB∥·∥ 2 (1 /λ )(Wt)] ≤ E[f (Wt)] − E[f (Wt+1 )] + 2ηLβ1
+
+β2
+
+
+
+βt
+
+> 2
+
+∥E0∥1 + 2L∞ηmax β2
+
+1 − β2
+
++ ρ1σ(1 − β2) κ−1
+
+> κ
+
+
+
++ 2 ηL 1 − β1
+
+β2
+
+ρ1σ + 2 L∞η2
+
+> L
+
+=: E[f (Wt)] − E[f (Wt+1 )] + Error lion  
+
+> t
+
+. (15) 
+
+Step 3: Telescoping sum. We sum the bounds for Muon (14) and Lion (15) steps over t = 0 , . . . , T − 1. The 28 number of steps of each type are |Smuon | = T /P and |Slion | = T (P − 1) /P : 
+
+> T−1
+
+X
+
+> t=0
+
+ 1t∈Smuon ηM + 1t∈Slion ηL
+
+ · E[λ · G B∥·∥ 2 (1 /λ )(Wt)] ≤ f (W0) − f⋆
+
++ X
+
+> t∈Smuon
+
+Error muon  
+
+> t
+
++ X
+
+> t∈Slion
+
+Error lion  
+
+> t
+
+.
+
+The coefficient on the left-hand side sums exactly to T (ηM /P + ηL(P − 1) /P ) = T ¯η, so we lower-bound it by 
+
+T ¯η · min t E[λ · G B∥·∥ 2 (1 /λ )(Wt)] . On the right-hand side, we apply the geometric series bound PT −1 
+
+> t=0
+
+βt 
+
+> 2
+
+≤ 1/(1 − β2)
+
+for the intermediate momentum errors. Grouping constants matched to |Smuon | and |Slion | and dividing by T ¯η, we get: 
+
+min  
+
+> t
+
+E[λ · G B∥·∥ 2 (1 /λ )(Wt)] ≤ ∆0
+
+¯ηT + 2ηM β1
+
+β2
+
+∥E0∥nuc 
+
+T ¯η(1 − β2)+ 1
+
+P
+
+2ηM β1
+
+β2
+
+2L2C2ηmax β2
+
+(1 − β2)¯ η
+
++ 1
+
+P
+
+2ηM β1
+
+β2 ¯η ρnuc σ(1 − β2) κ−1 
+
+> κ
+
++ 1
+
+P
+
+2ηM
+
+¯η 1 − β1
+
+β2
+
+ρnuc σ + 1
+
+P
+
+2L2C22 η2
+
+> M
+
+¯η
+
++ 2ηLβ1
+
+β2
+
+∥E0∥1
+
+T ¯η(1 − β2) + 2ηLβ1
+
+β2
+
+P − 1
+
+P
+
+2L∞ηmax β2
+
+(1 − β2)¯ η
+
++ P − 1
+
+P
+
+2ηLβ1
+
+β2 ¯η ρ1σ(1 − β2) κ−1 
+
+> κ
+
++ 2 P − 1
+
+PηL
+
+¯η 1 − β1
+
+β2
+
+ρ1σ
+
++ P − 1
+
+P
+
+2L∞η2
+
+> L
+
+¯η .
+
+Next, we unite the momentum β2 terms: 
+
+1
+
+P
+
+2L2C22 η2
+
+> M
+
+¯η ≤ 1
+
+P
+
+2L2C2ηmax ηM
+
+min {1 − β2, 1/C 2}¯η = 1
+
+P
+
+2¯ η · L2C2ηmax ηM
+
+min {1 − β2, 1/C 2}¯η2
+
+and P − 1
+
+P
+
+2L∞η2
+
+> L
+
+¯η ≤ P − 1
+
+P
+
+2L∞ηLηmax 
+
+min {1 − β2, 1/C 2}¯η = P − 1
+
+P
+
+2¯ η · L∞ηLηmax 
+
+min {1 − β2, 1/C 2}¯η2 .
+
+Then, we bound the initial-norm term: 
+
+2ηM β1
+
+β2
+
+∥E0∥nuc 
+
+T ¯η(1 − β2) + 2ηLβ1
+
+β2
+
+∥E0∥1
+
+T ¯η(1 − β2) ≤ 2ηmax β1
+
+β2
+
+∥E0∥1
+
+T ¯η(1 − β2) .
+
+When P = 1 or P = ∞, only one of the two terms appears, and the bound still holds. Next, we define the period-averaged noise level and smoothness: 
+
+¯ρ := ηM
+
+P ¯η ρnuc + (P − 1) ηL
+
+P ¯η ρ1,
+
+¯L := ηM ηmax C2
+
+P ¯η2 L2 + (P − 1) ηLηmax 
+
+P ¯η2 L∞.
+
+Using these constants, we further simplify: 
+
+min  
+
+> t
+
+E[λ · G B∥·∥ 2 (1 /λ )(Wt)] ≤ ∆0
+
+¯ηT + 2β1
+
+β2
+
+ηmax ∥E0∥1
+
+¯ηT (1 − β2) + 8 ¯L¯η
+
+min {1 − β2, 1/C 2}
+
++ 2β1
+
+β2
+
+¯ρσ (1 − β2) κ−1 
+
+> κ
+
++ 2 1 − β1
+
+β2
+
+¯ρσ. 
+
+For the pure-Lion case P = ∞, the same bound holds for the larger Frank-Wolfe gap min t E[λ · G B∥·∥∞ (1 /λ )(Wt)] .29 B.3 LionMuon Optimal Parameters Corollary with weight decay 
+
+Corollary 2 ( Optimal Parameters for LionMuon , λ > 0)
+
+Let the objective function f and the noise satisfy Assumptions 1, 2 and 3 with the period-averaged constants 
+
+¯L, σ and ¯ρ defined in (13). • Fix a weight decay λ > 0, period P ∈ (1 , ∞) and learning rates scale α = ηM /η L.To achieve accuracy min t E[λ · G B∥·∥ 2 ( 1 
+
+> λ)
+
+(Wt)] ≤ ε, our LionMuon requires T iterations 
+
+T = O ¯L∆0 · max 
+
+(
+
+(¯ ρσ ) κκ−1
+
+ε 3κ−2
+
+> κ−1
+
+, C2
+
+ε2
+
+)! 
+
+, (16) with the optimal parameters: 
+
+1 − β2 = min {
+
+ ε
+
+16¯ ρσ 
+
+ κκ−1
+
+, 1
+
+C2
+
+}, β1 ∈ β2 · [max {1 − ε
+
+16¯ ρσ , 0}, 1] ηL = ε(1 − β2)64( αP + P −1 
+
+> P
+
+) · ¯L .
+
+• Pure Muon (P = 1 ) and Lion (P = ∞) keep the same momentums β1, β 2, number of iterations T and only single learning rate ηM = ε(1 −β2)64 ·L2 or ηL = ε(1 −β2)64 ·L∞ .• We can set single-EMA β1 = β2 to get optimal parameters for our SignMuon with weight decay. 
+
+Proof. The proof exactly copies the proof of non-weight-decay Corollary 1 from Appendix A.3. The two main difference are new interpolated smoothness (13) from instead of (3) and extra condition on momentum 1 − β2 ≤ 1 
+
+> C2
+
+.
+
+C Estimated constants during training 
+
+We record the quantities of Assumptions 3 and 1 at every optimizer step of a 124M run with P =2 on each dataset, as the median over the 2D parameters, and report the mean over training in Table 2: the gradient-norm ratio α =
+
+∥Gt∥1/∥Gt∥nuc (6), the noise levels ρnuc ≈ ∥ Gt−Mt∥nuc /∥Gt−Mt∥F and ρ1 ≈ ∥ Gt−Mt∥1/∥Gt−Mt∥F (Assumption 3, with momentum as a less noisy gradient estimate), and the smoothness constants L2 ≈ ∥ Gt+1 −Gt∥nuc /∥Wt+1 −Wt∥2
+
+and L∞ ≈ ∥ Gt+1 − Gt∥1/∥Wt+1 − Wt∥∞ (Assumption 1). 
+
+Table 2: Constants of the bound, measured during 124M training with P =2 . At each step we take the median over the 2D parameters, and the table gives the mean over the run (100 records per run). L2 and L∞ are single-batch estimates and therefore noisier. The last two columns are the ratios the bound depends on. 
+
+α ρnuc ρ1 L2 L∞ L∞/(α2L2) ρ1/(αρ nuc )
+
+FineWeb 67 13 .6 894 0.79 857 0.24 0.98 
+
+WikiText-103 75 10 .9 835 1.46 1312 0.16 1.02 
+
+Two things follow. The gradient ratio α falls quickly and then holds near 67 on FineWeb and 75 on WikiText-103, the same order as the ratio ηM /η L that the sweep prefers (Appendix E). The scale the theory asks for is close to the scale that trains best. Both trade-off ratios are of order one. That is the regime in which the bound has an interior optimal period P ∗ rather than preferring P =1 or P =∞, which matches the flat optimum between P =2 
+
+and P =5 in Figure 2. 30 Figure 5: The same constants over the course of training, on 124M runs with P =2 , with the mean over the run in each legend. The gradient ratio α falls over the first 2000 steps and then holds. The last panel is the update ratio 
+
+∥U ∥2/∥U ∥∞, which stays far below the worst case √mn that the dense approximation would otherwise have to assume. 
+
+D Full Experimental Setup                                           
+
+> Table 3: Special cases of LionMuon . Both conditions, on β1, β 2and on P, must hold. Optimizer Momentum Period
+> Signum [Bernstein et al., 2018] β1=β2P=∞
+> Lion [Chen et al., 2023] β1̸=β2(dual-EMA) P=∞
+> Muon [Jordan et al., 2024] β1=β2P= 1
+> SignMuon (this work) β1=β2any P
+> LionMuon (this work) β1̸=β2(dual-EMA) any P
+
+D.1 Cost of a step 
+
+Table 1 lists what a step costs on top of the forward and backward pass. 
+
+Compute. Five Newton–Schulz iterations add about a tenth to Muon ’s step at 124M. LionMuon pays them once in P
+
+steps. 
+
+Memory. LionMuon keeps one momentum buffer per matrix, like Lion , Signum and Muon , and half of AdamW .
+
+Communication. Under data parallelism every method all-reduces the gradients, and most of that traffic hides behind the backward pass, because each bucket is sent as soon as it is ready. Muon then needs a second all-reduce that cannot hide: each matrix is orthogonalized on one device and the update is sent to the others [Liu et al., 2025]. At 124M that is 170 MB per step in bf16, on top of 496 MB of gradients. A sign step is elementwise, so every device 31 applies it to its own copy of the momentum and sends nothing. LionMuon therefore pays the second all-reduce only on Muon steps, 170 /P MB per step on average. 
+
+Dion and MuonBP cut the same cost in other ways. Dion [Ahn et al., 2025] replaces the gradient all-reduce by an all-reduce of two low-rank factors with error feedback. At rank min( m, n )/4 that is 113 MB, plus 155 MB for the parameters it does not factorize, 269 MB in total, or 382 MB at rank min( m, n )/2. It is the least of any method here, but all of it waits for the backward pass to finish. MuonBP [Khaled et al., 2026] orthogonalizes column blocks locally and takes a full Muon step every P -th iteration ( P =5 in their paper), so it sends what LionMuon sends at the same P but runs Newton–Schulz on every step. 
+
+Replicated Muon . Muon can also avoid its all-reduce by orthogonalizing every matrix on every device. That trades the 170 MB for redundant Newton–Schulz work. At 124M on four GPUs a device then does 1.53 × 10 12 FLOPs of Newton–Schulz per step instead of 0.38 × 10 12 , on top of 3.31 × 10 12 for forward and backward, about 31% more arithmetic. LionMuon divides both the transfer and the Newton–Schulz work by P , so it is cheaper than Muon either way, and the loss is the same in both versions.                                                                                                                     
+
+> Table 4: 124M on four GPUs with data parallelism, 150 ,000 steps, one seed per run. Loss is the best validation loss of the run, bytes are what one step sends (Table 1), and the last column is the first evaluation at or below Muon ’s own final loss (evaluations every 1,000 steps). Method ηM/ηLLoss MB per step Steps to Muon ’s loss
+> AdamW 10 −33.407 496 137k
+> Muon 10 −33.418 667 147k
+> Muon 3×10 −43.467 667 never
+> Muon 3×10 −33.756 at 96k, stopped 667 never
+> LionMuon P=1 10 −33.391 667 133k
+> SignMuon P=2 3×10 −3/10 −43.395 581 136k
+> LionMuon P=2 10 −3/10 −43.376 581 126k
+> SignMuon P=5 10 −2/3.3×10 −53.402 530 139k
+> LionMuon P=5 3×10 −3/10 −43.377 530 127k
+> Signum 3×10 −43.429 496 never
+> Lion 10 −43.415 496 140k
+> Lion 3×10 −43.880, loss spikes 496 never
+> MuonBP P=5 10 −33.414 530 142k
+> Dion , rank 1/410 −33.429 269 never
+> Dion , rank 1/43×10 −33.451 269 never
+> Dion , rank 1/210 −33.411 382 141k
+
+Distributed setup. All distributed runs use PyTorch DDP on one node with four H200 GPUs (NVLink), one process per GPU and 8 sequences of 512 tokens per GPU, the global batch of the 124M grid. Each process holds a full replica of the model and the optimizer state, and DDP averages the gradients bucket by bucket during the backward pass. What happens after it differs by method. Muon : the 2D parameters are dealt round-robin to the four processes, each runs Newton–Schulz on its share, and one all-reduce of the updates gives every process all of them, as in Moonlight [Liu et al., 2025]. LionMuon and SignMuon : the same on Muon steps, nothing on sign steps. MuonBP : four column blocks stand in for a 4-way tensor-parallel split, the block step is local, and the full step every P =5 iterations is Muon ’s. Dion : DDP’s gradient all-reduce is off, each process keeps a local momentum and all-reduces two low-rank factors per matrix, plus one all-reduce for the parameters it does not factorize, which is the data-parallel mode of their paper (their Section 3.3). Algorithms 2 and 3 give both exactly as run. Both use Muon ’s update scaling, so Muon ’s learning rate transfers, and AdamW for the embedding and 1D parameters. Both baselines were built for sharded models: MuonBP for tensor parallelism and FSDP, where Muon has to all-gather 32 Table 5: What it costs to reach Muon ’s final loss, relative to Muon , at 124M on four GPUs. Steps are the first evaluation at or below that loss, and the other columns multiply them by the per-step costs of Table 1. Step times are given for the methods of Table 1. Dion at rank 1/4 and Signum never reach it. Steps FLOPs Bytes Time, PCIe Time, NVLink 
+
+Muon 1.00 1.00 1.00 1.00 1.00 
+
+LionMuon P =2 0.86 0.81 0.75 0.75 0.79 
+
+LionMuon P =5 0.86 0.79 0.69 0.70 0.77 
+
+SignMuon P =2 0.93 0.88 0.81 0.81 0.85 
+
+AdamW 0.93 0.84 0.69 0.70 0.79 
+
+Lion 0.95 0.85 0.71 – –
+
+MuonBP P =5 0.97 0.93 0.77 0.91 1.21 
+
+Dion , rank 1/2 0.96 0.88 0.55 – –
+
+Table 6: 355M on FineWeb, 8.2B tokens, every hyperparameter copied from 124M without retuning. Best validation loss, one seed per method. Method ηM / ηL Val loss 
+
+SignMuon P =2 3 × 10 −3 / 10 −4 3.008 
+
+LionMuon P =2 10 −3 / 10 −4 3.020 
+
+LionMuon P =5 3 × 10 −3 / 10 −4 3.023 
+
+Muon 10 −3 3.040 
+
+Lion 3 × 10 −4 3.050 
+
+AdamW 10 −3 3.064 
+
+SignMuon P =5 10 −2 / 3.3 × 10 −5 3.072 
+
+Signum 3 × 10 −4 3.081 
+
+the shards of a matrix first (their Section 2.2), and Dion for FSDP and tensor parallelism, with the data-parallel sync as an option. Neither paper measures the saving end to end under data parallelism. MuonBP reports throughput under tensor parallelism, and Dion simulates step times on one GPU without communication (their Figure 1). One node under data parallelism is where we can count every byte and time every method under the same load, so that is what we use. 33 Algorithm 2: MuonBP for a single 2D parameter W ∈ Rm×n under data parallelism  
+
+> 1:
+
+Require: Period P , number of column blocks B, learning rate η, momentum β, weight decay λ, Newton– Schulz steps KNS , and c(A) := 0 .2pmax( rows (A), cols (A))  
+
+> 2:
+
+for t = 0 , 1, . . . , T − 1 do  
+
+> 3:
+
+Gt = ∇W Lt ▷ Gradient, averaged over devices by the framework  
+
+> 4:
+
+Mt = βM t−1 + (1 − β) Gt ▷ Momentum, replicated on every device  
+
+> 5:
+
+if t mod P = 0 then  
+
+> 6:
+
+Ut = c(Mt) NS KNS (Mt) ▷ Full step, each device orthogonalizes its share  
+
+> 7:
+
+all-reduce Ut ▷ The only communication of the optimizer  
+
+> 8:
+
+else  
+
+> 9:
+
+split Mt into column blocks M (1)  
+
+> t
+
+, . . . , M (B) 
+
+> t
+> 10:
+
+Ut =  c(M (1)  
+
+> t
+
+) NS KNS (M (1)  
+
+> t
+
+) · · · c(M (B) 
+
+> t
+
+) NS KNS (M (B) 
+
+> t
+
+)  ▷ Block step, local  
+
+> 11:
+
+end if  
+
+> 12:
+
+Wt+1 = Wt − η  Ut + λW t
+
+ 
+
+> 13:
+
+end for Algorithm 3: Dion for a single 2D parameter W ∈ Rm×n on D devices  
+
+> 1:
+
+Require: Rank r, error-feedback rate γ, learning rate η, weight decay λ, M (d) 
+
+> −1
+
+= 0 on every device d,
+
+V−1 ∈ Rn×r random with orthonormal columns and the same on every device, and c := 0 .2pmax( m, n ) 
+
+> 2:
+
+for t = 0 , 1, . . . , T − 1 do  
+
+> 3:
+
+G(d) 
+
+> t
+
+= ∇W L(d) 
+
+> t
+
+▷ Local gradient, the framework’s gradient all-reduce is off  
+
+> 4:
+
+M (d) 
+
+> t
+
+= M (d) 
+
+> t−1
+
++ G(d) 
+
+> t
+
+▷ Local momentum, accumulated without decay  
+
+> 5:
+
+Pt = 1
+
+> D
+
+P 
+
+> d
+
+M (d) 
+
+> t
+
+Vt−1 ▷ all-reduce of an m × r factor  
+
+> 6:
+
+Ut = QR( Pt) ▷ Orthonormal columns, one power iteration  
+
+> 7:
+
+R(d) 
+
+> t
+
+= M (d)⊤ 
+
+> t
+
+Ut, Rt = 1
+
+> D
+
+P 
+
+> d
+
+R(d) 
+
+> t
+
+▷ all-reduce of an n × r factor  
+
+> 8:
+
+M (d) 
+
+> t
+
+← M (d) 
+
+> t
+
+− γ U tR(d)⊤ 
+
+> t
+
+▷ Error feedback, local  
+
+> 9:
+
+Vt = Rt diag  ∥Rte1∥2, . . . , ∥Rter∥2
+
+−1 ▷ Columns normalized  
+
+> 10:
+
+Wt+1 = Wt − η  c U tV ⊤ 
+
+> t
+
++ λW t
+
+ 
+
+> 11:
+
+end for 
+
+E Hyperparameter Tuning 
+
+Every number in the main text comes from a learning rate chosen on the full training horizon: each cell of the sweep is a complete 64 ,000 -step run of the same model, data and schedule as the headline runs (12 layers, width 768, batch 32 × 512 tokens, cosine schedule, evaluation every 500 steps), and a cell’s score is the best validation loss it reaches. We tune two quantities: the spectral-step learning rate ηM and the ratio α = ηM /η L to the sign-step learning rate, which is the pair the theory in Section 4.3 identifies. For pure Muon (P =1 ) and Signum (P =∞) there is only one rate to sweep. 
+
+Grid and pruning. ηM is swept over 3 × 10 −4 to 10 −1 and α over 1 to 3000 , both in half-decade steps, with the swept band following the optimum as it moves with P . Running every pair at full length would be wasteful, so a cell is stopped early once it is clearly out of the running: from 34 finished curves, no eventual winner was ever more than 0.10 behind the best cell of its own (P, β ) group at 6,000 steps or 0.20 behind at 16 ,000 , and we stop cells that exceed those margins. Tables 8 and 9 report how many cells ran to completion and how many were stopped this way; a stopped neighbour is written “cut”. 34 Table 7: Full experimental configuration. 
+
+Model architecture 
+
+Number of layers 12 Number of heads 12 Embedding dim 768 Sequence length 512 Vocabulary size 50,304 (GPT-2 BPE) Architectures GPT-2 base 
+
+Training schedule 
+
+Iterations 64,000 Warmup steps 3,000 Batch size 32 Gradient accumulation 1LR scheduler cosine Weight decay 0.1 Gradient clipping 0.5 Eval interval every 500 steps 
+
+Optimizer-specific 
+
+Newton–Schulz steps KNS = 5 
+
+NS scaling 0.2pmax( m, n )
+
+AdamW (β1, β 2) (0 .8, 0.999) 
+
+Lion (β1, β 2) (0 .9, 0.99) 
+
+Signum momentum β = 0 .9 (EMA) 
+
+Muon momentum β = 0 .9 (EMA), no Nesterov 
+
+SignMuon momentum β = 0 .9 (EMA), no Nesterov 
+
+LionMuon (β1, β 2) (0 .9, 0.99) 
+
+1D-param backup (hybrids) AdamW with η1D = 10 −3
+
+Distributed run (Section 5.3) 
+
+Framework PyTorch DDP, NCCL, one process per GPU Hardware one node, 4× H200 (NVLink) Per-GPU batch 8 sequences × 512 tokens (global batch 32) Iterations / warmup 150,000 / 7,500 Eval every 1,000 steps, 32 batches 
+
+MuonBP 4 column blocks, full step every 5, momentum 0.9 
+
+Dion rank min( m, n )/4, error feedback 0.05, gradient all-reduce off 
+
+Selected cells. For each method we take the best cell and use it verbatim: for the three-seed runs at 124M, and, without any further tuning, for 355M. The tables give the chosen pair together with the losses of the neighbouring 
+
+ηM values, which is what makes the optimum interior rather than an edge of the grid. Two observations transfer to practice. The ratio α grows with the period ( 10 , 30 , 100 at P =2 , 5, 20 for LionMuon on both datasets), so a practitioner who changes P should retune α and can leave ηM near its Muon value. And the sign-step rate itself stays in a narrow band ( ηL ≈ 10 −4 on FineWeb), so the ratio, not the second rate, is the knob that matters. 
+
+Why not a cheap pilot. An earlier version of this work chose learning rates on 3,000 -step pilot runs and transferred them. We found that this mis-ranks the candidates: the cell a pilot prefers is not the cell that wins at 
+
+64 ,000 steps, and the gap between the pilot’s choice and the full-horizon choice is larger than the differences we report between methods. Every tuned number in this paper therefore comes from the full-horizon sweep; an earlier 35 pilot-tuned grid over three datasets and two architectures gave the same ranking of methods, but we do not report it here. 
+
+Table 8: The tuning sweep at 124M on FineWeb, every cell a full 64 ,000 -step run. “Cells” counts the runs that went to the end plus the ones the pruning rule stopped early. The last column is the loss of the chosen cell, with the losses at the next lower and next higher ηM (same α) in brackets. method ηM swept α swept cells chosen (ηM , α ) loss (next ηM down / up) 
+
+Muon (P =1 ) 0.0003–0.003 – 3+0 0.001 3.528 (3.596 / 3.534) 
+
+SignMuon P =2 0.001–0.01 3–300 8+3 (0.003, 30) 3.511 (3.529 / cut) 
+
+SignMuon P =5 0.001–0.03 3–1000 13+3 (0.01, 300) 3.508 (3.534 / cut) 
+
+SignMuon P =20 0.003–0.1 10–1000 8+4 (0.01, 100) 3.540 (3.581 / 3.551) 
+
+LionMuon P =1 0.0003–0.003 – 2+1 0.001 3.511 (3.540 / cut) 
+
+LionMuon P =2 0.0003–0.01 1–300 12+2 (0.001, 10) 3.501 (3.538 / 3.507) 
+
+LionMuon P =5 0.001–0.01 3–300 9+2 (0.003, 30) 3.500 (3.523 / cut) 
+
+LionMuon P =20 0.001–0.03 10–300 8+3 (0.01, 100) 3.511 (3.538 / cut) 
+
+Table 9: The same sweep on WikiText-103. method ηM swept α swept cells chosen (ηM , α ) loss (next ηM down / up) 
+
+Muon (P =1 ) 0.001–0.01 – 2+1 0.003 2.838 (2.884 / cut) 
+
+SignMuon P =2 0.0003–0.03 1–3000 12+5 (0.003, 3) 2.835 (2.885 / cut) 
+
+SignMuon P =5 0.0001–0.03 1–100 10+5 (0.01, 30) 2.842 (2.890 / cut) 
+
+SignMuon P =20 0.001–0.1 3–3000 9+8 (0.03, 100) 2.859 (2.902 / cut) 
+
+LionMuon P =1 0.001–0.01 – 2+1 0.003 2.826 (2.861 / cut) 
+
+LionMuon P =2 0.0003–0.01 1–3000 8+8 (0.003, 10) 2.827 (2.881 / cut) 
+
+LionMuon P =5 0.0003–0.03 1–100 8+5 (0.01, 30) 2.825 (2.872 / cut) 
+
+LionMuon P =20 0.001–0.1 3–300 9+5 (0.03, 100) 2.839 (2.877 / cut) 
+
+E.1 Momentum 
+
+The momentum pair was tuned on FineWeb at 124M with P =2 . For each (β1, β 2) the rate ηM and the ratio α were swept as above, and Table 10 reports the best cell. The diagonal β1 = β2 is SignMuon , the rest is LionMuon . Every off-diagonal pair beats every diagonal one, and (0 .9, 0.99) is best, so LionMuon and Lion use it. The diagonal is flat within 0.002 , so SignMuon and Muon keep the usual 0.9. AdamW uses (0 .8, 0.999) , the pair tuned by the benchmark, which also beat (0 .9, 0.95) in our check. 
+
+E.2 Two ablations: a random period, and Lion on the 1D parameters 
+
+Two questions came up in earlier reviews. Does the period have to be fixed, and do the 1D parameters need AdamW ?For the first we replace the fixed period by a Muon step drawn with probability 1/P at every iteration, so the mean spacing is the same but the steps are irregular. For the second we give the biases and norm gains the same Lion 
+
+step as the matrices take on sign steps, at the sign-step rate and betas, instead of AdamW . Both run at 124M on FineWeb for 64 ,000 steps at the tuned rates of Appendix E, with three seeds (Table 11). The random period changes nothing. Lion on the 1D parameters is clearly worse, so the AdamW fallback is worth its second buffer for those few parameters. 36 Table 10: Loss at 124M on FineWeb with P =2 for each momentum pair, after tuning the rate and the ratio for that pair. The diagonal is SignMuon , the rest is LionMuon .
+
+β1\β2 0.9 0.95 0.99 0.9 3.511 3.508 3.501 
+
+0.95 3.509 3.502 0.99 3.510 
+
+Table 11: Loss at 124M on FineWeb, 64 ,000 steps, mean over three seeds with the spread in brackets. The first column is the tuned setting of Section 5, the other two are the ablations. Fixed period Random period Lion on 1D parameters 
+
+LionMuon P =2 3.498 (0.002 ) 3.499 (0.003 ) 3.535 (0.001 )
+
+LionMuon P =5 3.498 (0.002 ) 3.499 (0.003 ) 3.538 (0.002 )
+
+F Heavy-ball versus EMA momentum in SignMuon 
+
+Our initial SignMuon implementation followed the heavy-ball convention Mt = μM t−1+Gt used in the llm-baselines 
+
+codebase of [Semenov et al., 2025], but we found that it requires careful joint tuning of μ and learning rate. Switching to the Lion -style EMA Mt = βM t−1 + (1 − β)Gt proved to be much more robust across the grid, even though the two updates are equivalent up to a constant rescaling of η.
+
+Proof. We consider two momentum recursions starting from M−1 = M ′−1 = 0 :(HB) Mt = μ M t−1 + Gt, (EMA) M ′ 
+
+> t
+
+= β M ′ 
+
+> t−1
+
++ (1 − β) Gt.
+
+With μ = β, induction gives M ′ 
+
+> t
+
+= (1 − β) Mt for all t.
+
+Base case: M ′−1 = (1 − β)M−1 = 0 .
+
+Inductive step: assuming M ′ 
+
+> t−1
+
+= (1 − β)Mt−1, we have 
+
+M ′ 
+
+> t
+
+= βM ′ 
+
+> t−1
+
++ (1 − β)Gt = β(1 − β)Mt−1 + (1 − β)Gt = (1 − β) βM t−1 + Gt
+
+ = (1 − β)Mt.
+
+Since both msign and sign are positively homogeneous of degree zero (i.e., msign( αX ) = msign( X) for any α > 0), the update directions msign( Mt) and msign( M ′ 
+
+> t
+
+) are identical, and similarly for sign . The two parametrizations therefore generate the same iterate sequence under 
+
+ηHB = (1 − β) ηEMA .
+
+The practical consequence is that the LR ranges that “feel right” under the two parametrizations differ by a factor of 1/(1 − β) ≈ 100 at β = 0 .99 . This difference explains why the EMA form is more forgiving on a fixed grid: a typical LR around 10 −3–10 −4 already sits in its useful range, whereas the corresponding heavy-ball LR is around 
+
+10 −5–10 −6 and easy to miss when sweeping. 37

@@ -1,0 +1,376 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-02T22:43:10.165506+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 9,
+    "quick_skim_target": 11,
+    "quick_selected": 9
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.36610v1",
+      "source": "arxiv",
+      "title": "Communication-Efficient Agnostic Federated Learning via Faster Convergence and Compression",
+      "abstract": "Agnostic federated learning (AFL) seeks a model that performs reliably across $m$ heterogeneous workers, but communication remains a bottleneck. We improve communication efficiency by reducing the number of synchronization rounds via faster convergence and the communication cost per round via compression. We first propose AFL-BR, which updates the dual weights over workers using online mirror ascent with KL divergence and blockwise restarts. It achieves an $O((\\log m)^{1/4}T^{-1/8})$ stationarity rate after $T$ update rounds, reducing the $m$-dependence of the synchronization rounds required for convergence from polynomial to logarithmic order. Building on AFL-BR, we develop AFL-Com by applying bidirectional compression with error feedback (EF). Instead of compressing local gradients, workers apply EF to their dual-weighted gradients, enabling direct control of the aggregated compression error under time-varying weights. We then establish an $O((δ^{-1}+(\\log m)^{1/4})T^{-1/8})$ stationarity rate for AFL-Com under general $δ$-approximate compressors and improve the $δ$-dependence from $δ^{-1}$ to $δ^{-1/2}$ for additive-and-idempotent compressors with shared randomness (SR). With suitable compression levels, AFL-Com retains the same convergence rate as AFL-BR at a lower per-round communication cost, yielding reductions in total communication complexity by factors of $(\\log m)^{1/4}$ with Top-$k$ and $(\\log m)^{1/2}$ with Rand-$k$ and SR. Experiments validate the improved synchronization and communication efficiency of our methods.",
+      "authors": [
+        "Haomin Bai",
+        "Junyan Sun",
+        "Sifan Yang",
+        "Bo Xue",
+        "Lijun Zhang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-29T03:26:32+00:00",
+      "link": "https://arxiv.org/pdf/2609.36610v1",
+      "tags": [
+        "keyword:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "communication-efficient federated learning via compression and faster convergence",
+      "llm_evidence_cn": "通过压缩与更快收敛实现通信高效训练",
+      "llm_evidence": "通过压缩与更快收敛实现通信高效训练",
+      "canonical_evidence": "通过压缩与更快收敛实现通信高效训练",
+      "llm_tldr_en": "AFL seeks a model reliable across heterogeneous workers, but communication is a bottleneck. AFL-BR cuts synchronization rounds via online mirror ascent; AFL-Com adds bidirectional compression with error feedback to cut per-round cost.",
+      "llm_tldr_cn": "不可知联邦学习希望模型在多个异构工作节点上都能可靠表现，但通信始终是瓶颈。论文先提出AFL-BR，用带分块重启的在线镜像上升更新对偶权重，把收敛所需同步轮数对节点数的依赖从多项式降到对数级；再在其上构建AFL-Com，引入带误差反馈的双向压缩以降低每轮通信开销。理论分析给出更优的平稳性收敛率，实验验证了通信效率与精度之间的良好权衡，为异构联邦训练提供了新的通信优化思路。",
+      "llm_tldr": "不可知联邦学习希望模型在多个异构工作节点上都能可靠表现，但通信始终是瓶颈。论文先提出AFL-BR，用带分块重启的在线镜像上升更新对偶权重，把收敛所需同步轮数对节点数的依赖从多项式降到对数级；再在其上构建AFL-Com，引入带误差反馈的双向压缩以降低每轮通信开销。理论分析给出更优的平稳性收敛率，实验验证了通信效率与精度之间的良好权衡，为异构联邦训练提供了新的通信优化思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.30413v1",
+      "source": "arxiv",
+      "title": "Communication-Aware Model Distributed Inference via Latent Representation Compression",
+      "abstract": "We study optimization of distributed model inference over resource-constrained edge resources. We propose a framework that optimizes the trade-off between model accuracy and communication costs by controlling latent representation compression to meet strict Quality of Service (QoS) throughput targets. For settings with known channel state information (CSI), we derive a closed-form optimal solution for single tasks and reduce the multi-task problem to a convex optimization program characterized by a per-link water-filling strategy. We extend these to handle unpredictable environments via a stochastic dual descent algorithm that relies only on causal channel estimates. We provide Lyapunov-based proofs demonstrating that our approach strictly satisfies long-term delay constraints while achieving a bounded optimality gap. Our results offer a robust, scalable blueprint for maximizing the performance of pipelined AI tasks in dynamic, resource-constrained distributed systems. We verify the effectiveness of our proposed framework through simulations and experiments with real edge devices.",
+      "authors": [
+        "Peyman Gholami",
+        "Theodoros-Thirimachos Davarakis",
+        "Teng Li",
+        "Miquel Sirera Perelló",
+        "Salil Reddy",
+        "Ayberk Yarkın Yıldız",
+        "Anish Arora",
+        "Atilla Eryilmaz",
+        "Stratis Ioannidis",
+        "Chengzhang Li",
+        "Hulya Seferoglu",
+        "Ness Shroff"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-09-24T18:10:38+00:00",
+      "link": "https://arxiv.org/pdf/2609.30413v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "communication-aware distributed inference via latent compression",
+      "llm_evidence_cn": "通信感知的分布式推理与潜在表示压缩",
+      "llm_evidence": "通信感知的分布式推理与潜在表示压缩",
+      "canonical_evidence": "通信感知的分布式推理与潜在表示压缩",
+      "llm_tldr_en": "For distributed inference over resource-constrained edge devices, accuracy and communication cost trade off. The authors control latent representation compression, derive closed-form and convex solutions under known channel state, and use stochastic dual descent under uncertainty, proving QoS guarantees.",
+      "llm_tldr_cn": "在资源受限的边缘环境中，分布式模型推理面临精度与通信开销之间的尖锐权衡。作者提出通过控制潜在表示压缩程度来优化二者关系，在已知信道状态时给出闭式最优解并化为凸优化问题，未知环境下采用随机对偶下降算法。理论证明该方法在满足服务质量吞吐约束下优化精度与通信代价的折中，为通信高效的分布式学习系统提供了可证明的优化框架。",
+      "llm_tldr": "在资源受限的边缘环境中，分布式模型推理面临精度与通信开销之间的尖锐权衡。作者提出通过控制潜在表示压缩程度来优化二者关系，在已知信道状态时给出闭式最优解并化为凸优化问题，未知环境下采用随机对偶下降算法。理论证明该方法在满足服务质量吞吐约束下优化精度与通信代价的折中，为通信高效的分布式学习系统提供了可证明的优化框架。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.36662v1",
+      "source": "arxiv",
+      "title": "AutoLoCo: Communication Efficient Distributed LLM Training via Adaptive Synchronization",
+      "abstract": "The pre-training of Large Language Models (LLMs) is increasingly conducted across multiple data centers. As training scales to a larger number of accelerators, the fraction of time spent on computation decreases, while the fraction spent on communication increases. Therefore, frequent synchronization becomes a growing bottleneck. Local update methods reduce this cost by allowing workers to perform several optimizer steps between synchronizations. Most local update methods set the number of local optimizer steps between synchronizations before training and keep this interval fixed throughout the run. However, the best interval can change during the entire train process. If the interval and optimizer are adapted to the current training state, the communication frequency is reduced while maintaining the training performance. In this work, we introduce AutoLoCo, an adaptive training framework to reduce communication in LLM training. It adapts the local interval using scalar training statistics and corrects each outer update. Our method is motivated by two observations: 1) the appropriate local interval varies across training stages, and 2) changing the number of inner steps per interval creates a mismatch with an unchanged outer optimizer, requiring a correction to the outer update. We optimize this mismatch by correction of the outer optimizer for the momentum and the learning rate using the accumulated inner learning rate. Our experiments under communication constraints demonstrate that AutoLoCo reduces communication frequency by 27% relative to DiLoCo while maintaining training performance.",
+      "authors": [
+        "Pengyu He",
+        "Yan Zhang",
+        "Ruien Li",
+        "Guangwen Yang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-29T04:05:08+00:00",
+      "link": "https://arxiv.org/pdf/2609.36662v1",
+      "tags": [
+        "keyword:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "communication efficient distributed training via adaptive synchronization",
+      "llm_evidence_cn": "通过自适应同步实现通信高效分布式训练",
+      "llm_evidence": "通过自适应同步实现通信高效分布式训练",
+      "canonical_evidence": "通过自适应同步实现通信高效分布式训练",
+      "llm_tldr_en": "LLM pretraining spans multiple data centers, and frequent synchronization becomes a growing bottleneck. AutoLoCo adaptively adjusts the local-update interval and optimizer during training, reducing communication rounds while preserving convergence.",
+      "llm_tldr_cn": "大语言模型预训练常跨多个数据中心进行，随着加速器规模扩大，频繁同步逐渐成为主要瓶颈。已有局部更新方法允许工作节点在同步之间多走几步优化，但间隔通常预先固定。论文提出AutoLoCo，根据当前训练状态自适应地调整同步间隔与优化器设置，在保证收敛的同时显著减少通信次数。实验表明该方法能在多数据中心场景下有效提升训练效率，为通信受限的分布式训练提供了自适应方案。",
+      "llm_tldr": "大语言模型预训练常跨多个数据中心进行，随着加速器规模扩大，频繁同步逐渐成为主要瓶颈。已有局部更新方法允许工作节点在同步之间多走几步优化，但间隔通常预先固定。论文提出AutoLoCo，根据当前训练状态自适应地调整同步间隔与优化器设置，在保证收敛的同时显著减少通信次数。实验表明该方法能在多数据中心场景下有效提升训练效率，为通信受限的分布式训练提供了自适应方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.31466v1",
+      "source": "arxiv",
+      "title": "Scaffold: Support Graph Theory Based Sparsification for Graph Neural Networks",
+      "abstract": "Graph neural networks (GNNs) rely on message passing over graph edges, making their computational and memory costs strongly dependent on graph density. Graph sparsification offers a natural way to reduce these costs, but removing edges indiscriminately can distort important communication structure and degrade predictive performance. We introduce Scaffold, a topology-based, unsupervised graph sparsification framework derived from support graph theory preconditioners. Scaffold explicitly controls two complementary structural quantities: dilation, which measures the length of rerouting paths induced by removed edges, and congestion, which measures how strongly these rerouted paths concentrate on the retained support. By jointly controlling dilation and congestion, Scaffold preserves short communication paths while avoiding structural bottlenecks. To our knowledge, Scaffold is the first scalable GNN sparsification framework to use a joint supporting-path dilation-congestion criterion. Across 19 homophilic and heterophilic benchmarks spanning small to large graphs, Scaffold achieves the best aggregate rank among the evaluated sparsification and related methods. Using only 10%-50% of the original edges per sparse support, Scaffold recovers or closely approaches full-graph GNN performance while using less than half the memory of full-graph training and reducing end-to-end training time, including sparsification overhead. We provide an open-source software package at https://github.com/siddhartha047/Scaffold.",
+      "authors": [
+        "Siddhartha Shankar Das",
+        "Sai Karthik Navuluru",
+        "S M Ferdous",
+        "Ryan A. Rossi",
+        "Baris Coskunuzer",
+        "Lakshman Tamil",
+        "Edoardo Serra",
+        "Alex Pothen",
+        "Robert Rallo",
+        "Mahantesh M Halappanavar"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-25T16:17:09+00:00",
+      "link": "https://arxiv.org/pdf/2609.31466v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "graph sparsification to cut GNN compute and communication cost",
+      "llm_evidence_cn": "图稀疏化降低GNN计算与通信开销",
+      "llm_evidence": "图稀疏化降低GNN计算与通信开销",
+      "canonical_evidence": "图稀疏化降低GNN计算与通信开销",
+      "llm_tldr_en": "GNN compute and memory costs grow with graph density, but naive edge removal distorts communication structure. Scaffold, an unsupervised topology-based sparsifier built on support-graph-theory preconditioners, controls dilation and congestion to cut cost while preserving accuracy.",
+      "llm_tldr_cn": "图神经网络的算力与显存开销高度依赖图密度，而盲目删边会破坏关键通信结构并损害预测性能。作者提出Scaffold，一种基于支撑图理论预条件子的无监督拓扑稀疏化框架，通过联合控制扩张度与拥塞度来约束重路由路径。实验表明该方法在降低计算开销的同时保持预测精度，为通信高效的图学习系统提供了结构可控的稀疏化思路。",
+      "llm_tldr": "图神经网络的算力与显存开销高度依赖图密度，而盲目删边会破坏关键通信结构并损害预测性能。作者提出Scaffold，一种基于支撑图理论预条件子的无监督拓扑稀疏化框架，通过联合控制扩张度与拥塞度来约束重路由路径。实验表明该方法在降低计算开销的同时保持预测精度，为通信高效的图学习系统提供了结构可控的稀疏化思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "find papers on communication efficient graph learning systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.39646v1",
+      "source": "arxiv",
+      "title": "Beyond Uniform Compression: Budgeted Transmission Allocation for Extreme Federated Learning",
+      "abstract": "Federated learning faces severe communication bottlenecks when clients upload high-dimensional model updates. Existing methods often compress these updates uniformly across all layers. This uniform approach ignores the heterogeneous value of different parameter blocks and wastes limited bandwidth on insensitive layers. To address this issue, we propose Layer-wise Budgeted Adaptive Transmission (LBAT). LBAT reframes federated communication under extreme uplink budgets as a resource allocation problem. Our framework dynamically estimates the transmission value of different layers utilising local training signals. It then employs an exact byte dynamic programming allocator to determine optimal rank and bit configurations under strict budgets. We validate LBAT on highly heterogeneous federated tabular prediction and data generation tasks. Extensive experiments demonstrate that LBAT consistently outperforms uniform rank, uniform quantisation, and fixed compression baselines across various extreme budget regimes. Furthermore, it achieves significantly better communication and utility tradeoffs while preserving essential distributional fidelity.",
+      "authors": [
+        "Pengfei Li",
+        "Mohammad Khalil"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-30T12:50:15+00:00",
+      "link": "https://arxiv.org/pdf/2609.39646v1",
+      "tags": [
+        "keyword:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "communication-efficient federated training via budgeted layer-wise transmission",
+      "llm_evidence_cn": "通过分层预算传输实现通信高效的联邦训练",
+      "llm_evidence": "通过分层预算传输实现通信高效的联邦训练",
+      "canonical_evidence": "通过分层预算传输实现通信高效的联邦训练",
+      "llm_tldr_en": "LBAT reframes extreme-uplink federated communication as a resource allocation problem, estimating per-layer transmission value and allocating rank and bit budgets via dynamic programming.",
+      "llm_tldr_cn": "联邦学习中客户端上传高维模型更新造成严重通信瓶颈，现有方法对所有层均匀压缩，忽视了不同参数块的传输价值差异。本文提出分层预算自适应传输LBAT，将极端上行预算下的通信建模为资源分配问题，利用本地训练信号估计各层传输价值，并通过精确字节动态规划分配秩与比特配置。实验表明该方法在严格带宽约束下优于均匀压缩策略。其贡献在于将通信压缩从统一策略推进为细粒度资源分配。",
+      "llm_tldr": "联邦学习中客户端上传高维模型更新造成严重通信瓶颈，现有方法对所有层均匀压缩，忽视了不同参数块的传输价值差异。本文提出分层预算自适应传输LBAT，将极端上行预算下的通信建模为资源分配问题，利用本地训练信号估计各层传输价值，并通过精确字节动态规划分配秩与比特配置。实验表明该方法在严格带宽约束下优于均匀压缩策略。其贡献在于将通信压缩从统一策略推进为细粒度资源分配。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.35297v1",
+      "source": "arxiv",
+      "title": "LionMuon: Alternating Spectral and Sign Descent for Efficient Training",
+      "abstract": "Pretraining a language model takes enormous compute, and the right optimizer can save a good part of it. Muon's spectral step gives a stronger direction than a sign step, but it is expensive. Every step runs Newton-Schulz iterations on the full matrix and, in distributed training, an extra all-reduce. Sign steps, as in Lion and Signum, are cheap and stay local to each device. We propose LionMuon, which takes one Muon step every $P$ iterations and Lion steps in between, with a single dual-EMA momentum buffer shared by both. Muon's compute and communication are paid once per $P$ steps, and the optimizer state is half of AdamW's. A single-EMA variant, SignMuon, already improves on Muon. We prove complexity bounds under heavy-tailed noise in which the period sets an interpolation between Muon's and Lion's smoothness and noise constants, and which say when LionMuon is faster than both. On 124M and 355M models trained on FineWeb, LionMuon with $P=2$ and $P=5$ reaches a lower loss than Muon, AdamW, Lion and Signum at the same number of tokens. Under 4-GPU data-parallel training it reaches Muon's final loss with a third less wall-clock on PCIe, and it beats the communication-efficient Muon variants Dion and MuonBP on loss at no more exposed communication, while keeping the exact gradient. Code: https://github.com/brain-lab-research/lion-muon",
+      "authors": [
+        "Arman Bolatov",
+        "Artem Riabinin",
+        "Nikita Kornilov",
+        "Andrey Veprikov",
+        "Samuel Horváth",
+        "Martin Takáč",
+        "Aleksandr Beznosikov"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-28T14:39:14+00:00",
+      "link": "https://arxiv.org/pdf/2609.35297v1",
+      "tags": [
+        "keyword:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "optimizer reducing distributed training communication via alternating steps",
+      "llm_evidence_cn": "通过交替更新降低分布式训练通信的优化器",
+      "llm_evidence": "通过交替更新降低分布式训练通信的优化器",
+      "canonical_evidence": "通过交替更新降低分布式训练通信的优化器",
+      "llm_tldr_en": "Muon spectral steps give stronger directions but cost Newton-Schulz iterations plus an all-reduce each step; sign steps are cheap and local. LionMuon takes one Muon step every P iterations and Lion steps in between, amortizing Muon compute and communication.",
+      "llm_tldr_cn": "预训练语言模型需要巨大算力，合适的优化器可节省可观开销。Muon的谱步方向更强但代价高，每一步都要做Newton-Schulz迭代，分布式训练中还需额外all-reduce；而Lion等符号步廉价且仅在本设备本地计算。论文提出LionMuon，每P步执行一次Muon步、其余用Lion步，并共享一个双EMA动量缓冲，从而把Muon的计算与通信成本摊薄到每P步一次，在重尾噪声下给出了复杂度界。",
+      "llm_tldr": "预训练语言模型需要巨大算力，合适的优化器可节省可观开销。Muon的谱步方向更强但代价高，每一步都要做Newton-Schulz迭代，分布式训练中还需额外all-reduce；而Lion等符号步廉价且仅在本设备本地计算。论文提出LionMuon，每P步执行一次Muon步、其余用Lion步，并共享一个双EMA动量缓冲，从而把Muon的计算与通信成本摊薄到每P步一次，在重尾噪声下给出了复杂度界。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.01620v1",
+      "source": "arxiv",
+      "title": "FedLore: Communication and Memory Efficient Federated Learning via Shared Gradient Low-Rank Projection",
+      "abstract": "Federated training of foundation models is constrained by client memory and communication costs. LoRA-based methods reduce these costs through low-rank adapters, but their fixed rank budget can limit adaptation. Gradient low-rank optimization offers greater flexibility, yet independently chosen client subspaces create a problem we term \\emph{subspace fragmentation}: local projections interact with data heterogeneity to bias aggregated directions, while aggregation can increase update rank and communication cost. Thus, accurate local gradient compression need not preserve global descent. We propose \\texttt{FedLore}, which shares a low-rank optimization basis within each round and refreshes it across rounds. The shared basis enables exact aggregation in low-rank coordinates and eliminates the identified projection bias. Subspace refresh allows the accumulated model update to exceed the per-round rank budget. We characterize the aggregation bias and establish an $O(T^{-1/2})$ stationarity bound for the projected-SGD variant under a global-gradient coverage condition and standard smoothness and variance assumptions, with bounded gradient heterogeneity. Experiments on vision and language tasks, including federated pre-training, show that \\texttt{FedLore} outperforms the evaluated low-rank adapter baselines and matches or exceeds full-parameter training, while reducing communication and optimizer-state memory.",
+      "authors": [
+        "Junkang Liu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-01T12:56:25+00:00",
+      "link": "https://arxiv.org/pdf/2610.01620v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "communication-efficient federated training via low-rank gradient projection",
+      "llm_evidence_cn": "通过低秩梯度投影实现通信高效的联邦训练",
+      "llm_evidence": "通过低秩梯度投影实现通信高效的联邦训练",
+      "canonical_evidence": "通过低秩梯度投影实现通信高效的联邦训练",
+      "llm_tldr_en": "FedLore shares a low-rank optimization basis within each federated round to fix subspace fragmentation, cutting communication and memory costs while preserving global descent.",
+      "llm_tldr_cn": "联邦训练基础模型受客户端内存和通信成本限制，现有LoRA方法因固定秩和客户端独立子空间产生子空间碎片化，导致聚合方向偏差。为此提出FedLore，在每轮内共享一个低秩优化基并跨轮刷新，使本地压缩与全局下降方向保持一致。实验表明该方法在降低通信与内存开销的同时维持了模型精度。其贡献在于揭示了压缩与全局优化之间的关系，为通信高效的联邦训练提供了新思路。",
+      "llm_tldr": "联邦训练基础模型受客户端内存和通信成本限制，现有LoRA方法因固定秩和客户端独立子空间产生子空间碎片化，导致聚合方向偏差。为此提出FedLore，在每轮内共享一个低秩优化基并跨轮刷新，使本地压缩与全局下降方向保持一致。实验表明该方法在降低通信与内存开销的同时维持了模型精度。其贡献在于揭示了压缩与全局优化之间的关系，为通信高效的联邦训练提供了新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.39350v1",
+      "source": "arxiv",
+      "title": "HAPMoE: Heterogeneity-Aware Automatic Parallelism Planning for Mixture-of-Experts Models Training",
+      "abstract": "As model sizes continue to scale, distributed training has become inevitable. Automatic parallelization techniques can derive efficient training parallelism strategies at low cost while achieving superior performance. The difficulty of this problem is jointly determined by the complexity of the model and the underlying compute cluster. Meanwhile, mixture-of-experts (MoE) models are increasingly emerging as the dominant architecture and the rapid evolution of accelerator hardware has made cluster heterogeneity commonplace, posing substantial challenges to automatic parallelization. However, existing approaches typically target either MoE architectures or heterogeneous clusters, failing to generalize to scenarios where both challenges coexist. To this end, we present HAPMoE, a heterogeneity-aware automatic parallelism planner for MoE training. HAPMoE builds a lightweight MoE-aware cost model and efficiently searches a six-dimensional parallel space, producing parallel plans directly deployable on Megatron-LM. Experiments show that HAPMoE improves end-to-end training throughput by up to 3.2$\\times$ over baselines across heterogeneous clusters. Its non-uniform pipeline partitioning yields an additional up to 78% gains, and its pruning-enhanced dynamic programming algorithm completes the search within 1 minute, demonstrating high efficiency and practical value in complex hardware environments.",
+      "authors": [
+        "Mengyuan Fan",
+        "Peizhuang Cong",
+        "Zixiao Huang",
+        "Si Xu",
+        "Tong Qiao",
+        "Yanghao Li",
+        "Jing Yang",
+        "Tong Yang",
+        "Quanlu Zhang",
+        "Yu Wang"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-09-30T09:11:46+00:00",
+      "link": "https://arxiv.org/pdf/2609.39350v1",
+      "tags": [
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "automatic parallelism planning as a partitioning strategy for distributed training",
+      "llm_evidence_cn": "作为分布式训练划分策略的自动并行规划",
+      "llm_evidence": "作为分布式训练划分策略的自动并行规划",
+      "canonical_evidence": "作为分布式训练划分策略的自动并行规划",
+      "llm_tldr_en": "Scaling models makes distributed training inevitable, yet automatic parallelization must handle both mixture-of-experts models and heterogeneous clusters. HAPMoE performs heterogeneity-aware automatic parallelism planning, outperforming methods targeting only one factor.",
+      "llm_tldr_cn": "随着模型规模增长，分布式训练不可避免，自动并行技术可低成本推导高效并行策略。然而MoE架构与异构集群并存时，现有方法难以泛化。论文提出HAPMoE，针对专家混合模型与异构硬件集群的联合挑战进行异构感知的自动并行规划，综合建模模型复杂度与集群差异以生成更优的训练并行方案。实验表明该方法在异构场景下优于只针对单一因素的已有方法，提升了分布式训练效率。",
+      "llm_tldr": "随着模型规模增长，分布式训练不可避免，自动并行技术可低成本推导高效并行策略。然而MoE架构与异构集群并存时，现有方法难以泛化。论文提出HAPMoE，针对专家混合模型与异构硬件集群的联合挑战进行异构感知的自动并行规划，综合建模模型复杂度与集群差异以生成更优的训练并行方案。实验表明该方法在异构场景下优于只针对单一因素的已有方法，提升了分布式训练效率。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "graph partitioning strategies for distributed GNN",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.01126v1",
+      "source": "arxiv",
+      "title": "Latent Information Sharing for Accelerating Federated Learning",
+      "abstract": "Federated learning (FL) is a communication-efficient distributed learning paradigm. However, client drift remains one of the most critical challenges, hindering the efficient training of a global model. In this study, we propose a novel latent information sharing scheme that directly mitigates data heterogeneity across clients. Our theoretical and empirical results show that sharing a small amount of hidden-layer activations significantly improves training efficiency while preserving convergence guarantees and data privacy. Furthermore, we compare our method with existing FL approaches designed to address client drift, including FedProx, SCAFFOLD, FedPVR, FedProto, and SplitFed, and demonstrate superior model accuracy under a fixed round budget without incurring excessive communication overhead. Overall, this work presents a promising new knowledge aggregation scheme and provides a comprehensive analysis of the impact of activation sharing on federated optimization.",
+      "authors": [
+        "Seungjun Lee",
+        "Ensieh Khazaei",
+        "Dimitrios Hatzinakos",
+        "Baturalp Buyukates",
+        "Sunwoo Lee"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-01T06:11:14+00:00",
+      "link": "https://arxiv.org/pdf/2610.01126v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "communication-efficient federated learning with reduced client drift",
+      "llm_evidence_cn": "缓解客户端漂移的通信高效联邦学习",
+      "llm_evidence": "缓解客户端漂移的通信高效联邦学习",
+      "canonical_evidence": "缓解客户端漂移的通信高效联邦学习",
+      "llm_tldr_en": "Federated learning is communication-efficient but suffers from client drift. This work shares a small amount of hidden-layer activations to mitigate data heterogeneity, improving accuracy under a fixed round budget while preserving convergence and privacy.",
+      "llm_tldr_cn": "联邦学习是一种通信高效的分布式学习范式，但客户端漂移严重阻碍全局模型的高效训练。论文提出一种潜在信息共享方案，通过共享少量隐藏层激活直接缓解客户端之间的数据异构性。理论分析与实验表明，该方法在保持收敛保证和数据隐私的同时显著提升训练效率，并在固定通信轮次预算下优于FedProx、SCAFFOLD、FedPVR、FedProto与SplitFed等基线，取得更高精度。",
+      "llm_tldr": "联邦学习是一种通信高效的分布式学习范式，但客户端漂移严重阻碍全局模型的高效训练。论文提出一种潜在信息共享方案，通过共享少量隐藏层激活直接缓解客户端之间的数据异构性。理论分析与实验表明，该方法在保持收敛保证和数据隐私的同时显著提升训练效率，并在固定通信轮次预算下优于FedProx、SCAFFOLD、FedPVR、FedProto与SplitFed等基线，取得更高精度。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
