@@ -1,0 +1,134 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-03T22:02:17.471977+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.39194v1",
+      "source": "arxiv",
+      "title": "Importance-Aware Feature Sparsification for Wireless Split Learning",
+      "abstract": "Wireless split learning (SL) reduces on-device computation by offloading upper layers to a server, yet transmitting high-dimensional intermediate features at each iteration remains a major communication bottleneck. Existing methods select features at the client side using task-agnostic criteria such as magnitude, statistics, or clustering, which increases client-side processing and often degrades accuracy under non-independent and identically distributed (non-i.i.d.) client data. We propose importance-aware class-balanced sparsification (ICS), a lightweight approach in which the server ranks feature channels using Grad-CAM-based scores obtained from the true-class logit during backpropagation. The per-class scores are aggregated into a class-balanced, label-agnostic importance vector that mitigates head-class bias under label skew, and each client reuses this vector in the next round to retain the top-$N$ feature channels, incurring no additional client-side forward or backward passes. We further derive a non-asymptotic convergence bound that isolates the sparsification-induced error and characterizes how the sparsification ratio and mini-batch size jointly affect convergence under a fixed communication budget, and we analyze the communication and computational overhead of ICS against representative baselines. Beyond sequential CNN-based SL, we extend ICS to parallel split learning and to transformer-based models. Experiments show that ICS consistently outperforms the baselines, with larger gains under severe non-i.i.d. partitions.",
+      "authors": [
+        "Bumjun Kim",
+        "Yoon Huh",
+        "Wan Choi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "eess.SP"
+      ],
+      "published": "2026-09-30T07:46:35+00:00",
+      "link": "https://arxiv.org/pdf/2609.39194v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "communication-efficient split learning via feature sparsification",
+      "llm_evidence_cn": "通过特征稀疏化实现通信高效的拆分学习",
+      "llm_evidence": "通过特征稀疏化实现通信高效的拆分学习",
+      "canonical_evidence": "通过特征稀疏化实现通信高效的拆分学习",
+      "llm_tldr_en": "Wireless split learning suffers from transmitting high-dimensional intermediate features each iteration. This paper proposes importance-aware class-balanced sparsification, where the server ranks feature channels using Grad-CAM scores, cutting communication while preserving accuracy under non-i.i.d. client data.",
+      "llm_tldr_cn": "无线拆分学习每轮需传输高维中间特征，成为主要通信瓶颈，且现有客户端特征选择方法任务无关、在非独立同分布数据下精度下降。本文提出重要性感知的类平衡稀疏化ICS，由服务器利用反向传播中真类logit的Grad-CAM分数对特征通道排序并做类平衡聚合。方法在客户端几乎不增加处理负担，有效降低通信量并缓解非i.i.d.下的精度退化，为通信高效的协作训练提供了新思路。",
+      "llm_tldr": "无线拆分学习每轮需传输高维中间特征，成为主要通信瓶颈，且现有客户端特征选择方法任务无关、在非独立同分布数据下精度下降。本文提出重要性感知的类平衡稀疏化ICS，由服务器利用反向传播中真类logit的Grad-CAM分数对特征通道排序并做类平衡聚合。方法在客户端几乎不增加处理负担，有效降低通信量并缓解非i.i.d.下的精度退化，为通信高效的协作训练提供了新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.37069v1",
+      "source": "arxiv",
+      "title": "Windowed and Quantized Group-Based ADMM for Distributed Optimization in Heterogeneous Edge Networks",
+      "abstract": "Distributed optimization in edge networks is constrained by heterogeneous client computing capabilities and limited communication resources. We propose the Windowed and Quantized Group-Based Alternating Direction Method of Multipliers (WQ-GADMM) to coordinate group updates under limited activation capacity and reduce communication costs. Clients are grouped by estimated computation time. Each window activates a limited number of groups per round, and the cloud updates the global model after all groups have updated once. The method quantizes both downlink and uplink model exchanges to reduce communication costs and allows bounded model staleness and inexact proximal local updates. For smooth nonconvex objectives, we establish an average squared Karush-Kuhn-Tucker residual bound under the stated assumptions and parameter conditions. The bound consists of a term that decreases with the iteration count and a quantization-dependent error term. Experiments on MNIST and CIFAR-10 show that 12-bit communication reduces communication volume and simulated wall-clock time while maintaining test accuracy comparable to full precision. The 12-bit configuration also maintains complete group coverage and achieves shorter mean group inter-completion gaps than the evaluated baselines.",
+      "authors": [
+        "Gaiguo Wei",
+        "Qingying Zhang",
+        "Heqiang Wang",
+        "Yu Zhang",
+        "Xiaoxiong Zhong"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-09-29T09:05:38+00:00",
+      "link": "https://arxiv.org/pdf/2609.37069v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "quantized distributed optimization reducing communication costs",
+      "llm_evidence_cn": "量化分布式优化降低通信成本",
+      "llm_evidence": "量化分布式优化降低通信成本",
+      "canonical_evidence": "量化分布式优化降低通信成本",
+      "llm_tldr_en": "Distributed optimization in edge networks is limited by heterogeneous compute and communication. This paper proposes WQ-GADMM, grouping clients by computation time and quantizing uplink/downlink exchanges to cut communication while allowing bounded staleness and asynchronous group updates.",
+      "llm_tldr_cn": "边缘网络中的分布式优化受限于客户端异构算力与有限通信资源。本文提出窗口化与量化分组ADMM（WQ-GADMM），按估计计算时间对客户端分组，每轮仅激活有限分组，并对上下行模型交换进行量化以降低通信成本，同时允许有界模型陈旧与不精确近端更新。方法在平滑非凸目标下建立了收敛性保证，为通信受限的分布式训练提供了可扩展方案。",
+      "llm_tldr": "边缘网络中的分布式优化受限于客户端异构算力与有限通信资源。本文提出窗口化与量化分组ADMM（WQ-GADMM），按估计计算时间对客户端分组，每轮仅激活有限分组，并对上下行模型交换进行量化以降低通信成本，同时允许有界模型陈旧与不精确近端更新。方法在平滑非凸目标下建立了收敛性保证，为通信受限的分布式训练提供了可扩展方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.01537v1",
+      "source": "arxiv",
+      "title": "FedFit: Federated Fine-Tuning of LLMs via Vector-Bank Parameterization and Quantization",
+      "abstract": "Federated Learning (FL) enables privacy-preserving fine-tuning of Large Language Models (LLMs), yet the massive communication overhead remains a critical bottleneck. Furthermore, applying Low-Rank Adaptation (LoRA) in FL faces a fundamental \"aggregation dilemma\" between the accurate Sum-of-Products (SoP) and the communication-efficient Product-of-Sums (PoS) implementations. To tackle these challenges, we propose FedFit. First, to significantly reduce communication overhead, we introduce a disjoint shared vector-bank parameterization that reconstructs high-dimensional adapter matrices from two compact and disjoint global vector banks. Second, to address the aggregation dilemma, we devise an alternating optimization schedule. By cycling between decoupled single-bank updates (which allow for accurate aggregation) and joint updates corrected by a Residual Spectral Aggregation mechanism, we resolve the conflict between SoP and PoS. Additionally, we integrate blockwise quantization with client-side error feedback to further compress the transmitted vectors. Furthermore, we establish theoretical convergence guarantees for the proposed algorithm. Extensive experiments on Qwen2.5 models demonstrate that FedFit achieves perplexity performance comparable to standard federated LoRA methods, while providing compression ratios up to 100x higher.",
+      "authors": [
+        "Hang Zou",
+        "Chao Zhang",
+        "Yuzhi Yang",
+        "Yu Tian",
+        "Samson Lasaulce",
+        "Mérouane Debbah"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-01T12:09:46+00:00",
+      "link": "https://arxiv.org/pdf/2610.01537v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reducing communication overhead in federated fine-tuning",
+      "llm_evidence_cn": "降低联邦微调的通信开销",
+      "llm_evidence": "降低联邦微调的通信开销",
+      "canonical_evidence": "降低联邦微调的通信开销",
+      "llm_tldr_en": "FedFit reduces federated LLM fine-tuning communication via disjoint shared vector-bank parameterization of LoRA adapters and an alternating schedule that resolves the aggregation dilemma.",
+      "llm_tldr_cn": "联邦微调大模型时通信开销巨大，且LoRA在联邦场景下存在和积与积和实现的聚合两难。本文提出FedFit，采用不相交共享向量库参数化重构高维适配矩阵以压缩通信量，并通过交替优化调度缓解聚合矛盾。实验表明该方法在显著降低通信成本的同时保持微调性能，为通信高效的联邦训练提供可行方案。",
+      "llm_tldr": "联邦微调大模型时通信开销巨大，且LoRA在联邦场景下存在和积与积和实现的聚合两难。本文提出FedFit，采用不相交共享向量库参数化重构高维适配矩阵以压缩通信量，并通过交替优化调度缓解聚合矛盾。实验表明该方法在显著降低通信成本的同时保持微调性能，为通信高效的联邦训练提供可行方案。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

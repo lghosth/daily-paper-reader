@@ -1,0 +1,1926 @@
+1
+Windowed and Quantized Group-Based ADMM for Distributed
+Optimization in Heterogeneous Edge Networks
+Gaiguo Wei, Qingying Zhang, Heqiang Wang, Yu Zhang, and Xiaoxiong Zhong
+Abstract—Distributed optimization in edge networks is con-
+strained by heterogeneous client computing capabilities and
+limited communication resources. We propose the Windowed and
+Quantized Group-Based Alternating Direction Method of Multi-
+pliers (WQ-GADMM) to coordinate group updates under limited
+activation capacity and reduce communication costs. Clients are
+grouped by estimated computation time. Each window activates
+a limited number of groups per round, and the cloud updates
+the global model after all groups have updated once. The method
+quantizes both downlink and uplink model exchanges to reduce
+communication costs and allows bounded model staleness and
+inexact proximal local updates. For smooth nonconvex objectives,
+we establish an average squared Karush-Kuhn-Tucker residual
+bound under the stated assumptions and parameter conditions.
+The bound consists of a term that decreases with the iteration
+count and a quantization-dependent error term. Experiments
+on MNIST and CIFAR-10 show that 12-bit communication
+reduces communication volume and simulated wall-clock time
+while maintaining test accuracy comparable to full precision.
+The 12-bit configuration also maintains complete group coverage
+and achieves shorter mean group inter-completion gaps than the
+evaluated baselines.
+Index Terms—Distributed optimization, heterogeneous edge
+networks, alternating direction method of multipliers (ADMM),
+quantized communication.
+I. INTRODUCTION
+E
+DGE networks support collaborative model training
+across clients with locally collected data. Federated learn-
+ing enables this collaboration through model exchanges while
+keeping raw data at the clients [1]. However, differences
+in computing capability, data volume, and communication
+conditions lead to unequal update completion times [2]. These
+differences affect both local training and the collection of
+model updates. A cloud-edge-client architecture organizes
+collaboration through intermediate edge servers, each coordi-
+nating a group of clients while the cloud maintains the global
+model. Hierarchical federated learning uses this structure to
+coordinate local updates and reduce direct client-cloud com-
+munication [3]. Although this hierarchy organizes computation
+at the group level, efficient training still requires coordination
+of group participation, model exchanges, and global updates.
+This work was supported by Pengcheng Laboratory Project under Grant
+PCL2025A13.
+Gaiguo Wei and Qingying Zhang are with the Southern University of Sci-
+ence and Technology, Shenzhen 518055, China, and also with Pengcheng Lab-
+oratory, Shenzhen 518000, China (e-mail: 12447019@mail.sustech.edu.cn;
+12547037@mail.sustech.edu.cn).
+Heqiang Wang and Xiaoxiong Zhong are with Pengcheng Laboratory, Shen-
+zhen 518000, China (e-mail: wanghq02@pcl.ac.cn; xixzhong@gmail.com).
+Yu Zhang is with the Department of Computer Science and Engineering,
+Southern University of Science and Technology, Shenzhen 518055, China
+(e-mail: zhangy7@sustech.edu.cn).
+Corresponding authors: Yu Zhang and Xiaoxiong Zhong.
+Collaborative training in this architecture can be formulated
+as a distributed optimization problem. Each group objective
+combines the losses of its member clients, and consensus
+constraints link the group models to a global model. The
+alternating direction method of multipliers (ADMM) decom-
+poses this problem into local subproblems and coordinates
+their solutions through global and dual updates [4]. Its dis-
+tributed execution depends on the resources available for group
+updates. We consider a setting in which only a limited number
+of edge groups can be activated per physical communication
+round. When the group count exceeds this limit, collecting
+a contribution from every group requires multiple rounds.
+The update procedure must therefore specify which groups
+participate in each round and when the cloud updates the
+global model.
+Beyond
+coordinating
+group
+participation,
+distributed
+ADMM must also address communication and computation
+costs. Each group exchanges model information with the
+cloud and solves a local subproblem. Quantization reduces
+the transmitted model payload, while approximate local
+solutions can reduce the computational effort required for
+each update. Both introduce approximation errors into the
+optimization process. If groups use cached global models,
+their local updates also depend on information from earlier
+iterations. The analysis must therefore account for model
+staleness together with quantization and local solution errors.
+Existing methods address these issues through different
+mechanisms. Parallel Group-Based ADMM (P-GADMM)
+forms computation-aware groups and uses bounded asyn-
+chronous coordination to accommodate unequal group com-
+pletion times [5]. Quantized Group ADMM (Q-GADMM)
+combines group coordination with quantized model exchanges
+to reduce communication in decentralized learning [6]. Inexact
+ADMM allows approximate local solutions and has been
+applied to federated learning [7]. These methods address group
+coordination, communication reduction, and local computation
+under different update rules. Our work considers these mech-
+anisms together under limited activation capacity, with one
+update from every group before each global update.
+To address these challenges, we propose Windowed and
+Quantized Group-Based ADMM (WQ-GADMM). Clients are
+assigned to fixed edge groups according to their estimated
+computation times. Each activation window spans the physical
+rounds needed for all groups to complete one update. In each
+round, the scheduling rule selects groups that have not yet
+updated, subject to the activation limit. The global model
+remains fixed throughout the window, and the cloud performs
+the global and dual updates after all groups finish. Each
+window therefore corresponds to one logical ADMM iteration.
+arXiv:2609.37069v1  [cs.DC]  29 Sep 2026
+
+
+2
+Fig. 1. Main challenges in heterogeneous edge networks and the correspond-
+ing components of WQ-GADMM.
+Bidirectional quantization reduces the payload of downlink
+references and uplink models. Local updates use cached refer-
+ences with bounded model staleness and approximate solutions
+to proximal subproblems. Fig. 1 summarizes the design.
+The main contributions of this work are as follows.
+1) We propose WQ-GADMM to coordinate group updates
+and reduce communication costs in heterogeneous edge
+networks. Clients are divided into fixed groups based
+on estimated computation times. Within each activation
+window, a limited number of groups update per commu-
+nication round, and the cloud updates the global model
+after every group has updated once. The method uses
+bidirectional quantization and allows bounded model
+staleness and inexact local updates.
+2) We establish an average squared Karush-Kuhn-Tucker
+(KKT) residual bound for smooth nonconvex objectives
+under the stated assumptions and parameter conditions.
+The bound accounts for model staleness and inexact
+local updates, and consists of an O(1/K) term and
+a quantization-dependent error term. It guarantees a
+bounded average residual in the presence of these errors.
+3) We evaluate WQ-GADMM on a smooth nonconvex
+test problem and the MNIST and CIFAR-10 datasets,
+examining residual behaviour, learning performance,
+group participation, and resource efficiency. Under the
+same training workload, the 12-bit configuration (Q12)
+reduces communication volume by approximately 62.5%
+compared with the 32-bit floating-point configuration
+(FP32), while achieving comparable test accuracy and
+lower simulated wall-clock time. Q12 also maintains
+complete group coverage and achieves shorter group
+inter-completion gaps than the baselines.
+The remainder of this paper is organized as follows. Sec-
+tion II reviews related work, and Section III presents the
+system model and problem formulation. Section IV describes
+WQ-GADMM, and Section V provides its convergence anal-
+ysis. Section VI reports the experimental results, followed by
+the conclusion in Section VII.
+II. RELATED WORK
+A. Distributed Optimization in Edge Networks
+Distributed optimization coordinates local computation and
+information exchange across participants to minimize a global
+objective. Distributed subgradient and dual averaging methods
+provide convergence guarantees for this process [8], [9],
+while communication-efficient statistical optimization studies
+its computational and communication costs [10]. In heteroge-
+neous edge networks, local data volumes affect computational
+workloads, and available resources influence update comple-
+tion times. FedProx addresses data and system heterogeneity
+through proximal local objectives and flexible amounts of
+local computation [11]. These studies provide a basis for
+coordinating local optimization under heterogeneous data and
+resource conditions.
+Client organization and selection offer additional ways to
+address heterogeneity. Hierarchical federated learning coor-
+dinates updates across network levels [12], while adaptive
+clustering groups clients according to their data characteristics
+[13]. Client selection can also account for participation fairness
+[14] or training efficiency. For example, Oort combines data
+utility with execution speed when selecting clients [15]. These
+approaches address heterogeneity through network hierarchy,
+client grouping, and participant selection.
+B. ADMM and Inexact Local Optimization
+ADMM has been applied to distributed learning and op-
+timization in edge networks [16], and its convergence has
+been studied beyond convex objectives. Hong et al. analyze
+convergence for nonconvex consensus and sharing problems
+under suitable assumptions and penalty parameters [17]. Wang
+et al. establish sufficient conditions for convergence in a
+class of nonconvex, nonsmooth problems with coupled lin-
+ear equality constraints [18]. In distributed implementations,
+solving local subproblems exactly can be computationally
+expensive, motivating inexact updates. Proximal point and
+operator splitting methods provide a theoretical foundation for
+controlling the resulting approximation errors [19]. Chang et
+al. use proximal gradient updates to reduce local solution costs
+[20], while stochastic ADMM uses sampled data for local
+updates [21]. Inexact ADMM and three-operator ADMM have
+also been developed for federated learning [7], [22].
+In addition to local computation, synchronization affects
+the execution time of distributed ADMM. Zhang and Kwok
+combine a partial barrier with bounded delay to coordinate
+asynchronous updates [23]. Chang et al. analyze asynchronous
+distributed ADMM for possibly nonconvex objectives and
+derive convergence conditions that depend on the maximum
+network delay [24]. These methods allow global updates using
+fresh results from a subset of participants while limiting update
+delays.
+C. Quantized and Group-Based ADMM
+Quantized consensus methods examine how finite com-
+munication precision affects agreement among participants
+[25]. Quantized consensus ADMM incorporates quantized
+
+
+3
+exchanges into distributed optimization and analyzes the re-
+sulting errors [26]. For asynchronous ADMM, Shrestha com-
+bines bidirectional compression with error feedback to reduce
+communication costs [27]. Related approaches address com-
+munication costs in distributed stochastic gradient training.
+Quantized stochastic gradient descent (QSGD) characterizes
+the tradeoff between transmitted bits and quantization vari-
+ance [28], while DoubleSqueeze applies compression with
+error compensation at both workers and the parameter server
+[29]. These studies explore communication reduction through
+quantization and compression across different optimization
+methods and update schemes.
+Group-based methods organize local updates and model
+exchanges, providing a complementary approach to quan-
+tization. Group-based ADMM uses a group structure for
+distributed classification [30]. Group ADMM (GADMM) and
+its extensions explore group coordination, layer-wise updates,
+and different communication patterns [31]–[34]. Q-GADMM
+combines group coordination with quantized exchanges for de-
+centralized learning [6], while P-GADMM uses computation-
+aware groups and bounded asynchronous cloud updates [5].
+WQ-GADMM considers a hierarchical edge network in which
+only a limited number of groups can be activated per physical
+round. It uses fixed groups and activation windows, with each
+group completing one update before the cloud updates the
+global model. Both downlink references and uplink models
+are quantized to reduce the transmitted model payload.
+III. SYSTEM MODEL AND PROBLEM FORMULATION
+We consider a heterogeneous edge network with clients,
+edge servers, and a cloud server. Clients retain their data
+locally and collaborate in model training. Edge servers co-
+ordinate client groups, while the cloud maintains the global
+model and coordinates group updates. Clients differ in their
+data volumes, computing resources, and communication capa-
+bilities.
+A. Client Model and Fixed Group Partition
+Let C = {1, 2, . . . , M} denote the client set. Client i holds
+a local dataset Di containing ni = |Di| samples. Its empirical
+loss is
+Fi(w) = 1
+ni
+X
+ξ∈Di
+ℓi(w; ξ),
+(1)
+where w ∈Rd is the model parameter vector and ℓi(w; ξ) is
+the loss on sample ξ.
+Before training, the clients are partitioned into G nonempty,
+disjoint groups {Cg}G
+g=1 satisfying
+Cg̸ = ∅,
+G
+[
+g=1
+Cg = C,
+Cg ∩Cg′ = ∅,
+g̸ = g′.
+(2)
+The grouping procedure in Section IV-A uses estimated client
+computation times. Group membership remains fixed through-
+out training, while WQ-GADMM determines which groups are
+activated in each physical round.
+Let ng = P
+i∈Cg ni and n = PG
+g=1 ng denote the group
+and total sample counts, respectively. The objective of group
+g is
+ϕg(wg) =
+X
+i∈Cg
+ni
+n Fi(wg).
+(3)
+Equivalently, ϕg(wg) = (ng/n) ¯Fg(wg), where ¯Fg(wg) =
+P
+i∈Cg(ni/ng)Fi(wg) is the group’s sample-averaged loss.
+This definition preserves the sample weights in the global
+objective:
+G
+X
+g=1
+ϕg(w) =
+M
+X
+i=1
+ni
+n Fi(w).
+(4)
+B. Group Consensus Formulation
+Each edge group maintains a model wg ∈Rd, and the cloud
+maintains a global model w ∈Rd. Collaborative training is
+formulated as
+minimize
+{wg}G
+g=1, w
+G
+X
+g=1
+ϕg(wg)
+subject to
+wg = w,
+g = 1, . . . , G.
+(5)
+The consensus constraints require all group models to agree
+with the global model.
+Let λg be the dual variable associated with wg = w. For a
+fixed ADMM penalty parameter ρ > 0, define the scaled dual
+variable ug = λg/ρ, so that
+λg = ρug.
+(6)
+For differentiable group objectives, a first-order station-
+ary point (w∗, {w∗
+g}G
+g=1) with associated scaled multipliers
+{u∗
+g}G
+g=1 satisfies the KKT conditions
+∇ϕg(w∗
+g) + ρu∗
+g = 0,
+g = 1, . . . , G,
+(7)
+w∗
+g = w∗,
+g = 1, . . . , G,
+(8)
+and
+G
+X
+g=1
+u∗
+g = 0.
+(9)
+These conditions provide the basis for the KKT residual used
+in Section V.
+IV. WINDOWED AND QUANTIZED GROUP-BASED ADMM
+WQ-GADMM addresses the consensus problem in (5)
+through fixed client groups, windowed scheduling, and bidirec-
+tional quantization. Each logical iteration spans an activation
+window, with at most Ma groups activated per physical com-
+munication round. Every group completes one update before
+the cloud updates the global model and dual variables.
+Figure 2 illustrates the procedure. An activated group re-
+ceives a quantized reference, approximately solves a proximal
+subproblem, and uploads a quantized model. The global model
+and dual variables remain fixed within each window. We
+describe group construction, scheduling, local computation,
+and cloud updates below.
+
+
+4
+Fig. 2. Workflow of WQ-GADMM. Groups perform local updates over multiple physical rounds using quantized downlink references and uplink models.
+The cloud updates the global model and dual variables after every group has contributed once.
+A. Computation-Aware Grouping
+Before training, clients are partitioned into G fixed groups
+according to their estimated computation times, where 1 ≤
+G ≤M. Let Ci > 0 denote the effective sample processing
+rate of client i, measured in samples per second. The estimated
+computation time used for grouping is
+Ti = ni
+Ci
+.
+(10)
+Let (i1, . . . , iM) be a permutation satisfying
+Ti1 ≤Ti2 ≤· · · ≤TiM .
+(11)
+Define bg = ⌊gM/G⌋for g = 0, . . . , G. Group g is
+Cg = {ij : bg−1 < j ≤bg},
+g = 1, . . . , G.
+(12)
+This construction groups clients with similar estimated com-
+putation times. Group membership remains fixed throughout
+training.
+B. Windowed Group Scheduling
+Let k denote the logical iteration index and r the physical
+communication round index. The set Ωk contains groups that
+have completed their updates in the current window. At the
+start of each window, Ωk = ∅and all waiting counters are
+reset to zero. The eligible groups are
+Ek(r) = {1, . . . , G} \ Ωk.
+(13)
+At most Ma ∈{1, . . . , G} groups can be activated in each
+round.
+For each eligible group, sr
+g counts the preceding rounds in
+the current window in which it was not selected. Given an
+integer threshold Tact ≥1, define
+bUk(r) = {g ∈Ek(r) : sr
+g ≥Tact −1},
+(14)
+c
+Mr = min{Ma, |bUk(r)|},
+(15)
+Uk(r) = Topc
+Mr
+ bUk(r), sr
+g
+
+.
+(16)
+Here, Topc
+Mr(bUk(r), sr
+g) selects the min{c
+Mr, |bUk(r)|} groups
+in bUk(r) with the largest waiting counts.
+All eligible groups have the same waiting count. Their
+counters are reset to zero at the start of each window and
+increase by one in each round in which they are not selected.
+They therefore reach the threshold in the same round, with
+ties resolved in ascending order of group index.
+The remaining candidates and available slots are
+Rk(r) = Ek(r) \ Uk(r),
+(17)
+Mr = min{Ma −|Uk(r)|, |Rk(r)|}.
+(18)
+For each remaining candidate, compute
+Sr
+g = ω1
+∥wk
+g −wk∥2
+max{∥wk∥2, ϵs} + ω2sr
+g,
+(19)
+where ω1, ω2 ≥0 are fixed weights for model disagreement
+and waiting count, respectively, and ϵs > 0 is a constant that
+prevents division by zero. Since all eligible groups have the
+same waiting count, the waiting term does not affect their
+ranking. Before the threshold is reached, groups are therefore
+ranked by their normalized model disagreement when ω1 > 0.
+
+
+5
+The remaining slots are filled by
+Bk(r) = TopMr
+ Rk(r), Sr
+g
+
+,
+(20)
+giving the active set
+Ak(r) = Uk(r) ∪Bk(r),
+|Ak(r)| ≤Ma.
+(21)
+Groups in Ak(r) execute their updates concurrently. After
+all active groups complete, the cloud records
+Ωk ←Ωk ∪Ak(r).
+(22)
+The waiting counters are updated using the eligible set defined
+at the start of round r:
+sr+1
+g
+=
+(
+sr
+g + 1,
+g ∈Ek(r) \ Ak(r),
+0,
+otherwise.
+(23)
+The activation window is
+Wk = {rk, rk + 1, . . . , rk+1 −1},
+(24)
+where rk is its first round and rk+1 is the first round of the next
+window. The window ends after all groups have completed
+their updates:
+[
+r∈Wk
+Ak(r) = {1, . . . , G}.
+(25)
+Completed groups are excluded from subsequent rounds, en-
+suring exactly one update per group within each window. Each
+round activates as many eligible groups as the capacity allows.
+Therefore, each window contains ⌈G/Ma⌉physical rounds,
+provided all activated updates finish.
+C. Quantized Local Updates with Bounded Staleness
+The cloud initializes z0
+g = w0 and d0
+g = 0 for all groups. At
+the start of iteration k ≥1, it retains the cached model and its
+index from the previous iteration. The cached global model is
+zk
+g = wdk
+g,
+(26)
+where dk
+g denotes the logical iteration index of the cached
+global model. When group g is activated, the cloud computes
+the model staleness as
+τ k
+g = k −dk
+g.
+(27)
+For a fixed nonnegative integer τmax, the cache is refreshed
+whenever τ k
+g > τmax:
+zk
+g ←wk,
+dk
+g ←k,
+τ k
+g ←0.
+(28)
+After the refresh check, the model staleness satisfies
+0 ≤τ k
+g ≤τmax.
+(29)
+The cloud constructs the downlink reference
+ck
+g = zk
+g −uk
+g
+(30)
+and sends its quantized version to group g:
+eck
+g = Qd(ck
+g) = ck
+g + εk
+d,g,
+(31)
+where Qd is the downlink quantizer and εk
+d,g is the downlink
+quantization error.
+Using the received reference eck
+g, group g approximately
+minimizes the local objective
+Hk
+g (x) = ϕg(x) + ρ
+2∥x −eck
+g∥2 + η
+2∥x −wk
+g∥2,
+(32)
+where η > 0 is the proximal parameter. The gradient of the
+group objective is
+∇ϕg(x) =
+X
+i∈Cg
+ni
+n ∇Fi(x).
+(33)
+The gradient of the local objective is therefore
+∇Hk
+g (x) = ∇ϕg(x) + ρ(x −eck
+g) + η(x −wk
+g).
+(34)
+Starting from
+xk,0
+g
+= wk
+g,
+(35)
+the group performs gradient updates
+xk,m+1
+g
+= xk,m
+g
+−ζg∇Hk
+g (xk,m
+g
+),
+m = 0, 1, . . . .
+(36)
+Let Lg be a Lipschitz constant of ∇ϕg. Choose ρ, η > 0 with
+ρ + η > Lg, and set
+0 < ζg ≤
+1
+Lg + ρ + η .
+(37)
+For a tolerance θg > 0, let Mg(k) be the first index m ≥0
+satisfying
+∥∇Hk
+g (xk,m
+g
+)∥≤θg∥xk,m
+g
+−wk
+g∥.
+The unquantized output is
+¯wk+1
+g
+= xk,Mg(k)
+g
+.
+(38)
+Define its local optimality residual as
+ek+1
+g
+= ∇Hk
+g ( ¯wk+1
+g
+).
+(39)
+The stopping criterion ensures
+∥ek+1
+g
+∥≤θg∥¯wk+1
+g
+−wk
+g∥.
+(40)
+The group uploads the quantized model
+wk+1
+g
+= Qu( ¯wk+1
+g
+) = ¯wk+1
+g
++ εk+1
+u,g ,
+(41)
+where Qu is the uplink quantizer and εk+1
+u,g is the quantization
+error.
+D. Cloud Update and Overall Algorithm
+After all groups complete their updates within Wk, the cloud
+computes
+wk+1 = 1
+G
+G
+X
+g=1
+(wk+1
+g
++ uk
+g)
+(42)
+and updates the scaled dual variables:
+uk+1
+g
+= uk
+g + wk+1
+g
+−wk+1,
+g = 1, . . . , G.
+(43)
+The group consensus residual is
+rk+1
+g
+= wk+1
+g
+−wk+1.
+(44)
+With the fixed penalty parameter ρ and λk
+g = ρuk
+g from (6),
+the dual increments satisfy
+uk+1
+g
+−uk
+g = rk+1
+g
+,
+λk+1
+g
+−λk
+g = ρrk+1
+g
+.
+(45)
+The complete procedure of WQ-GADMM is summarized
+in Algorithm 1.
+
+
+6
+Algorithm 1 Windowed and Quantized Group-Based ADMM
+(WQ-GADMM)
+Require: Client profiles {(Ci, ni)}M
+i=1; number of groups G;
+initial model w0; iteration limit K.
+Require: Parameters ρ, η, Ma, Tact, τmax; scheduling weights
+ω1, ω2; score stabilizer ϵs; quantizers Qd, Qu; local step-
+sizes {ζg}G
+g=1 and tolerances {θg}G
+g=1.
+1: Form fixed client groups based on estimated computation
+times, following Section IV-A.
+2: Initialize w0
+g = z0
+g = w0, u0
+g = 0, and d0
+g = 0 for all g;
+set r = 0.
+3: for k = 0, 1, . . . , K −1 do
+4:
+if k > 0 then
+5:
+Retain the cached models and indices: (zk
+g, dk
+g) ←
+(zk−1
+g
+, dk−1
+g
+) for all g.
+6:
+end if
+7:
+Reset the completed-group set Ωk ←∅and waiting
+counters sr
+g ←0.
+8:
+while Ωk̸ = {1, . . . , G} do
+9:
+Select active groups Ak(r) using (13)-(21).
+10:
+for each g ∈Ak(r) in parallel do
+11:
+Compute the cache age τ k
+g = k −dk
+g.
+12:
+if τ k
+g > τmax then
+13:
+Refresh the cached model and index: zk
+g ←wk,
+dk
+g ←k, and τ k
+g ←0.
+14:
+end if
+15:
+Transmit the quantized reference eck
+g = Qd(zk
+g −uk
+g)
+to group g.
+16:
+Initialize the local iterate xk,0
+g
+= wk
+g.
+17:
+Apply the gradient update in (36) until the stopping
+criterion defining Mg(k) is satisfied.
+18:
+Set
+¯wk+1
+g
+= xk,Mg(k)
+g
+and transmit wk+1
+g
+=
+Qu( ¯wk+1
+g
+) to the cloud.
+19:
+end for
+20:
+Update the waiting counters using (23).
+21:
+Add the completed groups to Ωk ←Ωk ∪Ak(r) and
+increment r ←r + 1.
+22:
+end while
+23:
+Update the global model using (42) and the dual vari-
+ables using (43).
+24: end for
+25: return wK.
+V. CONVERGENCE ANALYSIS
+In this section, we establish an average squared KKT
+residual bound for WQ-GADMM with smooth nonconvex
+objectives. The bound consists of an O(1/K) term and a
+quantization-dependent error term.
+A. Assumptions and Notation
+We consider Algorithm 1 with its stated initialization, win-
+dow updates, and cache refresh rule. The local solver follows
+(36) and satisfies the stopping criterion in (40).
+Assumption 1 (Smooth objectives). Each group objective ϕg :
+Rd →R is differentiable and satisfies
+∥∇ϕg(x) −∇ϕg(y)∥≤Lg∥x −y∥,
+x, y ∈Rd.
+The objectives may be nonconvex, and their sum is bounded
+below:
+F(w) :=
+G
+X
+g=1
+ϕg(w) ≥Finf > −∞,
+w ∈Rd.
+Assumption 2 (Quantization errors). For every group and
+iteration, the quantization errors satisfy
+E
+
+∥εk
+d,g∥2 + ∥εk+1
+u,g ∥2  Fk
+
+≤σ2
+q,g < ∞,
+(46)
+where Fk contains the history before the quantized updates in
+iteration k. The constants σ2
+q,g do not depend on k.
+Assumption 3 (Finite second moments). At every finite iter-
+ation k, the model and dual variables satisfy
+E
+"
+∥wk∥2 +
+G
+X
+g=1
+ ∥wk
+g∥2 + ∥uk
+g∥2
+#
+< ∞.
+Throughout this section, ρ, η, θg > 0, the cache threshold
+τmax is a finite nonnegative integer, and 0 < ζg ≤(Lg + ρ +
+η)−1. Define
+L = max
+g
+Lg,
+θ = max
+g
+θg,
+σ2
+q =
+G
+X
+g=1
+σ2
+q,g.
+(47)
+Let xk = col(wk
+1, . . . , wk
+G) and λk = ρ col(uk
+1, . . . , uk
+G)
+denote the stacked group models and unscaled dual variables.
+The function f(x) = P
+g ϕg(xg) has an L-Lipschitz continu-
+ous gradient. For k ≥1, define
+sk = xk −xk−1,
+vk = wk −wk−1,
+rk = xk −1 ⊗wk,
+Sk = E∥sk∥2.
+(48)
+Here, 1
+∈
+RG is the all-ones vector, and ⊗denotes
+the Kronecker product. The vectors sk and vk represent
+group and global model changes, respectively, while rk =
+col(rk
+1, . . . , rk
+G) is the stacked consensus residual.
+B. Auxiliary Lemmas
+Lemma 1 (Termination of the local solver). Under Assump-
+tion 1, if ρ + η > L, every local gradient loop in Algorithm 1
+terminates after finitely many steps.
+Proof: Fix a group and iteration, with the received refer-
+ence held constant. Write H = Hk
+g , xm = xk,m
+g
+, and x0 = wk
+g.
+Smoothness gives
+ϕg(y) ≥ϕg(x) + ⟨∇ϕg(x), y −x⟩−Lg
+2 ∥y −x∥2.
+Adding the quadratic terms in (32) shows that H is µH-
+strongly convex, where µH = ρ + η −Lg > 0. Its gradient is
+LH-Lipschitz continuous, with LH = Lg + ρ + η, and it has
+a unique minimizer x∗.
+The prescribed gradient step satisfies
+H(xm+1) ≤H(xm) −ζg
+2 ∥∇H(xm)∥2.
+
+
+7
+For the sequence continued without stopping, summation
+yields
+∞
+X
+m=0
+∥∇H(xm)∥2 ≤2[H(x0) −H(x∗)]
+ζg
+< ∞.
+Thus ∇H(xm) →0, and strong convexity implies
+∥xm −x∗∥≤∥∇H(xm)∥
+µH
+→0.
+If x0 = x∗, the stopping criterion holds immediately. Other-
+wise, set D = ∥x∗−x0∥> 0. For all sufficiently large finite
+m,
+∥xm −x0∥≥D/2,
+∥∇H(xm)∥≤θgD/2.
+Hence ∥∇H(xm)∥≤θg∥xm −x0∥, which proves finite
+termination.
+Lemma 2 (Dual balance and shared cache). The iterates
+generated by Algorithm 1 satisfy
+G
+X
+g=1
+λk
+g = 0,
+wk = 1
+G
+G
+X
+g=1
+wk
+g,
+k ≥0.
+(49)
+After their respective refresh checks in iteration k, all groups
+use the same unquantized cache:
+zk
+g = bzk = wdk,
+dk
+g = dk,
+0 ≤k −dk ≤τmax.
+Moreover,
+bzk+1 ∈{bzk, wk+1},
+∥wk+1 −bzk+1∥2 ≤∥wk+1 −bzk∥2.
+(50)
+Proof: The cloud and dual updates give
+X
+g
+uk+1
+g
+=
+X
+g
+uk
+g +
+X
+g
+wk+1
+g
+−Gwk+1 = 0.
+Together with u0
+g = 0 and λk
+g = ρuk
+g, this proves dual bal-
+ance. Substitution into the cloud update proves the averaging
+identity, which also holds initially because w0
+g = w0.
+All groups start with the same cache and index. The
+common threshold and fixed cloud model within each window
+give
+(bzk+1, dk+1) =
+(
+(bzk, dk),
+k + 1 −dk ≤τmax,
+(wk+1, k + 1),
+k + 1 −dk > τmax.
+Induction proves the shared-cache statement and its age bound.
+The squared distances in (50) are equal when the cache is
+retained; otherwise, the left-hand side is zero.
+The averaging identity and dual update also imply
+X
+g
+rk
+g = 0,
+X
+g
+sk
+g = Gvk,
+G∥vk∥2 ≤∥sk∥2,
+λk+1 −λk = ρrk+1.
+(51)
+Lemma 3 (Local update identity and error bound). Define the
+combined local and quantization error by
+ξk+1
+g
+= ek+1
+g
++ ∇ϕg(wk+1
+g
+) −∇ϕg( ¯wk+1
+g
+)
++ ρεk
+d,g + (ρ + η)εk+1
+u,g ,
+(52)
+and let ξk+1 = col(ξk+1
+1
+, . . . , ξk+1
+G
+). The local updates satisfy
+∇f(xk+1) + λk+1 + ρ1 ⊗(wk+1 −bzk)
++ ηsk+1 = ξk+1.
+(53)
+Set
+A = 8θ2,
+C = 4 max{ρ2, 2θ2 + L2 + (ρ + η)2}.
+(54)
+Under Assumptions 1 and 2, the local stopping criterion gives
+E∥ξk+1∥2 ≤ASk+1 + Cσ2
+q.
+(55)
+Proof: The local residual satisfies
+ek+1
+g
+= ∇ϕg( ¯wk+1
+g
+)
++ ρ( ¯wk+1
+g
+−bzk + uk
+g −εk
+d,g)
++ η( ¯wk+1
+g
+−wk
+g).
+Substituting ¯wk+1
+g
+= wk+1
+g
+−εk+1
+u,g and wk+1
+g
++ uk
+g = uk+1
+g
++
+wk+1 proves (53).
+The stopping criterion and smoothness give
+∥ek+1
+g
+∥2 ≤2θ2
+g∥sk+1
+g
+∥2 + 2θ2
+g∥εk+1
+u,g ∥2,
+and
+∥∇ϕg(wk+1
+g
+) −∇ϕg( ¯wk+1
+g
+)∥≤Lg∥εk+1
+u,g ∥.
+Applying ∥P4
+i=1 ai∥2 ≤4 P4
+i=1 ∥ai∥2 to (52) yields
+∥ξk+1
+g
+∥2 ≤8θ2
+g∥sk+1
+g
+∥2 + 4ρ2∥εk
+d,g∥2
++ 4
+ 2θ2
+g + L2
+g + (ρ + η)2
+∥εk+1
+u,g ∥2.
+Summing over groups and taking expectations proves (55).
+Lemma 4 (Dual increment bound). For every k ≥1, the dual
+increment satisfies
+∥λk+1 −λk∥2 ≤4(L + η)2∥sk+1∥2 + 4η2∥sk∥2
++ 4∥ξk+1∥2 + 4∥ξk∥2.
+(56)
+Proof: Let P = (IG −11⊤/G) ⊗Id. Since Pλk = λk
+and P(1 ⊗a) = 0, projecting (53) gives
+λk+1 = −P∇f(xk+1) −ηPsk+1 + Pξk+1.
+Subtracting the corresponding identity for λk yields
+λk+1 −λk = −P
+
+∇f(xk+1) −∇f(xk) + ηsk+1
+−ηsk −ξk+1 + ξk
+.
+The first three terms inside the brackets have combined norm
+at most (L + η)∥sk+1∥. Using ∥Py∥≤∥y∥and the four-term
+squared-norm inequality proves (56).
+Define the augmented Lagrangian
+Lρ(x, w, λ) = f(x) + ⟨λ, x −1 ⊗w⟩+ ρ
+2∥x −1 ⊗w∥2,
+(57)
+and write Lk = Lρ(xk, wk, λk). To account for the cache
+difference and group model changes, define the potential
+function
+Ψk = Lk + ρG
+2 ∥wk −bzk∥2 + 4(η2 + A)
+ρ
+∥sk∥2,
+k ≥1.
+(58)
+
+
+8
+Lemma 5 (Potential decrease and lower bound). Suppose
+Assumptions 1-3 hold. Define
+κ = ρ
+4 + η −L
+2 −4((L + η)2 + η2) + 9A
+ρ
+,
+ν = 9C
+ρ .
+(59)
+If
+ρ > 4L
+3 ,
+κ > 0,
+(60)
+then, for all k ≥1,
+E[Ψk+1] ≤E[Ψk] −κSk+1 + νσ2
+q
+(61)
+and
+E[Ψk] ≥Finf −
+C
+ρ −Lσ2
+q.
+(62)
+Proof: Smoothness gives the following bound on the
+change in the objective:
+f(xk+1) −f(xk) ≤⟨∇f(xk+1), sk+1⟩+ L
+2 ∥sk+1∥2.
+Combining this inequality with the penalty difference and (53)
+gives
+Lρ(xk+1, wk, λk) −Lρ(xk, wk, λk)
+≤−ρ + 2η −L
+2
+∥sk+1∥2 + ⟨ξk+1, sk+1⟩
++ ρG⟨bzk −wk, vk+1⟩,
+(63)
+where the last term uses P
+g sk+1
+g
+= Gvk+1.
+The cloud update minimizes a quadratic with Hessian ρGId,
+decreasing the Lagrangian by ρG∥vk+1∥2/2. The dual update
+increases it by ∥λk+1 −λk∥2/ρ. Therefore,
+Lk+1 −Lk ≤−ρ + 2η −L
+2
+∥sk+1∥2 −ρG
+2 ∥vk+1∥2
++ ⟨ξk+1, sk+1⟩
++ ρG⟨bzk −wk, vk+1⟩
++ 1
+ρ∥λk+1 −λk∥2.
+(64)
+The cache term satisfies the identity
+2⟨bzk −wk, vk+1⟩= ∥wk −bzk∥2 −∥wk+1 −bzk∥2 + ∥vk+1∥2.
+(65)
+Set M k = Lk + ρG∥wk −bzk∥2/2. Substituting (65) into (64)
+and applying (50) yields
+M k+1 −M k ≤−ρ + 2η −L
+2
+∥sk+1∥2 + ⟨ξk+1, sk+1⟩
++ 1
+ρ∥λk+1 −λk∥2.
+(66)
+Using ⟨ξ, s⟩≤ρ∥s∥2/4 + ∥ξ∥2/ρ and (56), we obtain
+M k+1 −M k ≤−
+ρ
+4 + η −L
+2 −4(L + η)2
+ρ
+
+∥sk+1∥2
++ 4η2
+ρ ∥sk∥2 + 5
+ρ∥ξk+1∥2 + 4
+ρ∥ξk∥2.
+(67)
+Taking expectations and applying (55) gives
+E[M k+1] −E[M k] ≤−
+ρ
+4 + η −L
+2 −4(L + η)2 + 5A
+ρ
+
+Sk+1
++ 4(η2 + A)
+ρ
+Sk + 9C
+ρ σ2
+q.
+Adding 4(η2 + A)(Sk+1 −Sk)/ρ proves (61).
+For the lower bound, smoothness implies
+F(wk) ≤f(xk) −⟨∇f(xk), rk⟩+ L
+2 ∥rk∥2.
+Hence
+Lk ≥F(wk) + ⟨∇f(xk) + λk, rk⟩+ ρ −L
+2
+∥rk∥2.
+Equation (53) at the preceding update gives
+∇f(xk) + λk = ξk −ηsk −ρ1 ⊗(wk −bzk−1).
+The cache term is orthogonal to rk because P
+g rk
+g = 0.
+Completing the square therefore yields
+Lk ≥Finf −∥ξk −ηsk∥2
+2(ρ −L)
+≥Finf −∥ξk∥2 + η2∥sk∥2
+ρ −L
+.
+Using (55) and the nonnegative cache term in Ψk gives
+E[Ψk] ≥Finf −
+C
+ρ −Lσ2
+q
++ (A + η2)
+4
+ρ −
+1
+ρ −L
+
+Sk.
+The last coefficient is nonnegative when ρ > 4L/3, proving
+(62).
+The parameter condition also implies ρ + η > L, ensuring
+finite local updates by Lemma 1. One sufficient choice is ρ ≥
+32(L + η + θ), which gives κ ≥5ρ/32 + η > 0.
+C. Average KKT Residual Bound
+Define the squared KKT residual as
+Rk = ∥∇f(xk) + λk∥2 + ∥rk∥2,
+k ≥1.
+(68)
+Its two terms measure stationarity and consensus errors. The
+remaining KKT condition, P
+g λk
+g = 0, holds exactly by
+Lemma 2.
+Theorem 6 (Average KKT residual bound). Suppose As-
+sumptions 1-3 hold and the parameters satisfy (60). Set
+H = τmax + 1 and
+B = E[Ψ1] −Finf +
+C
+ρ −Lσ2
+q,
+T = 3(A + η2) + 4((L + η)2 + η2 + 2A)
+ρ2
++ 3ρ2H2,
+bC0 = E[R1] + T
+
+S1 + B
+κ
+
+,
+Cq = Tν
+κ + C
+
+3 + 8
+ρ2
+
+.
+(69)
+
+
+9
+These constants are finite and independent of K, with B ≥0.
+For every integer K ≥1,
+1
+K
+K
+X
+k=1
+E[Rk] ≤
+bC0
+K + Cqσ2
+q.
+(70)
+Consequently,
+lim sup
+K→∞
+1
+K
+K
+X
+k=1
+E[Rk] ≤Cqσ2
+q.
+(71)
+Proof: For any integer n ≥1, summing (61) and applying
+(62) gives
+n
+X
+k=1
+Sk+1 ≤B
+κ + νn
+κ σ2
+q.
+(72)
+The potential lower bound at k = 1 also implies B ≥0. Finite
+second moments and smoothness ensure that the constants in
+(69) are finite.
+Equations (51), (56), and (55) imply, for k ≥1,
+E∥rk+1∥2 ≤4((L + η)2 + A)
+ρ2
+Sk+1
++ 4(η2 + A)
+ρ2
+Sk + 8C
+ρ2 σ2
+q.
+(73)
+Similarly, the local update identity gives
+E∥∇f(xk+1) + λk+1∥2 ≤3(A + η2)Sk+1 + 3Cσ2
+q
++ 3ρ2GE∥wk+1 −bzk∥2.
+(74)
+Since bzk = wdk and k−dk ≤τmax, the difference wk+1−bzk
+contains at most H consecutive increments. Cauchy-Schwarz
+and G∥vj∥2 ≤∥sj∥2 give
+G∥wk+1 −bzk∥2 ≤H
+k+1
+X
+j=max{1,k−τmax+1}
+∥sj∥2.
+(75)
+Each increment appears in at most H such sums. Therefore,
+n
+X
+k=1
+GE∥wk+1 −bzk∥2 ≤H2
+ 
+S1 +
+n
+X
+k=1
+Sk+1
+!
+.
+(76)
+Using Pn
+k=1 Sk ≤S1 + Pn
+k=1 Sk+1 and combining the
+preceding bounds yields
+n
+X
+k=1
+E[Rk+1] ≤T
+ 
+S1 +
+n
+X
+k=1
+Sk+1
+!
++ nC
+
+3 + 8
+ρ2
+
+σ2
+q
+≤T
+
+S1 + B
+κ
+
++ nCqσ2
+q.
+(77)
+For K ≥2, set n = K −1 and add E[R1] to obtain
+K
+X
+k=1
+E[Rk] ≤bC0 + (K −1)Cqσ2
+q.
+Dividing by K proves (70). The case K = 1 follows from
+bC0 ≥E[R1], and taking the limit superior proves (71).
+For fixed algorithm parameters, (71) bounds the limiting
+average squared residual in proportion to the quantization
+error bound. In the absence of quantization error, σ2
+q = 0,
+equation (70) implies
+∞
+X
+k=1
+E[Rk] ≤bC0 < ∞,
+E[Rk] →0.
+With persistent quantization errors, the result bounds the
+average residual but does not guarantee convergence of the
+full model sequence or global optimality.
+VI. EXPERIMENTS
+In this section, we evaluate WQ-GADMM on a smooth
+nonconvex test problem and on the MNIST and CIFAR-10
+datasets. We first describe the experimental settings, then ex-
+amine residual behaviour and quantization precision. Finally,
+we compare learning performance, group participation, and
+resource efficiency with the baseline methods.
+A. Experimental Setup
+The following settings apply to all experiments on MNIST
+and CIFAR-10. The smooth nonconvex experiment is de-
+scribed separately in Section VI-B.
+(a) Platform and datasets: Experiments were conducted
+on a workstation equipped with an NVIDIA GeForce RTX
+4090 GPU, using Python 3.10 and PyTorch 2.10.0 with CUDA
+13.0. We simulated a network with 50 clients divided into five
+fixed edge groups of ten clients each. Convolutional neural
+networks were trained on MNIST and CIFAR-10. Client data
+were partitioned using a Dirichlet distribution with parameter
+α = 0.1. For each random seed, all methods shared the
+same model initialization, data partition, client grouping, and
+computation profile. Each setting was evaluated over three
+random seeds; results with error terms are reported as mean
+± standard deviation.
+(b) Training settings: The training workload was fixed at
+25,000 cumulative client-gradient evaluations for MNIST and
+1,500,000 for CIFAR-10. Local updates used a batch size
+of 64 and at most two stochastic gradient steps. At most
+Ma = 2 groups were active concurrently, and model staleness
+did not exceed τmax = 1 for any method. P-GADMM and
+P-GADMM-Sync both used a learning rate of 0.01 and an
+ADMM penalty parameter of 0.001 on both datasets. For WQ-
+GADMM, the learning rate, penalty parameter ρ, and proximal
+parameter η were 0.20, 0.003, and 0.005 on MNIST, and 0.03,
+0.02, and 0.01 on CIFAR-10, respectively. For both datasets,
+WQ-GADMM used a local stopping-check parameter of 0.05.
+Its scheduling parameters were Tact = 3, ω1 = 1, ω2 = 0.2,
+and ϵs = 10−12. Ties were resolved in ascending order of
+group index.
+(c) Compared methods: We compared P-GADMM [5],
+P-GADMM-Sync, WQ-GADMM-FP32, and WQ-GADMM-
+Q12.
+P-GADMM executed at most two group tasks concurrently.
+The cloud performed a global update upon receiving two
+completed group results, retaining the previous models of the
+remaining groups. Clients performed local stochastic gradient
+descent (SGD), followed by model averaging within each
+
+
+10
+group. P-GADMM-Sync retained the local updates, optimiza-
+tion parameters, and 32-bit communication of P-GADMM.
+It used a round-robin schedule with a 2 + 2 + 1 activation
+pattern, with each group updating once before the global and
+dual updates at the end of the window. WQ-GADMM-FP32
+and WQ-GADMM-Q12 used the proposed algorithm with
+identical optimization parameters and group update sequences.
+FP32 used 32-bit communication, whereas Q12 applied 12-bit
+tensor-wise symmetric stochastic quantization to both down-
+link and uplink exchanges. Both configurations completed one
+update per group within each 2 + 2 + 1 window.
+(d) Metrics and simulation settings: We measured test
+accuracy, communication volume, simulated wall-clock time,
+the Jain fairness index, full-group coverage, and mean inter-
+completion gaps. Communication volume included cloud-
+edge model exchanges and excluded communication between
+clients and edge servers. Simulated wall-clock time accounted
+for local computation, model transmission, and waiting during
+concurrent group execution. Client computation heterogene-
+ity followed a Pareto distribution with shape parameter 1.1.
+Downlink and uplink rates were fixed at 5 Mbit/s and 2 Mbit/s,
+respectively. The same computation and communication tim-
+ing rules were applied to all methods, with waiting times
+determined by their respective update schedules.
+B. Residual Behavior on a Smooth Nonconvex Problem
+We examined the effect of communication precision on
+a smooth nonconvex problem by measuring the per-iteration
+squared KKT residual and its cumulative average. The problem
+consisted of five groups and a 12-dimensional model, with
+group objectives
+ϕg(w) =
+12
+X
+j=1
+"
+qgj
+2
+
+wj −bgj
+qgj
+2
++ a(1 −cos wj)
+#
+,
+(78)
+where qgj
+∼U(0.15, 0.35), bgj
+∼U(−0.20, 0.20), and
+a = 0.8. The coefficients were fixed across all runs. Each
+objective is bounded below and has a globally Lipschitz
+continuous gradient with Lg = maxj qgj + a. Its Hessian is
+negative definite at w = π1, confirming nonconvexity.
+We compared FP32, Q12, and Q8 with identical objectives
+and algorithm parameters. We set ρ = 12, η = 0.2, and θg =
+0.1, satisfying (60). The scheduling and staleness settings were
+Ma = 2, Tact = 2, τmax = 2, and ω1 = ω2 = 1. Local
+updates used full gradients, stepsize ζg = (Lg +ρ+η)−1, and
+the stopping criterion in (40).
+Each configuration ran for 1,000 logical iterations over
+three random seeds. For each seed, all groups and config-
+urations shared an initial model with coordinates sampled
+from U(0.6, 1.0), and all dual variables were initialized to
+zero. Q12 and Q8 used stochastic rounding on 212 and 28
+uniformly spaced levels over [−2, 2], respectively, for both
+communication directions. No quantizer input exceeded this
+range during the runs. After each global and dual update, we
+computed the squared KKT residual Rk defined in (68) and
+its cumulative average, RK = K−1 PK
+k=1 Rk.
+Fig. 3(a) shows that the FP32 residual decreased to a
+low numerical level, whereas Q12 and Q8 fluctuated around
+(a) Per-iteration KKT residual
+(b) Average KKT residual
+Fig. 3. Per-iteration and cumulative average squared KKT residuals on the
+smooth nonconvex test problem.
+(a) MNIST
+(b) CIFAR-10
+Fig. 4. Test accuracy versus cumulative client-gradient evaluations.
+higher levels. Over the final 200 iterations and three seeds,
+the mean Q12 residual was approximately 1/247 of that for
+Q8, indicating that finer quantization reduced the residual
+level in this experiment. In Fig. 3(b), the cumulative average
+residual decreased for all configurations. FP32 and Q12 nearly
+overlapped because early iterations dominated their cumulative
+averages. These results are consistent with the average residual
+bound and its quantization-dependent error term.
+C. Effect of Quantization Precision
+We next compared FP32, Q16, Q12, Q8, and Q2 on MNIST
+and CIFAR-10 to select the communication precision for
+subsequent experiments. All configurations shared the same
+data partition, initialization, client grouping, prescribed work-
+load, and group update sequence. Only the precision of the
+transmitted models varied.
+Table I shows that Q16, Q12, and Q8 retained final accu-
+racies close to FP32. However, Q8 produced larger consensus
+residuals than Q12, particularly on CIFAR-10. Q2 diverged
+on both datasets.We therefore selected Q12 for the remaining
+comparisons.
+D. Overall Performance
+We compared the four methods under the same training
+workload to evaluate learning performance, communication
+cost, and simulated completion time.
+Table II compares final accuracy and resource consump-
+tion under the same training workload. Both WQ-GADMM
+configurations achieved higher accuracy than the baselines
+on MNIST, while all four methods achieved similar final
+accuracy on CIFAR-10. WQ-GADMM-Q12 required the low-
+est communication volume and shortest simulated wall-clock
+
+
+11
+TABLE I
+EFFECT OF QUANTIZATION PRECISION ON WQ-GADMM.
+Quantization
+precision
+MNIST
+accuracy (%)
+CIFAR-10
+accuracy (%)
+Communication
+reduction (%)
+MNIST
+consensus residual
+CIFAR-10
+consensus residual
+FP32
+95.86 ± 0.40
+67.47 ± 0.67
+0.00
+0.0903
+0.0182
+Q16
+95.85 ± 0.58
+67.48 ± 0.65
+50.00
+0.0919
+0.0183
+Q12
+96.05 ± 0.27
+67.58 ± 0.63
+62.50
+0.0836
+0.0255
+Q8
+96.01 ± 0.27
+67.57 ± 0.91
+75.00
+0.1436
+0.2509
+Q2
+Diverged
+Diverged
+93.75†
+-
+-
+†Q2 provides a theoretical reduction of 93.75%, but all runs diverged before completing training.
+TABLE II
+FINAL ACCURACY AND RESOURCE CONSUMPTION UNDER A FIXED TRAINING WORKLOAD.
+Dataset
+Method
+Test accuracy
+(%)
+Cumulative communication
+(Gbit)
+Simulated wall-clock
+time (s)
+MNIST
+P-GADMM
+88.70 ± 0.39
+8.469
+1694.7
+P-GADMM-Sync
+89.38 ± 0.35
+8.469
+2131.0
+WQ-GADMM-FP32
+95.86 ± 0.40
+8.469
+2113.8
+WQ-GADMM-Q12
+96.05 ± 0.27
+3.177
+1002.3
+CIFAR-10
+P-GADMM
+67.51 ± 0.85
+7.469 × 103
+1.352 × 106
+P-GADMM-Sync
+68.93 ± 0.57
+7.469 × 103
+1.645 × 106
+WQ-GADMM-FP32
+67.47 ± 0.67
+7.469 × 103
+1.647 × 106
+WQ-GADMM-Q12
+67.58 ± 0.63
+2.801 × 103
+0.667 × 106
+(a) MNIST
+(b) CIFAR-10
+Fig. 5. Test accuracy versus cumulative communicated bits.
+(a) MNIST
+(b) CIFAR-10
+Fig. 6. Test accuracy versus simulated wall-clock time.
+time on both datasets. Compared with WQ-GADMM-FP32, it
+reduced communication volume by 62.5% while maintaining
+comparable final accuracy. Fig. 4 shows a similar pattern
+during training: WQ-GADMM achieved higher accuracy at
+comparable numbers of client-gradient evaluations on MNIST,
+whereas the accuracy curves were close on CIFAR-10. Figs. 5
+and 6 show that Q12 also reached accuracy comparable to
+FP32 with fewer transmitted bits and less simulated time.
+(a) MNIST
+(b) CIFAR-10
+Fig. 7. Cumulative full-group coverage ratio.
+(a) MNIST
+(b) CIFAR-10
+Fig. 8. Mean inter-completion gap across edge groups.
+E. Group Participation and Inter-Completion Gaps
+We evaluated whether groups participated regularly and how
+long they waited between completed updates. The comparison
+included P-GADMM, P-GADMM-Sync, and WQ-GADMM-
+Q12. Each observation interval contained five completed group
+updates, with 30 intervals for MNIST and 20 for CIFAR-10.
+The full-group coverage ratio was the fraction of intervals in
+which all five groups completed an update.
+
+
+12
+TABLE III
+GROUP PARTICIPATION AND INTER-COMPLETION GAPS.
+Dataset
+Method
+Jain fairness
+index
+Full-group
+coverage ratio
+Mean inter-completion
+gap (s)
+MNIST
+P-GADMM
+0.963
+0.522
+7.03
+P-GADMM-Sync
+1.000
+1.000
+8.53
+WQ-GADMM-Q12
+1.000
+1.000
+4.02
+CIFAR-10
+P-GADMM
+0.965
+0.533
+93.28
+P-GADMM-Sync
+1.000
+1.000
+109.70
+WQ-GADMM-Q12
+1.000
+1.000
+44.38
+TABLE IV
+ACCURACY AND RESOURCE EFFICIENCY UNDER COMMUNICATION AND WORKLOAD CONSTRAINTS.
+Fixed communication budget
+Fixed training workload
+Dataset
+Method
+Accuracy (%)
+Communication
+ratio
+Simulated time
+ratio
+MNIST
+P-GADMM
+75.68 ± 3.67
+1.000
+0.802
+P-GADMM-Sync
+77.91 ± 2.86
+1.000
+1.008
+WQ-GADMM-FP32
+91.38 ± 2.14
+1.000
+1.000
+WQ-GADMM-Q12
+96.05 ± 0.27
+0.375
+0.474
+CIFAR-10
+P-GADMM
+53.05 ± 0.62
+1.000
+0.821
+P-GADMM-Sync
+55.04 ± 0.16
+1.000
+0.999
+WQ-GADMM-FP32
+51.12 ± 0.47
+1.000
+1.000
+WQ-GADMM-Q12
+67.58 ± 0.63
+0.375
+0.405
+Ratios are normalized to WQ-GADMM-FP32.
+Table III shows that P-GADMM achieved Jain fairness
+indices above 0.96, but covered all groups in only about
+half of the observation intervals. P-GADMM-Sync and WQ-
+GADMM-Q12 both achieved fairness indices and coverage
+ratios of 1.000, consistent with their requirement that each
+group update once per window. Fig. 7 confirms full-group
+coverage for both methods throughout the evaluated intervals.
+Their update timing nevertheless differed: Fig. 8 shows that
+WQ-GADMM-Q12 had shorter inter-completion gaps than
+either baseline. Compared with P-GADMM-Sync, its mean
+gap was reduced by 52.9% on MNIST and 59.6% on CIFAR-
+10. Thus, WQ-GADMM-Q12 maintained complete group
+coverage while reducing the time between successive group
+update completions.
+F. Resource Efficiency
+Finally, we compared accuracy under a common communi-
+cation budget and resource consumption under a fixed training
+workload. The communication budgets were approximately
+3.18 Gbit for MNIST and 2.801 × 103 Gbit for CIFAR-
+10. Under the fixed workload, communication volume and
+simulated wall-clock time were normalized to WQ-GADMM-
+FP32:
+eCm =
+Cm
+CFP32
+,
+eTsim,m =
+Tsim,m
+Tsim,FP32
+,
+where Cm and Tsim,m denote the communication volume and
+simulated wall-clock time of method m, respectively.
+Table IV compares accuracy under a common communica-
+tion budget and resource consumption under a fixed training
+workload. Q12 achieved higher accuracy than FP32 under
+the same communication budget because quantization allowed
+more model updates. Under the fixed workload, Q12 used
+37.5% of the FP32 communication volume, while its sim-
+ulated wall-clock time was 47.4% of FP32 on MNIST and
+40.5% on CIFAR-10. These results show that Q12 supported
+more training within the communication budget and reduced
+communication volume and simulated completion time for the
+same workload.
+VII. CONCLUSION
+This paper proposed WQ-GADMM for distributed opti-
+mization in heterogeneous edge networks with limited group
+activation capacity. The method combines fixed grouping,
+windowed scheduling, and bidirectional quantization, with
+one update from each group before every global update.
+It also allows bounded model staleness and inexact local
+updates. Under the stated assumptions and parameter con-
+ditions, we established an average squared KKT residual
+bound for smooth nonconvex objectives. The bound contains
+an O(1/K) term and a quantization-dependent error term.
+Experiments on MNIST and CIFAR-10 showed that WQ-
+GADMM-Q12 reduced communication volume and simulated
+training time while maintaining accuracy comparable to WQ-
+GADMM-FP32. It also maintained complete group coverage
+and achieved shorter inter-completion gaps than the evaluated
+baselines. Future work will address time-varying resource
+conditions and evaluate WQ-GADMM on physical edge plat-
+forms.
+
+
+13
+REFERENCES
+[1] H. B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. Ag¨uera y
+Arcas, “Communication-efficient learning of deep networks from decen-
+tralized data,” in Proc. 20th Int. Conf. Artif. Intell. Statist. (AISTATS),
+vol. 54, 2017, pp. 1273–1282.
+[2] P. Kairouz et al., “Advances and open problems in federated learning,”
+Found. Trends Mach. Learn., vol. 14, nos. 1–2, pp. 1–210, 2021.
+[3] L. Liu, J. Zhang, S. H. Song, and K. B. Letaief, “Client-edge-cloud
+hierarchical federated learning,” in Proc. IEEE Int. Conf. Commun.
+(ICC), 2020, pp. 1–6.
+[4] S. Boyd, N. Parikh, E. Chu, B. Peleato, and J. Eckstein, “Distributed
+optimization and statistical learning via the alternating direction method
+of multipliers,” Found. Trends Mach. Learn., vol. 3, no. 1, pp. 1–122,
+2011.
+[5] G. Wei, Q. Zhang, H. Wang, Y. Zhang, and X. Zhong, “P-GADMM:
+Parallel group-based ADMM for asynchronous optimization in hetero-
+geneous edge networks,” arXiv preprint arXiv:2609.20006, 2026.
+[6] A. Elgabli, J. Park, A. S. Bedi, C. Ben Issaid, M. Bennis, and V.
+Aggarwal, “Q-GADMM: Quantized group ADMM for communication
+efficient decentralized machine learning,” IEEE Trans. Commun., vol.
+69, no. 1, pp. 164–181, 2021.
+[7] S. Zhou and G. Y. Li, “Federated learning via inexact ADMM,” IEEE
+Trans. Pattern Anal. Mach. Intell., vol. 45, no. 8, pp. 9699–9708, 2023.
+[8] A. Nedi´c and A. Ozdaglar, “Distributed subgradient methods for multi-
+agent optimization,” IEEE Trans. Autom. Control, vol. 54, no. 1, pp.
+48–61, 2009.
+[9] J. C. Duchi, A. Agarwal, and M. J. Wainwright, “Dual averaging for
+distributed optimization: Convergence analysis and network scaling,”
+IEEE Trans. Autom. Control, vol. 57, no. 3, pp. 592–606, 2012.
+[10] Y. Zhang, J. C. Duchi, and M. J. Wainwright, “Communication-efficient
+algorithms for statistical optimization,” J. Mach. Learn. Res., vol. 14,
+pp. 3321–3363, 2013.
+[11] T. Li, A. K. Sahu, M. Zaheer, M. Sanjabi, A. Talwalkar, and V. Smith,
+“Federated optimization in heterogeneous networks,” in Proc. Mach.
+Learn. Syst., vol. 2, 2020, pp. 429–450.
+[12] M. S. H. Abad, E. Ozfatura, D. G¨und¨uz, and O. Ercetin, “Hierarchical
+federated learning across heterogeneous cellular networks,” in Proc.
+IEEE Int. Conf. Acoust., Speech Signal Process. (ICASSP), 2020, pp.
+8866–8870.
+[13] Y. Tian, Z. Zhang, Z. Yang, and R. Jin, “Hierarchical federated learning
+with adaptive clustering on non-IID data,” in Proc. IEEE Global
+Commun. Conf. (GLOBECOM), 2022, pp. 627–632.
+[14] Y. Shi, Z. Liu, Z. Shi, and H. Yu, “Fairness-aware client selection for
+federated learning,” in Proc. IEEE Int. Conf. Multimedia Expo (ICME),
+2023, pp. 324–329.
+[15] F. Lai, X. Zhu, H. V. Madhyastha, and M. Chowdhury, “Oort: Efficient
+federated learning via guided participant selection,” in Proc. 15th
+USENIX Symp. Operating Syst. Design Implement. (OSDI), 2021, pp.
+19–35.
+[16] A. He, H. Pan, Y. Dai, X. Si, C. Yuen, and Y. Zhang, “ADMM for
+mobile edge intelligence: A survey,” IEEE Commun. Surveys Tuts., vol.
+27, no. 5, pp. 3020–3057, 2025.
+[17] M. Hong, Z.-Q. Luo, and M. Razaviyayn, “Convergence analysis of
+alternating direction method of multipliers for a family of nonconvex
+problems,” SIAM J. Optim., vol. 26, no. 1, pp. 337–364, 2016.
+[18] Y. Wang, W. Yin, and J. Zeng, “Global convergence of ADMM in
+nonconvex nonsmooth optimization,” J. Sci. Comput., vol. 78, no. 1,
+pp. 29–63, 2019.
+[19] J. Eckstein and D. P. Bertsekas, “On the Douglas–Rachford splitting
+method and the proximal point algorithm for maximal monotone oper-
+ators,” Math. Program., vol. 55, nos. 1–3, pp. 293–318, 1992.
+[20] T.-H. Chang, M. Hong, and X. Wang, “Multi-agent distributed optimiza-
+tion via inexact consensus ADMM,” IEEE Trans. Signal Process., vol.
+63, no. 2, pp. 482–497, 2015.
+[21] H. Ouyang, N. He, L. Q. Tran, and A. Gray, “Stochastic alternating
+direction method of multipliers,” in Proc. 30th Int. Conf. Mach. Learn.
+(ICML), vol. 28, 2013, pp. 80–88.
+[22] S. Kant, J. M. B. da Silva, G. Fodor, B. G¨oransson, M. Bengtsson, and
+C. Fischione, “Federated learning using three-operator ADMM,” IEEE
+J. Sel. Topics Signal Process., vol. 17, no. 1, pp. 205–221, 2023.
+[23] R. Zhang and J. T. Kwok, “Asynchronous distributed ADMM for
+consensus optimization,” in Proc. 31st Int. Conf. Mach. Learn. (ICML),
+vol. 32, 2014, pp. 1701–1709.
+[24] T.-H. Chang, M. Hong, W.-C. Liao, and X. Wang, “Asynchronous
+distributed ADMM for large-scale optimization—Part I: Algorithm and
+convergence analysis,” IEEE Trans. Signal Process., vol. 64, no. 12, pp.
+3118–3130, 2016.
+[25] A. Kashyap, T. Bas¸ar, and R. Srikant, “Quantized consensus,” Automat-
+ica, vol. 43, no. 7, pp. 1192–1203, 2007.
+[26] S. Zhu, M. Hong, and B. Chen, “Quantized consensus ADMM for multi-
+agent distributed optimization,” in Proc. IEEE Int. Conf. Acoust., Speech
+Signal Process. (ICASSP), 2016, pp. 4134–4138.
+[27] S.
+Shrestha,
+“Communication-efficient
+distributed
+asynchronous
+ADMM,” arXiv preprint arXiv:2508.12233, 2025.
+[28] D. Alistarh, D. Grubic, J. Li, R. Tomioka, and M. Vojnovic, “QSGD:
+Communication-efficient SGD via gradient quantization and encoding,”
+in Adv. Neural Inf. Process. Syst., vol. 30, 2017, pp. 1709–1720.
+[29] H. Tang, C. Yu, X. Lian, T. Zhang, and J. Liu, “DoubleSqueeze:
+Parallel stochastic gradient descent with double-pass error-compensated
+compression,” in Proc. 36th Int. Conf. Mach. Learn. (ICML), vol. 97,
+2019, pp. 6155–6165.
+[30] H. Wang, Y. Gao, Y. Shi, and R. Wang, “Group-based alternating
+direction method of multipliers for distributed linear classification,”
+IEEE Trans. Cybern., vol. 47, no. 11, pp. 3568–3582, 2017.
+[31] A. Elgabli, J. Park, A. S. Bedi, M. Bennis, and V. Aggarwal, “GADMM:
+Fast and communication efficient framework for distributed machine
+learning,” J. Mach. Learn. Res., vol. 21, no. 76, pp. 1–39, 2020.
+[32] A. Elgabli, J. Park, S. Ahmed, and M. Bennis, “L-FGADMM: Layer-
+wise federated group ADMM for communication efficient decentralized
+deep learning,” in Proc. IEEE Wireless Commun. Netw. Conf. (WCNC),
+2020, pp. 1–6.
+[33] X. Huang, G. Wang, and Y. Lei, “GR-ADMM: A communication
+efficient algorithm based on ADMM,” in Proc. IEEE Int. Conf. Parallel
+Distrib. Process. Appl. (ISPA), 2021, pp. 220–227.
+[34] C. Ben Issaid, A. Elgabli, J. Park, M. Bennis, and M. Debbah, “Com-
+munication efficient decentralized learning over bipartite graphs,” IEEE
+Trans. Wireless Commun., vol. 21, no. 6, pp. 4150–4167, 2022.

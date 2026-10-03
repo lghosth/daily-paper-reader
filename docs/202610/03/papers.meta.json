@@ -1,0 +1,54 @@
+{
+  "label": "2026-10-04",
+  "date": "2026-10-03",
+  "generated_at": "2026-10-03T22:03:05",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202610/03/2609.39194v1-importance-aware-feature-sparsification-for-wireless-split-learning",
+      "section": "quick",
+      "title_en": "Importance-Aware Feature Sparsification for Wireless Split Learning",
+      "authors": "Bumjun Kim, Yoon Huh, Wan Choi",
+      "date": "2026-09-30",
+      "pdf": "https://arxiv.org/pdf/2609.39194v1",
+      "score": "7.0",
+      "evidence": "通过特征稀疏化实现通信高效的拆分学习",
+      "tldr": "无线拆分学习通过将上层卸载到服务器降低端侧计算，但每轮传输高维中间特征成为通信瓶颈。现有客户端侧任务无关特征选择会增加处理开销，并在非独立同分布数据下明显掉点。本文提出重要性感知类平衡稀疏化 ICS，由服务器用 Grad-CAM 分数生成类别平衡的重要性向量，客户端复用其保留 top-N 特征通道。理论分析给出非渐近收敛界，实验在多种拆分学习与模型上稳定优于基线，非独立同分布越严重增益越大。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Wireless split learning (SL) reduces on-device computation by offloading upper layers to a server, yet transmitting high-dimensional intermediate features at each iteration remains a major communication bottleneck. Existing methods select features at the client side using task-agnostic criteria such as magnitude, statistics, or clustering, which increases client-side processing and often degrades accuracy under non-independent and identically distributed (non-i.i.d.) client data. We propose importance-aware class-balanced sparsification (ICS), a lightweight approach in which the server ranks feature channels using Grad-CAM-based scores obtained from the true-class logit during backpropagation. The per-class scores are aggregated into a class-balanced, label-agnostic importance vector that mitigates head-class bias under label skew, and each client reuses this vector in the next round to retain the top-$N$ feature channels, incurring no additional client-side forward or backward passes. We further derive a non-asymptotic convergence bound that isolates the sparsification-induced error and characterizes how the sparsification ratio and mini-batch size jointly affect convergence under a fixed communication budget, and we analyze the communication and computational overhead of ICS against representative baselines. Beyond sequential CNN-based SL, we extend ICS to parallel split learning and to transformer-based models. Experiments show that ICS consistently outperforms the baselines, with larger gains under severe non-i.i.d. partitions.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/03/2609.37069v1-windowed-and-quantized-group-based-admm-for-distributed-optimization-in-heterogeneous-edge-networks",
+      "section": "quick",
+      "title_en": "Windowed and Quantized Group-Based ADMM for Distributed Optimization in Heterogeneous Edge Networks",
+      "authors": "Gaiguo Wei, Qingying Zhang, Heqiang Wang, Yu Zhang, Xiaoxiong Zhong",
+      "date": "2026-09-29",
+      "pdf": "https://arxiv.org/pdf/2609.37069v1",
+      "score": "6.0",
+      "evidence": "量化分布式优化降低通信成本",
+      "tldr": "边缘网络中分布式优化受异构算力与通信资源限制。为此提出WQ-GADMM，按预估计算时间分组，每窗口仅激活有限组，云端待所有组更新一次后聚合全局模型，并对上下行模型交换量化，同时允许有界陈旧与不精确近端更新。理论上给出光滑非凸目标下平均平方KKT残差界，含随迭代下降项与量化误差项。在MNIST和CIFAR-10上，12比特通信降低通信量与模拟墙钟时间，测试精度接近全精度，并保持完整组覆盖和更短组间完成间隔。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Distributed optimization in edge networks is constrained by heterogeneous client computing capabilities and limited communication resources. We propose the Windowed and Quantized Group-Based Alternating Direction Method of Multipliers (WQ-GADMM) to coordinate group updates under limited activation capacity and reduce communication costs. Clients are grouped by estimated computation time. Each window activates a limited number of groups per round, and the cloud updates the global model after all groups have updated once. The method quantizes both downlink and uplink model exchanges to reduce communication costs and allows bounded model staleness and inexact proximal local updates. For smooth nonconvex objectives, we establish an average squared Karush-Kuhn-Tucker residual bound under the stated assumptions and parameter conditions. The bound consists of a term that decreases with the iteration count and a quantization-dependent error term. Experiments on MNIST and CIFAR-10 show that 12-bit communication reduces communication volume and simulated wall-clock time while maintaining test accuracy comparable to full precision. The 12-bit configuration also maintains complete group coverage and achieves shorter mean group inter-completion gaps than the evaluated baselines.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/03/2610.01537v1-fedfit-federated-fine-tuning-of-llms-via-vector-bank-parameterization-and-quantization",
+      "section": "quick",
+      "title_en": "FedFit: Federated Fine-Tuning of LLMs via Vector-Bank Parameterization and Quantization",
+      "authors": "Hang Zou, Chao Zhang, Yuzhi Yang, Yu Tian, Samson Lasaulce, Mérouane Debbah",
+      "date": "2026-10-01",
+      "pdf": "https://arxiv.org/pdf/2610.01537v1",
+      "score": "6.0",
+      "evidence": "降低联邦微调的通信开销",
+      "tldr": "联邦微调大语言模型可保护隐私，但通信开销巨大；LoRA 在联邦场景还面临精确 SoP 与高效 PoS 的聚合两难。FedFit 用两组不相交共享向量库重建适配器矩阵，并采用交替优化：单库更新精确聚合，联合更新经残差谱聚合校正。它结合分块量化与客户端误差反馈压缩传输向量，并给出收敛性保证。在 Qwen2.5 上，困惑度媲美标准联邦 LoRA，压缩率最高提升 100 倍。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Federated Learning (FL) enables privacy-preserving fine-tuning of Large Language Models (LLMs), yet the massive communication overhead remains a critical bottleneck. Furthermore, applying Low-Rank Adaptation (LoRA) in FL faces a fundamental \"aggregation dilemma\" between the accurate Sum-of-Products (SoP) and the communication-efficient Product-of-Sums (PoS) implementations. To tackle these challenges, we propose FedFit. First, to significantly reduce communication overhead, we introduce a disjoint shared vector-bank parameterization that reconstructs high-dimensional adapter matrices from two compact and disjoint global vector banks. Second, to address the aggregation dilemma, we devise an alternating optimization schedule. By cycling between decoupled single-bank updates (which allow for accurate aggregation) and joint updates corrected by a Residual Spectral Aggregation mechanism, we resolve the conflict between SoP and PoS. Additionally, we integrate blockwise quantization with client-side error feedback to further compress the transmitted vectors. Furthermore, we establish theoretical convergence guarantees for the proposed algorithm. Extensive experiments on Qwen2.5 models demonstrate that FedFit achieves perplexity performance comparable to standard federated LoRA methods, while providing compression ratios up to 100x higher.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

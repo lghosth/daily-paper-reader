@@ -1,0 +1,3085 @@
+1
+Importance-Aware Feature Sparsification for
+Wireless Split Learning
+Bumjun Kim, Graduate Student Member, IEEE, Yoon Huh, Graduate Student Member, IEEE, and Wan
+Choi, Fellow, IEEE
+Abstract—Wireless split learning (SL) reduces on-device com-
+putation by offloading upper layers to a server, yet transmit-
+ting high-dimensional intermediate features at each iteration
+remains a major communication bottleneck. Existing methods
+select features at the client side using task-agnostic criteria
+such as magnitude, statistics, or clustering, which increases
+client-side processing and often degrades accuracy under non-
+independent and identically distributed (non-i.i.d.) client data. We
+propose importance-aware class-balanced sparsification (ICS), a
+lightweight approach in which the server ranks feature channels
+using Grad-CAM-based scores obtained from the true-class logit
+during backpropagation. The per-class scores are aggregated into
+a class-balanced, label-agnostic importance vector that mitigates
+head-class bias under label skew, and each client reuses this
+vector in the next round to retain the top-N feature channels,
+incurring no additional client-side forward or backward passes.
+We further derive a non-asymptotic convergence bound that
+isolates the sparsification-induced error and characterizes how
+the sparsification ratio and mini-batch size jointly affect con-
+vergence under a fixed communication budget, and we analyze
+the communication and computational overhead of ICS against
+representative baselines. Beyond sequential CNN-based SL, we
+extend ICS to parallel split learning and to transformer-based
+models. Experiments show that ICS consistently outperforms the
+baselines, with larger gains under severe non-i.i.d. partitions.
+Index Terms—Communication-efficient split learning, Grad-
+CAM, sparsification, compression, heterogeneous data.
+I. INTRODUCTION
+Driven by the expansion of the internet of things (IoT) and
+advances in next generation wireless technologies, the number
+of edge devices that capture data in real time continues to grow
+at an extraordinary pace. These devices produce diverse and
+large volumes of information including sensor readings, user
+profiles, and video streams, which now power AI applications
+across healthcare, natural language processing, transportation,
+and other domains. The conventional centralized learning (CL)
+trains models at a server by collecting raw data from devices,
+yet this approach increasingly confronts hard limits because
+data must leave its source devices, which heightens privacy
+risk and collides with regulatory requirements [2]. Conse-
+quently, CL is often impractical for modern edge intelligence,
+A part of this paper [1] was presented in IEEE Vehicular Technology
+Conference (VTC) Fall, Chengdu, China, Oct. 19-23, 2025.
+Received 25 November 2025; revised 04 June 2026; accepted 29 September
+2026. Date of publication xx October 2026; date of current version xx October
+2026. This work was supported by Institute of Information & communications
+Technology Planning & Evaluation (IITP) grant funded by the Korea govern-
+ment(MSIT) (No. RS-2026-25523842). (Corresponding Author: Wan Choi)
+B. Kim, Y. Huh and W. Choi are with the Department of Electrical and
+Computer Engineering, Seoul National University (SNU), and the Institute
+of New Media and Communications, SNU, Seoul 08826, Korea. (e-mail:
+{eithank96, mnihy621, wanchoi}@snu.ac.kr)
+motivating approaches that keep data local while still enabling
+collaborative training.
+Federated learning (FL) [3]–[6] enables collaborative model
+training while keeping data local to each client. In FL, clients
+update their models using private data and transmit only
+parameter updates or gradients to a central server, thereby
+reducing the risk of sensitive information leakage. While this
+paradigm avoids direct exposure of raw data, it still requires
+fully on-device training, which can be prohibitive for resource-
+constrained clients. For example, ResNet-50 has roughly 25M
+parameters and requires more than 3.8 GFLOPs for a single
+forward pass [7]; the backward pass doubles or even triples the
+computation, while also increasing memory usage due to acti-
+vations and optimizer states. On devices such as smartphones,
+wearables, and IoT nodes, these requirements translate into
+higher latency, energy consumption, and thermal load, often
+becoming the practical bottleneck in FL deployments.
+Split learning (SL) [8]–[11] addresses this bottleneck by
+redistributing computation between clients and the server.
+The network is partitioned at a designated cut layer into a
+lightweight client-side model and a heavier server-side model.
+During training, each client performs the forward pass only up
+to the cut layer, producing intermediate features that are trans-
+mitted to the server. The server then completes the forward
+pass, computes the loss, backpropagates through its portion of
+the model, and returns the gradients with respect to the in-
+termediate features. Using these gradients, clients update their
+local parameters. This division shifts the most compute- and
+memory-intensive layers to the server, significantly reducing
+on-device FLOPs and activation footprints, thereby lowering
+energy consumption and end-to-end latency. In the vanilla SL
+protocol involving multiple clients, this interaction is typically
+performed sequentially, only one client communicates with
+the server at a time, forcing clients to take turns. This split
+topology is also maintained during the inference phase. The
+client computes and transmits the intermediate features, and
+the server performs the remaining forward pass to return the
+final result [12]–[14].
+Despite these advantages, SL still suffers from high training
+latency due to sequential client-server interactions [15], [16]
+and per-iteration transmission of high-dimensional interme-
+diate features [17]–[19]. To alleviate the waiting overhead
+caused by sequential client participation, parallel split learning
+(PSL) methods [15], [16] allow multiple clients to perform
+client-side computation and transmit intermediate features
+in parallel. However, such parallelism comes at the cost
+of supporting simultaneous uplink transmissions within the
+same training iteration, which requires larger aggregate uplink
+arXiv:2609.39194v1  [cs.LG]  30 Sep 2026
+
+
+2
+TABLE I
+COMPARISON OF FL, SEQUENTIAL SL AND PSL.
+Paradigm
+Main idea
+Client-side computation
+Uplink communication overhead
+FL
+Each client trains the full model locally,
+and the server aggregates the uploaded
+model updates.
+Full forward/backward pass over the
+entire
+model
+at
+each
+client,
+i.e.,
+O(Cd + Cs).
+Model updates are uploaded from the
+clients, i.e., O(K(Pd + Ps)) in total.
+Sequential SL
+The model is split into client-side and
+server-side parts, and clients communicate
+with the server sequentially.
+Forward/backward pass only over the
+client-side model at each client, i.e.,
+O(Cd).
+Intermediate features are uploaded se-
+quentially, i.e., O(KBCUV ) in total.
+PSL
+Multiple clients perform client-side com-
+putation and transmit intermediate features
+to the server in parallel. Client-side models
+are synchronized after the local updates.
+Forward/backward
+pass
+over
+the
+client-side model at each client, i.e.,
+O(Cd).
+Intermediate features and client-side
+model
+updates
+are
+uploaded,
+i.e.,
+O(K(BCUV + Pd)) in total.
+resources in wireless systems. Moreover, it does not reduce the
+intermediate feature overhead transmitted by each client. Since
+intermediate features must be uploaded at every iteration,
+their cumulative communication cost can dominate the overall
+training overhead, regardless of whether clients participate
+sequentially or in parallel.
+To
+reduce
+the
+intermediate
+feature
+overhead,
+several
+communication-efficient SL methods were proposed. Existing
+studies typically decide which elements of the intermediate
+feature are retained for uplink transmission based on random
+sampling [20], magnitudes [17], feature statistics [18], or
+clustering [19]. Although these methods reduce the number of
+transmitted feature elements, their selection strategies are gen-
+erally computed on the client side. This partially contradicts
+the primary motivation of SL, which is to offload computation-
+ally demanding operations from resource-constrained clients to
+the server. Moreover, these strategies do not reflect the task-
+specific contribution of each feature to the final prediction,
+making it difficult to ensure that the transmitted features are
+task-relevant.
+This issue becomes more critical under non-independent
+and identically distributed (non-i.i.d.) client data. In practical
+wireless learning scenarios, clients often collect data from
+diverse environments, resulting in heterogeneous data distribu-
+tions. Under such data skew, feature selection based solely on
+client-side information can be biased toward locally dominant
+classes. As a result, the transmitted features may overrepresent
+client-specific characteristics rather than class-balanced task
+relevance, which can degrade the global training performance.
+Therefore, an effective sparsification strategy for wireless SL
+should be communication-efficient, task-aware, robust to non-
+i.i.d. data skew, and lightweight at the client side.
+Motivated by these observations, we propose an importance-
+aware
+class-balanced
+sparsification
+(ICS),
+inspired
+by
+gradient-weighted class activation mapping (Grad-CAM) [21],
+originally developed in the context of explainable AI (XAI).
+Grad-CAM measures the contribution of intermediate features
+to class-specific predictions, highlighting the most salient
+intermediate feature channels. Recently, Grad-CAM has been
+used to guide resource allocation in semantic communication
+systems. In particular, the authors in [22] employed Grad-
+CAM-inspired feature importance scores on a pre-trained
+JSCC encoder to learn a feature importance predictor at
+the transmitter, which is then used to allocate space–time
+resources during inference. In contrast, our work integrates
+Grad-CAM directly into the training loop of wireless SL under
+distributed clients with non-i.i.d. data, transforming it from a
+post-hoc interpretability tool into a core component of the SL
+training process. The server computes all importance scores
+during the backpropagation stage, eliminating the need for any
+transmitter-side processing.
+Specifically, the server computes class-specific importance
+vectors, and aggregates them into a class-balanced, label-
+agnostic importance vector. This class-balanced vector de-
+sign ensures robustness to client label skew, while its label-
+agnostic design enables reuse of the sparsification during
+inference, where ground-truth labels are unavailable. This
+importance vector is then returned to the client and reused in
+the subsequent iteration to sparsify intermediate features for
+uplink transmission, ensuring that only the most discriminative
+channels are transmitted within a given bandwidth budget.
+Crucially, this entire process is performed by the server,
+imposing no additional computation overhead on the resource-
+constrained clients. This design choice strictly adheres to
+the core philosophy of SL, which is to offload demanding
+computations away from the clients.
+Furthermore, we provide a convergence analysis that ad-
+dresses a critical aspect often overlooked in wireless SL.
+Unlike in FL, the uplink overhead in SL scales directly with
+the mini-batch size. Our analysis explicitly quantifies the error
+introduced by the sparsification ratio and characterizes its
+joint interaction with the batch size, revealing a fundamental
+trade-off between stochastic gradient variance and per-sample
+information fidelity under a fixed communication budget.
+Beyond the sequential SL, we further extend ICS to PSL.
+Since multiple clients transmit intermediate features in parallel
+in the framework, the server constructs a shared class-balanced
+importance vector by aggregating importance scores across
+participating clients.
+A. Related Works
+1) Distributed Learning Frameworks: FL keeps raw data
+local but requires each client to train the full model and
+upload model updates, imposing substantial computation and
+memory burden on resource-constrained clients. In contrast,
+sequential SL partitions the model between the client and the
+server, so each client executes only the client-side model while
+exchanging intermediate features and activation gradients with
+
+
+3
+TABLE II
+COMPARISON OF COMMUNICATION-EFFICIENT SPLIT LEARNING METHODS.
+Method
+Selection criterion
+Task-aware
+importance
+No extra client-side
+computation
+Non-i.i.d.
+consideration
+RS [20]
+Random sampling
+✗
+✓
+✗
+TS [17]
+Feature magnitude
+✗
+✗
+✗
+RTS [23]
+Feature magnitude + random sampling
+✗
+✗
+✗
+FedLite [19]
+Feature clustering
+✗
+✗
+✗
+SplitFC [18]
+Feature statistics
+✗
+✗
+✗
+Proposed ICS
+Grad-CAM-based channel importance
+✓
+✓
+✓
+the server. PSL further reduces sequential waiting time by
+allowing multiple clients to perform client-side computation
+and upload intermediate features in parallel, which requires
+larger aggregate uplink resources within the same training it-
+eration. These differences highlight that SL-based frameworks
+reduce client-side computation but make intermediate feature
+transmission a central communication bottleneck. Table I
+summarizes the main differences among FL, sequential SL
+and PSL with the main notations defined in Table III.
+2) Parallel Split Learning Methods: PSL [15], [16] was
+developed to mitigate the waiting time caused by sequential
+client participation by transmitting intermediate features to the
+server in parallel. CPSL [24] extended this idea by grouping
+clients into multiple clusters, where clients are trained in
+parallel within each cluster and inter-cluster aggregation is
+performed sequentially to further reduce training latency.
+More recently, several studies addressed system-level op-
+timization issues in PSL frameworks. ESFL [25] jointly op-
+timized the model splitting point and server-side computing
+resource allocation under heterogeneous device resources.
+AdaptSFL [26] adaptively controlled the model splitting point
+and client-side aggregation interval using convergence analy-
+sis. The authors in [27] further considered dynamic wireless
+environments by jointly optimizing model splitting, server-
+side computing resource allocation, and transmission power
+control. HSFL [28] extended to hierarchical systems through
+tier-wise model aggregation and model splitting optimization.
+3) Communication-Efficient
+Split
+Learning
+Methods:
+Communication-efficient SL methods aim to reduce the trans-
+mission overhead caused by high-dimensional intermediate
+features. FedLite [19] introduced a scalable SL framework for
+resource-constrained clients by clustering similar intermediate
+features and applying gradient correction to compressed fea-
+tures. SplitFC [18] further reduced communication overhead
+through adaptive feature-wise compression, where interme-
+diate feature vectors are sparsified according to standard-
+deviation-based probabilities. Randomized and magnitude-
+based sparsification methods [17], [20], [23] were also studied
+to reduce the intermediate feature overhead by selecting only
+a subset of feature elements for uplink transmission.
+Although these methods reduce the number of transmitted
+feature elements, they still have important limitations. First,
+feature selection is generally performed at the client side,
+requiring additional operations such as feature clustering,
+feature-statistics computation, or magnitude-based ranking be-
+fore transmission. This increases the preprocessing burden
+on resource-constrained clients. Second, these methods select
+features without explicitly considering their task-specific con-
+tribution to the final prediction. Therefore, the retained features
+may fail to preserve task-relevant information, especially under
+non-i.i.d. client data.
+To further clarify the novelty of ICS, Table II compares
+ICS with existing communication-efficient SL methods. Un-
+like other approaches, ICS evaluates feature importance us-
+ing Grad-CAM-based class-specific saliency computed at the
+server. The resulting class-balanced importance vector allows
+clients to sparsify intermediate features without additional
+neural network computation at the client side, while preserving
+task-aware and non-i.i.d.-robust feature selection.
+B. Contributions
+The main contributions of this paper are as follows:
+• Importance-aware feature sparsification: We propose
+a novel sparsification method, termed ICS, which lever-
+ages Grad-CAM to evaluate the task-specific importance
+of intermediate features. By using importance vectors
+computed at the server in previous iterations as sur-
+rogates, the proposed approach enables efficient client-
+side feature compression without incurring additional
+forward–backward passes at the client side.
+• Class-balanced label-agnostic importance vector: We
+design a class-balanced aggregation mechanism that con-
+verts class-specific importance vectors into a unified
+label-agnostic importance vector. This design mitigates
+class bias under non-i.i.d. client data and preserves class-
+balanced task-relevant features, while also enabling fea-
+ture sparsification during inference where ground-truth
+labels are unavailable.
+• Theoretical analysis: We provide a theoretical analysis
+of ICS in terms of both system overhead and con-
+vergence. For the overhead analysis, we analyze the
+uplink communication overhead and the computational
+complexity of ICS against conventional SL and existing
+communication-efficient SL methods. The analysis shows
+that ICS reduces the transmitted intermediate feature
+overhead without transmitting additional mask indices
+and shifts the importance-estimation cost from the clients
+to the server. For the convergence analysis, we derive
+a non-asymptotic bound that explicitly characterizes the
+sparsification error and reveals the trade-off between the
+mini-batch size and the sparsification ratio under a fixed
+uplink communication budget.
+
+
+4
+TABLE III
+NOTATIONS AND DESCRIPTIONS.
+Symbol
+Description
+K
+Number of clients.
+T
+Number of iterations.
+E
+Number of local steps.
+B
+Mini-batch size.
+L
+Number of output classes.
+L
+Per-sample loss function.
+C, U, V
+Dimension of feature channel, height and width.
+zt,e
+k , ˜zt,e
+k
+Original and sparsified intermediate feature.
+ηt
+Learning rate at iteration t.
+N
+Number of retained feature channels after sparsification.
+R
+Sparsification ratio R = N/C.
+It
+k
+Class-balanced importance vector.
+S
+Smoothness constant.
+β
+Momentum coefficient for EMA in ICS.
+ψ2
+Bounded client heterogeneity.
+mt,e
+k
+Update error caused by sparsification.
+Cd, Cs
+Computational costs of client-side and server-side models.
+Pd, Ps
+Numbers of client-side and server-side model parameters.
+• Extension to PSL frameworks: We extend ICS beyond
+sequential SL to PSL. In the setting, the server constructs
+a shared class-balanced importance vector by aggregating
+Grad-CAM-based importance scores across participating
+clients, enabling importance-aware sparsification under
+parallel client participation.
+• Extensive experimental validation: We validate ICS
+across diverse tasks and datasets, showing consistent
+accuracy gains and faster convergence over baselines,
+especially under non-i.i.d. client data. In addition, we sup-
+plement these results with a qualitative Grad-CAM-based
+ablation study for the classification task, which visually
+confirms that ICS consistently identifies important, task-
+relevant features.
+C. Notations
+For clarity, the key notations used in the paper are summa-
+rized in Table III.
+II. SYSTEM MODEL
+Consider a split learning framework with a central pa-
+rameter server and K local clients, each equipped with a
+single antenna. The goal is to collaboratively train a global
+model θ = [θd ∥θs], where θd and θs are the client-side and
+server-side model parameters, respectively, and [· ∥·] denotes
+concatenation. Each client k ∈K = {0, . . . , K −1} holds a
+local dataset Dk = {(xi, yi)}Dk
+i=1, where xi is an input image,
+yi ∈{0, 1}L is its corresponding one-hot encoded label with
+the total number of classes L, and Dk = |Dk|. Let the global
+dataset be D = S
+k∈K Dk. For each client, the local objective
+function is
+Fk(θk) =
+1
+|Dk|
+X
+(xi,yi)∈Dk
+L(fs(fd(xi; θd,k); θs,k), yi),
+(1)
+Bob
+Alice
+⑤ Local parameter
+Importance
+Feature
+Uplink
+Downlink
+①
+③
+④
+③
+Full model
+𝜃𝑠
+𝜃𝑑,𝐵𝑜𝑏
+𝜃𝑑,𝐴𝑙𝑖𝑐𝑒
+Fig. 1. System model of proposed framework with the numbered stages.
+where fd( · ; θd,k) and fs( · ; θs,k) representing the client-
+side feature extraction and server-side classification mapping
+parameterized by the parameters θd,k and θs,k, respectively.
+The global objective function is formulated as F(θ)
+=
+P
+k∈K
+|Dk|
+|D| Fk(θk).
+Fig. 1 represents our system model with the numbered
+stages described below. The SL protocol is executed over
+T communication rounds. The client and the server update
+θt,0
+k
+using the client’s dataset Dk by employing a mini-batch
+stochastic gradient descent (SGD) algorithm. The update rule
+is therefore
+θt,e+1
+k
+= θt,e
+k −ηt∇F t,e
+k (θt,e
+k ),
+(2)
+where e ∈{0, . . . , E −1} is the index of local step given
+the total local steps E, and ηt denotes the learning rate at
+global iteration t. Here, ∇F t,e
+k (θt,e
+k ) denotes the stochastic
+gradient with respect to the complete parameters θt,e
+k . We use
+an explicit subscript when referring to the gradient with respect
+to a specific component. In each iteration t at local step e, for
+every client k ∈K, the following stages are carried out:
+1) Client-side Feature Extraction: Client k draws a ran-
+dom mini-batch Bt,e
+k
+⊂Dk of size B. Let xt,e
+k
+=
+{xt,e
+k,b}B
+b=1 be the input data in the mini-batch Bt,e
+k
+of
+client k at iteration t and local step e. Then, the mini-
+batch is processed by the local feature extractor fd to
+produce intermediate features zt,e
+k
+=
+
+zt,e
+k,1, . . . , zt,e
+k,B
+⊤∈
+RB×C×U×V , where C denotes the number of feature
+channels and U × V are the layer dimensions. This step
+can be expressed as zt,e
+k
+= fd(xt,e
+k ; θt,e
+d,k).
+2) Uplink Transmission: The intermediate feature zt,e
+k ,
+together with its corresponding labels, is transmitted to
+the server over the wireless uplink. Prior to transmission,
+client k applies sparsification to zt,e
+k
+by the proposed
+ICS in accordance with the uplink capacity constraints,
+as described in Section III later, such that the received
+signal can be treated as effectively noise-free.
+3) Server-side Computation: Upon reception, the server
+completes the forward pass by computing
+ˆyt,e
+k
+= fs(zt,e
+k ; θt,e
+s,k) ∈RB×L.
+(3)
+The
+server
+evaluates
+the
+per-sample
+loss
+Lvec(ˆyt,e
+k , yt,e
+k )
+∈
+RB
+using
+the
+true
+labels
+
+
+5
+yt,e
+k
+∈RB×L. Then, the server computes the mini-
+batch loss Fk(θt,e
+k ) by averaging loss vector, i.e.,
+Fk(θt,e
+k ) =
+1
+B
+PB
+b=1 Lvec,b ∈R. The server updates the
+model as
+θt,e+1
+s,k
+= θt,e
+s,k −ηt∇θt,e
+s,kFk(θt,e
+k )
+(4)
+by performing a mini-batch SGD. The server trans-
+mits the gradient with respect to the received activation
+∇zt,e
+k Fk(θt,e
+k ) =
+∂Fk(θt,e
+k )
+∂zt,e
+k
+∈RB×C×U×V and impor-
+tance vector It,e+1
+k
+, described in Section III later, to client
+k.
+4) Client Update: Client k uses the returned gradient
+∇zt,e
+k Fk(θt,e
+k ) to perform a local parameter update, pro-
+ducing new local parameters θt,e+1
+d,k
+via
+θt,e+1
+d,k
+= θt,e
+d,k −ηt∇θt,e
+d,kFk(θt,e
+k ),
+(5)
+where ∇θt
+d,kFk(θt,e
+k ) =
+
+∂zt,e
+k
+∂θt,e
+d,k
+T
+∇zt,e
+k Fk(θt,e
+k ). After
+the updates, if e < E −1, the client k and the server
+repeat the stages 1-4. For e = E −1, the client k and the
+server perform the stage 5.
+5) Transmission of Local Parameters and Importance:
+After completing the local updates, client k transmits the
+updated local parameters θt,E
+d,k to client k + 1. Separately,
+the server transmits importance vector to client k + 1 for
+use in the next iteration. When the model is updated by
+the last client K −1, the updated local parameters are
+transmitted to client k = 0, becoming θt+1,0
+d,0
+, while the
+server also forwards the corresponding importance vector
+to client 0.
+After these T iterations, the training process concludes.
+III. IMPORTANCE-AWARE CLASS- BALANCED
+FEATURE SPARSIFICATION
+A. Conventional Grad-CAM for Model Interpretability
+Grad-CAM is a gradient-based attribution method that
+identifies which regions of an input image most strongly
+influence a model’s prediction. It works by backpropagating
+the gradients of a target class score into a chosen intermediate
+convolutional layer and computing importance weights for
+each feature channel. These weights are then combined with
+the corresponding activation maps to generate a coarse local-
+ization map that highlights the image regions most relevant
+to the decision. Since Grad-CAM is applied to a fixed, pre-
+trained model, it assumes that the model parameters are
+already converged and thus measures the contribution of
+intermediate features to the final output without considering
+ongoing learning iterations.
+The following procedure describes how Grad-CAM evalu-
+ates the relevance of a particular intermediate feature. Because
+the method is applied post-hoc to a pre-trained network, the
+training iteration index is omitted.
+1) Feature Extraction: During the forward propagation, let
+Ac ∈RU×V denote the layer feature map corresponding
+to the c-th feature channel of a selected intermediate
+layer, with c ∈{1, . . . , C}. Here, U and V are the
+layer dimensions. Each feature channel encodes different
+semantic components of the input.
+2) Gradient Calculation: For a target class ℓ, compute the
+partial derivatives of the predicted score ˆyℓwith respect
+to each feature map:
+∂ˆyℓ
+∂Ac
+∈RU×V .
+(6)
+These gradients quantify how changes in each feature
+map affect the predicted score for class ℓ. Since each
+feature channel in CNN models captures different charac-
+teristics of the input in the training process, the gradients
+reflect the sensitivity of the class score to these distinct
+features, thereby indicating their relative importance.
+3) Feature Channel-wise Importance Weighting: Aggre-
+gate the layer gradient information to produce a single
+importance coefficient for each feature channel:
+αc,ℓ=
+1
+UV
+U
+X
+u=1
+V
+X
+v=1
+∂ˆyℓ
+∂Ac(u, v).
+(7)
+The scalar αc,ℓrepresents the overall contribution of
+feature channel c to the class score ˆyℓ.
+4) Saliency Map Generation: The class-discriminative lo-
+calization map, Pℓ∈RU×V , is first computed as a
+weighted linear combination of the feature maps Ac using
+their corresponding weights αc,ℓ:
+Pℓ=
+C
+X
+c=1
+αc,ℓAc.
+(8)
+To produce the final saliency map and focus only on
+features that have a positive influence on the prediction,
+a ReLU activation is applied:
+Hℓ= ReLU (Pℓ) .
+(9)
+The resulting Hℓis the saliency map used for visu-
+alization, highlighting the specific image regions that
+positively contributed to the prediction for class ℓ.
+In section VI, these saliency maps are employed to validate
+the efficacy of our proposed framework.
+B. Importance-Aware Class-Balanced Sparsification
+The intermediate feature outputs transmitted from clients to
+the server are typically high-dimensional, driving substantial
+communication cost. A naive remedy to reduce communi-
+cation burden is to select top feature elements by magni-
+tude, since large features often dominate the output. How-
+ever, although high-magnitude features can significantly in-
+fluence the overall output, they do not necessarily capture the
+performance-critical aspects. This is because the overall output
+reflects contributions from both the true label and non-target
+labels, meaning that high-magnitude features might include
+features unrelated to the true label, whereas low-magnitude
+features might include crucial features related to the true label.
+To address this, we take inspiration from Grad-CAM, which
+explicitly measures the contribution of intermediate feature
+
+
+6
+Algorithm 1 Proposed ICS SL framework
+Input: Clients K = {0, . . . , K −1}, rounds T, batch size B,
+ratio R, momentum β, learning rate ηt
+1: Initialize θ0
+d,0, θ0
+s,0, M 0
+k,ℓ←0 ∈RC, ∀k, ℓ;
+2: for t = 0 to T −1 do
+3:
+for k = 0 to K −1 do
+AT THE CLIENT-SIDE
+4:
+Draw Bt
+k of size B
+5:
+Obtain intermediate feature as zt
+k ←fd(xt
+k; θt
+d,k)
+6:
+Sparsify zt
+k using (10)
+7:
+Transmit (˜zt
+k, yt
+k) to server
+AT THE SERVER-SIDE
+8:
+Obtain logit as ˆyt
+k ←fs(˜zt
+k; θt
+s,k)
+9:
+Obtain ∇˜zt
+kFk(θt
+k) using (12)
+10:
+Update server-side parameters as
+θt
+s,k+1 ←θt
+s,k −ηt∇θt
+s,kFk(θt
+k)
+11:
+for b = 1 to B do
+12:
+Update ζt
+k+1,b using (13)
+13:
+end for
+14:
+for ℓ= 1 to L do
+15:
+Update ζt
+k+1,ℓusing (14)
+16:
+Update M t
+k+1,ℓusing (15)
+17:
+end for
+18:
+Obtain It
+k+1 through (16)
+19:
+Transmit ∇˜zt
+kFk(θt
+k) to client k
+20:
+if k + 1 ≤K −1 then
+21:
+Transmit It
+k+1 to client k + 1
+22:
+else
+23:
+Transmit It
+k+1 to client 0
+24:
+end if
+AT THE CLIENT-SIDE
+25:
+Update client-side parameters as
+θt
+d,k+1 ←θt
+d,k −ηt∇θt
+d,kFk(θt
+k)
+26:
+if k + 1 ≤K −1 then
+27:
+Send θt
+d,k+1 to client k + 1
+28:
+else
+29:
+Send θt
+d,k+1 to client 0
+30:
+end if
+31:
+end for
+32: end for
+channels to the score of the true class. By leveraging such
+class-specific importance information, we can more reliably
+identify and preserve the feature components that are most
+critical for correct prediction. In standard usage, Grad-CAM is
+computed post-hoc by performing a full forward and backward
+pass through both client-side and server-side models to obtain
+gradients with respect to the intermediate features. However,
+in SL, the client only executes its forward pass before trans-
+mission and thus cannot compute the real-time Grad-CAM
+weights prior to sending intermediate features.
+To circumvent this, we propose using the importance scores
+from the previous communication round as a proxy for the
+current round. In the following description, the numbers in
+bold parentheses (Line ·) indicate the corresponding line
+numbers in Algorithm 1. As described in Section II, client
+k first draws a mini-batch and obtains the intermediate feature
+zt
+k
+1 through client-side feature extraction (Lines 4–5). Before
+transmission, client k uses the importance vector It
+k ∈RC
+received from the previous communication round. The client
+then applies a sparsification operator S(·) that, for each sample
+b, ranks the entries of zt
+k,b by leveraging the feature channel-
+level scores in It
+k and selects the top-N elements (Line 6).
+The sparsification ratio is defined as R = N
+C . The resulting
+transmitted intermediate feature is
+˜zt
+k = S(zt
+k; It
+k) ∈RB×C×U×V ,
+(10)
+where S preserves only N feature channel entries according
+to the importance-weighted ranking and zeroes out the rest.
+The client then transmits the sparsified intermediate feature
+˜zt
+k to the server (Line 7). Upon receiving it, the server
+completes the forward pass and obtains ˆyt
+k by processing
+˜zt
+k through its subsequent layers, parameterized by θt
+s,k, to
+generate the output logits (Line 8). Let ˆyt
+k,b,ℓdenote the logit
+for class ℓcorresponding to the b-th sample in the mini-batch
+of client k at iteration t.
+To train the model, the server computes a loss function
+using cross-entropy by comparing the predicted logits with
+the ground-truth labels:
+L(ˆyt
+k,b, yt
+k,b) = −
+L
+X
+ℓ=1
+yt
+k,b,ℓlog
+ 
+exp(ˆyt
+k,b,ℓ)
+PL
+j=1 exp(ˆyt
+k,b,j)
+!
+. (11)
+During backpropagation, the gradient of the loss with re-
+spect to the intermediate feature is computed using the chain
+rule. For the gradient of mini-batch sample xt
+k,b in ˜zt
+k,b,
+denoted as ∂Fk(θt
+k)
+∂˜zt
+k,b , we have (Line 9)
+∂Fk(θt
+k)
+∂˜zt
+k,b
+= 1
+B
+L
+X
+ℓ=1
+∂L
+∂ˆyt
+k,b,ℓ
+∂ˆyt
+k,b,ℓ
+∂˜zt
+k,b
+.
+(12)
+Then, the server updates the model by performing a mini-
+batch SGD (Line 10). In this formulation,
+∂ˆyt
+k,b,ℓ
+∂˜zt
+k,b ∈RC×U×V
+is equivalent to calculating the Grad-CAM over C feature
+channels, which quantifies the sensitivity of the logit for class
+ℓat the layer information (u, v) of sample b.
+To derive a label-specific importance measure for each
+feature channel, the computed gradients are aggregated over
+the layer dimensions (Lines 11–13):
+ζt
+k+1,b = 1
+W
+U
+X
+u=1
+V
+X
+v=1
+∂ˆyt
+k,b,ℓb
+∂˜zt
+k,b(u, v) ∈RC,
+(13)
+where ˆyt
+k,b,ℓb denotes the logit corresponding to the true class
+ℓb for the b-th sample of client k at time t. W = U × V
+is the normalization factor, and U and V denote the layer
+dimensions of ˜zt
+k. This aggregation yields a feature channel-
+wise importance score that reflects the contribution of each
+feature channel to the prediction of the true class.
+As the unified importance vector aims to capture interme-
+diate feature channels that are universally significant across
+all labels, it is ideally computed under an i.i.d. assumption
+regarding class distributions. However, the data held by clients
+1In Subsection III-B, for notational simplicity, we omit local iteration and
+describe a single forward-backward process per iteration t at client k.
+
+
+7
+in SL environments typically exhibit non-i.i.d. characteristics,
+leading to potentially biased estimations if naively averaged
+across samples.
+To address this challenge, we first compute the class-
+specific importance vectors by averaging per-sample impor-
+tance vectors obtained in (13) over the corresponding subsets
+of samples belonging to each label. Formally, for client k at
+iteration t, we define the subset of samples with label ℓas
+Bt
+k,ℓ= {xt
+k,b | yt
+k,b,ℓ= 1} and compute the class-specific
+importance vector ζt
+k+1,ℓ∈RC as (Line 15)
+ζt
+k+1,ℓ=
+1
+Bt
+k,ℓ
+X
+b∈Bt
+k,ℓ
+ζt
+k+1,b,
+(14)
+where Bt
+k,ℓ= |Bt
+k,ℓ|. To ensure temporal stability and mitigate
+abrupt changes between consecutive iterations, we maintain
+an exponential moving average (EMA) memory, denoted as
+M t
+k,ℓ∈RC, for each client k and label ℓ. The EMA memory
+is updated using a momentum coefficient β ∈(0, 1) as follows
+(Line 16):
+M t
+k+1,ℓ= βM t
+k,ℓ+ (1 −β)ζt
+k+1,ℓ,
+(15)
+where M is initialized with 0 at the beginning.
+Finally, the importance vector is the uniform average of the
+current EMA memories across all classes (Line 18):
+It
+k+1 =
+1
+|Pt
+k+1|
+X
+ℓ∈Pt
+k+1
+M t
+k+1,ℓ,
+(16)
+where Pt
+k+1 =
+
+ℓ| M t
+k+1,ℓ̸ = 0}. This averaging scheme bal-
+ances potential class imbalance inherent in non-i.i.d. settings
+by assigning equal weight to every class that has contributed
+at least once to the feature channel importance scores. After
+computing the aggregated importance vector It
+k+1, the server
+returns the activation gradient ∇˜zt
+kFk(θt
+k) to client k for client-
+side backpropagation and forwards It
+k+1 to client k+1 for the
+next training step (Lines 19–21). Note that when the model
+is updated by the last client K −1, the server forwards It+1
+0
+to client 0 for the next iteration (Line 23). Meanwhile, client
+k uses the returned activation gradient ∇˜zt
+kFk(θt
+k) to update
+the client-side model parameters, resulting in θt
+d,k+1 (Line
+25). After the client-side update, the updated client-side model
+parameters are forwarded to the next client in the sequential
+order, or to client 0 if k = K −1 (Lines 26–30). Fig. 1
+provides an overall framework of our proposed scheme.
+Remark 1. Although ICS is described above using CNN
+intermediate features of shape RB×C×U×V , its importance
+estimation does not particularly rely on convolution-specific
+operation. It requires only the gradient of the true-class logit
+with respect to the intermediate feature, aggregated over the
+non-feature axes to obtain a feature-wise importance score.
+Hence, ICS applies to any architecture in which a sparsifi-
+able feature dimension can be identified and the remaining
+axes can be pooled. For a transformer-based model with a
+token embedding tensor z ∈RB×dT OK×dEMB, the embedding
+dimension plays the role of the CNN feature channel and the
+importance is aggregated over the token axis, as empirically
+validated in Section VI.
+TABLE IV
+RUNTIME COMPARISON OF COMMUNICATION-EFFICIENT SL METHODS.
+Method
+Client-side
+sparsification (msec/batch)
+Server-side additional
+runtime (msec/batch)
+RS
+0.4133
+0.0
+TS
+0.5099
+0.0
+RTS
+0.5357
+0.0
+FedLite
+31.7882
+0.0
+SplitFC
+0.8106
+0.0
+ICS
+0.0928
+6.1702 (effectively 0.0)
+IV. THEORETICAL ANALYSIS
+A. Communication Overhead Analysis
+We first analyze the uplink overhead, since reducing client-
+side communication burden is particularly important in wire-
+less SL. In conventional SL, each client transmits the full
+intermediate feature zt
+k ∈RB×C×U×V , yielding a per-client
+uplink overhead of O(BCUV ). With the sparsification ratio
+R = N
+C , transmitting only N out of C feature channels reduces
+this to O(BRCUV ).
+For communication-efficient SL methods whose selection
+pattern is determined at the client side [17], [20], [23], the
+server cannot infer the retained channels from the received
+features alone. Hence, additional mask index information must
+be transmitted. Since the sparsification pattern differs across
+samples, the index overhead scales with the mini-batch size,
+yielding O(BRCUV + BRC log C). For SplitFC [18], the
+selection is made over the CUV feature positions rather than
+the feature channels, so its index is generated over CUV po-
+sitions, yielding O(BRCUV + RCUV log(CUV )). FedLite
+[19] instead transmits a codebook together with the codeword
+indices of the clustered sub-vectors. With Q centroids and
+nsub sub-vectors per sample, the codebook requires O(Qdsub)
+and the per-sample indices require O(Bnsub log Q), yielding a
+per-client uplink overhead of O(Qdsub +Bnsub log Q), where
+dsub is the sub-vector dimension.
+In contrast, ICS uses the server-generated importance vector
+It
+k ∈RC, which is shared with the client before sparsifica-
+tion. Since the client selects the retained elements using a
+deterministic top-N rule based on It
+k, the server can infer
+the retained elements directly from It
+k. Thus, under the same
+sparsification ratio, ICS achieves a per-client uplink overhead
+of O(BRCUV ) without transmitting any additional mask
+index information.
+B. Computational Complexity Analysis
+All methods share the same vanilla SL forward and back-
+ward pass on the client-side and server-side, whose costs are
+denoted by Cd and Cs, respectively. Thus, we omit them and fo-
+cus on the additional preprocessing for feature selection, which
+consists of 1) computing the selection scores; 2) selecting the
+retained features. The gathering of selected features into the
+retained tensor is also omitted as common to all methods.
+RS [20] randomly generates the mask without accessing
+the feature values, requiring only O(C) to select N out of C
+feature channels. TS [17] and RTS [23] scan the intermediate
+feature at a cost of O(BCUV ), then rank the per-channel
+
+
+8
+scores for each sample, yielding O(BCUV + BC log C).
+SplitFC [18] computes feature-vector-wise statistics at a cost
+of O(BCUV ) and then selects over the CUV feature el-
+ements, yielding O(BCUV + CUV log(CUV )). Since its
+selection is made over feature elements rather than feature
+channels, its selection cost scales with CUV rather than C,
+making it heavier than the feature channel-wise methods.
+FedLite [19] applies K-means clustering to the intermediate
+feature, comparing every sub-vector against Q centroids over
+J iterations, yielding O(QJBCUV ). Its iterative clustering
+thus makes it the most expensive, exceeding the selection-
+based methods by a factor (QJ).
+In contrast, ICS applies a deterministic top-N rule to
+the length-C importance vector It
+k, so its additional client-
+side cost is only O(C), far below the O(BCUV ) scan of
+the other methods. Although this matches the order of RS,
+ICS is even lighter in practice, since the client only reads
+the server-generated vector It
+k without generating a mask
+from the features. The importance computation is instead
+shifted to the server, which reuses the forward-pass logits
+to compute the importance measure at a cost CIM. While
+this estimation is performed sequentially after the server-
+side update in our implementation, this estimation does not
+depend on the updated parameters and can thus be run in
+parallel with the update. Since it backpropagates only the true-
+class logit to the intermediate feature, it traverses a strictly
+shorter path than the full-loss backward of the update. The
+subsequent spatial pooling, class-wise averaging, and EMA
+updates operate only on the C feature channels and incur
+minimal computational overhead, making their cost negligible
+compared with that of the neural network. The importance
+estimation is therefore completed within the update and fully
+hidden behind it, reducing its effective additional runtime to
+zero. This allocation aligns with the SL principle, keeping the
+resource-constrained client nearly free of selection overhead
+while delegating the heavier importance computation to the
+resourceful server.
+To complement this analysis, we measure the actual runtime
+overhead of each method under the setting in Section VI.
+Table IV reports the per-batch client- and server-side overhead,
+excluding the common forward and backward computations so
+that only the method-specific cost is compared.
+C. Convergence Analysis
+For theoretical derivation, we make the following assump-
+tions typically made in analyzing the distributed learning
+family [29]–[31].
+Assumption 1. Let S : RC →RC be a proposed sparsifi-
+cation operator and N be the number of non-zero elements
+satisfying 0 < N < C. Then, for all x ∈RC, S is an un-
+biased operator and its variance satisfies E
+
+∥S(x) −x∥2
+2
+
+≤
+ 1 −N
+C
+
+∥x∥2
+2.
+Assumption 2. For all θ, the local objective function Fk(θ) is
+S-smooth, i.e., ∥∇Fk(θ) −∇Fk(θ′)∥2 ≤S∥θ −θ′∥2, thereby
+Fk(θ′) ≤Fk(θ) + ∇Fk(θ)T(θ′ −θ) + S
+2 ∥θ′ −θ∥2
+2, where
+∇Fk(θk) = [∇θdFk(θk)∥∇θsFk(θk)]. The global objective
+function F(θ), being the average of the local objectives, is
+then also S-smooth, and lower bounded as F(θ) ≥F(θ∗) ∀θ.
+Assumption 3. The stochastic gradient at each client is
+unbiased such as E[∇Fk(Be
+k; θ)] = ∇Fk(θ) and its variance
+is bounded as E[∥∇Fk(Be
+k; θ) −∇Fk(θ)∥2
+2] ≤σ2
+B for all θ,
+client k and local steps e with a constant σ2 > 0.
+Assumption
+4. There exists a constant ψ2
+such that
+1
+K
+PK−1
+k=0 ∥∇Fk(θ) −∇F(θ)∥2
+2 ≤ψ2.
+Assumption 5. The expected squared norm of the gradient
+and intermediate feature at each client are upper bounded as
+E[∥∇Fk(θe
+k)∥2
+2] ≤G2 and E[∥ze
+k,b∥2
+2] ≤δ2 for all client k,
+local steps e, sample b, respectively.
+Theorem 1. Under Assumptions 1, 2, 3, 4, 5 and given the
+sparsification ratio R = N
+C , proposed SL with learning rate
+ηt =
+1
+KE
+√
+T has a convergence rate as below:
+E
+"
+1
+T
+T −1
+X
+t=0
+∥∇F(θt)∥2
+2
+#
+≤
+2
+√
+T
+E[F(θ0) −F(θ∗)] + 2ψ2
++ 2S2
+3T
+σ2
+B + G2
+
++ 2S
+√
+T
+ 
+σ2
+B + G2 + Λ2 (1 −R) Bδ2
+!
+,
+where Λ2 = Λ2
+0(Λ2
+1 + Λ2
+2Λ2
+3). Here, Λ0, Λ1, Λ2 and Λ3 are
+spectral norm upper-bound of
+∂L
+∂ˆyt,e
+k,b ,
+∂2 ˆyt,e
+k,b,ℓ
+∂zt,e
+k ∂θt,e
+s,k ,
+∂2 ˆyt,e
+k,b,ℓ
+∂(zt,e
+k )
+2 and
+∂zt,e
+k
+∂θt,e
+d,k ∀k, t, ℓ, respectively.
+Proof: See Appendix A.
+The bound yields two practical insights. First, as in FL,
+client data heterogeneity directly limits convergence. In par-
+ticular, the term 2ψ2 does not vanish with T. Second, unlike
+FL, the uplink overhead in SL scales with the mini-batch
+size B because each round transmits B intermediate features.
+Under a fixed communication budget, increasing B reduces
+the stochastic gradient variance σ2
+B but forces a lower sparsi-
+fication ratio R, which increases the sparsification error term
+Λ2(1−R) B δ2. Hence, a larger B is not always better in SL,
+and choosing B carefully is crucial. Empirical evidence for
+this trade-off appears in Section VI.
+Remark 2. Our convergence analysis is established under
+mini-batch SGD, where the effect of sparsification enters
+through a single gradient-variance term. Adaptive optimizers
+such as Adam introduce additional moment-based dynamics,
+which require a different technical treatment and therefore
+fall outside the scope of our SGD-focused analysis. How-
+ever, importantly, this does not affect the main insight: the
+variance–sparsification tradeoff identified in our analysis is
+optimizer-independent and also arises when Adam is used,
+because any sparsification-induced deviation in the stochastic
+gradient propagates through the update rule regardless of how
+the optimizer normalizes it. Moreover, the proposed sparsifica-
+tion mechanism is fully compatible with adaptive optimizers,
+as it operates directly on intermediate feature tensors and does
+not depend on optimizer-specific structures.
+
+
+9
+V. EXTENSION TO PARALLEL SPLIT LEARNING
+The system model in Section II considers the standard
+sequential SL protocol, where clients communicate with the
+server one at a time. In this setting, the importance vector
+computed at the server after processing client k is transmitted
+to the next client k+1 and used for sparsifying its intermediate
+features. However, this sequential importance-forwarding rule
+is not directly applicable to PSL, where multiple clients
+upload their intermediate features to the server within the
+same communication round. In this section, we extend the
+proposed ICS framework to PSL. The main difference lies
+in how the importance vector is constructed and shared.
+Instead of maintaining a client-wise importance vector that
+follows the sequential client order, the server maintains a
+shared iteration-wise importance vector It ∈RC, computed
+by aggregating Grad-CAM-based importance scores over the
+mini-batches of all participating clients. This shared vector is
+then broadcast to all clients and used for sparsification in the
+next communication round.
+Each client k ∈K draws a mini-batch Bt
+k of size B at
+iteration t and computes the intermediate feature as zt
+k =
+fd(xt
+k; θt
+d,k) ∈RB×C×U×V . Using the shared importance
+vector received from the previous round It ∈RC, client k
+sparsifies its intermediate feature as
+˜zt
+k = S(zt
+k; It) ∈RB×C×U×V ,
+(17)
+where S(·) is the sparsification operator defined in Sec-
+tion III-B. The sparsified intermediate feature ˜zt
+k and the
+corresponding labels are then transmitted to the server.
+Upon receiving the sparsified intermediate features from all
+participating clients, the server completes the forward pass for
+each client as
+ˆyt
+k = fs(˜zt
+k; θt
+s) ∈RB×L.
+(18)
+Using the same loss function in (11), the server computes
+the client-wise loss L(ˆyt
+k,b, yt
+k,b), from which it obtains the
+server-side gradient ∇θt
+s,kFk(θt
+k) and the activation gradient
+∇˜zt
+kFk(θt
+k). The server-side gradients are aggregated to update
+the server-side model as
+θt+1
+s
+= θt
+s −ηt 1
+K
+X
+k∈K
+∇θtsFk(θt
+k).
+(19)
+The server also updates the shared importance vector for the
+next iteration t + 1. Unlike the sequential SL setting, where
+class-specific importance is updated from the mini-batch of a
+single client, PSL allows the server to update class-specific
+importance using the mini-batches of all participating clients.
+Following the notation in Section III-B, Bt
+k,ℓdenotes the subset
+of samples with label ℓin the mini-batch of client k. Then, the
+total number of samples with label ℓacross the participating
+clients is given by Bt
+ℓ= P
+k∈K |Bt
+k,ℓ|.
+For each sample xt
+k,b ∈Bt
+k,ℓ, the server first computes
+the sample-wise importance vector following (13). The class-
+specific importance vector for PSL is then obtained by averag-
+ing over all samples of class ℓacross the participating clients:
+ζt+1
+ℓ
+= 1
+Bt
+ℓ
+X
+k∈K
+X
+xt
+k,b∈Bt
+k,ℓ
+ζt+1
+k,b .
+(20)
+This aggregation uses the collection of samples available at
+the server in the same PSL iteration, thereby providing a more
+balanced estimate of class-specific feature importance than a
+client-wise estimate under non-i.i.d. data distributions. As in
+Section III-B, to ensure temporal stability, the server maintains
+an EMA memory M t
+ℓ∈RC for each class ℓand updates it as
+M t+1
+ℓ
+= βM t
+ℓ+ (1 −β)ζt+1
+ℓ
+,
+(21)
+where β ∈(0, 1) is the momentum coefficient and M t
+ℓis
+initialized with 0 at the beginning t = 0. Finally, the shared
+class-balanced importance vector is obtained by averaging the
+EMA memories over the observed classes:
+It+1 =
+1
+|Pt+1|
+X
+ℓ∈Pt+1
+M t+1
+ℓ
+,
+(22)
+where Pt+1 = {ℓ| M t+1
+ℓ̸
+= 0}. After the server-side com-
+putation, the server sends the activation gradient ∇˜zt
+kFk(θt
+k)
+individually to each client k ∈K for client-side model updates.
+Each client then updates its client-side model parameters in
+parallel as
+θt+1
+d,k = θt
+d,k −ηt∇θt
+d,kFk(θt
+k),
+(23)
+where ∇θt
+d,kFk(θt
+k) =
+
+∂zt
+k
+∂θt
+d,k
+T
+∇˜zt
+kFk(θt
+k). In addition, the
+server broadcasts the shared importance vector It+1 to all
+clients, which is used for sparsifying intermediate features in
+the next iteration t + 1.
+Next, for the client-side updates synchronization, the server
+aggregates the updated client-side parameters as
+θt+1
+d
+= 1
+K
+X
+k∈K
+θt+1
+d,k .
+(24)
+The aggregated client-side model θt+1
+d
+is then distributed
+to all clients for the next iteration. Note that this client-
+side synchronization step does not change the proposed ICS
+sparsification and importance-update procedures.
+VI. NUMERICAL RESULTS
+In this section, we present simulation results to demon-
+strate the effectiveness of the proposed ICS framework. All
+experiments are conducted using Python 3.8 on an Ubuntu
+server equipped with NVIDIA GeForce RTX 3090 GPUs. The
+evaluation is conducted on CIFAR-100 [32], which contains
+60,000 color images of size 32 × 32 grouped into 100 fine-
+grained classes (with 600 images per class). Among these,
+50,000 images are used for training and 10,000 for testing.
+The 100 classes are further organized into 20 superclasses,
+each comprising five semantically related classes.
+In i.i.d. setting, the training data is evenly and randomly dis-
+tributed across all clients, ensuring that each client possesses a
+representative subset of the entire dataset. Moreover, in non-
+i.i.d. setting, the training data is partitioned across 10 local
+clients using a Dirichlet distribution. Specifically, for each
+class ℓ, we sample a probability vector pℓ∼Dirichlet(α)
+and assign the samples of class ℓto client k in proportion
+to pℓ,k. This procedure induces varying class compositions
+
+
+10
+across clients controlled by the concentration parameter α,
+i.e., smaller α yields more skewed, heterogeneous splits.
+Mini-batches of size 512 are drawn independently at each
+client. Both client and server-side models are optimized using
+SGD with an initial learning rate of 0.01, momentum of
+0.9, and weight decay of 5 × 10−4. A cosine annealing
+schedule is applied to decay the learning rate. For reproducibil-
+ity, random seeds are fixed for data partitioning and model
+initialization. The client-side model is a lightweight ResNet
+variant comprising two residual layers, totaling approximately
+675K parameters. The server-side model employs a deeper
+ResNet-style architecture with three groups of residual blocks,
+amounting to roughly 19.94M parameters. Unless otherwise
+specified, the sparsification ratio is set to R = 0.2.
+Regarding the baseline schemes in the simulation, we con-
+sider the following frameworks. To ensure a comprehensive
+comparison, we select one representative method from each
+major category of communication-efficient SL feature selec-
+tion, namely random sampling, magnitude-based selection and
+its randomized variant, feature-statistics-based selection, and
+clustering-based compression.For FedLite, the compressed
+payload consists of codebooks and codewords generated by
+clustering intermediate features. Since its discrete compression
+does not always allow an exact match to the target budget, we
+select the configuration with the closest communication cost
+that is no smaller than that of ICS. Thus, FedLite is allowed to
+use an equal or slightly larger communication budget, making
+the comparison conservative in favor of the baseline.
+• TS [17], [33]: Each client selects and transmits only
+the elements of the feature with the largest magni-
+tudes. Specifically, after forwarding the client-side model,
+clients identify the top-N elements with the highest
+absolute values and sparsify the rest.
+• RS [20], [33]: Each client selects and transmits only
+the elements of the feature randomly without considering
+their magnitudes or positions within the vectors.
+• RTS [23]: Each client selects and transmits a subset of
+the features by combining deterministic top-N selection
+with random sampling. Specifically, after forwarding the
+client-side model, clients first identify top-N elements
+with the highest absolute values and then, with a con-
+trolled probability, randomly select a few additional ele-
+ments from the remaining elements.
+• FedLite [19]: Each client compresses intermediate fea-
+tures by clustering similar features and transmitting the
+corresponding codebook and codewords to the server.
+In our implementation, we use its activation-clustering-
+based compression component as a baseline, without
+applying the additional gradient correction scheme, in
+order to focus on uplink intermediate feature compression
+and for fair comparisons.
+• SplitFC [18]: Each client performs standard-deviation-
+based adaptive feature sparsification. Specifically, clients
+compute the standard-deviation of each intermediate fea-
+ture vector and assign higher retention probabilities to
+feature vectors with larger standard-deviations. We do
+not apply the additional adaptive quantization, so that the
+comparison focuses on feature sparsification under the
+0
+10
+20
+30
+40
+50
+60
+70
+80
+90
+100
+0
+10
+20
+30
+40
+50
+60
+Fig. 2. Test accuracy of CIFAR-100 classification under i.i.d. datasets.
+same sparsification ratio for fair comparisons.
+Note that unlike ICS, all these baselines except RS incur
+additional client-side processing before transmission, such
+as magnitude ranking (TS, RTS), clustering and codebook
+generation (FedLite), or statistics computation (SplitFC).
+Comparison of Test Accuracy under i.i.d. Datasets. We
+evaluate the performance of the proposed ICS framework on
+the CIFAR-100 dataset and compare it with baseline methods.
+As shown in Fig. 2, ICS consistently outperforms all baseline
+methods. This superior performance can be attributed to its
+capability to effectively capture and retain intermediate fea-
+tures that are intrinsically significant to SL model’s predictive
+performance. Interestingly, TS demonstrates only marginal
+performance gains compared to RS and RTS. This outcome
+highlights a key distinction between SL and traditional FL.
+Specifically, it indicates that merely selecting intermediate
+feature elements based on magnitude alone does not translate
+effectively into improved performance in SL.
+It is also worth noting that ICS improves test accuracy
+faster than the baselines even in the early stage of training.
+This is notable because Grad-CAM is conventionally applied
+as a post-hoc tool for converged models. In contrast, ICS
+uses the true-class gradient with respect to the intermediate
+feature as a training-time importance metric, computed by the
+server during backpropagation at every iteration. It therefore
+quantifies the sensitivity of the current true-class score to
+each feature channel, and is updated as training progresses
+rather than relying on a fixed importance pattern. The early-
+stage gain suggests that this metric provides a useful task-
+sensitive selection criterion even when training starts from
+random initialization.
+Comparison of Test Accuracy under Non-i.i.d. Datasets.
+We further evaluate the performance of our proposed ICS
+framework under non-i.i.d. data distribution settings. In this
+experiment, datasets are generated using the Dirichlet distri-
+bution with concentration parameter α = 0.5. Fig. 3 presents
+the test accuracy of various sparsification strategies at the
+same sparsification ratio. Due to the inherently higher learning
+difficulty under non-i.i.d. conditions, the model requires more
+training iterations to converge, specifically, 200 iterations are
+executed. Fig. 3 shows that ICS consistently outperforms all
+baseline methods, demonstrating both superior final accuracy
+and notably faster convergence. Compared to the i.i.d. sce-
+
+
+11
+0
+20
+40
+60
+80
+100
+120
+140
+160
+180
+200
+0
+10
+20
+30
+40
+50
+60
+Fig. 3. Test accuracy of CIFAR-100 classification with Dirichlet α = 0.5.
+0
+20
+40
+60
+80
+100
+120
+140
+160
+180
+200
+0
+10
+20
+30
+40
+50
+60
+Fig. 4. Test accuracy of CIFAR-100 classification with Dirichlet α = 0.1.
+nario, our approach achieves more pronounced advantages in
+terms of convergence speed under non-i.i.d. conditions. This
+is primarily because ICS selectively transmits intermediate
+features universally important across all true labels, whereas
+baseline methods perform sparsification without considering
+such universal relevance, thus limiting their convergence effi-
+ciency in non-i.i.d. environments.
+Effects of Non-i.i.d. Levels.
+To further evaluate the
+robustness of the proposed ICS under varying degrees of data
+heterogeneity, we conduct additional experiments by changing
+the Dirichlet concentration parameter α used for client data
+partitioning. Specifically, we consider α ∈{0.05, 0.1}, which
+induces more severe non-i.i.d. data partitions than the α = 0.5
+setting considered in Fig. 3. In Figs. 4 and 5, we present the
+corresponding test accuracy of ICS and the baseline methods.
+As α decreases, all methods generally exhibit performance
+degradation due to the increasing discrepancy among client
+data distributions. However, ICS consistently outperforms the
+baselines, and the performance gap becomes more pronounced
+as the data distribution becomes more heterogeneous. In par-
+ticular, the performance gap is most evident when α = 0.05,
+where the client data distributions become highly label-skewed
+and baseline sparsification methods are more likely to select
+features biased toward locally dominant classes. The advantage
+of ICS is closely related to its class-balanced importance
+aggregation. Unlike the baseline methods, ICS estimates class-
+specific importance vectors and aggregates them in a class-
+balanced manner, thereby reducing the influence of locally
+dominant labels on the sparsification policy. This allows ICS
+0
+20
+40
+60
+80
+100
+120
+140
+160
+180
+200
+0
+5
+10
+15
+20
+25
+30
+35
+40
+45
+50
+Fig. 5. Test accuracy of CIFAR-100 classification with Dirichlet α = 0.05.
+0
+20
+40
+60
+80
+100
+120
+140
+160
+180
+200
+0
+10
+20
+30
+40
+50
+60
+Fig. 6. Test accuracy of ICS and ICS w/o CB on CIFAR-100 with Dirichlet
+α = 0.1 and α = 0.05.
+to better preserve feature channels that are discriminative
+across classes and maintain its effectiveness even under severe
+non-i.i.d. data distributions.
+Effects of Class-Balanced Importance Aggregation.
+We further examine the contribution of the class-balanced
+aggregation criterion in ICS. For this purpose, we compare
+ICS with ICS w/o CB [1], where CB denotes class balance.
+In ICS w/o CB, the importance vector is obtained by directly
+averaging the sample-wise importance vectors within each
+mini-batch, while all other procedures are kept identical to
+those of ICS.
+Fig. 6 shows the test accuracy under the same experimental
+setting as Fig. 3. To better reveal the effect of class-balanced
+aggregation, we consider two severe non-i.i.d. settings with
+α = 0.1 and α = 0.05. The results show that ICS consis-
+tently outperforms ICS w/o CB in both cases. In addition,
+ICS exhibits more stable training behavior, whereas ICS
+w/o CB shows larger accuracy fluctuations, particularly when
+α = 0.05. These results show that class-balanced aggregation
+mitigates the effect of mini-batch label imbalance when con-
+structing the importance vector, leading to higher accuracy and
+more stable training under severe non-i.i.d. data heterogeneity.
+Effects of Mini-batch Size and Sparsification Ratio. Fig.
+7 represents the test accuracy of CIFAR-100 with various mini-
+batch size and sparsification ratio under a fixed communication
+budget. In SL, each client transmits intermediate features of
+shape B ×C ×U ×V to the server, where B denotes the local
+mini-batch size and C, U, V are the feature channel, height,
+and width dimensions of the layer feature tensor, respectively.
+
+
+12
+0
+20
+40
+60
+80
+100
+120
+140
+160
+180
+200
+0
+10
+20
+30
+40
+50
+60
+Fig. 7. Test accuracy of CIFAR-100 classification under different sparsifica-
+tion ratio and mini-batch size pair.
+0
+20
+40
+60
+80
+100
+120
+140
+160
+180
+200
+0
+10
+20
+30
+40
+50
+60
+Fig. 8. Test accuracy on CIFAR-100 classification under PSL with Dirichlet
+α = 0.5.
+We fix the total number of transmitted elements per iteration
+and vary B ∈{128, 32, 16} alongside the sparsification ratio
+R = N
+C ∈{0.1, 0.4, 0.8}, respectively.
+Our results reveal an inherent trade-off between mini-
+batch size B and sparsification ratio R in communication-
+constrained SL, as predicted from Theorem 1. Specifically,
+increasing the mini-batch size leads to a higher total number
+of transmitted data samples. However, due to the lower R,
+each individual sample conveys less information, potentially
+impeding the training process. Conversely, while a smaller
+B with a higher R transmits fewer samples overall, it may
+still hinder convergence despite each sample carrying more
+information. Moreover, we find that higher B setups yield
+more rapid increases in test accuracy during the first few
+epochs, indicating that exposure to a larger variety of exam-
+ples outweighs per-sample fidelity at the outset. As training
+progresses, the advantage shifts toward higher R, which re-
+duce the per-epoch accuracy gap by preserving fuller feature
+information after broad sample exposure.
+Evaluation under PSL. We further evaluate the proposed
+ICS framework under the PSL setting described in Section V.
+Fig. 8 shows the test accuracy under the PSL setting with
+Dirichlet α = 0.5 and mini-batches of size 32. The proposed
+ICS achieves the best performance among all the compared
+methods, demonstrating that the shared importance vector
+remains effective even when multiple clients participate in
+parallel.
+An interesting observation is that FedLite exhibits a larger
+0
+20
+40
+60
+80
+100
+120
+140
+160
+180
+200
+0
+10
+20
+30
+40
+50
+60
+Fig. 9. Test accuracy of CIFAR-100 classification with transformer-based SL.
+performance degradation than that in the sequential SL setting.
+This may be due to the interaction between its data-dependent
+codebook construction and client-side model aggregation. Un-
+der PSL, each client performs local updates in parallel using
+features generated from its own non-i.i.d. data, and the result-
+ing client-side models are then aggregated into a single model
+for the next iteration. Since each client compresses its features
+with an independently estimated codebook, the local updates
+of different clients are shaped by client-dependent quantiza-
+tion errors. When these models are aggregated, the differing
+quantization errors may not be canceled and instead mix into
+a single model, which can yield less coherent updates. This
+effect recurs at every aggregation step and is more pronounced
+under the non-i.i.d. partition with α = 0.5, where the parallel
+client-side models can diverge more strongly. In contrast, ICS
+uses a shared server-generated importance vector, allowing all
+clients to sparsify their intermediate features according to the
+same task-aware criterion. This shared sparsification rule helps
+maintain consistency across parallel client updates, making
+ICS more compatible with PSL.
+Generalization to Transformer-based SL Models. To
+verify that ICS is not limited to CNN-based architectures,
+we further evaluate it with a transformer-based SL model.
+Following Remark 1, we evaluate ICS on CIFAR-100 using a
+split transformer model, where sparsification is applied along
+the embedding dimension dEMB of the token embedding
+tensor. The model has eight transformer encoder layers with
+embedding dimension 256, eight attention heads, MLP ratio
+4, and dropout 0.1. The first two encoder layers are placed
+on the client side, while the remaining six encoder layers,
+followed by layer normalization, mean pooling over patch
+tokens, and the classification head, are placed on the server
+side. The experiment is conducted with 10 clients under i.i.d.
+partitioning using AdamW with learning rate 3×10−3, weight
+decay 10−2 and cosine learning-rate decay. As shown in
+Fig. 9, ICS achieves stable training performance, whereas RS
+fails to train reliably under the same communication budget.
+This result verifies that ICS can be extended to transformer-
+based SL by applying feature-wise sparsification along the
+embedding dimension.
+Generalization to a Different Dataset. To assess the
+generalizability of our approach across different datasets, we
+conduct additional experiments on CIFAR-10. The experimen-
+
+
+13
+0
+5
+10
+15
+20
+25
+30
+35
+40
+45
+50
+10
+20
+30
+40
+50
+60
+70
+80
+90
+Fig. 10. Test accuracy of CIFAR-10 classification under i.i.d. datasets.
+0
+10
+20
+30
+40
+50
+60
+35
+40
+45
+50
+55
+60
+65
+70
+75
+80
+Fig. 11. mIoU of segmentation under Oxford-IIIT Pet datasets.
+tal setup was identical to that used for CIFAR-100, except for a
+fixed mini-batch size of 256, a learning rate of 0.1 and a total
+of 50 iterations. As illustrated in Fig. 10, ICS consistently
+outperforms alternative sparsification schemes. These results
+underscore the importance of effectively preserving critical
+intermediate feature information and demonstrate the broad
+applicability of our approach across multiple datasets.
+Generalization to a Different Task. We further validate
+the generalizability of ICS by extending our evaluation to a
+segmentation task using the Oxford-IIIT Pet dataset [34]. This
+task requires the model to produce pixel-level predictions and
+is thus highly sensitive to the quality of spatial information.
+Both the client and the server were trained using AdamW,
+allowing us to examine whether the relative behavior of the
+methods persists under an adaptive optimizer. Figs. 11 and
+12 illustrate the validation of mean intersection over union
+(mIoU) and pixel accuracy, respectively. The results reveal a
+significant shift in the relative performance of the baseline
+methods compared to the classification tasks. While ICS con-
+sistently achieves the highest mIoU and accuracy, TS and RTS
+show a clear performance degradation compared with the other
+methods. This trend differs from the classification results,
+where the three baselines exhibited comparable performance.
+This performance gap can be attributed to the inherent
+characteristics of semantic segmentation. In such datasets,
+background regions typically occupy a dominant portion of
+the image and are easier to recognize than object regions,
+which are often small and spatially localized. This object
+and background imbalance can bias magnitude-based feature
+0
+10
+20
+30
+40
+50
+60
+50
+55
+60
+65
+70
+75
+80
+85
+90
+Fig. 12. Pixel accuracy of segmentation under Oxford-IIIT Pet datasets.
+selection schemes to predominately capture background pat-
+terns. Accordingly, TS and RTS are more likely to retain
+background dominant feature channels while discarding object
+dominant feature channels, leading to degraded performance.
+This observation is consistent with prior studies reporting that
+semantic segmentation datasets exhibit object and background
+imbalance, where background pixels overshadow object class
+statistics and suppress gradients for object regions [35].
+In contrast, RS and SplitFC do not rely on magnitude and
+therefore avoid such background-driven bias. Their stochastic
+selection introduces a regularization effect, similar in spirit
+to feature channel-wise dropout. This likely encourages the
+encoder to learn redundant and diverse representations for
+the object classes, distributing information across multiple
+feature channels. While RS and SplitFC demonstrate strong
+robustness, their efficacy relies on redundancy learned through
+stochastic selection. ICS, in contrast, achieves consistently
+superior accuracy by selecting feature channels based on
+their server-calculated gradient importance. Crucially, its class-
+balanced aggregation mechanism directly mitigates the back-
+ground dominance that is an inherent limitation of TS. By
+applying equal weighting to the importance scores of the
+object classes and the background class, ICS prevents the
+importance vector from collapsing onto background-dominant
+feature channels. These results suggest that ICS performs well
+not only on image-level classification tasks but also on pixel-
+level segmentation tasks.
+Ablation Study. To provide a deeper qualitative understand-
+ing of why our proposed ICS achieves superior performance,
+we visualize the feature-level importance retained by each
+sparsification method. For this analysis, we adopt the same
+experimental setup used for CIFAR-100 i.i.d. scenarios and
+employ Grad-CAM [21] to generate saliency maps derived
+from the transmitted feature channels.
+Fig. 13 presents these visualizations for representative test
+samples from the CIFAR-100 dataset, including ground-truth
+labels. Within each subfigure, the columns display the original
+image, the resulting saliency heatmap, and an overlay of
+the two, respectively. The rows correspond to the different
+sparsification methods being compared, specifically, the rows
+represent ICS, TS, RS, RTS, SplitFC, and FedLite, respec-
+tively. As shown across all subfigures, heatmaps of ICS are
+localized and concentrate almost exclusively on the meaning-
+
+
+14
+Label  ‘can’
+Label  ‘cockroach’
+Label  ‘chair’
+Label  ‘bicycle’
+Label  ‘fish’
+Fig. 13. Comparison of feature saliency maps for sampled images from five different labels. For each sample, the first, second, and third columns show the
+original image, the Grad-CAM saliency map, and their overlay, respectively. Each row corresponds to a different sparsification method: ICS (row 1), TS (row
+2), RS (row 3), RTS (row 4), SplitFC (row 5), and FedLite (row 6).
+ful regions of the objects. This indicates that our importance-
+aware mechanism effectively identifies and prioritizes the most
+discriminative feature channels for the task.
+In contrast, the saliency map for RS exhibits no discernible
+spatial structure, as expected given its random and feature-
+agnostic selection strategy. Similarly, the maps for TS and
+RTS appear consistently diffuse, failing to localize the target
+objects and instead spreading attention across irrelevant back-
+ground regions. The maps for SplitFC and FedLite also show
+limited object localization. This is because SplitFC selects
+features based on feature-level statistics rather than their direct
+contribution to the task objective, while FedLite compresses
+intermediate features through clustering-based codebook con-
+struction without explicitly preserving task-discriminative fea-
+ture channels. These results visually reinforce our core hypoth-
+esis that feature magnitude, feature statistics, and clustering-
+based representation compression is an unreliable indicator of
+feature importance. The qualitative evidence thus complements
+our quantitative findings, explaining why ICS achieves supe-
+rior accuracy and convergence by transmitting only the most
+salient and informative features.
+VII. CONCLUSION
+This paper introduced ICS, an importance-aware class-
+balanced sparsification method for wireless split learning. The
+server estimates Grad-CAM-based channel importance from
+the true-class logit during backpropagation and aggregates
+it into a class-balanced, label-agnostic vector, which each
+client reuses in the next round to transmit only the most dis-
+criminative feature channels without any additional client-side
+computation. The class-balanced design mitigates the bias that
+arises under non-i.i.d. client data, and the convergence analysis
+reveals a trade-off between the mini-batch size and the sparsi-
+fication ratio under a fixed communication budget. We further
+showed that ICS extends to parallel split learning through a
+shared server-generated importance vector and to transformer-
+based models along the embedding dimension. Experiments
+across classification and semantic segmentation, several het-
+erogeneity levels, and different architectures confirmed that
+ICS consistently outperforms existing communication-efficient
+SL baselines while keeping the client-side overhead minimal.
+APPENDIX A
+PROOF OF THEOREM 1
+To begin with, we first recall the global model, i.e. θt =
+[θt
+d||θt
+s]. The model update can be represented as
+θt+1 = θt −
+K−1
+X
+k=0
+E−1
+X
+e=0
+ηt∇Fk(˜zt,e
+k , Bt,e
+k ; θt,e
+k ),
+(25)
+where ηt is learning rate at iteration t, E is the num-
+ber
+of
+local
+steps,
+∇Fk(˜zt,e
+k , Bt,e
+k ; θt,e
+k )
+represents
+the
+concatenated
+stochastic
+gradients
+with
+sparsification
+of
+client
+k
+and
+the
+server,
+i.e.
+∇Fk(˜zt,e
+k , Bt,e
+k ; θt,e
+k )
+=
+[∇θt,e
+d,kFk(˜zt,e
+k , Bt,e
+k ; θt,e
+k )||∇θt,e
+s,kFk(˜zt,e
+k , Bt,e
+k ; θt,e
+k )].
+Next, using S-smoothness, the following inequality holds:
+E[F(θt+1) −F(θt)] ≤E[∇F(θt)T(θt+1 −θt)]
+|
+{z
+}
+(a)
++S
+2 E[∥θt+1 −θt∥2
+2]
+|
+{z
+}
+(b)
+.
+(26)
+Now we can derive an upper bound of (a) in (26) as follows:
+(a) = −ηt
+K−1
+X
+k=0
+E−1
+X
+e=0
+E
+h
+∇F(θt)T∇Fk(θt,e
+k )
+i
+(27)
+= −ηtKE
+2
+E
+h∇F(θt)
+2
+2
+i
+−ηt
+2
+K−1
+X
+k=0
+E−1
+X
+e=0
+E
+h∇Fk(θt,e
+k )
+2
+2
+i
+
+
+15
++ ηt
+2
+K−1
+X
+k=0
+E−1
+X
+e=0
+E
+h∇F(θt) −∇Fk(θt,e
+k )
+2
+2
+i
+|
+{z
+}
+(a.1)
+,
+(28)
+where the first equality is due to Assumption 3 and the second
+equality comes from a simple property, such as −aT b =
+1
+2(−∥a∥2
+2 −∥b∥2
+2 + ∥a −b∥2
+2). For (a.1) in (28), by adding,
+subtracting ∇Fk(θt) and using ∥a + b∥2
+2 ≤2∥a∥2
+2 + 2∥b∥2
+2,
+we have
+(a.1) ≤
+K−1
+X
+k=0
+E−1
+X
+e=0
+E
+"
+2
+∇F(θt) −∇Fk(θt)
+2
+2
++ 2
+∇Fk(θt) −∇Fk(θt,e
+k )
+2
+2
+#
+(29)
+≤2KEψ2 + 2
+K−1
+X
+k=0
+E−1
+X
+e=0
+E
+h∇Fk(θt) −∇Fk(θt,e
+k )
+2
+2
+i
+|
+{z
+}
+(a.1.1)
+,
+(30)
+where the second inequality comes from Assumption 4.
+For (a.1.1) in (30), using S-smoothness, we have
+(a.1.1) ≤S2
+K−1
+X
+k=0
+E−1
+X
+e=0
+E
+θt,0
+0
+−θt,e
+k
+
+2
+2
+
+(31)
+= S2
+K−1
+X
+k=0
+E−1
+X
+e=0
+E
+"
+k−1
+X
+i=0
+E−1
+X
+j=0
+ηt∇Fi(Bt,j
+i ; θt,j
+i )
++
+e−1
+X
+h=0
+ηt∇Fk(Bt,h
+k ; θt,h
+k )
+
+2
+2
+#
+(32)
+≤S2
+K−1
+X
+k=0
+E−1
+X
+e=0
+(kE + e)
+ k−1
+X
+i=0
+E−1
+X
+j=0
+E
+h
+∥ηt∇Fi(Bt,j
+i ; θt,j
+i )∥2
+2
+i
++
+e−1
+X
+h=0
+E
+h
+∥ηt∇Fk(Bt,h
+k ; θt,h
+k )∥2
+2
+i !
+(33)
+= S2
+K−1
+X
+k=0
+E−1
+X
+e=0
+(kE + e)(ηt)2
+ k−1
+X
+i=0
+E−1
+X
+j=0
+E
+h
+∥∇Fi(θt,j
+i )∥2
+2
++ ∥∇Fi(Bt,j
+i ; θt,j
+i ) −∇Fi(θt,j
+i )∥2
+2
+i
++
+e−1
+X
+h=0
+E
+h
+∥∇Fk(θt,h
+k )∥2
+2
++ ∥∇Fk(Bt,h
+k ; θt,h
+k ) −∇Fk(θt,h
+k )∥2
+2
+i!
+(34)
+≤S2(ηt)2
+K−1
+X
+k=0
+E−1
+X
+e=0
+(kE + e)2
+σ2
+B + G2
+
+(35)
+= S2(ηt)2
+σ2
+B + G2
+ KE(KE −1)(2KE −1)
+6
+(36)
+≤1
+3S2(ηt)2
+σ2
+B + G2
+
+(KE)3,
+(37)
+where the first equality is obtained by recursively applying the
+sequential SL update rule up to the beginning of the e-th local
+step of client k. Specifically, before the e-th local update of
+client k, the model has already been updated by all E local
+steps of clients 0, . . . , k −1 and by the first e local steps of
+client k, starting from θt,0
+0 , which gives
+θt,e
+k
+= θt,0
+0
+−ηt
+ k−1
+X
+i=0
+E−1
+X
+j=0
+∇Fi(Bt,j
+i ; θt,j
+i )
++
+e−1
+X
+h=0
+∇Fk(Bt,h
+k ; θt,h
+k )
+!
+.
+(38)
+Substituting this expansion into θt,0
+0
+−θt,e
+k
+yields the first
+equality. The second inequality is due to Cauchy–Schwarz
+inequality, and the second equality is obtained by adding
+and subtracting ∇Fi(θt,j
+i ) and ∇Fk(θt,h
+k ). The cross terms
+in the equality go to zero due to the unbiasedness. The
+third inequality comes from Assumptions 3 and 5. The last
+inequality is due to KE −1 ≤KE and 2KE −1 ≤2KE.
+Before upper-bound (b) in (26), we first introduce the
+following Lemma 1 for upper-bound (b).
+Lemma 1. Under Assumptions 1, 5, and let
+mt,e
+k
+= ∇Fk(˜zt,e
+k , Bt,e
+k ; θt,e
+k ) −∇Fk(zt,e
+k , Bt,e
+k ; θt,e
+k )
+(39)
+where mt,e
+k
+= [mt,e
+d,k||mt,e
+s,k], be the update error caused by the
+sparsification operator S(·). Then, mt,e
+k
+is upper-bounded as
+E∥mt,e
+k ∥2
+2 ≤Λ2
+
+1 −N
+C
+
+Bδ2,
+(40)
+where Λ2 = Λ2
+0(Λ2
+1 + Λ2
+2Λ2
+3). Here, Λ0, Λ1, Λ2 and Λ3 are
+spectral norm upper-bound of
+∂L
+∂ˆyt,e
+k,b ,
+∂2 ˆyt,e
+k,b,ℓ
+∂zt,e
+k ∂θt,e
+s,k ,
+∂2 ˆyt,e
+k,b,ℓ
+∂(zt,e
+k )
+2 and
+∂zt,e
+k
+∂θt,e
+d,k ∀k, t, ℓ, respectively.
+Proof: See Appendix B.
+Next, using Cauchy–Schwarz inequality, (b) in (26) can be
+expressed as
+(b) ≤KE(ηt)2
+K−1
+X
+k=0
+E−1
+X
+e=0
+E
+
+∥∇Fk(Bt,e
+k ; θt,e
+k ) + mt,e
+k ∥2
+2
+
+≤2KE(ηt)2
+K−1
+X
+k=0
+E−1
+X
+e=0
+E
+
+∥∇Fk(Bt,e
+k ; θt,e
+k )∥2
+2
+
+|
+{z
+}
+(b.1)
++ 2KE(ηt)2
+K−1
+X
+k=0
+E−1
+X
+e=0
+E
+
+∥mt,e
+k ∥2
+2
+
+|
+{z
+}
+(b.2)
+,
+(41)
+where zt,e
+k
+in ∇Fk(zt,e
+k , Bt,e
+k ; θt,e
+k ) is omitted for ease of
+notation. The first inequality follows from ∥PKE
+r=1 ar∥2
+2 ≤
+KE PKE
+r=1 ∥ar∥2
+2 and the second inequality follows from
+∥a + b∥2
+2 ≤2∥a∥2
+2 + 2∥b∥2
+2.
+By adding and subtracting ∇Fk(θt,e
+k ) in (b.1), we can get
+(b.1) =
+K−1
+X
+k=0
+E−1
+X
+e=0
+E
+h
+∥∇Fk(Bt,e
+k ; θt,e
+k ) −∇Fk(θt,e
+k )∥2
+2
++ ∥∇Fk(θt,e
+k )∥2
+2
+i
+(42)
+≤KEσ2
+B
++ KEG2,
+(43)
+
+
+16
+where the cross term in the equality goes to zero due to the
+unbiasedness, i.e., E
+
+∇Fk(Bt,e
+k ; θt,e
+k )
+
+= E
+
+∇Fk(θt,e
+k )
+
+, and
+the inequality comes from Assumptions 3 and 5. Finally, by
+using Lemma 1 for upper-bound (b.2) in (41) and substitute
+(43) into (41), (b) in (26) can be upper-bounded as
+(b) ≤2K2E2(ηt)2
+σ2
+B + G2 + Λ2
+
+1 −N
+C
+
+Bδ2
+
+. (44)
+Substituting the above inequalities to (26), we get
+E[F(θt+1) −F(θt)] ≤−ηtKE
+2
+E
+h∇F(θt)
+2
+2
+i
++ ηtKEψ2
++ 1
+3S2(ηt)3
+σ2
+B + G2
+
+(KE)3 + SK2E2(ηt)2
+ 
+σ2
+B
++ G2 + Λ2
+
+1 −N
+C
+
+Bδ2
+!
+.
+(45)
+Averaging the above inequality over iteration from 0 to T −1
+and applying ηt =
+1
+KE
+√
+T , we can get
+E
+"
+1
+T
+T −1
+X
+t=0
+∥∇F(θt)∥2
+2
+#
+≤
+2
+√
+T
+E[F(θ0) −F(θ∗)] + 2ψ2
++ 2S2
+3T
+σ2
+B + G2
+
++ 2S
+√
+T
+ 
+σ2
+B + G2 + Λ2 (1 −R) Bδ2
+!
+,
+(46)
+where the first term in the right-hand side is upper-bounded as
+E[F(θ0)−F(θT )] ≤E[F(θ0)−F(θ∗)] since F(θT ) ≥F(θ∗).
+APPENDIX B
+PROOF OF LEMMA 1
+We first begin with the server-side error. For ease of
+notation, we omit indices of k and e. Similar to [19], using the
+definition of the server-side gradient, the update error caused
+by sparsification can be expressed as
+∥mt
+s∥2
+2 =
+
+1
+B
+B−1
+X
+b=0
+∂L
+∂ˆyt
+b
+ 
+∂ˆyt
+b,ℓ(˜zt
+k; θt
+s)
+∂θts
+−
+∂ˆyt
+b,ℓ(zt
+k; θt
+s)
+∂θts
+!
+2
+2
+(47)
+where ˜zt and zt denote intermediate feature after sparsification
+and before sparsification, respectively. Next using the mean
+value theorem,
+∥mt
+s∥2
+2 ≤max
+b
+
+∂L
+∂ˆyt
+b
+∂2ˆyt
+b,ℓ(zt
+k; θt
+s)
+∂z∂θts
+(˜zt −zt)
+
+2
+2
+(48)
+≤Λ2
+0Λ2
+1
+
+1 −N
+C
+
+Bδ2
+(49)
+where the second inequality is due to Assumptions 1 and 5.
+Here, Λ0 and Λ1 are spectral norm upper-bound of
+∂L
+∂ˆyt
+b and
+∂2 ˆyt
+b,ℓ(zt;θt
+s)
+∂zt∂θt
+s
+, respectively.
+Similar to the server-side error, the update error caused by
+sparsification at the client-side can be expressed as
+∥mt
+d∥2
+2 =
+
+1
+B
+B−1
+X
+b=0
+∂L
+∂ˆyt
+b
+ 
+∂ˆyt
+b,ℓ(˜zt; θt
+s)
+∂˜zt
+−
+∂ˆyt
+b,ℓ(zt; θt
+s)
+∂zt
+!
+∂zt
+∂θt
+d
+
+2
+2
+(50)
+≤max
+b
+
+∂L
+∂ˆyt
+b
+∂2ˆyt
+b,ℓ
+∂(zt)2
+∂zt
+∂θt
+d
+(zt −˜zt)
+
+2
+2
+(51)
+≤Λ2
+0Λ2
+2Λ2
+3
+
+1 −N
+C
+
+Bδ2,
+(52)
+where ˆyt
+b,ℓ(˜zt; θt
+s) and ˆyt
+b,ℓ(zt; θt
+s) denote the logit forwarded
+with the sparsified intermediate feature ˜zt and non-sparsified
+intermediate feature zt, respectively. The first inequality comes
+from the mean-value theorem and the second inequality is due
+to Assumptions 1 and 5. Here, Λ0, Λ2 and Λ3 are spectral
+norm upper-bound of
+∂L
+∂ˆyt
+b ,
+∂2 ˆyt
+b,ℓ
+∂(zt)2 and ∂zt
+∂θt
+d , respectively.
+Finally, combining the above inequalities, the error becomes
+E∥mt∥2
+2 ≤Λ2
+
+1 −N
+C
+
+Bδ2,
+(53)
+where Λ2 = Λ2
+0(Λ2
+1 + Λ2
+2Λ2
+3).
+REFERENCES
+[1] B. Kim, Y. Huh, and W. Choi, “Feature sparsification based on feature
+importance for wireless split learning,” in Proceedings of the IEEE
+Vehicular Technology Conference (VTC), 2025, pp. 1–5.
+[2] M. Chen, D. G¨und¨uz, K. Huang, W. Saad, M. Bennis, A. V. Feljan,
+and H. V. Poor, “Distributed learning in wireless networks: Recent
+progress and future challenges,” IEEE Journal on Selected Areas in
+Communications, vol. 39, no. 12, pp. 3579–3605, 2021.
+[3] B. Kim, H. Seo, and W. Choi, “Privacy-enhanced over-the-air federated
+learning via client-driven power balancing,” IEEE Transactions on
+Communications, vol. 73, no. 12, pp. 15 537–15 553, 2025.
+[4] Y. Huh, B. Kim, and W. Choi, “Feature reconstruction aided federated
+learning for image semantic communication,” in Proceedings of the
+IEEE Global Communications Conference (GLOBECOM), 2025, pp.
+4669–4674.
+[5] M. F. Ul Abrar and N. Michelusi, “Biased federated learning under wire-
+less heterogeneity,” IEEE Transactions on Wireless Communications,
+vol. 25, pp. 16 449–16 462, 2026.
+[6] F. P.-C. Lin, C. G. Brinton, and N. Michelusi, “Federated learning with
+communication delay in edge networks,” in Proceedings of the IEEE
+Global Communications Conference (GLOBECOM), 2020, pp. 1–6.
+[7] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for image
+recognition,” in Proceedings of the IEEE Conference on Computer Vision
+and Pattern Recognition (CVPR), 2016, pp. 770–778.
+[8] P. Vepakomma, O. Gupta, T. Swedish, and R. Raskar, “Split learning
+for health: Distributed deep learning without sharing raw patient data,”
+arXiv preprint arXiv:1812.00564, 2018.
+[9] Z. Lin, G. Qu, X. Chen, and K. Huang, “Split learning in 6G edge
+networks,” IEEE Wireless Communications, vol. 31, no. 4, pp. 170–176,
+2024.
+[10] Z. Lin, G. Zhu, Y. Deng, X. Chen, Y. Gao, K. Huang, and Y. Fang,
+“Efficient parallel split learning over resource-constrained wireless edge
+networks,” IEEE Transactions on Mobile Computing, vol. 23, no. 10,
+pp. 9224–9239, 2024.
+[11] Q. Lan, Q. Zeng, P. Popovski, D. G¨und¨uz, and K. Huang, “Progressive
+feature transmission for split classification at the wireless edge,” IEEE
+Transactions on Wireless Communications, vol. 22, no. 6, pp. 3837–
+3852, 2023.
+[12] J. Lee, H. Lee, and W. Choi, “Wireless channel adaptive DNN split
+inference for resource-constrained edge devices,” IEEE Communications
+Letters, vol. 27, no. 6, pp. 1520–1524, 2023.
+[13] Y. Huh, H. Seo, and W. Choi, “Universal joint source-channel coding
+for modulation-agnostic semantic communication,” IEEE Journal on
+Selected Areas in Communications, vol. 43, no. 7, pp. 2560–2574, 2025.
+[14] Y. Huh, J. Kang, and W. Choi, “Markov-enforced discrete diffusion
+model for digital semantic symbol error correction,” IEEE Transactions
+on Communications, pp. 1–1, 2026.
+
+
+17
+[15] J. Jeon and J. Kim, “Privacy-sensitive parallel split learning,” in Pro-
+ceedings of the International Conference on Information Networking
+(ICOIN), 2020, pp. 7–9.
+[16] C. Thapa, P. C. M. Arachchige, S. Camtepe, and L. Sun, “SplitFed:
+When federated learning meets split learning,” in Proceedings of the
+AAAI Conference on Artificial Intelligence (AAAI), 2022, pp. 8485–8493.
+[17] W. Zhou, Z. Qu, S.-H. Lyu, M. Cai, and B. Ye, “Mask-encoded
+sparsification: Mitigating biased gradients in communication-efficient
+split learning,” in Proceedings of the European Conference on Artificial
+Intelligence (ECAI), 2024, pp. 2806–2813.
+[18] Y. Oh, J. Lee, C. G. Brinton, and Y.-S. Jeon, “Communication-efficient
+split learning via adaptive feature-wise compression,” IEEE Transactions
+on Neural Networks and Learning Systems, vol. 36, no. 6, pp. 10 844–
+10 858, 2025.
+[19] J. Wang, H. Qi, A. S. Rawat, S. Reddi, S. Waghmare, F. X. Yu,
+and G. Joshi, “FedLite: A scalable approach for federated learning on
+resource-constrained clients,” arXiv preprint arXiv:2201.11865, 2022.
+[20] J. Zhang, W. Ni, and D. Wang, “Federated split learning with model
+pruning and gradient quantization in wireless networks,” IEEE Transac-
+tions on Vehicular Technology, vol. 74, no. 4, pp. 6850–6855, 2025.
+[21] R. R. Selvaraju, M. Cogswell, A. Das, R. Vedantam, D. Parikh, and
+D. Batra, “Grad-CAM: Visual explanations from deep networks via
+gradient-based localization,” in Proceedings of the IEEE International
+Conference on Computer Vision (ICCV), 2017, pp. 618–626.
+[22] K. Zhou, G. Zhang, Y. Cai, Q. Hu, G. Yu, and A. L. Swindlehurst, “Fea-
+ture allocation for semantic communication with space-time importance
+awareness,” IEEE Transactions on Wireless Communications, vol. 24,
+no. 10, pp. 8847–8862, 2025.
+[23] F. Zheng, C. Chen, L. Lyu, and B. Yao, “Reducing communication for
+split learning by randomized top-k sparsification,” in Proceedings of the
+International Joint Conference on Artificial Intelligence (IJCAI), 2023,
+pp. 4665–4673.
+[24] W. Wu, M. Li, K. Qu, C. Zhou, X. Shen, W. Zhuang, X. Li, and W. Shi,
+“Split learning over wireless networks: Parallel design and resource
+management,” IEEE Journal on Selected Areas in Communications,
+vol. 41, no. 4, pp. 1051–1066, 2023.
+[25] G. Zhu, Y. Deng, X. Chen, H. Zhang, Y. Fang, and T. F. Wong, “ESFL:
+Efficient split federated learning over resource-constrained heteroge-
+neous wireless devices,” IEEE Internet of Things Journal, vol. 11, no. 16,
+pp. 27 153–27 166, 2024.
+[26] Z. Lin, G. Qu, W. Wei, X. Chen, and K. K. Leung, “AdaptSFL: Adaptive
+split federated learning in resource-constrained edge networks,” IEEE
+Transactions on Networking, vol. 33, no. 6, pp. 2993–3008, 2025.
+[27] X. Wang, S. Song, Z. Zhang, X. Hou, Z. Li, T. Xing, and X.-P. Zhang,
+“Split federated learning for resource-constrained edge computing net-
+works,” IEEE Transactions on Consumer Electronics, vol. 71, no. 4, pp.
+11 001–11 013, 2025.
+[28] Z. Lin, W. Wei, Z. Chen, C.-T. Lam, X. Chen, Y. Gao, and J. Luo,
+“Hierarchical split federated learning: Convergence analysis and system
+optimization,” IEEE Transactions on Mobile Computing, vol. 24, no. 10,
+pp. 9352–9367, 2025.
+[29] Y. Li and X. Lyu, “Convergence analysis of sequential split learning on
+heterogeneous data,” arXiv preprint arXiv:2302.01633, 2023.
+[30] B. Kim and W. Choi, “Two stage wireless federated LoRA fine-tuning
+with sparsified orthogonal updates,” arXiv preprint arXiv:2505.00333,
+2025.
+[31] Y. Huh, B. Kim, and W. Choi, “Federated learning enhanced by feature
+reconstruction for semantic communication module updates of agents,”
+arXiv preprint arXiv:2508.03248v3, 2026.
+[32] A. Krizhevsky, “Learning multiple layers of features from tiny images,”
+University of Toronto, Tech. Rep., 2009.
+[33] S. U. Stich, J.-B. Cordonnier, and M. Jaggi, “Sparsified SGD with mem-
+ory,” in Advances in Neural Information Processing Systems (NeurIPS),
+2018, pp. 4452–4463.
+[34] O. M. Parkhi, A. Vedaldi, A. Zisserman, and C. V. Jawahar, “Cats and
+dogs,” in Proceedings of the IEEE Conference on Computer Vision and
+Pattern Recognition (CVPR), 2012, pp. 3498–3505.
+[35] E. Tappeiner, M. Welk, and R. Schubert, “Tackling the class imbalance
+problem of deep learning-based head and neck organ segmentation,”
+International Journal of Computer Assisted Radiology and Surgery,
+vol. 17, no. 11, pp. 2103–2111, 2022.
+Bumjun Kim (Graduate Student Member, IEEE)
+received the B.S. degree from the Department of
+Electronic Engineering, Jeonbuk National Univer-
+sity, Jeonju, South Korea, in 2020. He is currently
+pursuing the Ph.D. degree with the Department of
+Electrical and Computer Engineering, Seoul Na-
+tional University, Seoul. His research interests in-
+clude wireless communications, distributed learning,
+and semantic communication.
+Yoon Huh (Graduate Student Member, IEEE) re-
+ceived the B.S. degree (summa cum laude) from the
+School of Electrical and Electronics Engineering,
+Yonsei University, Seoul, South Korea, in 2022.
+He is currently pursuing the Ph.D. degree with the
+Department of Electrical and Computer Engineering,
+Seoul National University, Seoul, South Korea. His
+research interests include wireless communication,
+semantic communication, and deep learning.
+Wan Choi (Fellow, IEEE) is Professor of Depart-
+ment of Electrical and Computer Engineering, Seoul
+National University, Seoul, Korea. He is Director
+of Institute of New Media and Communications
+(INMC), Seoul National University, from Feb. 2025.
+From Feb. 2007 to Feb. 2020, he was Professor of
+School of Electrical Engineering, Korea Advanced
+Institute of Science and Technology (KAIST), Dae-
+jeon, Korea. He received the B.Sc. and M.Sc. de-
+grees from the School of Electrical Engineering and
+Computer Science (EECS), Seoul National Univer-
+sity (SNU), Seoul, Korea, in 1996 and 1998, respectively, and the Ph.D. degree
+in the Department of Electrical and Computer Engineering at the University
+of Texas at Austin in 2006. From 1998 to 2003, he was a Senior Member of
+the Technical Staff of the R&D Division of KT, Korea, where he researched
+3G CDMA systems.
+He is the recipient of IEEE Vehicular Technology Society Jack Neubauer
+Memorial Award (Best System Paper Award) in 2002. He also received
+the IEEE Vehicular Technology Society Dan Noble Fellowship Award,
+the IEEE Communication Society Asia Pacific Young Researcher Award,
+the NAAI Distinguished Artificial Intelligence Scholar Award, the Okawa
+Foundation Research Grant Award, the Haedong Research Award and the
+Haedong Young Scholar Award from KICS, and the Irwin-Jacobs Award
+from Qualcomm and KICS. While at the University of Texas at Austin,
+he was the recipient of William S. Livingston Graduate Fellowship and
+Information and Telecommunication Fellowship from Ministry of Information
+and Communication (MIC), Korea. He is an Area Editor for the IEEE
+Transactions on Wireless Communications from Aug. 2022 and an Editor for
+the IEEE Transactions on Vehicular Technology from Apr. 2011. He is the
+co-Editor-in-Chief of IEEE/KICS Journal of Communications and Networks
+from Dec. 2024. He served as the Executive Editor Chair for the IEEE
+Transactions on Wireless Communications (2019- 2021) and Executive Editor
+(2014-2019). He was also an Editor for the IEEE Transactions on Wireless
+Communications (2009-2014), for the IEEE Wireless Communications Letter
+(2012-2017), and as Guest Editor for the IEEE Journal on Selected Areas in
+Communications, IEEE Communications Magazine, and IEEE Open Journal
+of the Communications Society. He is a member of National Academy of
+Engineering of Korea (NAEK).

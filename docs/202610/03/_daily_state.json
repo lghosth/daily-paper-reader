@@ -1,0 +1,57 @@
+{
+  "date": "20261003",
+  "date_label": "2026-10-04",
+  "generated_at": "2026-10-04 06:03:04 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.39194v1",
+      "route": "202610/03/2609.39194v1-importance-aware-feature-sparsification-for-wireless-split-learning",
+      "title": "Importance-Aware Feature Sparsification for Wireless Split Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通过特征稀疏化实现通信高效的拆分学习",
+      "first_seen_at": "2026-10-04 06:03:04 北京时间",
+      "updated_at": "2026-10-04 06:03:04 北京时间"
+    },
+    {
+      "paper_id": "2609.37069v1",
+      "route": "202610/03/2609.37069v1-windowed-and-quantized-group-based-admm-for-distributed-optimization-in-heterogeneous-edge-networks",
+      "title": "Windowed and Quantized Group-Based ADMM for Distributed Optimization in Heterogeneous Edge Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "量化分布式优化降低通信成本",
+      "first_seen_at": "2026-10-04 06:03:04 北京时间",
+      "updated_at": "2026-10-04 06:03:04 北京时间"
+    },
+    {
+      "paper_id": "2610.01537v1",
+      "route": "202610/03/2610.01537v1-fedfit-federated-fine-tuning-of-llms-via-vector-bank-parameterization-and-quantization",
+      "title": "FedFit: Federated Fine-Tuning of LLMs via Vector-Bank Parameterization and Quantization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "降低联邦微调的通信开销",
+      "first_seen_at": "2026-10-04 06:03:04 北京时间",
+      "updated_at": "2026-10-04 06:03:04 北京时间"
+    }
+  ]
+}
