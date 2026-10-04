@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-04</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-05</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 3 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 0 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>3</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>0</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-04 06:03:04 北京时间<br>状态：成功<br>下次更新：约 2026-10-05 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-05 06:20:45 北京时间<br>状态：成功<br>下次更新：约 2026-10-06 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日速读 3 篇无线与边缘智能论文，最高分 7.0 聚焦无线拆分学习中的重要性感知特征稀疏化。最值得关注的是无线拆分学习如何压缩特征、以及 FedFit 用向量库参数化加量化实现 LLM 联邦微调这两个方向。普通读者可优先看第一篇，再顺带了解联邦微调 LLM 的量化思路。</p>
+<p>今日无新推荐，系统未产出可展示论文。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -91,12 +91,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">3 篇</strong>
+    <strong class="dpr-home-dashboard-count">0 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Importance-Aware Feature Sparsification for Wireless Split Learning">Importance-Aware Feature Sparsification for Wireless Split Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="Windowed and Quantized Group-Based ADMM for Distributed Optimization in Heterogeneous Edge Networks">Windowed and Quantized Group-Based ADMM for Distributed Optimization in Heterogeneous Edge Networks</span></li><li><span class="dpr-home-dashboard-paper-title" title="FedFit: Federated Fine-Tuning of LLMs via Vector-Bank Parameterization and Quantization">FedFit: Federated Fine-Tuning of LLMs via Vector-Bank Parameterization and Quantization</span></li></ul>
+<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>3</strong></span></div>
+
 </section>
 </div>
 
