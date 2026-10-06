@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-06</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-07</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 1 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 2 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
-    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>2 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>1</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>2</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-06 09:03:30 北京时间<br>状态：成功<br>下次更新：约 2026-10-07 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-07 07:37:30 北京时间<br>状态：成功<br>下次更新：约 2026-10-08 02:30 北京时间（每日 02:30 自动刷新，受排队影响可能延后 0~60 分钟）</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,9 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日日报仅1篇速读、0篇精读，唯一焦点是《MoSE: Mode-Switching Expander for Mixed LLM Training and Inference》。</p>
-<p>最值得看的是“混合LLM训练与推理”下的模式切换/扩展器方向，但6.0分意味着可关注、尚需验证。</p>
-<p>普通读者不妨先读摘要和实验部分，判断它能否实际优化混合训练/推理，再决定要不要深挖。</p>
+<p>今日速读2篇均分6.0的论文：MoSE用模式切换扩展器打通大模型训练与推理，另一篇则以随机方向刷新实现分布式优化的标量通信。</p>
+<p>两篇都指向&quot;省资源&quot;这一主线——MoSE减少训练/推理切换开销，标量通信把分布式同步的传输量压到最低，值得关注效率优化方向。</p>
+<p>普通读者可先看MoSE的摘要判断是否与自己的训练流程相关，分布式场景则留意随机方向刷新能否直接替换现有通信方案。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -93,12 +93,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">1 篇</strong>
+    <strong class="dpr-home-dashboard-count">2 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="MoSE: Mode-Switching Expander for Mixed LLM Training and Inference">MoSE: Mode-Switching Expander for Mixed LLM Training and Inference</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="MoSE: Mode-Switching Expander for Mixed LLM Training and Inference">MoSE: Mode-Switching Expander for Mixed LLM Training and Inference</span></li><li><span class="dpr-home-dashboard-paper-title" title="Scalar Communication via Random Direction Refreshing for Distributed Optimization">Scalar Communication via Random Direction Refreshing for Distributed Optimization</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>1</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">dgnn-nas <strong>2</strong></span></div>
 </section>
 </div>
 

@@ -1,8 +1,8 @@
 {
-  "label": "2026-10-06",
+  "label": "2026-10-07",
   "date": "2026-10-06",
-  "generated_at": "2026-10-06T01:03:34",
-  "count": 1,
+  "generated_at": "2026-10-06T23:37:32",
+  "count": 2,
   "papers": [
     {
       "paper_id": "202610/06/2609.39138v1-mose-mode-switching-expander-for-mixed-llm-training-and-inference",
@@ -16,6 +16,21 @@
       "tldr": "LLM 训练与推理常共享同一集群网络，但 P-D 分离产生 KV 缓存传输，训练 all-to-all 又需近均匀连接，静态稀疏拓扑难以兼顾。MoSE 把拓扑视为固定度数边分配问题，用可重构 expander：推理为主时将边预算转向直接 P-D 连接，训练为主时恢复均匀随机正则 expander。在 1024 组流级模型、20 个种子下，推理为主模式将 KV 通信成本均值与 P95 较 Static-Training 降低 90.8%/91.9%，训练为主模式较 Static-Inference 降低 22.7%/27.6%。表明粗粒度拓扑切换无需额外端口或路由改动即可兼顾两类工作负载。",
       "tags": "query:dgnn-nas",
       "abstract_en": "AI clusters increasingly run large language model (LLM) inference and training on the same fabric. Prefill-decode (P-D) disaggregation creates key-value (KV) cache transfers between prefill and decode groups, whereas training collectives and all-to-all traffic benefit from near-uniform global connectivity. A static sparse topology can therefore be poorly matched to one of the two traffic patterns. We present Mode-Switching Expander (MoSE), a reconfigurable expander that treats topology design as a fixed-degree edge-allocation problem. MoSE reallocates the same sparse edge budget toward direct P-D connectivity in inference-heavy modes and restores a uniform random regular expander in training-heavy modes. We evaluate MoSE using a 1024-group flow-level topology model, shortest-path routing, and two mixed workloads. Across 20 seeds, MoSE reduces average and 95th-percentile (P95) load-aware KV communication cost by 90.8\\% and 91.9\\% relative to Static-Training in the inference-heavy mode. In the training-heavy mode, it reduces average and P95 training communication cost by 22.7\\% and 27.6\\% relative to stale Static-Inference. These results show that coarse-grained topology switching can support both workload modes without additional ports or routing changes.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/06/2610.05666v1-scalar-communication-via-random-direction-refreshing-for-distributed-optimization",
+      "section": "quick",
+      "title_en": "Scalar Communication via Random Direction Refreshing for Distributed Optimization",
+      "authors": "Mohammadreza Rostami, Solmaz S. Kia",
+      "date": "2026-10-05",
+      "pdf": "https://arxiv.org/pdf/2610.05666v1",
+      "score": "6.0",
+      "evidence": "面向通信高效分布式优化的标量通信机制",
+      "tldr": "分布式优化中智能体需反复交换高维决策变量，维度d大时通信开销巨大，现有量化或稀疏化仍使每消息随d增长且压缩误差需额外状态补偿。本文提出标量通信机制：各邻居消息仅传一个实数，通过共享种子生成公共随机方向，只发送状态与该方向的内积，并用秩一代理近似邻居状态。针对强凸局部代价与Lipschitz梯度，证明刷新方向足够快可实现指数均方与几乎必然收敛，无残差且恒增益。仿真展示方向分布与刷新间隔影响。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Distributed optimization over networks requires agents to repeatedly exchange decision variables with their neighbors. When the decision dimension $d$ is large, these exchanges dominate the communication cost, which is critical for bandwidth-constrained agents. Existing remedies quantize or sparsify the exchanged vectors, yet each message still scales with $d$ and the compression error must be compensated by additional states. To address this limitation, we propose a scalar-communication mechanism in which every neighbor message carries a single real number regardless of $d$. Agents regenerate a common random direction from a shared seed, transmit only the inner product of their state with that direction, and act on the resulting rank-one surrogate of their neighbors' states while retaining full local gradients. We develop and analyze the mechanism for an existing continuous-time distributed optimization algorithm. For strongly convex local costs with Lipschitz gradients, we show that the optimizer remains the unique consensus equilibrium, that a fixed direction admits spurious equilibria, and that refreshing the direction at a sufficiently high rate yields exponential mean-square and almost-sure convergence with constant gains and no residual error. The framework admits any isotropic fixed-norm direction distribution, including Rademacher, scaled-coordinate, and sphere-normalized Gaussian directions; all three attain lower fresh-encoding variance than unnormalized Gaussian directions. The effects of the direction distribution and the refresh interval are illustrated in~simulations.",
       "source": "arxiv",
       "selection_source": "fresh_fetch"
     }

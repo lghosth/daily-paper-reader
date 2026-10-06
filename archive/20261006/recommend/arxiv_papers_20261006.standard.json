@@ -1,6 +1,6 @@
 {
   "mode": "standard",
-  "generated_at": "2026-10-06T01:02:58.133116+00:00",
+  "generated_at": "2026-10-06T23:37:15.563779+00:00",
   "stats": {
     "mode": "standard",
     "tag_count": 1,
@@ -14,40 +14,38 @@
   "deep_dive": [],
   "quick_skim": [
     {
-      "id": "2609.39138v1",
+      "id": "2610.05666v1",
       "source": "arxiv",
-      "title": "MoSE: Mode-Switching Expander for Mixed LLM Training and Inference",
-      "abstract": "AI clusters increasingly run large language model (LLM) inference and training on the same fabric. Prefill-decode (P-D) disaggregation creates key-value (KV) cache transfers between prefill and decode groups, whereas training collectives and all-to-all traffic benefit from near-uniform global connectivity. A static sparse topology can therefore be poorly matched to one of the two traffic patterns. We present Mode-Switching Expander (MoSE), a reconfigurable expander that treats topology design as a fixed-degree edge-allocation problem. MoSE reallocates the same sparse edge budget toward direct P-D connectivity in inference-heavy modes and restores a uniform random regular expander in training-heavy modes. We evaluate MoSE using a 1024-group flow-level topology model, shortest-path routing, and two mixed workloads. Across 20 seeds, MoSE reduces average and 95th-percentile (P95) load-aware KV communication cost by 90.8\\% and 91.9\\% relative to Static-Training in the inference-heavy mode. In the training-heavy mode, it reduces average and P95 training communication cost by 22.7\\% and 27.6\\% relative to stale Static-Inference. These results show that coarse-grained topology switching can support both workload modes without additional ports or routing changes.",
+      "title": "Scalar Communication via Random Direction Refreshing for Distributed Optimization",
+      "abstract": "Distributed optimization over networks requires agents to repeatedly exchange decision variables with their neighbors. When the decision dimension $d$ is large, these exchanges dominate the communication cost, which is critical for bandwidth-constrained agents. Existing remedies quantize or sparsify the exchanged vectors, yet each message still scales with $d$ and the compression error must be compensated by additional states. To address this limitation, we propose a scalar-communication mechanism in which every neighbor message carries a single real number regardless of $d$. Agents regenerate a common random direction from a shared seed, transmit only the inner product of their state with that direction, and act on the resulting rank-one surrogate of their neighbors' states while retaining full local gradients. We develop and analyze the mechanism for an existing continuous-time distributed optimization algorithm. For strongly convex local costs with Lipschitz gradients, we show that the optimizer remains the unique consensus equilibrium, that a fixed direction admits spurious equilibria, and that refreshing the direction at a sufficiently high rate yields exponential mean-square and almost-sure convergence with constant gains and no residual error. The framework admits any isotropic fixed-norm direction distribution, including Rademacher, scaled-coordinate, and sphere-normalized Gaussian directions; all three attain lower fresh-encoding variance than unnormalized Gaussian directions. The effects of the direction distribution and the refresh interval are illustrated in~simulations.",
       "authors": [
-        "Fan Yang",
-        "Ying Zhou",
-        "Binglei Wang",
-        "Zhenjie Zhou",
-        "Jialong Li"
+        "Mohammadreza Rostami",
+        "Solmaz S. Kia"
       ],
-      "primary_category": "cs.NI",
+      "primary_category": "cs.MA",
       "categories": [
-        "cs.NI"
+        "cs.MA"
       ],
-      "published": "2026-09-30T07:05:48+00:00",
-      "link": "https://arxiv.org/pdf/2609.39138v1",
+      "published": "2026-10-05T01:21:51+00:00",
+      "link": "https://arxiv.org/pdf/2610.05666v1",
       "tags": [
-        "keyword:DGNN-NAS"
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
       ],
       "llm_score": 6.0,
-      "llm_evidence_en": "reconfigurable sparse topology for communication-efficient training collectives",
-      "llm_evidence_cn": "面向训练集合通信效率的可重构稀疏拓扑",
-      "llm_evidence": "面向训练集合通信效率的可重构稀疏拓扑",
-      "canonical_evidence": "面向训练集合通信效率的可重构稀疏拓扑",
-      "llm_tldr_en": "MoSE is a reconfigurable expander that reallocates a fixed sparse edge budget to match either inference KV-cache traffic or training collectives, improving communication efficiency in shared AI clusters.",
-      "llm_tldr_cn": "论文针对AI集群同时承载大模型推理与训练时，静态稀疏网络拓扑难以同时匹配预填充-解码缓存传输与训练集合通信两类流量的问题。作者提出模式切换扩展器MoSE，将拓扑设计建模为固定度数的边分配问题，在推理密集模式把边预算倾向直接预填充-解码连接，在训练密集模式恢复均匀随机正则扩展器。基于1024组流级拓扑的评估表明该方法能更好匹配两类流量，提升通信效率。",
-      "llm_tldr": "论文针对AI集群同时承载大模型推理与训练时，静态稀疏网络拓扑难以同时匹配预填充-解码缓存传输与训练集合通信两类流量的问题。作者提出模式切换扩展器MoSE，将拓扑设计建模为固定度数的边分配问题，在推理密集模式把边预算倾向直接预填充-解码连接，在训练密集模式恢复均匀随机正则扩展器。基于1024组流级拓扑的评估表明该方法能更好匹配两类流量，提升通信效率。",
+      "llm_evidence_en": "scalar communication for communication-efficient distributed optimization",
+      "llm_evidence_cn": "面向通信高效分布式优化的标量通信机制",
+      "llm_evidence": "面向通信高效分布式优化的标量通信机制",
+      "canonical_evidence": "面向通信高效分布式优化的标量通信机制",
+      "llm_tldr_en": "Distributed optimization exchanges dominate communication cost when decision dimension is large; this paper transmits a single scalar per neighbor message via a shared random direction, enabling dimension-independent communication.",
+      "llm_tldr_cn": "网络上的分布式优化需要智能体反复交换决策变量，当维度较大时通信开销成为带宽受限场景的关键瓶颈，现有量化与稀疏化方法每条消息仍随维度增长。本文提出标量通信机制，使每条邻居消息仅携带一个实数而与维度无关：智能体由共享种子重建公共随机方向，只传输自身状态与该方向的内积。该机制无需额外状态补偿压缩误差，从而显著降低通信成本，为通信高效的分布式学习系统提供通用构件。",
+      "llm_tldr": "网络上的分布式优化需要智能体反复交换决策变量，当维度较大时通信开销成为带宽受限场景的关键瓶颈，现有量化与稀疏化方法每条消息仍随维度增长。本文提出标量通信机制，使每条邻居消息仅携带一个实数而与维度无关：智能体由共享种子重建公共随机方向，只传输自身状态与该方向的内积。该机制无需额外状态补偿压缩误差，从而显著降低通信成本，为通信高效的分布式学习系统提供通用构件。",
       "llm_tags": [
         "query:dgnn-nas"
       ],
       "matched_query_tag": "query:dgnn-nas",
-      "matched_query_text": "communication-efficient training",
-      "matched_requirement_id": "req-1",
+      "matched_query_text": "find papers on communication efficient graph learning systems",
+      "matched_requirement_id": "req-5",
       "selection_source": "fresh_fetch",
       "quick_tier": "6"
     }

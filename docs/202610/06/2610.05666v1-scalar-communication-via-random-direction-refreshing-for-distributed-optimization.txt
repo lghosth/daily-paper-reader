@@ -1,0 +1,1129 @@
+Title: Scalar Communication via Random Direction Refreshing for Distributed Optimization
+
+URL Source: https://arxiv.org/pdf/2610.05666v1
+
+Published Time: Tue, 06 Oct 2026 02:09:42 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+> 1
+
+# Scalar Communication via Random Direction Refreshing for Distributed Optimization 
+
+Mohammadreza Rostami and Solmaz S. Kia, Senior member, IEEE 
+
+Abstract — Distributed optimization over networks requires agents to repeatedly exchange decision variables with their neighbors. When the decision dimension d is large, these exchanges dominate the communication cost, which is critical for bandwidth-constrained agents. Existing remedies quantize or sparsify the exchanged vectors, yet each message still scales with d and the compression error must be compensated by additional states. To address this limitation, we propose a scalar-communication mechanism in which every neighbor message carries a single real number regardless of d. Agents regenerate a common random direction from a shared seed, transmit only the inner product of their state with that direction, and act on the resulting rank-one surrogate of their neighbors’ states while retaining full local gradients. We develop and analyze the mechanism for an existing continuous-time distributed optimization algorithm. For strongly convex local costs with Lipschitz gradients, we show that the optimizer remains the unique consensus equilibrium, that a fixed direction admits spurious equilibria, and that refreshing the direction at a suf-ficiently high rate yields exponential mean-square and almost-sure convergence with constant gains and no residual error. The framework admits any isotropic fixed-norm direction distri-bution, including Rademacher, scaled-coordinate, and sphere-normalized Gaussian directions; all three attain lower fresh-encoding variance than unnormalized Gaussian directions. The effects of the direction distribution and the refresh interval are illustrated in simulations. 
+
+Keywords: Distributed optimization, bandwidth-limited communication, scalar communication, random projections, multi-agent systems. I. I NTRODUCTION 
+
+Distributed optimization enables a network of N agents to cooperatively solve 
+
+min 
+
+> z∈Rd
+
+F (z) = XNi=1 f i(z), (1) where each local objective f i is private to agent i, using only local computation and communication with neighbors. Problems of this form arise in cooperative control, distributed estimation, resource allocation, and networked learning, and a mature set of discrete- and continuous-time algorithms with strong convergence guarantees is now available; see, e.g., [1], [2], [3], [4]. Despite these advances, communication remains a key im-pediment to deploying distributed optimization on resource-constrained networks [5]. Communication cost has two distinct sources. The first is energy : in battery-powered systems, every transmission depletes a limited budget, so agents should communicate only when needed. The second  
+
+> This work is supported by the 2026 UCLA–UCI grant awarded by the Samueli Foundation. The authors are with the Department of Mechanical and Aerospace Engineering, University of California Irvine, Irvine, CA 92697,
+
+{mrostam2,solmaz }@uci.edu. 
+
+is bandwidth : the channel limits how much information a single message can carry. This is a hard constraint that holds regardless of battery status and can only be met by reducing the size of each message. Event- and self-triggered mechanisms [6], [7], [8] address the energy side by reducing how often agents communicate, but each message still contains a full d-dimensional state or gradient. Quanti-zation and sparsification reduce the number of bits or entries sent, but the exchanged objects remain d-dimensional and require auxiliary error-compensation or tracking states. These limitations become severe when the decision variable is high dimensional, d ≫ 1. This paper addresses the bandwidth constraint by developing a distributed optimization algorithm whose per-message cost is independent of d.Our approach builds on a scalar encoding principle from our recent federated learning work [9], [10], [11]. For any random direction u ∈ Rd with E[uu ⊤] = Id, a vector g ∈ Rd
+
+satisfies 
+
+g = E u|{z} 
+
+> vector
+
+u⊤g
+
+|{z} 
+
+> scalar
+
+, (2) so a sender that shares a random seed with the receiver need only transmit the scalar u⊤g, from which the receiver forms the unbiased estimate (u⊤g) u. We apply this principle to the states exchanged between neighbors in consensus-based distributed optimization. All agents regenerate a common direction from a shared seed, each agent transmits the projection of its state onto that direction, and every agent keeps using its full local gradient. No direction vector is transmitted, and no compression-error memory is required. 
+
+Related Work: In bandwidth-limited settings, the central concern is the size of each transmitted message, and two major approaches have been developed to address it. The first reduces the number of bits used to represent each entry of the exchanged vector. Building on quantized consensus [12], [13], [14], the effect of quantization on distributed subgradi-ent methods was first characterized in [15]. Subsequent work established data-rate requirements for convergence [16], de-signed quantizers tailored to optimization dynamics [17], and analyzed convergence under limited communication [18]. With a fixed quantizer, these methods generally converge to a neighborhood of the optimizer, whereas adaptive quanti-zation that progressively shrinks the quantization range can recover exact convergence [19], [20], achieving linear rates for smooth strongly convex objectives [21]. However, the communicated object remains a d-dimensional vector, so the message length still scales with the problem dimension. The second approach reduces the number of transmitted entries. In distributed learning, QSGD showed that aggressive quanti-zation trades communication against estimator variance [22], which motivated sparsification methods that retain only a subset of entries and use error memory to preserve discarded information [23], [24]. Koloskova et al. [25] extend this idea arXiv:2610.05666v1 [cs.MA] 5 Oct 2026 2
+
+to decentralized networks, where agents maintain auxiliary estimates of their neighbors’ states to accommodate biased and unbiased compressors. Compressed gradient-tracking and push–pull methods add tracking variables to achieve linear convergence on directed networks and nonconvex objectives [26], [27]. The closest schemes to our approach are random sparsification operators that retain k of the d
+
+entries [23], [25]. With k = 1 , the rescaled operator d·rand 1
+
+is equivalent to the scaled coordinate-direction encoder con-sidered in this paper. In these methods, however, the selected indices are transmitted together with the retained values [23], and the resulting compression error is compensated using ei-ther error memory [23] or auxiliary neighbor estimates [25]. In summary, existing communication-efficient methods either exchange messages whose length scales with the problem dimension or rely on memory, tracking, or auxiliary states to compensate for compression error. In contrast, our scheme regenerates the communication direction, and hence any se-lected index, from a shared seed, so each message consists of a single real number and no compensating state is required. 
+
+Contributions: This paper introduces a scalar-communication mechanism for distributed optimization in which neighboring agents exchange a single real number per message, regardless of the decision dimension. The mechanism is developed for the continuous-time coordination algorithm of [8], al-though it is applicable to any distributed optimization scheme whose inter-agent coupling depends only on relative states. By generating common random directions from a shared seed, agents communicate only scalar projections of their states, eliminating the need to transmit direction vectors or maintain compression-error memory. We show that the optimal consensus equilibrium of the original algorithm is preserved under scalar communication and remains the unique equilibrium on the zero-sum integral-state subspace. For strongly convex local objectives with globally Lipschitz gradients, we establish exponential mean-square and almost-sure convergence to the optimizer using constant gains, provided the direction-refresh interval is sufficiently small. The resulting refresh condition explicitly reveals how graph connectivity, objective regularity, and direction statistics in-fluence convergence. A key challenge is that the communica-tion direction is held fixed between refreshes. Although the resulting encoder is unbiased at each refresh instant, the held direction becomes coupled with the evolving network state over time. We address this challenge through a Lyapunov analysis that combines conditional drift at refresh times with bounds on the evolution between refreshes. Finally, we characterize the fresh-encoding variance of unnormal-ized Gaussian, Rademacher, scaled-coordinate, and spherical directions. The convergence theorem applies to the latter three fixed-norm distributions; scaled-coordinate directions recover random-coordinate communication as a special case. Compared to our prior work on scalar communication for federated learning [9], [10], this paper extends the framework from client-server aggregation to distributed neighbor-to-neighbor interactions, where the communicated quantities are dynamically coupled through the network. II. P ROBLEM FORMULATION AND BASELINE 
+
+ALGORITHM 
+
+We consider problem (1) over a network of N agents that communicate over a connected, undirected graph G = ( V, E)
+
+with symmetric adjacency matrix A = [ aij ], where aij =
+
+aji > 0 if (i, j ) ∈ E and aij = 0 otherwise, and Laplacian L.
+
+Assumption 1: Each local cost f i : Rd → R is private to agent i, continuously differentiable, and strongly convex, with a globally Lipschitz continuous gradient. Let mf >
+
+0 and ℓf denote a common lower bound on the strong convexity parameters and a common upper bound on the gradient Lipschitz constants, respectively. Under Assumption 1, F has a unique minimizer z⋆. Several continuous-time algorithms solve problem (1) over connected graphs, including the control-theoretic dynamics of Wang and Elia [28], [29] and their variants [30], [8]. These al-gorithms couple agents only through relative states xi − xj ,which is precisely the quantity our scalar encoding targets. The encoding therefore applies to any of them, although convergence must be established for each. For concreteness, we develop and analyze it for the algorithm of Kia et al. [8]: 
+
+˙vi = αβ XNj=1 aij (xi − xj ), (3a) 
+
+˙xi = −α∇f i(xi) − β XNj=1 aij (xi − xj ) − vi, (3b) where α, β > 0 are design gains, xi ∈ Rd is agent i’s estimate of z⋆, and vi ∈ Rd is an integral correction variable initialized so that PNi=1 vi(0) = 0 . The following result establishes convergence of this baseline. 
+
+Theorem 2.1 (See Theorem 6 of [8]): Let Assumption 1hold and let G be connected and undirected. Then, for any α, β > 0 and any initial condition satisfying PNi=1 vi(0) = 0, the trajectories of (3) converge exponentially fast to xi = z⋆ and vi = −α∇f i(z⋆)
+
+for all i ∈ V .Implementing (3) requires each agent to receive the full 
+
+d-dimensional state xj from every neighbor. Section III replaces this exchange with a single scalar per neighbor, reducing the per-message cost from O(d) to O(1) .III. S CALAR COMMUNICATION VIA RANDOM ENCODING AND DECODING 
+
+The idea is to enforce consensus by letting neighbors act on a rank-one surrogate of each other’s state rather than on the state itself. Given a random direction u ∈ Rd with E[uu ⊤] = 
+
+Id, the surrogate 
+
+yi = ( u⊤xi) u (4) is an unbiased estimate of xi, since E[yi] = E[uu ⊤]xi = xi.Its usefulness for communication lies in how it factors: if the receiver already knows u, then yi is fully determined by the scalar u⊤xi. In the coupling terms of (3), we therefore replace xi − xj by yi − yj = uu ⊤(xi − xj ), which requires each agent to send one real number per message instead of 
+
+d.For this to work, all agents must hold the same direction at the same time without exchanging it. We let uk ∈ Rd be drawn independently of the past at the refresh times tk = kτ ,
+
+τ > 0, and held constant on [tk, t k+1 ). A common seed, the same pseudorandom generator, and a synchronized index k
+
+allow every agent to regenerate uk locally, so the direction is never transmitted. During [tk, t k+1 ), agent i transmits the 
+
+scalar encoding 
+
+ci(t) = u⊤ 
+
+> k
+
+xi(t) ∈ R, (5) 3
+
+and each neighbor decodes yi(t) = ci(t) uk. We stress that 
+
+yi is not a reconstruction of xi from a single scalar; it is the component of xi visible along uk, and it is the refreshing of uk that exposes all components over time. The resulting algorithm is 
+
+˙vi = αβ XNj=1 aij (yi − yj ), (6a) 
+
+˙xi = −α∇f i(xi) − β XNj=1 aij (yi − yj ) − vi. (6b) The local gradient is evaluated at the actual state xi; only the neighbor coupling is encoded and decoded. Each mes-sage thus carries O(1) rather than O(d) entries. In this continuous-time model, ci(t) varies continuously within each holding interval; the finite-bit cost of an implementation also depends on sampling and quantization, which we do not address here. Any distribution with E[uku⊤ 
+
+> k
+
+] = Id can be used in the unbiased encoding identity (4); no normalization is required for that identity. The convergence analysis in Section III-C additionally requires ∥uk∥2 = d almost surely. We consider three representative choices: (G) Gaussian : gk ∼ N (0 , I d), used either directly, uk =
+
+gk, or normalized to the sphere, uk = √d g k/∥gk∥;(R) Rademacher : uk ∈ {− 1, +1 }d with independent, equiprobable entries; (C) scaled coordinate : uk = √d e Jk with Jk uniform on {1, . . . , d }, so that agents exchange one randomly selected coordinate at a time. Rademacher, scaled-coordinate, and sphere-normalized Gaussian directions satisfy both isotropy and the fixed-norm condition required by Theorem 3.1. Unnormalized Gaussian directions satisfy isotropy but are not covered by Theorem 3.1; they are included below only for the fresh-encoding variance comparison. Among the covered choices, Rademacher directions mix all d coordinates into every transmitted scalar, whereas scaled-coordinate directions expose one coordinate per transmission; Section IV shows that either can be preferable depending on where the disagreement between agents lies. 
+
+A. Equilibrium Analysis 
+
+We first verify that the optimizer z⋆ of (1) remains an equilibrium of (6). Let (¯ x, ¯v) denote a constant equilibrium of the state and integral variables; the decoded variables 
+
+¯yi = uku⊤ 
+
+> k
+
+¯xi may still change when the direction changes. For any fixed direction, setting ˙vi = 0 at equilibrium in (6a) yields 
+
+XNj=1 aij (¯ yi − ¯yj ) = 0 ⇐⇒ (L ⊗ Id)¯ y = 0 . (7) Since G is connected, the null space of L is spanned by 1N ,so the decoded variables reach consensus. This alone does not imply ¯xi = z⋆, so we verify the desired equilibrium directly. Set 
+
+¯xi = z⋆, ¯vi = −α∇f i(z⋆). (8) For every shared direction uk, the decoded states satisfy ¯y1 =
+
+· · · = ¯ yN = uku⊤ 
+
+> k
+
+z⋆, so all neighbor differences vanish and 
+
+˙vi = 0 , ˙xi = −α∇f i(z⋆) − ¯vi = 0 . (9) Because the graph is undirected, the sum of the integral variables is conserved, 
+
+XNi=1 vi(t) = XNi=1 vi(0) = 0 , (10) and the proposed equilibrium respects this condition since P 
+
+> i
+
+¯vi = −α P 
+
+> i
+
+∇f i(z⋆) = 0 , which is precisely the first-order optimality condition for F . Thus the optimal consensus state is an exact equilibrium for every shared direction. Conversely, if E[uku⊤ 
+
+> k
+
+] = Id, any constant equilibrium common to almost every direction satisfies (L⊗uku⊤ 
+
+> k
+
+)¯ x = 0 
+
+for almost every uk; averaging gives (L ⊗ Id)¯ x = 0 , so ¯xi is common to all agents. Summing the equilibrium equations for ˙xi then gives P 
+
+> i
+
+∇f i(¯ xi) = 0 . Hence, on the zero-sum subspace (10), the common equilibrium (8) is unique. 
+
+B. Why a Fixed Direction Can Fail 
+
+Although z⋆ is an equilibrium for every direction, holding a single direction u fixed for all time need not yield con-vergence when d > 1. Let P = uu ⊤ denote the rank-one encoding–decoding operator (an orthogonal projection only when ∥u∥ = 1 ). The coupling depends on the states only through 
+
+yi − yj = P (xi − xj ), (11) so if xi − xj ∈ span( u)⊥ for adjacent agents, then yi −
+
+yj = 0 and the coupling is blind to disagreement in the remaining d − 1 dimensions. A state profile is therefore a spurious equilibrium whenever 
+
+xi − xj ∈ span( u)⊥, ∀(i, j ) ∈ E , (12) 
+
+vi = −α∇f i(xi), XNi=1 ∇f i(xi) = 0 . (13) For example, take two agents with f 1(z) = 12 ∥z − a∥2 and 
+
+f 2(z) = 12 ∥z + a∥2, where a̸ = 0 and u⊤a = 0 . The optimizer is z⋆ = 0 , yet x1 = a, x2 = −a, v1 = v2 = 0 is a nonconsensus equilibrium. A fixed direction thus offers no general convergence guarantee, which motivates refreshing the direction. 
+
+C. Convergence under Direction Refreshing 
+
+Let uk be redrawn independently from a fixed distribution at the refresh times tk = kτ . Unbiasedness alone does not guarantee convergence for arbitrary holding intervals, so we derive a positive constant ¯τd, determined by the problem data alone, such that convergence is preserved for every holding interval τ ∈ (0 , ¯τd]. Any refresh period in this range is admissible, so τ can be chosen as large as ¯τd to refresh directions as infrequently as the guarantee allows. Since the refresh times are periodic rather than state-triggered, no Zeno-type issue arises. Let Fk denote the history immediately before drawing uk,and assume 
+
+E[uku⊤ 
+
+> k
+
+| F k] = Id, ∥uk∥2 = d. (14) The first condition holds for (G), (R), and (C). The second holds for (R), (C), and normalized Gaussian directions, which remain isotropic (Remark 3.3); it fails for unnor-malized Gaussian directions, whose squared norm ∥gk∥2 is random. At a refresh time the states are Fk-measurable, so 
+
+E[yi(t+ 
+
+> k
+
+) − yj (t+ 
+
+> k
+
+) | F k] = E[uku⊤ 
+
+> k
+
+| F k] ( xi(tk) − xj (tk)) = xi(tk) − xj (tk). (15) 4
+
+Within a holding interval, however, the states depend on the sampled direction, so this factorization is available only at refresh times. The analysis below controls this dependence through the component of the state along uk.
+
+Error coordinates. Let x = col( x1, . . . , x N ) and define the stacked cost G(x) = PNi=1 f i(xi), whose gradient stacks the local gradients (in contrast to the common-argument cost F
+
+in (1)). Let 
+
+x⋆ = 1N ⊗ z⋆, v⋆ = −α∇G(x⋆), (16) and define the errors ˜x = x − x⋆, ˜v = v − v⋆ and 
+
+h = ∇G(x) − ∇ G(x⋆). Following [8], let r = 1N /√N and let R ∈ RN ×(N −1) satisfy r⊤R = 0 , R⊤R = IN −1, and 
+
+RR ⊤ = IN − 1 
+
+> N
+
+1N 1⊤ 
+
+> N
+
+, and apply the orthogonal change of variables 
+
+z =  [r R ]⊤ ⊗ Id
+
+˜x, w =  [r R ]⊤ ⊗ Id
+
+˜v, (17) partitioned as z = ( z1, z 2) and w = ( w1, w 2) with z1, w 1 ∈
+
+Rd. Here z1 is the (scaled) average error and z2 the dis-agreement. Let ˆL = R⊤LR ∈ R(N −1) ×(N −1) , which is symmetric positive definite with eigenvalues λ2 ≤ · · · ≤ λN
+
+(the positive eigenvalues of L), and satisfies LR = R ˆL.Write ¯h = ([ r R ]⊤ ⊗ Id)h = ( h1, h 2), so that z⊤¯h = ˜ x⊤h
+
+and ∥¯h∥ = ∥h∥. Because r⊤L = 0 , along (6a)–(6b) we have 
+
+˙w1 = 0 , and the initialization P 
+
+> i
+
+vi(0) = 0 gives w1(t) ≡ 0:this is the constant of motion identified in [8]. The remaining error dynamics, with P = uku⊤ 
+
+> k
+
+on [tk, t k+1 ), are 
+
+˙z1 = −αh 1, (18a) 
+
+˙z2 = −αh 2 − β( ˆL ⊗ P )z2 − w2, (18b) 
+
+˙w2 = αβ ( ˆL ⊗ P )z2. (18c) The reduced state ζ = col( z1, z 2, w 2) has the origin as its unique equilibrium common to almost every direction realization on the zero-sum integral-state subspace; for an individual fixed direction, additional spurious equilibria may exist, as shown in Section III-B. Since (17) is an isometry, 
+
+∥ζ∥2 = ∥˜x∥2 + ∥˜v∥2, and convergence of ζ is equivalent to convergence of (x, v ) to (x⋆, v ⋆). The zero eigenvalue of L
+
+has been removed: no invariant subspace needs to be tracked, and all Lyapunov functions below are positive definite on the whole reduced state space. Projected states. On [tk, t k+1 )
+
+let ˆu = uk/√d, so P = d ˆuˆu⊤, and for y ∈ R(N −1) d
+
+let y∥ = ( IN −1 ⊗ ˆu⊤)y ∈ RN −1 collect the components along uk. Write a = z∥ 
+
+> 2
+
+, b = w∥ 
+
+> 2
+
+, and h∥ = h∥
+
+> 2
+
+. Then 
+
+( ˆL ⊗ P )y = d ( ˆLy ∥) ⊗ ˆu and, for Fk-measurable y,
+
+∥y∥∥ ≤ ∥ y∥, E∥y∥∥2 | F k
+
+ = ∥y∥2/d. (19) The projected dynamics of (18b)–(18c) are 
+
+˙a = −αh ∥ − βd ˆLa − b, ˙b = αβd ˆLa. (20) The only O(d) term in (18), −βd ( ˆLa ) ⊗ ˆu, is dissipative. It acts only on a, whose mean square at a refresh is ∥z2∥2/d 
+
+by (19). The average error z1 is not affected by the direction at all. 
+
+Lyapunov function. Define 
+
+b− = min {1, 1/(αβλ N )}, b+ = max {1, 1/(αβλ 2)},B = αℓ f + βλ N , (21) choose 
+
+0 < ε ≤ min 
+
+n b−
+
+2 , αm f
+
+B2 , 12α
+
+o
+
+, (22) and set c− = b− − ε, c+ = b+ + ε, c0 = 12 min {αm f , ε },and κ = 1 + εβλ N . Consider 
+
+Vε = 12 z⊤z + 12αβ w⊤ 
+
+> 2
+
+( ˆL−1 ⊗ Id)w2 + εz ⊤ 
+
+> 2
+
+w2. (23) Since λ−1 
+
+> N
+
+I ⪯ ˆL−1 ⪯ λ−12 I and |εz ⊤ 
+
+> 2
+
+w2| ≤ ε 
+
+> 2
+
+∥ζ∥2,
+
+c−
+
+2 ∥ζ∥2 ≤ Vε(ζ) ≤ c+
+
+2 ∥ζ∥2, (24) so Vε is positive definite and radially unbounded on the reduced state space. Using this Lyapunov function, we estab-lish in Appendix three auxiliary results that lead to our main theorem. Lemma A.1 bounds the growth of the state over one holding interval by a constant independent of d; Lemma A.2 decomposes ˙Vε along (18) into a strictly dissipative part, a term absorbed by the O(d) dissipation in (20), and a term that has zero conditional mean at refresh times; and Lemma A.3 shows that the projected quantities a, b, h∥,and the deviation ζ(t) − ζ(tk), have conditional mean square 
+
+O(1 /d ) over the holding interval. Together these control the dependence of the held direction on the evolving state and yield the following result. 
+
+Theorem 3.1: Let Assumption 1 hold, let G be connected and undirected, let P 
+
+> i
+
+vi(0) = 0 , and let the directions uk
+
+be drawn independently across refreshes so that (14) holds. Let ¯γ = γ(1 / ¯C) and ¯θ = 1 + α2ℓ2 
+
+> f
+
+(1 + C2 
+
+> h
+
+¯γ2/4) , and define the d-independent constants 
+
+ρ0 = min 
+
+n 14α , 14√2 αβλ N
+
+,
+
+1
+
+κ
+
+r c0
+
+128 βλ N
+
+, 132 βλ N
+
+√2 + α2
+
+o
+
+,σ0 = min 
+
+n
+
+1, 1
+
+αβλ N (1 + ℓf ) , 164 C2 
+
+> h
+
+¯γ2
+
+o
+
+,τ0 = min 
+
+n
+
+1, 1¯C , 1
+
+√¯θ , c0
+
+16 K0
+
+o
+
+,
+
+where K0 = 2 √3 ακℓ f +8 √2 βκλ N +4 εβλ N +32 εαβ 2λ2 
+
+> N
+
++
+
+c7 ¯γ2, and let 
+
+¯τd = min 
+
+n
+
+τ0, ρ0
+
+d ,
+
+r σ0
+
+d
+
+o
+
+> 0. (25) If τ ∈ (0 , ¯τd], then the trajectories of (6a)–(6b) converge to 
+
+(x⋆, v ⋆) exponentially fast in mean square and almost surely. In particular, with r = 1 − c0τ / (2 c+),
+
+E∥ζ(tk)∥2 ≤ c+
+
+c−
+
+rk ∥ζ(0) ∥2. (26) 
+
+Proof: The condition τ ≤ ¯τd is equivalent to 
+
+τ ≤ τ0, d τ ≤ ρ0, d τ 2 ≤ σ0, (27) and ¯τd depends only on the problem data, so refresh times are separated by the fixed interval τ > 0 and every interval 
+
+[0 , T ] contains finitely many of them; on each holding interval the right-hand side of (18) is globally Lipschitz, so the solution exists, is unique, and by Lemma A.1 stays bounded. Integrate (A.1) over the holding interval and write R τ 
+
+> 0
+
+Su ds = τ S u(ζk) + R τ 
+
+> 0
+
+(τ − s) ˙Su ds . This gives 
+
+Vε(tk+1 ) − Vε(tk) ≤ − c0
+
+Z τ
+
+> 0
+
+∥ζ∥2ds 
+
+− βd (1 − εα )
+
+Z τ
+
+> 0
+
+a⊤ ˆLa ds + τ S u(ζk) + τ
+
+Z τ
+
+> 0
+
+[ ˙Su]+ ds. 5
+
+Bound [ ˙Su]+ using (A.2). Since 1 − εα ≥ 12 and αρ ≤ 
+
+> 14
+
+, the first term of (A.2), multiplied by τ , is at most  
+
+> 12
+
+βd (1 −εα )a⊤ ˆLa . By Young’s inequality, τ times the second term is at most 14 βd (1 − εα )a⊤ ˆLa + 2 βκ 2λN d3τ 2∥b∥2. The dissipative integral absorbs both a⊤ ˆLa parts along every trajectory. Next, take conditional expectations. The term τ S u(ζk) van-ishes by Lemma A.2. Condition (27) ensures κa ≤ 32 ,
+
+κb ≤ 4, κh ≤ 3ℓ2 
+
+> f
+
+, and κδ ≤ 18 . Lemma A.3 and the Cauchy– Schwarz inequality then give:  
+
+> •
+
+the ∥b∥2 remainder is at most 2βκ 2λN κbρ2τ ∥ζk∥2 ≤ 
+
+> c0
+> 16
+
+τ ∥ζk∥2; 
+
+> •
+
+the remaining terms of (A.2) contribute at most 
+
+τ 2K0∥ζk∥2 ≤ c0 
+
+> 16
+
+τ ∥ζk∥2; 
+
+> •
+
+since ∥ζ(s)∥2 ≥ 12 ∥ζk∥2 −∥ ζ(s)−ζk∥2, the first integral contributes at most − 38 c0τ ∥ζk∥2 by (A.4). Hence 
+
+E[Vε(tk+1 ) | F k] − Vε(tk) ≤ − c0τ 
+
+> 4
+
+∥ζk∥2 ≤ − c0τ 
+
+> 2c+
+
+Vε(tk),
+
+and iterating with (24) gives (26). Between refreshes, Lemma A.1 gives E[sup tk ≤t≤tk+1 ∥ζ(t)∥2] ≤ ¯γ2E∥ζ(tk)∥2.For any ¯r ∈ (r, 1) , Markov’s inequality shows that P 
+
+> k
+
+P(sup [tk ,t k+1 ] ∥ζ∥2 > ¯rk) < ∞, and the Borel–Cantelli lemma yields almost sure exponential convergence. Since (17) is an isometry, the same statements hold for (˜ x, ˜v).
+
+Remark 3.1 (Dimension dependence): For d ≥ ρ20/σ 0, (25) reduces to ¯τd = min {τ0, ρ 0/d }, so the admissible holding interval scales as 1/d , while the decay rate per unit time, 
+
+c0/(2 c+), does not depend on d and matches, up to constants, the rate the same Lyapunov argument gives for full-vector exchange. A bound based only on the worst-case norm 
+
+∥ ˆL ⊗ uku⊤ 
+
+> k
+
+∥ = λN d would give τ = O(1 /d 2); the im-provement comes from the two facts noted after (20). In the continuous-time model, refreshing costs no communication, since uk is regenerated locally, and each link carries one real-valued signal instead of d for every admissible τ . In a sampled implementation that transmits one scalar per refresh, however, the condition τ ≤ ¯τd = O(1 /d ) implies O(d) scalar transmissions per unit time per link, the same order as one full-vector message per unit time. The guarantee therefore establishes a reduction in message size, which is what a per-message bandwidth limit constrains, and not a reduction in total scalar throughput. The example in Section IV converges at refresh intervals well above ¯τd, which suggests the bound is conservative; whether the throughput also decreases is an open question that requires the sampled-data analysis left to future work. 
+
+Remark 3.2 (Conservativeness): The constants in (25) are sufficient, not necessary. In the example of Section IV, convergence is observed for holding intervals well beyond ¯τd,and the error at a fixed time grows with dτ (Fig. 2b), so some bound is needed even though (25) is not tight. The threshold is governed by the term 1/(αβλ N ) in ρ0, which bounds the integral action αβd ˆL accumulated over one holding interval. 
+
+Remark 3.3 (Gaussian directions): Lemmas A.2 and A.3 use ∥uk∥2 = d through P = d ˆuˆu⊤; for uk = gk the factor 
+
+d is replaced by ∥gk∥2, which is unbounded, which is why no refresh bound of the form (25) follows. Normalizing to the sphere of radius √d restores (14) and gives encoding variance (d − 1) ∥a∥2, the same as (R) and (C). 
+
+D. Encoding Variance and Exactness of Convergence 
+
+Theorem 3.1 guarantees convergence to z⋆ under the re-fresh condition. Random encoding nevertheless introduces transient fluctuations, which we now quantify at the re-fresh times. Let P (t) = IN ⊗ (uku⊤ 
+
+> k
+
+) on [tk, t k+1 ) and decompose 
+
+P (t) = IN d + ∆k, E[∆k | F k] = 0 . (28) With the coupling perturbation ξ(t) = ( L ⊗ Id)∆k ˜x(t), the error dynamics read 
+
+˙˜x = −αh − β(L ⊗ Id)˜ x − ˜v − βξ (t), (29) 
+
+˙˜v = αβ (L ⊗ Id)˜ x + αβξ (t).
+
+This is a random differential equation with piecewise-constant directions, not an Itˆ o stochastic differential equation; a diffusion approximation would require a separate limiting argument. The perturbation enters both the state and the integral equations, is multiplicative in the disagreement, and vanishes at consensus. 
+
+Encoding variance: For a fixed a ∈ Rd, unnormalized Gaussian fourth moments give E[( uu ⊤)2] = ( d+2) Id, hence 
+
+E∥(uu ⊤ − Id)a∥2 = ( d + 1) ∥a∥2. (30) For any fixed-norm direction, including (R), (C), and sphere-normalized Gaussian, ∥u∥2 = d and E[( uu ⊤)2] = dI d, so 
+
+E∥(uu ⊤ − Id)a∥2 = ( d − 1) ∥a∥2. (31) Consequently, at each refresh time, 
+
+E[ξ(t+ 
+
+> k
+
+) | F k] = 0 , (32) 
+
+E[∥ξ(t+ 
+
+> k
+
+)∥2 | F k] = ω∥(L ⊗ Id)˜ xk∥2 ≤ ωλ 2 
+
+> N
+
+∥˜xk∥2, (33) with ω = d + 1 for unnormalized Gaussian and ω =
+
+d − 1 for fixed-norm directions. Fixed-norm directions thus reduce the encoding variance by 2∥(L ⊗ Id)˜ xk∥2 relative to the unnormalized Gaussian choice, the direct analogue of the variance reduction established for federated aggregation in [9]. The fixed-norm choices differ in how this variance is distributed: coordinate directions concentrate it on the sampled coordinate, whereas Rademacher directions spread it over all coordinates and yield a transmitted scalar that is sub-Gaussian with parameter ∥xi∥ rather than of magnitude up to √d ∥xi∥. For all of these unbiased encoders the variance grows linearly with d; it is the refresh condition, not the choice of encoder, that controls the error. These identities concern a freshly drawn direction; no independence is assumed within a holding interval. 
+
+Exact convergence: Let X(t) = E[˜ x(t)˜ x(t)⊤]. By Theo-rem 3.1, lim t→∞ tr X(t) = lim t→∞ E∥˜x(t)∥2 = 0 . Hence, with constant positive gains and sufficiently frequent re-freshes, scalar communication yields exact convergence: random encoding does not leave a residual error ball. This is consistent with (29), since ξ vanishes when all agents agree. In particular, no diminishing coupling gain is required. The result concerns the held-direction continuous-time model; a sampled-message or discrete-time implementation requires its own step-size and sampling analysis. 60 5 10 15 20 25 30 35 40           
+
+> Physical time
+> 10 −8
+> 10 −6
+> 10 −4
+> 10 −2
+> 10 0
+> RMS relative distance to optimizer (a) Heterogeneity in one weak coordinate
+> 0510 15 20 25 30 35 40
+> Physical time (b) Heterogeneity in 36 stronger coordinates
+> ScalarCom (Coordinate) ScalarCom (Rademacher) Full vector
+
+Fig. 1. Relative RMS error at dτ = 2 for concentrated (left) and spread (right) gradient differences. Results use 4096 runs; shaded bands show pointwise 95% bootstrap confidence intervals for the RMS estimate. 
+
+IV. N UMERICAL EXAMPLE 
+
+We consider distributed ℓ2-regularized logistic regression over N = 20 agents with decision dimension d = 64 . Agent i
+
+minimizes the local cost 
+
+f i(x) = 1
+
+m
+
+Xms=1 log 
+
+
+
+1 + e−yi,s a⊤
+
+> i,s x
+
+
+
++ 0.32 ∥x∥2, (34) where ai,s ∈ R64 and yi,s ∈ {− 1, +1 }. Each agent communicates with the agents one and three positions away in either direction around a cycle, with edge weights 1/8.We set α = β = 1 and initialize xi(0) = vi(0) = 0 .We construct synthetic data to control which coordinates cause disagreement between agents. Each agent receives 128 samples with feature vector γj ej for each coordinate 
+
+j, giving m = 8192 samples in total. Here, ej is the jth coordinate vector, γj = 16 for j ≤ 49 , and γj = 2
+
+otherwise. Thus, each sample involves a single coordinate, and the feature magnitudes create different curvatures across coordinates. The local costs are strongly convex and have globally Lipschitz gradients, with mf = 0 .3 and ℓf ≤ 1.3.Agents are divided into two groups that alternate around the cycle. The groups have identical feature vectors but different labels. For coordinate 1, every agent has 96 positive and 32 negative labels. We then consider two cases. In the concentrated case, the two groups have 16 and 112 positive labels, respectively, among the 128 samples for coordinate 50; every other coordinate except coordinate 1 has equally many positive and negative labels. In the spread 
+
+case, the groups instead have 63 and 65 positive labels for each coordinate from 2 through 37; all coordinates other than these and coordinate 1 are balanced. The differences between agents therefore occur in one weak-curvature coordinate in the first case and in 36 stronger-curvature coordinates in the second. Both cases have the same aggregate objective and optimizer z⋆. They also have the same magnitude of local gradient differences: ∥∇ f i(x) − N −1 P 
+
+> j
+
+∇f j (x)∥ =3/256 . This construction lets us compare the effect of where those differences occur while keeping their overall magnitude fixed. We compare scalar communication with shared Rademacher directions uk ∈ {− 1, +1 }64 , scalar communication with shared coordinate directions uk = √64 eJk for uniformly sampled Jk, and full-vector exchange. Directions are drawn independently at intervals of length τ and held constant between refreshes. We simulate the continuous-time dynam-ics using fourth-order Runge–Kutta integration, with steps ending at each refresh. The integration step is at most 
+
+min {τ / 4, 0.4/(d+1 .3) } for all methods. For M independent 0 5 10 15 20 25 30 35 40       
+
+> Physical time
+> 10 −8
+> 10 −6
+> 10 −4
+> 10 −2
+> 10 0
+> RMS relative distance to optimizer  (a) Rademacher: varying the holding interval
+> dτ = 0.125
+> dτ = 2
+> dτ = 8 Full vector Fixed direction
+> 10 −1 10 010 1
+> Scaled holding interval dτ
+> 10 −10
+> 10 −8
+> 10 −6
+> 10 −4
+> 10 −2
+> 10 0
+> RMS relative error at  t = 40
+> (b) Refresh sweep: concentrated case
+> Coordinate Rademacher
+
+Fig. 2. Effect of refreshing in the concentrated case: (a) error versus time; (b) RMS error at t = 40 versus dτ . Error bars show pointwise 95% bootstrap confidence intervals. 
+
+runs, the relative RMS error is 
+
+ERMS (t) = 1
+
+∥z⋆∥
+
+1
+
+M N 
+
+> M
+
+X
+
+> r=1
+> N
+
+X
+
+> i=1
+
+∥xir (t) − z⋆∥2
+
+!1/2
+
+.
+
+(35) This measures the distance to the optimizer, averaged over agents and runs, relative to its initial value. Since all agents start at zero, ERMS (0) = 1 .Figure 1 compares the two data sets at τ = 2 /64 , using 
+
+M = 4096 runs per stochastic method. In the concentrated case, Rademacher encoding gives a substantially smaller RMS error: at t = 20 , its error is 0.00504 , compared with 
+
+0.0760 for coordinate encoding. The ordering reverses in the spread case, where coordinate encoding reaches 0.00245 ,compared with 0.00414 for Rademacher encoding. In this separable problem, coordinate feedback acts on individual coordinates, whereas Rademacher feedback couples coor-dinates with different curvatures. The comparison shows that this mixing can help or hurt depending on where the differences between agents occur. These are RMS compar-isons: coordinate encoding can have a smaller median error but a larger RMS error because some runs converge much more slowly. Thus, neither direction distribution is uniformly better, consistent with the theorem providing convergence guarantees for both. Figure 2 shows the effect of the holding interval in the concentrated case. Panel (a) shows that frequent refreshing leads to faster error decay, whereas a fixed direction leaves a persistent error. Panel (b) reports the RMS error at t = 40 
+
+for different values of dτ . Smaller holding intervals give lower errors for both encoders, while Rademacher encoding performs better at larger holding intervals in this example. These results illustrate how scalar communication can sup-port convergence to the optimizer while reducing the size of the exchanged information. Each agent transmits only the scalar u⊤ 
+
+> k
+
+xi, and its neighbors reconstruct the shared direction locally. The communicated state therefore has one component instead of d, reducing the per-message payload from O(d) to O(1) in a sampled implementation. This makes the mechanism attractive for channels that can accommodate a scalar message but cannot carry a full state vector within the available transmission budget. The continuous-time re-sults demonstrate convergence with scalar-valued exchange, providing the basis for such bandwidth-constrained imple-mentations. V. C ONCLUSIONS 
+
+We introduced a scalar-communication mechanism for consensus-based distributed optimization in which each 7
+
+neighbor message carries a single real number regardless of the decision dimension. Agents regenerate a common random direction from a shared seed, transmit the projection of their state onto that direction, and act on a rank-one surrogate of their neighbors’ states. We showed that the optimal consensus equilibrium is preserved, that fixed direc-tions can introduce spurious equilibria, and that sufficiently frequent direction refreshes yield exponential mean-square and almost-sure convergence with constant gains and no residual error for strongly convex objectives with Lipschitz gradients. Simulations illustrated the effects of the direction distribution and refresh interval. Future work includes a discrete-time formulation with sampled and quantized scalar messages, tighter refresh-interval bounds, extensions to di-rected and time-varying networks, robustness to unreliable communication channels through redundant scalar transmis-sions, and the combination of scalar communication with event-triggered scheduling to reduce both message size and communication frequency. REFERENCES [1] A. Nedi´ c and A. Ozdaglar, “Distributed subgradient methods for multi-agent optimization,” IEEE Transactions on Automatic Control , vol. 54, no. 1, pp. 48–61, 2009. [2] G. Qu and N. Li, “Harnessing smoothness to accelerate distributed optimization,” IEEE Transactions on Control of Network Systems ,vol. 5, no. 3, pp. 1245–1260, 2018. [3] A. Nedi´ c and J. Liu, “Distributed optimization for control,” Annual Review of Control, Robotics, and Autonomous Systems , vol. 1, pp. 77– 103, 2018. [4] T. Yang, X. Yi, J. Wu, Y. Yuan, D. Wu, Z. Meng, Y. Hong, H. Wang, Z. Lin, and K. H. Johansson, “A survey of distributed optimization,” 
+
+Annual Reviews in Control , vol. 47, pp. 278–305, 2019. [5] M. Rostami and S. S. Kia, “Adaptive threshold-driven continuous greedy method for scalable submodular optimization,” IEEE Control Systems Letters , 2026. [6] D. V. Dimarogonas, E. Frazzoli, and K. H. Johansson, “Distributed event-triggered control for multi-agent systems,” IEEE Transactions on Automatic Control , vol. 57, no. 5, pp. 1291–1297, 2012. [7] G. S. Seyboth, D. V. Dimarogonas, and K. H. Johansson, “Event-based broadcasting for multi-agent average consensus,” Automatica , vol. 49, no. 1, pp. 245–252, 2013. [8] S. S. Kia, J. Cort´ es, and S. Mart´ ınez, “Distributed convex optimiza-tion via continuous-time coordination algorithms with discrete-time communication,” Automatica , vol. 55, pp. 254–264, 2015. [9] M. Rostami and S. Kia, “Fedscalar: Federated learning with scalar communication for bandwidth-constrained networks,” arXiv preprint arXiv:2410.02260 , 2024. [10] M. Rostami, S. Talebi, and S. S. Kia, “Scalar federated learning for linear quadratic regulator,” arXiv preprint arXiv:2604.05088 , 2026. [11] M. Rostami and S. S. Kia, “Fedmpdd: Communication-efficient federated learning with privacy preservation attributes via projected directional derivative,” arXiv preprint arXiv:2512.20814 , 2025. [12] A. Kashyap, T. Bas ¸ar, and R. Srikant, “Quantized consensus,” Auto-matica , vol. 43, no. 7, pp. 1192–1203, 2007. [13] R. Carli, F. Fagnani, P. Frasca, and S. Zampieri, “Gossip consensus algorithms via quantized communication,” Automatica , vol. 46, no. 1, pp. 70–80, 2010. [14] T. Li, M. Fu, L. Xie, and J.-F. Zhang, “Distributed consensus with limited communication data rate,” IEEE Transactions on Automatic Control , vol. 56, no. 2, pp. 279–292, 2011. [15] A. Nedi´ c, A. Olshevsky, A. Ozdaglar, and J. N. Tsitsiklis, “Distributed subgradient methods and quantization effects,” in Proc. 47th IEEE Conference on Decision and Control , (Cancun, Mexico), pp. 4177– 4184, 2008. [16] P. Yi and Y. Hong, “Quantized subgradient algorithm and data-rate analysis for distributed optimization,” IEEE Transactions on Control of Network Systems , vol. 1, no. 4, pp. 380–392, 2014. [17] Y. Pu, M. N. Zeilinger, and C. N. Jones, “Quantization design for distributed optimization,” IEEE Transactions on Automatic Control ,vol. 62, no. 5, pp. 2107–2120, 2017. [18] S. Magn´ usson, C. Enyioha, N. Li, C. Fischione, and V. Tarokh, “Convergence of limited communication gradient methods,” IEEE Transactions on Automatic Control , vol. 63, no. 5, pp. 1356–1371, 2018. [19] T. T. Doan, S. T. Maguluri, and J. Romberg, “Fast convergence rates of distributed subgradient methods with adaptive quantization,” IEEE Transactions on Automatic Control , vol. 66, no. 5, pp. 2191–2205, 2021. [20] A. Reisizadeh, A. Mokhtari, H. Hassani, and R. Pedarsani, “An exact quantized decentralized gradient descent algorithm,” IEEE Transac-tions on Signal Processing , vol. 67, no. 19, pp. 4934–4947, 2019. [21] Y. Kajiyama, N. Hayashi, and S. Takai, “Linear convergence of consensus-based quantized optimization for smooth and strongly con-vex cost functions,” IEEE Transactions on Automatic Control , vol. 66, no. 3, pp. 1254–1261, 2021. [22] D. Alistarh, D. Grubic, J. Li, R. Tomioka, and M. Vojnovic, “QSGD: Communication-efficient SGD via gradient quantization and encod-ing,” in Advances in Neural Information Processing Systems , vol. 30, 2017. [23] S. U. Stich, J.-B. Cordonnier, and M. Jaggi, “Sparsified SGD with memory,” in Advances in Neural Information Processing Systems ,vol. 31, 2018. [24] S. P. Karimireddy, Q. Rebjock, S. Stich, and M. Jaggi, “Error feedback fixes SignSGD and other gradient compression schemes,” in Pro-ceedings of the 36th International Conference on Machine Learning ,vol. 97 of Proceedings of Machine Learning Research , pp. 3252–3261, 2019. [25] A. Koloskova, S. Stich, and M. Jaggi, “Decentralized stochastic optimization and gossip algorithms with compressed communication,” in Proceedings of the 36th International Conference on Machine Learning , vol. 97 of Proceedings of Machine Learning Research ,pp. 3478–3487, 2019. [26] Y. Liao, Z. Li, K. Huang, and S. Pu, “A compressed gradient tracking method for decentralized optimization with linear convergence,” IEEE Transactions on Automatic Control , vol. 67, no. 10, pp. 5622–5629, 2022. [27] Y. Liao, Z. Li, S. Pu, and T.-H. Chang, “A robust compressed push-pull method for decentralized nonconvex optimization.” arXiv preprint arXiv:2408.01727, 2024. [28] J. Wang and N. Elia, “Control approach to distributed optimization,” in 
+
+Proc. 48th Annual Allerton Conference on Communication, Control, and Computing , (Monticello, IL, USA), pp. 557–561, 2010. [29] J. Wang and N. Elia, “A control perspective for centralized and distributed convex optimization,” in Proc. 50th IEEE Conference on Decision and Control and European Control Conference (CDC-ECC) ,(Orlando, FL, USA), pp. 3800–3805, 2011. [30] B. Gharesifard and J. Cort´ es, “Distributed continuous-time convex optimization on weight-balanced digraphs,” IEEE Transactions on Automatic Control , vol. 59, no. 3, pp. 781–786, 2014. 
+
+APPENDIX 
+
+AUXILIARY RESULTS 
+
+Lemma A.1 (Dimension-free growth): For any direction and 
+
+0 ≤ s ≤ τ , ∥ζ(tk + s)∥ ≤ γ(s)∥ζ(tk)∥, where γ(s) = (1 + 
+
+α)p1 + (1 + α)2 e ¯Cs and ¯C = max {1+ α, α +α2(1+ ℓf )}.
+
+Proof: Let q = w2 + αz 2. By (18b)–(18c), ˙q =
+
+−α(αh 2 + w2), so the direction-dependent terms cancel. Also, by (18) and z⊤¯h ≥ 0, ddt  
+
+> 12
+
+∥z∥2 = −αz ⊤¯h −
+
+βd a ⊤ ˆLa − z⊤ 
+
+> 2
+
+w2 ≤ ∥ z∥∥ w2∥. Using ∥w2∥ ≤ ∥ q∥ + α∥z∥
+
+and ∥¯h∥ ≤ ℓf ∥z∥, m = ∥z∥ + ∥q∥ satisfies ˙m ≤ ¯Cm . Since 
+
+m(0) ≤ p1 + (1 + α)2 ∥ζ(tk)∥ and ∥ζ∥ ≤ (1 + α)m, the claim follows. 
+
+Lemma A.2 (Decomposition of ˙Vε): For a fixed direction, along (18), 
+
+˙Vε = ¯ g(ζ) − βd (1 − εα ) a⊤ ˆLa + Su(ζ), (A.1) where 
+
+¯g = −αz ⊤¯h − εw ⊤
+
+> 2
+
+ αh 2 + β( ˆL ⊗ Id)z2
+
+ − ε∥w2∥2
+
+≤ − c0∥ζ∥2,Su = d b ⊤a − w⊤ 
+
+> 2
+
+z2 − εβ  d b ⊤ ˆLa − w⊤ 
+
+> 2
+
+( ˆL ⊗ Id)z2
+
+,8
+
+and E[Suk (ζ(tk)) | F k] = 0 .
+
+Proof: With ∇z1 Vε = z1, ∇z2 Vε = z2 + εw 2, and 
+
+∇w2 Vε = 1 
+
+> αβ
+
+( ˆL−1 ⊗ Id)w2 + εz 2, a direct expansion along (18) using ( ˆL⊗P )z2 = d( ˆLa )⊗ˆu and w⊤ 
+
+> 2
+
+( ˆL−1 ˆL⊗ˆuˆu⊤)z2 =
+
+b⊤a gives (A.1). The bound on ¯g follows from z⊤¯h =˜x⊤h ≥ mf ∥z∥2, ∥αh 2 + β( ˆL ⊗ Id)z2∥ ≤ B∥z∥, Young’s inequality, and (22). The zero mean follows from (19), since 
+
+E[d b ⊤a] = w⊤ 
+
+> 2
+
+z2 and E[d b ⊤ ˆLa ] = w⊤ 
+
+> 2
+
+( ˆL ⊗ Id)z2.The bound ¯g ≤ −c0∥ζ∥2 holds along every trajectory, not only in expectation, and the second term of (A.1) is dissipative. Only Su has an indefinite sign. Because it is quadratic, differentiating along (18)–(20) and dropping nonpositive terms gives 
+
+˙Su ≤ αβd 2a⊤ ˆLa + βκ pλN d2∥b∥
+
+p
+
+a⊤ ˆLa 
+
++ d ακ ∥b∥∥ h∥∥ + βκλ N ∥b∥∥ a∥ + εβλ N ∥b∥2
+
++ εαβ 2λ2 
+
+> N
+
+∥a∥2 + c7∥ζ∥2, (A.2) with c7 = 1 + ακℓ f /2. The two O(d2) terms are paired with 
+
+a⊤ ˆLa and can be absorbed by the dissipative term in (A.1). Every other factor d multiplies a product of two projected quantities, and the next lemma shows that each has mean square O(1 /d ).
+
+Lemma A.3 (Projected moments): Let ρ = dτ and suppose 
+
+dτ 2 ≤ min {1, 1/(αβλ N (1 + ℓf )) }. Then 
+
+E
+
+h
+
+sup  
+
+> tk≤t≤tk+1
+
+∥y(t)∥2 Fk
+
+i
+
+≤ κy
+
+d ∥ζ(tk)∥2 (A.3) for y ∈ { a, b, h ∥} (writing κh for κh∥ ), and 
+
+E
+
+h
+
+sup  
+
+> tk≤t≤tk+1
+
+∥ζ(t) − ζ(tk)∥2 Fk
+
+i
+
+≤ κδ
+
+d ∥ζ(tk)∥2, (A.4) where, with Ch =
+
+q
+
+1 + α2ℓ2 
+
+> f
+
+, γ = γ(τ ) from Lemma A.1, and θ = 1 + α2ℓ2
+
+> f
+
+ 1 + C2
+
+> h
+
+γ2/4,
+
+κa = 16(1 + θτ 2), κb = 2  1 + α2β2λ2 
+
+> N
+
+ρ2κa
+
+,κz = 2  ρτ C 2
+
+> h
+
+γ2 + β2λ2 
+
+> N
+
+ρ2κa
+
+, κh = 2 ℓ2 
+
+> f
+
+(1 + κz ),κδ = κz + α2β2λ2 
+
+> N
+
+ρ2κa. (A.5) These constants depend on (α, β, λ N , ℓ f , ρ, τ ) but not on d.
+
+Proof: Fix a realization of uk and write s = t − tk ∈
+
+[0 , τ ], ζk = ζ(tk), and likewise zk, a k, b k, h ∥
+
+> k
+
+. Let A =sup s∈[0 ,τ ] ∥a(s)∥; all suprema below are over s ∈ [0 , τ ].
+
+Step 1: pathwise bounds in terms of A. From (18), ∥ ˆLa ∥ ≤ 
+
+λN ∥a∥, and ∥( ˆLa ) ⊗ ˆu∥ = ∥ ˆLa ∥,
+
+∥w2(s) − w2,k ∥ ≤ αβλ N d sA, (A.6) 
+
+∥z(s) − zk∥ ≤ 
+
+Z s
+
+> 0
+
+ α∥¯h∥ + ∥w2∥ + βλ N d sA 
+
+≤ sC hγ∥ζk∥ + βλ N d sA, (A.7) where we used α∥¯h∥ + ∥w2∥ ≤ αℓ f ∥z∥ + ∥w2∥ ≤ Ch∥ζ∥ ≤ 
+
+Chγ∥ζk∥ by Lemma A.1. Since ∥y∥∥ ≤ ∥ y∥ and ∥h2(s) −
+
+h2,k ∥ ≤ ∥ ¯h(s) − ¯hk∥ ≤ ℓf ∥z(s) − zk∥,
+
+∥b(s)∥ ≤ ∥ bk∥ + αβλ N d sA, (A.8) 
+
+∥h∥(s)∥ ≤ ∥ h∥
+
+> k
+
+∥ + ℓf ∥z(s) − zk∥≤ ∥ h∥
+
+> k
+
+∥ + ℓf sC hγ∥ζk∥ + βℓ f λN d sA. (A.9) 
+
+Step 2: closing the bound on A. From (20) and a⊤ ˆLa ≥ 0, 
+
+> dds
+
+∥a∥ ≤ α∥h∥∥ + ∥b∥ wherever a̸ = 0 . Integrating and inserting (A.8) and (A.9), 
+
+A ≤ ∥ ak∥ + τ  α∥h∥
+
+> k
+
+∥ + ∥bk∥ + τ 2 
+
+> 2
+
+αℓ f Chγ∥ζk∥
+
++ τ 2 
+
+> 2
+
+αβλ N (1 + ℓf ) d A. 
+
+By hypothesis τ 2 
+
+> 2
+
+αβλ N (1 + ℓf )d ≤ 12 , so 
+
+A ≤ 2
+
+h
+
+∥ak∥ + τ α ∥h∥
+
+> k
+
+∥ + τ ∥bk∥ + τ 2 
+
+> 2
+
+αℓ f Chγ∥ζk∥
+
+i
+
+. (A.10) 
+
+Step 3: expectations. Write Ek = E[ · | F k]. The quanti-ties ak, b k, h ∥ 
+
+> k
+
+are projections of the Fk-measurable vectors 
+
+z2,k , w 2,k , h 2,k onto the fresh direction, so by (19) and 
+
+∥h2,k ∥ ≤ ℓf ∥zk∥,
+
+Ek∥ak∥2 = ∥z2,k ∥2
+
+d , Ek∥bk∥2 = ∥w2,k ∥2
+
+d ,
+
+Ek∥h∥
+
+> k
+
+∥2 ≤ ℓ2 
+
+> f
+
+∥zk∥2
+
+d .
+
+Squaring (A.10) with (P4 
+
+> i=1
+
+yi)2 ≤ 4 P 
+
+> i
+
+y2 
+
+> i
+
+and taking Ek,
+
+EkA2 ≤ 16 
+
+d
+
+h
+
+∥z2,k ∥2 + τ 2α2ℓ2 
+
+> f
+
+∥zk∥2 + τ 2∥w2,k ∥2
+
++ dτ 4 
+
+> 4
+
+α2ℓ2 
+
+> f
+
+C2
+
+> h
+
+γ2∥ζk∥2i
+
+.
+
+Using dτ 4 ≤ τ 2 (from dτ 2 ≤ 1) and ∥z2,k ∥, ∥zk∥, ∥w2,k ∥ ≤ ∥ζk∥,
+
+EkA2 ≤ 16 
+
+d
+
+h
+
+1+ τ 2
+
+1+ α2ℓ2 
+
+> f
+
++ α2ℓ2 
+
+> fC2
+> hγ2
+> 4
+
+i 
+
+∥ζk∥2 = κa
+
+d ∥ζk∥2,
+
+which is (A.3) for y = a.For y = b, square (A.8) with s ≤ τ using (y1 + y2)2 ≤
+
+2y21 + 2 y22 :
+
+Ek sup ∥b∥2 ≤ 2∥w2,k ∥2
+
+d + 2 α2β2λ2 
+
+> N
+
+d2τ 2 EkA2
+
+≤ 2(1 + α2β2λ2 
+
+> N
+
+ρ2κa)
+
+d ∥ζk∥2 = κb
+
+d ∥ζk∥2.
+
+For the state deviation, square (A.7): 
+
+Ek sup ∥z(s) − zk∥2 ≤ 2τ 2C2
+
+> h
+
+γ2∥ζk∥2 + 2 β2λ2 
+
+> N
+
+d2τ 2 EkA2
+
+≤ κz
+
+d ∥ζk∥2,
+
+where we wrote 2τ 2C2
+
+> h
+
+γ2 = 2ρτ C 2
+
+> h
+
+γ2/d . For y = h∥,square the first inequality in (A.9): 
+
+Ek sup ∥h∥∥2 ≤ 2ℓ2 
+
+> f
+
+∥zk∥2
+
+d + 2 ℓ2 
+
+> f
+
+Ek sup ∥z(s) − zk∥2
+
+≤ 2ℓ2 
+
+> f
+
+(1 + κz )
+
+d ∥ζk∥2 = κh
+
+d ∥ζk∥2.
+
+Finally, ∥ζ(s) − ζk∥2 = ∥z(s) − zk∥2 + ∥w2(s) − w2,k ∥2
+
+exactly, so by (A.6), 
+
+Ek sup ∥ζ(s) − ζk∥2 ≤ κz
+
+d ∥ζk∥2 + α2β2λ2 
+
+> N
+
+d2τ 2 EkA2
+
+≤ κz + α2β2λ2 
+
+> N
+
+ρ2κa
+
+d ∥ζk∥2,
+
+which is (A.4) with κδ as in (A.5).
