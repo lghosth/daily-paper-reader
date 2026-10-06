@@ -1,0 +1,753 @@
+MoSE: Mode-Switching Expander for Mixed LLM
+Training and Inference
+Fan Yang1,2, Ying Zhou3, Binglei Wang1,2, Zhenjie Zhou1,2, Jialong Li2,*
+1Southern University of Science and Technology
+2Faculty of Computer Science and Artificial Intelligence, Shenzhen University of Advanced Technology
+3School of Electronic and Information Engineering, Beijing Jiaotong University
+Abstract—AI clusters increasingly run large language model
+(LLM) inference and training on the same fabric. Prefill-decode (P-
+D) disaggregation creates key-value (KV) cache transfers between
+prefill and decode groups, whereas training collectives and all-
+to-all traffic benefit from near-uniform global connectivity. A
+static sparse topology can therefore be poorly matched to one of
+the two traffic patterns. We present Mode-Switching Expander
+(MoSE), a reconfigurable expander that treats topology design as a
+fixed-degree edge-allocation problem. MoSE reallocates the same
+sparse edge budget toward direct P-D connectivity in inference-
+heavy modes and restores a uniform random regular expander
+in training-heavy modes. We evaluate MoSE using a 1024-group
+flow-level topology model, shortest-path routing, and two mixed
+workloads. Across 20 seeds, MoSE reduces average and 95th-
+percentile (P95) load-aware KV communication cost by 90.8%
+and 91.9% relative to Static-Training in the inference-heavy
+mode. In the training-heavy mode, it reduces average and P95
+training communication cost by 22.7% and 27.6% relative to stale
+Static-Inference. These results show that coarse-grained topology
+switching can support both workload modes without additional
+ports or routing changes.
+Index Terms—Data center network, optical circuit switch,
+expander graph, LLM inference, KV cache, all-to-all traffic
+I. INTRODUCTION
+AI clusters increasingly support both user-facing large
+language model (LLM) inference and model training on shared
+fabrics [1-3]. Such sharing can improve resource utilization
+because inference and training demands vary over time, allow-
+ing operators to reuse the same GPU and network resources
+across workload modes. At the network layer, however, this
+is not merely a scheduling problem. The interconnect must
+support latency-sensitive inference traffic during inference-
+heavy periods and high-volume collective traffic during training-
+heavy periods under the same sparse port budget.
+This creates a fundamental tension: the topology that helps
+one workload mode can consume the edge budget needed by the
+other. Prefill-decode (P-D) disaggregation creates concentrated
+demand across the P-D interface: prefill groups produce key-
+value (KV) cache state, which decode groups must receive
+before token generation proceeds [2-7]. Training collectives,
+in contrast, often require broad global connectivity. All-to-
+all, all-reduce, and expert-parallel traffic can benefit from low
+diameter and near-uniform connectivity, making random regular
+expanders a natural fit [8]. Strengthening P-D connectivity can
+reduce KV-transfer pressure, but a static P-D bias sacrifices
+global expansion once the cluster shifts back to training-heavy
+operation. The core problem is therefore how to allocate the
+same fixed-degree edge budget between P-D connectivity and
+global expansion as workload modes change.
+This observation motivates a mode-aware reconfigurable
+topology that reallocates, rather than expands, the fixed port
+budget. It must strengthen P-D connectivity when KV traffic
+dominates, restore global expansion when training dominates,
+and switch only at coarse workload-mode boundaries compati-
+ble with optical circuit switches [9-13]. The resulting problem
+is to place the same sparse links where the active workload
+mode can use them most effectively.
+We present Mode-Switching Expander (MoSE), which formu-
+lates reconfigurable expander design as a workload-mode-aware,
+fixed-degree edge-allocation problem. In inference-heavy mode,
+MoSE allocates more edges across the P-D cut. In training-
+heavy mode, it restores a uniform random regular expander for
+global communication. The key insight is that optical circuit
+switch (OCS) reconfiguration does not increase the port budget;
+it allows the same sparse optical fabric to realize different
+topology templates over time.
+This paper makes the following contributions.
+• We identify the fixed-degree edge-allocation tradeoff
+between P-D connectivity for disaggregated inference and
+global expansion for training communication.
+• We introduce MoSE, reallocating the same sparse optical
+links between a P-D-biased topology for inference-heavy
+modes and a uniform expander for training-heavy modes.
+• Through a 1024-group flow-level evaluation across 20
+seeds, we show that MoSE reduces average and 95th-
+percentile (P95) load-aware KV communication cost by
+90.8% and 91.9% relative to Static-Training in inference-
+heavy mode. In training-heavy mode, it reduces average
+and P95 training communication cost by 22.7% and 27.6%
+relative to stale Static-Inference.
+II. BACKGROUND AND MOTIVATION
+Mixed LLM clusters no longer exhibit a single traffic
+geometry. The same optical fabric may carry latency-sensitive
+inference traffic in one period and high-volume training traffic
+in another. Under a fixed port budget, topology design therefore
+becomes an edge-allocation problem: how should the same
+sparse links be distributed across different traffic cuts?
+P-D disaggregated inference concentrates traffic across the
+prefill-decode partition [2-4], [6]. Prefill groups produce KV
+arXiv:2609.39138v1  [cs.NI]  30 Sep 2026
+
+
+cache, which decode groups consume before token generation
+proceeds. When the two phases run on separate GPU groups,
+the resulting traffic has a bipartite-like structure between prefill
+and decode groups. Increasing direct P-D connectivity can
+therefore reduce KV-transfer hops and alleviate bottleneck.
+Training communication has a different preference. Large-
+scale training combines global collectives, such as all-reduce
+and all-to-all, with structured communication across parallel
+groups [11], [12]. We use directed all-to-all traffic as a repre-
+sentative stress case because it exercises global connectivity
+across the fabric. A uniform sparse expander fits this pattern by
+distributing edges broadly and keeping paths short [8]. Under a
+fixed degree, however, increasing P-D cut capacity necessarily
+reduces the edge budget available for uniform global expansion.
+This mismatch suggests that topology should change with
+workload mode rather than with individual requests or packets.
+An OCS fabric can strengthen P-D connectivity when KV
+cache traffic dominates and restore a uniform expander when
+training traffic dominates [9-13]. MoSE realizes this coarse-
+grained adaptation by reallocating the same fixed-degree edge
+budget across workload modes.
+III. MODEL AND DESIGN
+We model the cluster as a group-level graph. A node
+represents a rack, GPU island, or similar resource group, and
+an undirected edge represents one bidirectional inter-group
+optical circuit or link bundle. For topology-level accounting,
+traffic in both directions is aggregated on the same normalized
+unit-capacity edge. The graph is simple, connected, and d-
+regular. With N = 1024 groups and d = 4, every topology
+contains 2048 inter-group optical circuits.
+A flow is denoted by f = (sf, tf, xf, kf), where sf and
+tf are its source and destination, xf is its demand, and kf ∈
+{kv, tr} is its traffic class. Each flow is routed over one shortest
+path. We report maximum and P95 link load, average and
+P95 load-aware communication cost, hop count, and KV path
+structure.
+Workload changes alter node roles rather than cluster size.
+The inference-heavy workload contains 410 prefill, 410 decode,
+and 204 training groups, whereas the training-heavy workload
+contains 102 prefill, 102 decode, and 820 training groups.
+Within each workload mode, all policies use the same node
+partition and traffic matrix and differ only in edge placement.
+Algorithm 1 summarizes the topology construction. MoSE
+keeps the vertex set and per-node degree fixed and selects
+a topology template according to the workload mode. In
+inference-heavy mode, it reserves rpd ports at each prefill
+and decode group for an rpd-regular bipartite subgraph and
+randomly fills the remaining degree budget while preserving
+graph simplicity and connectivity. In training-heavy mode,
+it instantiates a uniform random regular expander. We use
+rpd = d −1 = 3 for the P-D-biased topology, retaining
+one residual port per P-D group for global connectivity. The
+compromise topology uses rpd = 1. Thus, MoSE changes only
+edge placement, not routing, scheduling, or port count.
+Algorithm 1 MoSE topology construction
+Require: groups G, degree d, workload mode m, roles (P, D, T ),
+P-D degree rpd
+Ensure: simple connected undirected d-regular topology Hm =
+(V, Em)
+1: V ←G
+2: if m = InferenceHeavy then
+3:
+Em ←∅
+4:
+b(v) ←d for each v ∈V
+5:
+Epd ←BUILDPDBIPARTITE(P, D, rpd)
+6:
+Em ←Em ∪Epd
+7:
+update residual degree budgets b(·)
+8:
+Efill ←RANDOMFILL(V, Em, b)
+9:
+Em ←Em ∪Efill
+10: else
+11:
+Em ←RANDOMREGULAREDGES(V, d)
+12: end if
+13: repair Em until (V, Em) is simple and connected
+14: assert deg(v) = d for all v ∈V
+15: return Hm = (V, Em)
+A. Topology, Traffic, and Metrics
+We write a topology as H = (V, E) and compare simple
+connected d-regular graphs on the same vertex set. By the
+handshaking identity, every evaluated topology has the same
+number of inter-group links:
+|E| = Nd
+2 .
+(1)
+Eq. 1 is the accounting constraint: reconfiguration can relocate
+edges but cannot create additional links.
+We consider three topology templates. The uniform topology
+HU is a role-agnostic random regular graph. The P-D-biased
+topology HPD reserves d −1 degrees at each prefill and
+decode group for P-D connectivity. The compromise topology
+HC reserves one degree for P-D connectivity and uses the
+remaining budget for global expansion. The P-D-biased and
+compromise templates are instantiated for the inference-heavy
+P-D assignment and remain fixed for the corresponding static
+baselines.
+Static-Training always uses HU. Static-Inference always
+uses HPD, including when its P-D structure becomes stale
+in training-heavy mode. Static-Compromise always uses HC.
+MoSE uses HPD in inference-heavy mode and switches to
+HU in training-heavy mode.
+For reporting direct P-D connectivity, we define
+EPD(H) =
+
+{u, v} ∈E : u ∈P, v ∈D or u ∈D, v ∈P
+	
+.
+(2)
+We report |EPD(H)| as the number of direct P-D edges. This
+quantity is distinct from the graph-theoretic cut δH(P), which
+also contains edges between prefill and training groups.
+Each workload mode m induces KV cache flows F kv
+m and
+training flows F tr
+m. Let Fm = F kv
+m ∪F tr
+m. In our experiments,
+|F kv
+m | = ρkv
+m |Fm|, where ρkv
+m is 0.70 in inference-heavy mode
+and 0.30 in training-heavy mode. KV cache flows follow the
+P-D assignment of the active workload mode, while training
+flows sample source-destination pairs uniformly among training
+groups.
+
+
+Training rack
+Decode rack
+Prefill rack 
+Optical link
+GPU
+Training traffic
+KV cache traffic
+2-3 hop
+KV cache path
+KV cache
+no multi-hop
+(a)
+(c)
+(b)
+Fig. 1: MoSE reconfiguration. (a) Training and inference share one optical fabric. (b) As inference demand increases, KV cache
+transfers may traverse multiple hops. (c) OCS reconfiguration installs direct P-D links for one-hop KV transfer.
+For each flow f, routing selects one shortest path pH(f):
+pH(f) ∈arg
+min
+p:sf →tf |p|.
+(3)
+The simulator computes shortest paths using breadth-first search.
+Ties among equal-length shortest paths are broken uniformly
+at random using the same rule for all policies.
+The load contributed to edge e by traffic class k is
+ℓk
+e(H, Fm) =
+X
+f∈F k
+m
+e∈pH(f)
+xf.
+(4)
+The total load on edge e is ℓe(H, Fm) = P
+k ℓk
+e(H, Fm). For
+traffic class k, maximum link load is
+Lk
+m(H) = max
+e∈E ℓk
+e(H, Fm),
+(5)
+and
+the
+overall
+maximum
+link
+load
+is
+Lm(H)
+=
+maxe∈E ℓe(H, Fm). We define link-load P95 analogously over
+the complete edge-load vector.
+We define the load-aware communication cost of flow f as
+the accumulated mixed-traffic load along its selected path:
+Cf(H, Fm) =
+X
+e∈pH(f)
+ℓe(H, Fm).
+(6)
+This metric captures the contention encountered along a
+path and serves as a topology-level proxy rather than wall-
+clock communication time. For traffic class k, its average
+communication cost is
+¯Ck
+m(H) = avgf∈F k
+m Cf(H, Fm),
+(7)
+and its tail communication cost is
+Ck,95
+m
+(H) = P95f∈F k
+m Cf(H, Fm).
+(8)
+Figures use Lk
+m, ¯Ck
+m, and Ck,95
+m
+for the traffic class being
+analyzed.
+Let hH(f) = |pH(f)| denote hop count. We additionally re-
+port the direct KV ratio Rdirect(H, m) = Prf∈F kv
+m [hH(f) = 1]
+and the long-path KV ratio R3+(H, m) = Prf∈F kv
+m [hH(f) ≥
+3].
+The fixed edge budget also yields a generic cut-pressure
+lower bound. For S ⊂V , let
+δH(S) = {{u, v} ∈E : u ∈S, v ∈V \ S}
+and let the bidirectional demand crossing the cut be
+Dm(S) =
+X
+f∈Fm
+|{sf ,tf }∩S|=1
+xf.
+Any routing with maximum link load Lm(H) must carry this
+demand over the cut edges:
+Lm(H) ≥Dm(S)
+|δH(S)|.
+(9)
+The bound exposes the structural tradeoff under a fixed degree
+budget. P-D-biased templates devote more edges to direct P-D
+connectivity, whereas uniform expanders distribute the same
+edge budget broadly to support global training traffic.
+B. Optical Fabric Mapping
+MoSE maps naturally to an optical circuit-switched fabric,
+although our evaluation remains topology-level. A group with
+degree d requires d OCS-facing ports, so N = 1024 and
+d = 4 correspond to 4096 optical endpoints and 2048 active
+bidirectional circuits. These circuits may be realized by a large-
+radix OCS fabric or multiple OCS planes, with one group-
+facing port on each plane. This abstraction is consistent with
+reconfigurable AI fabrics that change physical connectivity at a
+coarse control timescale rather than at packet granularity [9-13].
+Mode switches do not change the per-group port budget;
+MoSE only changes how the optical endpoints are paired.
+Each circuit may operate at the attached transceiver rate,
+such as 400G or 800G, while the graph model normalizes
+its capacity. We assume that circuits affected by a mode switch
+are reconfigured after their active transfers drain. Hitless or
+staged reconfiguration across multiple OCS planes is outside
+the scope of this topology-level study.
+We do not model transient reconfiguration delay, insertion
+loss, transport dynamics, or packet-level flow completion
+time. These factors determine absolute transfer time and
+deployment overhead, whereas our evaluation isolates topology-
+level connectivity and contention under a fixed port budget.
+In the following, S-Train, S-Inf, and S-Comp denote Static-
+Training, Static-Inference, and Static-Compromise, respectively.
+
+
+S-Train
+S-Inf
+S-Comp
+MoSE
+0.00
+0.50
+1.00
+1.50
+Normalized load
+S-Train
+S-Inf
+S-Comp
+MoSE
+(a)
+(b)
+Inference-heavy KV MaxLoad
+Training-heavy MaxLoad
+Fig. 2: Bottleneck load. (a) KV cache MaxLoad under
+inference-heavy demand. (b) Training MaxLoad under training-
+heavy demand.
+S-Train
+S-Inf
+S-Comp
+MoSE
+0.00
+0.50
+1.00
+1.50
+Normalized communication cost
+S-Train
+S-Inf
+S-Comp
+MoSE
+(a)
+(b)
+Inference-heavy
+Training-heavy
+Fig. 3: Load-aware KV cache communication cost. (a)
+Average KV cache communication cost. (b) P95 KV cache
+communication cost.
+S-Train
+S-Inf
+S-Comp
+MoSE
+0.00
+0.50
+1.00
+Normalized communication cost
+S-Train
+S-Inf
+S-Comp
+MoSE
+(a)
+(b)
+Inference-heavy
+Training-heavy
+Fig. 4: Load-aware training communication cost. (a) Average
+training communication cost. (b) P95 training communication
+cost.
+S-Train
+S-Inf
+S-Comp
+MoSE
+0.00
+0.50
+1.00
+Ratio
+S-Train
+S-Inf
+S-Comp
+MoSE
+(a)
+(b)
+Inference-heavy
+Training-heavy
+Fig. 5: KV cache path structure. (a) Direct KV cache ratio.
+(b) 3+ hop KV cache ratio.
+IV. EVALUATION
+We evaluate the four policies with N = 1024 groups
+and degree d = 4. Each result is averaged over 20 random
+seeds covering topology generation and traffic sampling. The
+inference-heavy workload contains 410 prefill groups, 410
+decode groups, 204 training groups, and 100,000 unit-size
+flows, with 70% KV cache traffic and 30% training traffic.
+The training-heavy workload contains 102 prefill groups, 102
+decode groups, 820 training groups, and the same number of
+flows, with 30% KV cache traffic and 70% training traffic.
+Within each workload mode, the P-D assignment is assumed
+to remain stable over one topology reconfiguration interval.
+KV cache traffic follows this assignment, while training traffic
+samples T-T pairs uniformly. For each seed, all policies use the
+same node partition and traffic matrix within each workload
+mode, so the comparison isolates the effect of edge placement.
+We report three groups of metrics. Maximum and P95 link
+load capture network bottlenecks. Average and P95 load-aware
+communication cost capture the contention accumulated along
+KV and training paths. Direct-KV and 3+-hop ratios describe
+the resulting KV path structure. The communication-cost metric
+is a topology-level proxy rather than wall-clock transfer time.
+Table I reports the averaged results. Table headers abbreviate
+average hop count and direct KV cache ratio as AvgHop and
+DirectKV, respectively.
+Bottleneck load. Figure 2(a) reports KV-specific MaxLoad
+under the inference-heavy workload. MoSE matches Static-
+Inference because both use the same P-D-biased topology
+in this mode. The aggregate mixed-traffic results in Table I
+show the same trend: relative to Static-Training, MoSE reduces
+overall MaxLoad from 1041.95 to 529.35 and P95 link load
+from 596.04 to 287.80. Static-Compromise lies between the
+two static endpoints because it allocates only part of the
+degree budget to direct P-D connectivity. Figure 2(b) reports
+training-specific MaxLoad under the training-heavy workload.
+At the aggregate level, retaining the stale P-D-biased topology
+increases MaxLoad from 1157.75 under Static-Training to
+1885.60 under Static-Inference. MoSE avoids this increase by
+returning to the uniform expander.
+Load-aware communication cost. Maximum link load
+captures the most congested edge, but it does not describe
+the accumulated contention along a routed flow. Figure 3
+reports average and P95 load-aware KV communication cost,
+while Table II gives the corresponding raw values. Under
+inference-heavy demand, MoSE reduces average and P95 KV
+communication cost by 90.8% and 91.9% relative to Static-
+
+
+TABLE I: Flow-Level Results Under Different Workloads
+Workload
+Method
+P-D Cut MaxLoad ↓P95Load ↓LoadImb. ↓AvgHop ↓KV AvgHop ↓DirectKV ↑KV 3-hop+ ↓
+Static-Training
+658.45
+1041.95
+596.04
+0.809
+5.66
+5.66
+0.004
+0.983
+Static-Inference
+1331.65
+529.35
+287.80
+0.636
+2.46
+1.00
+1.000
+0.000
+Static-Compromise
+925.95
+804.15
+412.43
+0.719
+3.62
+2.75
+0.626
+0.369
+Inference-heavy
+MoSE
+1331.65
+529.35
+287.80
+0.636
+2.46
+1.00
+1.000
+0.000
+Static-Training
+39.95
+1157.75
+534.46
+0.547
+5.65
+5.64
+0.005
+0.983
+Static-Inference
+6.60
+1885.60
+736.72
+0.693
+6.27
+6.38
+0.000
+0.997
+Static-Compromise
+14.00
+1347.15
+563.59
+0.600
+5.67
+5.70
+0.001
+0.993
+Training-heavy
+MoSE
+39.95
+1157.75
+534.46
+0.547
+5.65
+5.64
+0.005
+0.983
+TABLE II: Path-Cost Values for Headline Results
+Metric
+Base
+Base Cost
+MoSE
+Red.
+Inf. KV Avg
+S-Train
+2419.68
+222.16
+90.8%
+Inf. KV P95
+S-Train
+3592.60
+290.41
+91.9%
+Training Avg
+S-Inf
+2039.17
+1575.36
+22.7%
+Training P95
+S-Inf
+3475.41
+2517.51
+27.6%
+Training. Figure 4 shows the complementary result for training
+traffic. Under training-heavy demand, MoSE reduces average
+and P95 training communication cost by 22.7% and 27.6%
+relative to stale Static-Inference, while matching Static-Training.
+MoSE therefore reaches the corresponding mode-specific static
+topology in both evaluated workloads: the P-D-biased topology
+under inference-heavy demand and the uniform expander under
+training-heavy demand.
+Path
+mechanism.
+Figure
+5
+helps
+explain
+the
+KV
+communication-cost reduction through changes in path struc-
+ture. Figure 5(a) reports the Direct-KV ratio, which increases
+from 0.004 under Static-Training to 1.000 under MoSE in
+the inference-heavy workload. Figure 5(b) reports the 3+-
+hop KV ratio, which decreases from 0.983 to 0.000 under
+the same workload. Static-Compromise again occupies an
+intermediate point, with a Direct-KV ratio of 0.626. In the
+training-heavy workload, direct P-D ratios remain near zero
+because MoSE uses a uniform expander, while the static P-D-
+biased templates retain the inference-heavy P-D assignment.
+These results suggest that reallocating edges toward the active
+P-D assignment can shorten KV paths when inference traffic
+dominates.
+Scope of the evaluation. The evaluation isolates a topology-
+level question: under a fixed-degree optical-link budget, should
+sparse links remain broadly distributed for training traffic, or
+should more of them be allocated to P-D connectivity when KV
+traffic dominates? The flow-level model separates this question
+from transport control, GPU scheduling, and serving policy. It
+treats each graph node as a rack-scale group and uses link load
+and load-aware communication cost to characterize topology
+pressure. Factors such as KV cache size, prompt length, model
+size, data type, collective implementation, ECMP routing, OCS
+reconfiguration cost, and the host-ToR-OCS hierarchy may
+affect absolute communication performance and the magnitude
+of the observed gains. Our evaluation instead focuses on the
+underlying edge-allocation tradeoff between concentrated P-D
+connectivity and broad global expansion.
+V. RELATED WORK
+LLM serving and inference communication. LLM serving
+systems optimize memory and execution placement, prefill-
+decode separation, and KV-cache management to improve
+inference throughput and goodput [1-3]. Follow-up work
+studies P-D aggregation, accelerator-specific behavior, energy
+efficiency, and repeated KV transfers in multi-round infer-
+ence [4-7]. Communication-aware systems further coordinate
+model deployment and communication scheduling for MoE
+inference [14]. MoSE is complementary: it keeps serving and
+placement policies fixed and adapts the inter-group optical
+topology to the resulting P-D traffic.
+AI-cluster communication and network design. Training
+collectives and MoE all-to-all communication require balanced
+global connectivity, motivating communication-aware load
+balancing [15]. Recent work also explores hyperscale network
+architectures designed specifically for AI systems [16]. MoSE
+focuses on a different dimension: temporal workload shifts
+within one shared fabric, reallocating a fixed-degree link budget
+between inference-oriented and training-oriented topologies.
+Expanders and reconfigurable optical fabrics. Random-
+graph data center networks provide sparse global connectivity,
+while optical circuit switching enables physical topologies
+to change over time [8-13]. Prior work has studied topology
+selection in reconfigurable networks [17], as well as routing
+over fast-switched optical fabrics and for latency-sensitive
+flows [18], [19]. MoSE combines mode-aware topology selec-
+tion with expander design: rather than optimizing routes, it
+fixes shortest-path routing and moves the same sparse edge
+budget between the P-D cut and uniform global expansion.
+VI. CONCLUSION
+We presented MoSE, a mode-switching expander for mixed
+LLM training and inference. MoSE reallocates a fixed-degree
+optical edge budget between direct P-D connectivity for KV
+cache transfer and uniform expansion for training traffic. In
+a 1024-group flow-level evaluation, it reduces load-aware KV
+communication cost in inference-heavy mode while avoiding
+the higher training cost of a stale P-D-biased topology. These
+
+
+results suggest that coarse-grained topology reconfiguration
+can adapt a shared optical fabric to changing LLM workload
+modes without adding ports or modifying routing.
+REFERENCES
+[1] Y. Sheng, L. Zheng, B. Yuan, Z. Li, M. Ryabinin, B. Chen, P. Liang,
+C. R´e, I. Stoica, and C. Zhang, “Flexgen: High-throughput generative
+inference of large language models with a single gpu,” in International
+Conference on Machine Learning.
+PMLR, 2023, pp. 31 094–31 116.
+[2] Y. Zhong, S. Liu, J. Chen, J. Hu, Y. Zhu, X. Liu, X. Jin, and H. Zhang,
+“{DistServe}: Disaggregating prefill and decoding for goodput-optimized
+large language model serving,” in 18th USENIX Symposium on Operating
+Systems Design and Implementation (OSDI 24), 2024, pp. 193–210.
+[3] R. Qin, Z. Li, W. He, J. Cui, H. Tang, F. Ren, T. Ma, S. Cai,
+Y. Zhang, M. Zhang et al., “Mooncake: A kvcache-centric disaggregated
+architecture for llm serving,” ACM Transactions on Storage, 2024.
+[4] C. Wang, P. Zuo, Z. Chen, Y. Liang, Z. Yu, and M.-C. Yang, “Prefill-
+decode aggregation or disaggregation? unifying both for goodput-
+optimized llm serving,” arXiv preprint arXiv:2508.01989, 2025.
+[5] S. Usami, V. Vishwanath, and E. Bethel, “Prefill/decode-aware eval-
+uation of llm inference on emerging ai accelerators,” arXiv preprint
+arXiv:2606.17104, 2026.
+[6] J. Li, Y. Zhu, B. Chen, E. K. Lee, and K. Nahrstedt, “Revisiting
+disaggregated large language model serving for performance and energy
+implications,” in Proceedings of the Sixth European Workshop on Machine
+Learning and Systems, 2026, pp. 397–406.
+[7] W. He, Y. Jiang, P. Zhao, Q. Xu, E. Yoneki, B. Cui, and F. Fu, “Efficient
+multi-round llm inference over disaggregated serving,” arXiv preprint
+arXiv:2602.14516, 2026.
+[8] G. Bernardi, R. Mahajan, C. Seshadhri, E. Carlesso, C. Merine Joseph,
+S. Kumar, P. Manikonda, L. Popa, R. Ram, S. Robinson et al., “Expanding
+into reality: Random graphs for datacenter networks,” arXiv e-prints, pp.
+arXiv–2604, 2026.
+[9] N. Jouppi, G. Kurian, S. Li, P. Ma, R. Nagarajan, L. Nai, N. Patil,
+S. Subramanian, A. Swing, B. Towles et al., “Tpu v4: An optically
+reconfigurable supercomputer for machine learning with hardware support
+for embeddings,” in Proceedings of the 50th annual international
+symposium on computer architecture, 2023, pp. 1–14.
+[10] C. Shou, G. Liu, H. Nie, H. Meng, Y. Zhou, Y. Jiang, W. Lv, Y. Xu, Y. Lu,
+Z. Chen et al., “Infinitehbd: building datacenter-scale high-bandwidth
+domain for llm with optical circuit switching transceivers,” in Proceedings
+of the ACM SIGCOMM 2025 Conference, 2025, pp. 1–23.
+[11] X. Li, R. Gu, Y. Li, S. Wang, M. Guang, K. Long, and Y. Ji, “Refly: A
+new reconfigurable architecture for llm training based on optical circuit
+switching,” in GLOBECOM 2025-2025 IEEE Global Communications
+Conference.
+IEEE, 2025, pp. 2499–2504.
+[12] X. Liao, Y. Sun, H. Tian, X. Wan, Y. Jin, Z. Wang, Z. Ren, X. Huang,
+W. Li, K. F. Tse et al., “Mixnet: A runtime reconfigurable optical-
+electrical fabric for distributed mixture-of-experts training,” in Proceed-
+ings of the ACM SIGCOMM 2025 Conference, 2025, pp. 554–574.
+[13] Q. Hu, W. Wang, X. Wang, Y. Li, Y. Zhao, and J. Zhang, “Joint optical
+switching reconfiguration and spatial-temporal traffic optimization for
+optical machine learning clusters,” Journal of Lightwave Technology,
+2026.
+[14] J. Li, S. Tripathi, L. Rastogi, Y. Lei, R. Pan, and Y. Xia, “Optimizing
+mixture-of-experts inference time via model deployment and commu-
+nication scheduling,” IEEE Transactions on Networking, vol. 34, pp.
+2478–2497, 2025.
+[15] H. Xu, Z. Yu, C. Du, Y. Zhou, L. Li, H. Wang, W. Cheng, and J. Li,
+“Rails: Load balancing for all-to-all communication in distributed mixture-
+of-experts training,” IEEE Transactions on Networking, vol. 34, pp.
+4431–4448, 2026.
+[16] Y. Cai, J. Li, K. Akpinar, T. Li, H. Morsy, J. Wilson, S. Khaunte, Y. Xia,
+and Y. Zhang, “Matryoshka: Realizing hyperscale data center network
+design for the {AI} era,” in 23rd USENIX Symposium on Networked
+Systems Design and Implementation (NSDI 26), 2026, pp. 2095–2110.
+[17] Z. Yu, C. Du, H. Xu, H. Wang, B. Liu, and J. Li, “Topofair: A fairness-
+aware topology selection for reconfigurable data center networks,” in
+2025 Asia Communications and Photonics Conference (ACP).
+IEEE,
+2025, pp. 1–6.
+[18] J. Li, F. De Marchi, Y. Lei, R. Joshi, B. Chandrasekaran, and Y. Xia,
+“Unlocking diversity of fast-switched optical data center networks with
+unified routing,” IEEE Transactions on Networking, 2025.
+[19] J. Li, Y. Lei, F. De Marchi, R. Joshi, B. Chandrasekaran, and Y. Xia, “Hop-
+on hop-off routing: A fast tour across the optical data center network for
+latency-sensitive flows,” in Proceedings of the 6th Asia-Pacific Workshop
+on Networking, 2022, pp. 63–69.

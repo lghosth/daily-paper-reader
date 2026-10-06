@@ -1,0 +1,55 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-06T01:02:58.133116+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.39138v1",
+      "source": "arxiv",
+      "title": "MoSE: Mode-Switching Expander for Mixed LLM Training and Inference",
+      "abstract": "AI clusters increasingly run large language model (LLM) inference and training on the same fabric. Prefill-decode (P-D) disaggregation creates key-value (KV) cache transfers between prefill and decode groups, whereas training collectives and all-to-all traffic benefit from near-uniform global connectivity. A static sparse topology can therefore be poorly matched to one of the two traffic patterns. We present Mode-Switching Expander (MoSE), a reconfigurable expander that treats topology design as a fixed-degree edge-allocation problem. MoSE reallocates the same sparse edge budget toward direct P-D connectivity in inference-heavy modes and restores a uniform random regular expander in training-heavy modes. We evaluate MoSE using a 1024-group flow-level topology model, shortest-path routing, and two mixed workloads. Across 20 seeds, MoSE reduces average and 95th-percentile (P95) load-aware KV communication cost by 90.8\\% and 91.9\\% relative to Static-Training in the inference-heavy mode. In the training-heavy mode, it reduces average and P95 training communication cost by 22.7\\% and 27.6\\% relative to stale Static-Inference. These results show that coarse-grained topology switching can support both workload modes without additional ports or routing changes.",
+      "authors": [
+        "Fan Yang",
+        "Ying Zhou",
+        "Binglei Wang",
+        "Zhenjie Zhou",
+        "Jialong Li"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI"
+      ],
+      "published": "2026-09-30T07:05:48+00:00",
+      "link": "https://arxiv.org/pdf/2609.39138v1",
+      "tags": [
+        "keyword:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reconfigurable sparse topology for communication-efficient training collectives",
+      "llm_evidence_cn": "面向训练集合通信效率的可重构稀疏拓扑",
+      "llm_evidence": "面向训练集合通信效率的可重构稀疏拓扑",
+      "canonical_evidence": "面向训练集合通信效率的可重构稀疏拓扑",
+      "llm_tldr_en": "MoSE is a reconfigurable expander that reallocates a fixed sparse edge budget to match either inference KV-cache traffic or training collectives, improving communication efficiency in shared AI clusters.",
+      "llm_tldr_cn": "论文针对AI集群同时承载大模型推理与训练时，静态稀疏网络拓扑难以同时匹配预填充-解码缓存传输与训练集合通信两类流量的问题。作者提出模式切换扩展器MoSE，将拓扑设计建模为固定度数的边分配问题，在推理密集模式把边预算倾向直接预填充-解码连接，在训练密集模式恢复均匀随机正则扩展器。基于1024组流级拓扑的评估表明该方法能更好匹配两类流量，提升通信效率。",
+      "llm_tldr": "论文针对AI集群同时承载大模型推理与训练时，静态稀疏网络拓扑难以同时匹配预填充-解码缓存传输与训练集合通信两类流量的问题。作者提出模式切换扩展器MoSE，将拓扑设计建模为固定度数的边分配问题，在推理密集模式把边预算倾向直接预填充-解码连接，在训练密集模式恢复均匀随机正则扩展器。基于1024组流级拓扑的评估表明该方法能更好匹配两类流量，提升通信效率。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

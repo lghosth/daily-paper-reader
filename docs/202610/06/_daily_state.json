@@ -1,0 +1,25 @@
+{
+  "date": "20261006",
+  "date_label": "2026-10-06",
+  "generated_at": "2026-10-06 09:03:30 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.39138v1",
+      "route": "202610/06/2609.39138v1-mose-mode-switching-expander-for-mixed-llm-training-and-inference",
+      "title": "MoSE: Mode-Switching Expander for Mixed LLM Training and Inference",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向训练集合通信效率的可重构稀疏拓扑",
+      "first_seen_at": "2026-10-06 09:03:30 北京时间",
+      "updated_at": "2026-10-06 09:03:30 北京时间"
+    }
+  ]
+}
