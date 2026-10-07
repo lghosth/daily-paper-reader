@@ -1,0 +1,170 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-07T23:28:41.086592+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2610.03330v1",
+      "source": "arxiv",
+      "title": "Cordial Learning: Distributed Training with Correlated Data",
+      "abstract": "We consider a distributed learning task with agents that have correlated data. Specifically, the label of an agent depends on the input of other agents for the same sample, and these inputs are also correlated. Correlated data is the reality when agents share the same environment. Existing decentralized methods, such as federated learning, ignore the structure of the problem and perform poorly on correlated data. On the other hand, centralized approaches are infeasible due to privacy and communication constraints. We introduce cordial (correlated and distributed) learning to address this gap by sharing only low-dimensional outputs between the agents while training local models to extract informative signals from peers. This distributed learning induces a game in which the loss function of each agent depends on the models of others. Assuming a linear model, we prove that cordial learning converges with probability one to a globally optimal solution, despite the nonconvex global objective. Experiments on structured multi-digit MNIST tasks demonstrate that cordial learning remains highly effective even in highly nonlinear settings.",
+      "authors": [
+        "Sarah Shitrit",
+        "Ilai Bistritz"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-02T14:03:06+00:00",
+      "link": "https://arxiv.org/pdf/2610.03330v1",
+      "tags": [
+        "keyword:DGNN-NAS"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "distributed training sharing low-dimensional outputs under communication constraints",
+      "llm_evidence_cn": "通信约束下共享低维输出的分布式训练",
+      "llm_evidence": "通信约束下共享低维输出的分布式训练",
+      "canonical_evidence": "通信约束下共享低维输出的分布式训练",
+      "llm_tldr_en": "Cordial learning targets distributed training with correlated data, where decentralized methods like federated learning ignore data structure. Agents share only low-dimensional outputs and train local models, inducing a game that handles correlation under privacy and communication limits.",
+      "llm_tldr_cn": "在智能体共享环境、数据相互关联的分布式学习中，联邦学习等去中心化方法忽略数据相关性而表现不佳，中心化方法又受隐私与通信约束限制。本文提出cordial学习，让智能体仅共享低维输出，并训练本地模型从同伴处提取有用信号，从而将问题建模为博弈。该框架在满足隐私与通信约束的同时有效利用相关数据结构，为相关数据下的分布式训练提供了新思路。",
+      "llm_tldr": "在智能体共享环境、数据相互关联的分布式学习中，联邦学习等去中心化方法忽略数据相关性而表现不佳，中心化方法又受隐私与通信约束限制。本文提出cordial学习，让智能体仅共享低维输出，并训练本地模型从同伴处提取有用信号，从而将问题建模为博弈。该框架在满足隐私与通信约束的同时有效利用相关数据结构，为相关数据下的分布式训练提供了新思路。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.05105v1",
+      "source": "arxiv",
+      "title": "CommuteProp: Decoupled Training for Communication Bound Split LLM Fine-Tuning",
+      "abstract": "Split learning has emerged as a promising paradigm for privacy-preserving LLM fine-tuning, yet its practical deployment is severely hindered by the sequential communication-computation bottleneck. In conventional synchronous pipelines, clients remain idle while waiting for server-side gradients, resulting in substantial training inefficiency. We propose CommuteProp, an asynchronous split-learning algorithm that decouples the training process into two concurrent phases: a cross-block forward-backward pass and an in-block weight update. By overlapping computation with communication, CommuteProp reduces the marginal cycle time from a sum of all stage latencies to the dominant computational bottleneck. We provide a rigorous asynchronous error and convergence analysis. Moreover, we derive an NS preconditioner method based on our analysis to further mitigate staleness-induced noise. Comprehensive experiments indicate that our algorithm achieves substantial throughput gains while maintaining accuracy comparable to synchronous methods; furthermore, it functions as a plug-and-play module that not only accommodates but actively enhances existing privacy enhancement methods.",
+      "authors": [
+        "CHEN Ding",
+        "LUO Haochen",
+        "LIU Chen"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-10-04T10:26:07+00:00",
+      "link": "https://arxiv.org/pdf/2610.05105v1",
+      "tags": [
+        "keyword:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "asynchronous execution overlapping communication and computation in distributed training",
+      "llm_evidence_cn": "分布式训练中异步执行并重叠通信与计算",
+      "llm_evidence": "分布式训练中异步执行并重叠通信与计算",
+      "canonical_evidence": "分布式训练中异步执行并重叠通信与计算",
+      "llm_tldr_en": "CommuteProp is an asynchronous split-learning algorithm that overlaps cross-block forward-backward with in-block weight updates to reduce communication-bound training cycles.",
+      "llm_tldr_cn": "分割学习为隐私保护的LLM微调提供了途径，但同步流水线中客户端等待服务器梯度导致严重的通信-计算串行瓶颈。本文提出异步分割学习算法CommuteProp，将训练解耦为跨块前向-反向与块内权重更新两个并发阶段，以重叠计算与通信。该方法将边际周期时间从各阶段延迟之和降至主要计算瓶颈，并给出异步误差与收敛分析。",
+      "llm_tldr": "分割学习为隐私保护的LLM微调提供了途径，但同步流水线中客户端等待服务器梯度导致严重的通信-计算串行瓶颈。本文提出异步分割学习算法CommuteProp，将训练解耦为跨块前向-反向与块内权重更新两个并发阶段，以重叠计算与通信。该方法将边际周期时间从各阶段延迟之和降至主要计算瓶颈，并给出异步误差与收敛分析。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "find papers on distributed GNN training systems with data parallel or asynchronous execution",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.07516v1",
+      "source": "arxiv",
+      "title": "NCCL M2N: A Layout- and Topology-Aware Collective for Distributed Tensor Resharding",
+      "abstract": "Distributed training and rollout generation often use different tensor layouts, requiring model weights to be resharded across distinct process groups. This M-to-N redistribution is not directly expressed by standard collectives. Flat direct sends duplicate traffic across destination replicas, while gather-then-broadcast concentrates network injection at one root and transfers data that destinations do not need. For DeepSeek-V3 on 256 GPUs, legacy all-gather plus broadcast accounts for 29.4% of the reported reinforcement-learning step time. We present NCCL M2N, a layout- and topology-aware collective primitive for distributed tensor resharding. Given source and destination meshes and placements, it derives the required transfer regions and a global communication schedule. Its hierarchical route balances source contributions across eligible destination ranks, forwards one copy between destination NVLink domains, and completes local replication over NVLink. Network transfer and local replication overlap, avoiding replica-multiplied source egress. An aggregate data-movement model captures the limits of both stages. We evaluate NCCL M2N on up to 256 GB200 GPUs in an NVL72 cluster with NDR InfiniBand. A single FFN-MoE layer transfer achieves up to 7.9x speedup over flat direct sends (9.8 ms versus 77.3 ms). In a separate 256-GPU DeepSeek-V3 NeMo-RL experiment, NCCL M2N reduces reported weight-sync time from 5.78 s to 2.77 s, a 2.09x speedup over legacy all-gather plus broadcast, and reduces step time by 12.7%.",
+      "authors": [
+        "Kaushik Kandadi",
+        "Youngeun Kwon",
+        "Sreeram Potluri",
+        "Ching-Hsiang Chu",
+        "Ke Wen",
+        "Pouya Kousha",
+        "Sangkug Lym",
+        "Nitin Nitin",
+        "Manjunath Gorentla Venkata"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-10-05T23:27:52+00:00",
+      "link": "https://arxiv.org/pdf/2610.07516v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "layout and topology aware collective for distributed training",
+      "llm_evidence_cn": "面向分布式训练的布局与拓扑感知集合通信",
+      "llm_evidence": "面向分布式训练的布局与拓扑感知集合通信",
+      "canonical_evidence": "面向分布式训练的布局与拓扑感知集合通信",
+      "llm_tldr_en": "Distributed training and rollout use different tensor layouts, requiring M-to-N resharding across process groups not expressible by standard collectives. NCCL M2N is a layout- and topology-aware collective that derives transfer regions, cutting redundant traffic.",
+      "llm_tldr_cn": "分布式训练与rollout生成常使用不同张量布局，需在不同进程组间重分片模型权重，而标准集合通信无法直接表达这种M到N重分布：扁平直发会重复流量，gather后broadcast又集中网络注入并传输目的端不需要的数据。本文提出NCCL M2N，一种布局与拓扑感知的集合通信原语，依据源与目的网格及放置推导所需传输区域。在256 GPU的DeepSeek-V3上，传统all-gather加broadcast占强化学习步骤时间的29.4%。该工作为分布式训练提供高效通信原语。",
+      "llm_tldr": "分布式训练与rollout生成常使用不同张量布局，需在不同进程组间重分片模型权重，而标准集合通信无法直接表达这种M到N重分布：扁平直发会重复流量，gather后broadcast又集中网络注入并传输目的端不需要的数据。本文提出NCCL M2N，一种布局与拓扑感知的集合通信原语，依据源与目的网格及放置推导所需传输区域。在256 GPU的DeepSeek-V3上，传统all-gather加broadcast占强化学习步骤时间的29.4%。该工作为分布式训练提供高效通信原语。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "distributed training systems for graph neural networks",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.08176v1",
+      "source": "arxiv",
+      "title": "LFHE: Local-First Heuristic Evolution for Bounded Local Topology Search in Decentralized Learning with Non-IID Data",
+      "abstract": "Decentralized learning is highly sensitive to communication topology under non-IID data. Adaptive peer-selection methods can exploit local model information, but broader peer discovery may require increasingly large control state, whereas direct spectral optimization typically relies on graph-wide information. We study the intermediate setting of bounded local topology search and propose Local-First Heuristic Evolution (LFHE), a representation-driven rewiring framework whose candidate discovery and scoring use only ego-neighborhood and friend-of-a-friend (FoF) information. The structural score admits an exact interpretation through graph Dirichlet energy: its sum across clients equals twice the representation Dirichlet energy, which under standard linear consensus dynamics governs the instantaneous dissipation of representation disagreement. LFHE combines this state-dependent structural signal with early exploration and degree control, while algebraic connectivity remains an offline graph diagnostic. Under bounded sparse degree, its FoF candidate state remains local rather than expanding toward population-wide peer tracking. Across four image, speech, and text benchmarks, LFHE achieves competitive decentralized learning performance. Matched-protocol controls identify the structural term as the principal empirical topology-selection signal, while comparison with broader peer discovery exposes a trade-off between predictive performance and discovery-state locality. Together, these results motivate state-aware bounded local topology search between pairwise peer selection and globally informed topology optimization.",
+      "authors": [
+        "Yin-Kuan Liang",
+        "Yan Gao",
+        "Yang Long"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-10-06T11:29:15+00:00",
+      "link": "https://arxiv.org/pdf/2610.08176v1",
+      "tags": [
+        "keyword:DGNN-NAS",
+        "query:DGNN-NAS"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "local topology search for communication-efficient decentralized learning",
+      "llm_evidence_cn": "面向通信高效去中心化学习的局部拓扑搜索",
+      "llm_evidence": "面向通信高效去中心化学习的局部拓扑搜索",
+      "canonical_evidence": "面向通信高效去中心化学习的局部拓扑搜索",
+      "llm_tldr_en": "Decentralized learning is sensitive to communication topology under non-IID data, while global spectral optimization needs graph-wide information. LFHE performs bounded local topology search using only ego-neighborhood and friend-of-friend information, with a structural score exactly interpreted via graph Dirichlet energy.",
+      "llm_tldr_cn": "去中心化学习在非独立同分布数据下对通信拓扑高度敏感，自适应选点方法需较大控制状态，而直接谱优化依赖图级信息。本文研究有界局部拓扑搜索这一中间设定，提出局部优先启发式演化LFHE，仅用自我邻域与朋友的朋友信息完成候选发现与打分，并以图狄利克雷能量精确解释结构分数。该分数跨客户端求和恰为两倍表示量，从而在有界局部拓扑搜索中实现通信高效的重连。工作为去中心化学习提供了仅依赖局部信息的通信高效拓扑优化途径。",
+      "llm_tldr": "去中心化学习在非独立同分布数据下对通信拓扑高度敏感，自适应选点方法需较大控制状态，而直接谱优化依赖图级信息。本文研究有界局部拓扑搜索这一中间设定，提出局部优先启发式演化LFHE，仅用自我邻域与朋友的朋友信息完成候选发现与打分，并以图狄利克雷能量精确解释结构分数。该分数跨客户端求和恰为两倍表示量，从而在有界局部拓扑搜索中实现通信高效的重连。工作为去中心化学习提供了仅依赖局部信息的通信高效拓扑优化途径。",
+      "llm_tags": [
+        "query:dgnn-nas"
+      ],
+      "matched_query_tag": "query:dgnn-nas",
+      "matched_query_text": "communication-efficient training",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

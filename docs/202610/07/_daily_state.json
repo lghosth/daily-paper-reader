@@ -1,0 +1,73 @@
+{
+  "date": "20261007",
+  "date_label": "2026-10-08",
+  "generated_at": "2026-10-08 07:29:14 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.03330v1",
+      "route": "202610/07/2610.03330v1-cordial-learning-distributed-training-with-correlated-data",
+      "title": "Cordial Learning: Distributed Training with Correlated Data",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通信约束下共享低维输出的分布式训练",
+      "first_seen_at": "2026-10-08 07:29:14 北京时间",
+      "updated_at": "2026-10-08 07:29:14 北京时间"
+    },
+    {
+      "paper_id": "2610.05105v1",
+      "route": "202610/07/2610.05105v1-commuteprop-decoupled-training-for-communication-bound-split-llm-fine-tuning",
+      "title": "CommuteProp: Decoupled Training for Communication Bound Split LLM Fine-Tuning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "分布式训练中异步执行并重叠通信与计算",
+      "first_seen_at": "2026-10-08 07:29:14 北京时间",
+      "updated_at": "2026-10-08 07:29:14 北京时间"
+    },
+    {
+      "paper_id": "2610.07516v1",
+      "route": "202610/07/2610.07516v1-nccl-m2n-a-layout--and-topology-aware-collective-for-distributed-tensor-resharding",
+      "title": "NCCL M2N: A Layout- and Topology-Aware Collective for Distributed Tensor Resharding",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向分布式训练的布局与拓扑感知集合通信",
+      "first_seen_at": "2026-10-08 07:29:14 北京时间",
+      "updated_at": "2026-10-08 07:29:14 北京时间"
+    },
+    {
+      "paper_id": "2610.08176v1",
+      "route": "202610/07/2610.08176v1-lfhe-local-first-heuristic-evolution-for-bounded-local-topology-search-in-decentralized-learning-with-non-iid-data",
+      "title": "LFHE: Local-First Heuristic Evolution for Bounded Local Topology Search in Decentralized Learning with Non-IID Data",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向通信高效去中心化学习的局部拓扑搜索",
+      "first_seen_at": "2026-10-08 07:29:14 北京时间",
+      "updated_at": "2026-10-08 07:29:14 北京时间"
+    }
+  ]
+}
