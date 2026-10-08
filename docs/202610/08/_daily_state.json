@@ -1,0 +1,73 @@
+{
+  "date": "20261008",
+  "date_label": "2026-10-09",
+  "generated_at": "2026-10-09 07:53:17 北京时间",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.09297v1",
+      "route": "202610/08/2610.09297v1-node-level-graph-neural-architecture-search-framework",
+      "title": "Node-level Graph Neural Architecture Search Framework",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "节点级图神经网络架构搜索，按节点子集自动选择架构",
+      "first_seen_at": "2026-10-09 07:53:17 北京时间",
+      "updated_at": "2026-10-09 07:53:17 北京时间"
+    },
+    {
+      "paper_id": "2610.09372v1",
+      "route": "202610/08/2610.09372v1-expert-coupling-in-moe-pretraining-reducing-all-to-all-overhead-with-correlated-placement-and-token-shuffling",
+      "title": "Expert Coupling in MoE Pretraining: Reducing All-to-All Overhead with Correlated Placement and Token Shuffling",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通过相关放置降低分布式训练中的全对全通信开销",
+      "first_seen_at": "2026-10-09 07:53:17 北京时间",
+      "updated_at": "2026-10-09 07:53:17 北京时间"
+    },
+    {
+      "paper_id": "2610.07859v1",
+      "route": "202610/08/2610.07859v1-tram-fl-reducing-communication-and-computation-costs-through-sequential-model-circulation-in-decentralized-federated-learning",
+      "title": "Tram-FL: Reducing Communication and Computation Costs through Sequential Model Circulation in Decentralized Federated Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "在去中心化联邦训练中降低通信与计算成本",
+      "first_seen_at": "2026-10-09 07:53:17 北京时间",
+      "updated_at": "2026-10-09 07:53:17 北京时间"
+    },
+    {
+      "paper_id": "2610.09059v1",
+      "route": "202610/08/2610.09059v1-edis-edge-disjoint-subgraph-sparsification-framework-for-graph-neural-networks",
+      "title": "EDiS: Edge Disjoint Subgraph Sparsification Framework for Graph Neural Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "dgnn-nas"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "将图分解为边不相交子图用于GNN训练",
+      "first_seen_at": "2026-10-09 07:53:17 北京时间",
+      "updated_at": "2026-10-09 07:53:17 北京时间"
+    }
+  ]
+}

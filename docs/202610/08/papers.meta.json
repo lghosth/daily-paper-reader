@@ -1,0 +1,69 @@
+{
+  "label": "2026-10-09",
+  "date": "2026-10-08",
+  "generated_at": "2026-10-08T23:53:18",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202610/08/2610.09297v1-node-level-graph-neural-architecture-search-framework",
+      "section": "deep",
+      "title_en": "Node-level Graph Neural Architecture Search Framework",
+      "authors": "Lintao Yanga, Sirui Lia, Yaqing Wang, Pietro Liò, Xu Shen, Baisong Liu, Chengbin Peng",
+      "date": "2026-10-07",
+      "pdf": "https://arxiv.org/pdf/2610.09297v1",
+      "score": "9.0",
+      "evidence": "节点级图神经网络架构搜索，按节点子集自动选择架构",
+      "tldr": "图神经网络在处理非欧数据时表现优异，但传统方法对所有节点施加统一卷积操作，忽略节点结构与特征差异，层数增加后易导致过平滑并拖累性能。为此提出节点级图神经架构搜索算法N-GNAS，在更新节点特征时为不同节点子集自动选择合适网络架构，并引入对比学习损失拉大异类样本特征距离、缩小同类距离。在八个节点与图分类数据集上，N-GNAS优于现有GNAS方法及人工设计GNN，CiteSeer上准确率达78.26%。该工作将架构搜索粒度细化到节点级，为缓解过平滑、提升异质图表示学习提供了新思路。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "In recent years, Graph Neural Networks (GNNs) and architecture search frameworks have gained extensive application in non-Euclidean data processing, attributable to their superior capacity in managing unstructured data. Nevertheless, traditional approaches typically apply uniform convolution operations to all nodes, regardless of their varying structural and feature characteristics, which can undermine model performance and result in over-smoothing issues as the number of layers increases. To overcome this limitation, in this work, we propose a \\textbf{N}ode-Level \\textbf{G}raph \\textbf{N}eural \\textbf{A}rchitecture \\textbf{S}earch (N-GNAS) algorithm. It can automatically choose an appropriate network architecture for each subset of nodes when updating node features. N-GNAS also introduces a contrastive learning loss to separate sample features from different categories and vice versa. In experiments conducted on eight datasets for node and graph classification, our methodology outperforms current leading GNAS techniques and traditional human-designed GNNs. For example, it achieves an accuracy rate of 78.26\\% on the CiteSeer dataset.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/08/2610.09372v1-expert-coupling-in-moe-pretraining-reducing-all-to-all-overhead-with-correlated-placement-and-token-shuffling",
+      "section": "quick",
+      "title_en": "Expert Coupling in MoE Pretraining: Reducing All-to-All Overhead with Correlated Placement and Token Shuffling",
+      "authors": "Radha Gulhane, Quentin Anthony, Beren Millidge",
+      "date": "2026-10-07",
+      "pdf": "https://arxiv.org/pdf/2610.09372v1",
+      "score": "7.0",
+      "evidence": "通过相关放置降低分布式训练中的全对全通信开销",
+      "tldr": "MoE 预训练中，专家并行的 all-to-all 通信开销显著，EP32 下 top-2 可占 45%、top-6 占 60%。作者发现路由器早期已形成层内与跨层相关选择，提出相关专家放置和 token shuffling：把常共选专家放同一 GPU，每 token 每 GPU 只发一次，并在 attention 后 reduce-scatter 时迁移 token。Megatron-LM 上 EP 8 至 64、top-2/top-6 下，all-to-all 时间降 1.16–2.63 倍，端到端最多加速 1.41 倍，且不改变路由与专家参数。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Mixture-of-Experts (MoE) layers replace the feed-forward block of a Transformer with E expert networks, and each token is routed to k of these experts. Under expert parallelism (EP) the experts are distributed across GPUs, and every MoE layer runs all-to-all collectives in the forward and backward passes to dispatch tokens to their experts and then combine the results. On a cluster with 8 AMD Instinct MI300X GPUs per node, these collectives can take 45% of the training step at EP32 with top-2 routing and 60% with top-6 routing. We find that early in pretraining routers have already learned to assign tokens to experts in correlated patterns, both within a layer and across layers. At top-2, 0.8% of the expert pairs in a layer are selected together by 42% of tokens, and the experts a token selects at one layer predict the experts it selects at the next layer. We use these correlations to keep more token--expert assignments on the token's own GPU, which reduces communication across GPUs and across nodes. Correlated expert placement puts experts that are often selected together on the same GPU. Combined with a dispatcher that sends each token to each GPU once, it removes up to 58% of dispatched rows. Token shuffling applies when sequence parallelism shards tokens across the EP group. It moves each token to the GPU predicted to hold its next-layer experts during the reduce-scatter that follows attention. On one node this raises the share of token--expert assignments served on the token's GPU from 12.5% to 59%. In Megatron-LM, across EP degrees from 8 to 64 with top-2 and top-6 routing, the two methods reduce all-to-all time by 1.16-2.63X and end-to-end step time by up to 1.41X. Neither method changes the models' underlying routing decisions or expert parameters.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/08/2610.07859v1-tram-fl-reducing-communication-and-computation-costs-through-sequential-model-circulation-in-decentralized-federated-learning",
+      "section": "quick",
+      "title_en": "Tram-FL: Reducing Communication and Computation Costs through Sequential Model Circulation in Decentralized Federated Learning",
+      "authors": "Kota Maejima, Takayuki Nishio, Asato Yamazaki, Yuko Hara-Azumi",
+      "date": "2026-10-06",
+      "pdf": "https://arxiv.org/pdf/2610.07859v1",
+      "score": "6.0",
+      "evidence": "在去中心化联邦训练中降低通信与计算成本",
+      "tldr": "传统去中心化联邦学习让各客户端维护并更新模型副本，虽能利用算力缩短训练，却带来显著通信与计算浪费，非独立同分布数据下尤甚。Tram-FL 将关注点转向模型本身，让单一模型在节点间顺序流转训练，并解决流转路径与更新迭代分配的训练调度问题。结合量化动量，它在减少模型流转次数的同时控制单次通信负载，并在非IID数据下以更低通信与计算成本收敛到全局模型。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Conventional decentralized federated learning (DFL) often focuses on clients, with each client maintaining a model copy, performing updates individually, and undertaking model exchange and integration. While fully leveraging computational resources can shorten training times, it can also lead to significant computational and communication waste. This is especially pronounced with non-independent and identically distributed (non-IID) data, where achieving high model accuracy demands extra resources. This research shifts focus to the model itself, aiming to realize DFL with minimal computation and communication costs. To this end, we propose Tram-FL (Traveling Model Training Mechanism for Decentralized Federated Learning), a mechanism designed to efficiently address these challenges. It sequentially trains a single model by circulating it among nodes. We address the training scheduling problem in model circulation-based training, specifically determining which nodes should update the model and the number of updates to perform. This is approached by considering the model's circulation route and update iteration allocation, for which we propose simple yet effective methods. Additionally, with quantized momentum, Tram-FL achieves high accuracy with fewer model circulations while controlling communication load per transmission. Experimental results show that the proposed algorithm, even with non-IID data, converges to a global model with reduced communication and computation.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/08/2610.09059v1-edis-edge-disjoint-subgraph-sparsification-framework-for-graph-neural-networks",
+      "section": "quick",
+      "title_en": "EDiS: Edge Disjoint Subgraph Sparsification Framework for Graph Neural Networks",
+      "authors": "Sai Karthik Navuluru, Siddhartha Shankar Das, Franck Dernoncourt, S M Ferdous, Ryan A. Rossi, Nesreen K. Ahmed, Baris Coskunuzer, Alex Pothen, Lakshman Tamil, Mahantesh M Halappanavar",
+      "date": "2026-10-06",
+      "pdf": "https://arxiv.org/pdf/2610.09059v1",
+      "score": "6.0",
+      "evidence": "将图分解为边不相交子图用于GNN训练",
+      "tldr": "稀疏GNN训练可降算力，但每轮选边代价高：复用固定稀疏图受限，逐轮变化需重复采样。EDiS将一次性结构抽取与逐轮图组合分离，把图分解为可缓存的边不相交子图，再在边预算与保留率约束下重组训练图。19个节点分类基准、17个基线同预算下，EDiS平均得分最高、平均排名与差距最优。紧边预算时结构分解与轮间变化收益最明显。",
+      "tags": "query:dgnn-nas",
+      "abstract_en": "Sparse GNN training reduces computation, but deciding which edges to keep can be costly. Reusing one sparse graph is cheap, but locks training to a fixed topology, while varying it across epochs can require repeated sampling or recomputation. We introduce EDiS (Edge-Disjoint Subgraph sparsification framework), which separates one-time structural extraction from per-epoch graph composition. EDiS decomposes the graph once into cacheable edge-disjoint subgraphs, then recombines them into graphs with edge-budget constraints across epochs and retention ratios without re-extracting structure. Our default construction uses feature-based scores and successive maximum score covering forests, while the same composition mechanism also supports alternative edge selection rules. We provide a combinatorial analysis of the per-epoch sampler, the composition step that draws a training graph from the cached decomposition. We show that, under the default covering-forest selector, the stored decomposition deterministically preserves high-score cut edges, and we derive a selector-agnostic conditional bound on high-score cut survival in composed training graphs. Across 19 homophilic, heterophilic, and large-scale node classification benchmarks against 17 baselines under the same edge budget, EDiS achieves the highest mean benchmark score (accuracy/ROC-AUC) and the lowest average rank and gap-to-best among ranked methods. Ablations show the clearest benefits of structural decomposition and epoch variation at tight edge budgets.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
